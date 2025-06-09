@@ -60,7 +60,7 @@
       "testStrategy": "Unit tests for CLI argument parsing and help text generation",
       "priority": "high",
       "dependencies": [1],
-      "status": "pending",
+      "status": "done",
       "subtasks": [
         {
           "id": 1,
@@ -68,7 +68,7 @@
           "description": "Set up the Node.js project and install the yargs package as a dependency.",
           "dependencies": [],
           "details": "Run 'npm init -y' to create package.json. Install yargs using 'npm install yargs'. Ensure the project directory is ready for CLI development.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 2,
@@ -76,7 +76,7 @@
           "description": "Update package.json to define the CLI entry point and make the CLI executable.",
           "dependencies": [1],
           "details": "Add a 'bin' field mapping the CLI command name to the entry script (e.g., 'cli.js'). Set 'preferGlobal' to true if global installation is desired. Ensure metadata such as name, version, and description are accurate.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 3,
@@ -84,7 +84,7 @@
           "description": "Create the main CLI script file and set up the shebang for Node.js execution.",
           "dependencies": [2],
           "details": "Create a file (e.g., 'cli.js'). Add the shebang line '#!/usr/bin/env node' at the top. Import yargs and set up the basic structure for argument parsing.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 4,
@@ -92,7 +92,7 @@
           "description": "Define and implement each CLI flag and its corresponding logic using yargs.",
           "dependencies": [3],
           "details": "Use yargs to define all required flags and options. Implement the logic for each flag, including validation and error handling. Ensure each flag behaves as specified in the CLI requirements.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 5,
@@ -100,7 +100,7 @@
           "description": "Configure yargs to generate help text and usage information for the CLI.",
           "dependencies": [4],
           "details": "Use yargs's .usage(), .help(), and .alias() methods to provide clear help and usage instructions. Test the CLI with '--help' and '-h' to ensure the output is informative and accurate.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 6,
@@ -108,7 +108,7 @@
           "description": "Test the CLI end-to-end, including all flags, help output, and installation via npm.",
           "dependencies": [5],
           "details": "Run the CLI locally and via 'npx' or global install. Test all flags and commands for correct behavior. Validate that help text displays as expected. Fix any issues found during testing.",
-          "status": "pending"
+          "status": "done"
         }
       ]
     },

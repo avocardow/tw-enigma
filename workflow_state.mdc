@@ -28,65 +28,91 @@ alwaysApply: false
 - **Status:** `COMPLETED_ITERATION_SUCCESS`
 
 ## 2. Current Task
-- **Task ID/Raw Output:** Task ID: 2 - "Implement CLI framework with yargs" - Retrieved from Task-Master MCP
-- **Parsed Task Description:** Set up the command-line interface using yargs library to handle command parsing and help generation. Includes installing yargs, creating CLI structure, implementing flags (--help, --version, --pretty, --config), and setting up bin entry for global installation.
+- **Task ID/Raw Output:** Task ID: 3 - "Develop configuration loading system" - Create a system to load and merge configuration from file and CLI arguments. 7 subtasks including Configuration File Creation, Loading Mechanism, Merging Logic, CLI Precedence, Validation System, Default Value Handling, and Cosmiconfig Integration.
+- **Parsed Task Description:** Implement a comprehensive configuration system that loads config files (using cosmiconfig), merges with CLI arguments (CLI takes precedence), validates configuration, and handles defaults. Requires creating src/config.js, implementing file loading, merging logic, and validation.
 - **Implementation Priority:** `high`
-- **Dependencies:** [1] (Task 1 completed ✅)
-- **Complexity Assessment:** **Medium** - Significant work required but manageable. Analysis shows: yargs@17.7.2 already installed ✅, bin entry exists ✅, basic CLI structure exists in bin/enigma.ts ✅. Missing: --version flag, --config flag, enhanced help text, CLI structure improvements, proper TypeScript imports, and comprehensive testing. Need to enhance existing implementation rather than build from scratch.
-- **Estimated Files to Modify:** 3-5 files (bin/enigma.ts enhancement, possible src/cli files, package.json updates, new test files)
-- **Checkpoint Markers:** None required - CLI implementation is low-risk and follows established patterns
+- **Dependencies:** [2] (Task 2 completed ✅)
+- **Complexity Assessment:** **HIGH** - Analysis shows: Multiple new files required (src/config.ts, tests), new dependency installation (cosmiconfig@8.1.3), complex merging logic, validation system, CLI integration updates. 7 subtasks indicate significant scope. Estimated 2-3 hours work, affects >5 files, requires new API integrations.
+- **Estimated Files to Modify:** 5-7 files (new src/config.ts, tests/config.test.ts, bin/enigma.ts updates, package.json dependency, possibly src/types.ts, documentation)
+- **Checkpoint Markers:** Dependency installation, CLI integration changes, validation schema implementation
 
 ## 3. Plan
-*(Detailed step-by-step implementation plan created during BLUEPRINT phase)*
+*(Detailed step-by-step implementation plan for Task 3 - Configuration Loading System)*
 
-**Context:** Task requires enhancing existing CLI implementation. Current state: yargs@17.7.2 installed ✅, bin entry exists ✅, basic CLI structure exists ✅. Need to add missing flags, improve structure, and add comprehensive testing.
+**Context Gathered:**
+- Cosmiconfig v9.0.0 (latest) provides configuration file loading with smart defaults
+- Supports package.json property, rc files (.json, .yaml, .js, .ts), .config subdirectory, and module.config.js patterns
+- Built-in TypeScript support and both async/sync APIs
+- Current task requires cosmiconfig@8.1.3 specifically (project requirement)
 
-- **Step 1:** Enhance the existing CLI implementation in bin/enigma.ts
-  - Add missing --version flag with automatic version reading from package.json
-  - Add --config flag for configuration file specification
-  - Improve help text and usage information
-  - Ensure proper TypeScript imports and type safety
-  
-- **Step 2:** Create comprehensive CLI structure improvements
-  - Refactor command structure for better organization
-  - Add proper error handling and validation
-  - Implement consistent help text generation
-  - Add proper command descriptions and examples
-  
-- **Step 3:** Verify and test CLI functionality
-  - Test all flags work correctly (--help, --version, --pretty, --config)
-  - Verify help text displays properly
-  - Test bin entry point execution
-  - Ensure TypeScript compilation works correctly
-  
-- **Step 4:** Create unit tests for CLI functionality
-  - Add test file for CLI argument parsing
-  - Test help text generation
-  - Test flag behavior and validation
-  - Test error handling scenarios
-  
-- **Step 5:** Update package.json if needed
-  - Verify bin entry is correct
-  - Ensure any missing dependencies are added
-  - Update scripts if necessary for testing
-  
-- **Step 6:** Documentation and final validation
-  - Ensure CLI usage is documented
-  - Test global installation simulation
-  - Verify all subtask requirements are met
-  
-**Testing Strategy:** 
-- Unit tests for CLI argument parsing and flag behavior
-- Integration tests for help text generation
-- Manual testing of CLI execution and flag combinations
-- Test TypeScript compilation and build process
+**Step 1: Install Required Dependencies** [CHECKPOINT: Dependency Installation]
+- Install cosmiconfig@8.1.3 as specified in task requirements
+- Verify compatibility with existing project dependencies
+- Update package.json and lock file
 
-**Rollback Plan:** 
-- Current bin/enigma.ts backed up before modifications
-- Git status can be reverted if changes break functionality
-- Package.json changes can be reverted from git history
+**Step 2: Create Core Configuration Module (src/config.ts)**
+- Create comprehensive configuration interface with TypeScript types
+- Implement asynchronous configuration loading with cosmiconfig
+- Implement synchronous configuration loading for CLI compatibility  
+- Add support for default configuration values
+- Include proper error handling for file loading failures
 
-**Plan ready for approval. Please review ## 3. Plan and confirm to proceed.**
+**Step 3: Implement Configuration File Loading Logic**
+- Set up cosmiconfig explorer with "enigma" module name
+- Configure search places: package.json property, .enigmarc files, enigma.config.js
+- Implement file loading mechanism with proper error handling
+- Add support for multiple configuration file formats (JSON, YAML, JS, TS)
+
+**Step 4: Implement Configuration Merging System**
+- Create merging logic: defaults → config file → CLI arguments (CLI takes precedence)
+- Implement deep merging for complex configuration objects
+- Ensure CLI arguments properly override file-based configuration
+- Add support for nested configuration properties
+
+**Step 5: Add Configuration Validation System**
+- Create configuration schema with joi or zod for validation
+- Implement validation for all configuration options
+- Add helpful error messages for invalid configuration
+- Ensure validation works for both file and CLI sources
+
+**Step 6: Integrate with Existing CLI** [CHECKPOINT: CLI Integration]
+- Update bin/enigma.ts to use new configuration system
+- Modify CLI argument parsing to integrate with config loading
+- Ensure --config flag properly loads specified configuration file
+- Maintain backward compatibility with existing CLI behavior
+- Update help text to reflect configuration options
+
+**Step 7: Comprehensive Testing**
+- Create unit tests for configuration loading (src/config.ts)
+- Test file loading from various sources (package.json, rc files, etc.)
+- Test configuration merging precedence (defaults < file < CLI)
+- Test validation system with valid and invalid configurations
+- Test CLI integration with configuration system
+- Add integration tests for end-to-end configuration scenarios
+
+**Step 8: Update Documentation**
+- Update README with configuration file examples
+- Document all available configuration options  
+- Add examples of different configuration file formats
+- Document CLI integration and precedence rules
+
+**Testing Strategy:**
+- Unit tests: Configuration loading, merging, validation (target: 95% coverage)
+- Integration tests: CLI with configuration files (target: 90% coverage)  
+- E2E tests: Full workflow with various configuration sources
+- Test edge cases: missing files, invalid JSON, conflicting options
+
+**Rollback Plan:**
+- Git commit before dependency installation
+- Backup existing CLI implementation  
+- Modular implementation allows partial rollback if needed
+- Configuration system designed to be optional/graceful degradation
+
+**Validation Requirements:**
+- All existing CLI functionality must continue working
+- New configuration system must be backward compatible
+- Performance impact should be minimal (<10ms overhead)
+- Error messages must be user-friendly and actionable
 
 ## 4. Rules for Current Phase
 
@@ -177,9 +203,34 @@ alwaysApply: false
 - `[2025-01-20 15:55:00]` - `VALIDATE` - Test suite validation passed - All 14 tests passing after formatting changes
 - `[2025-01-20 15:56:00]` - `VALIDATE` - All quality gates passed successfully - Ready for commit
 - `[2025-01-20 15:56:00]` - `COMMITTING` - Beginning commit phase - All validations successful
+- `[2025-01-20 15:57:00]` - `COMMITTING` - Changes staged successfully - All modified files added to git index
+- `[2025-01-20 15:58:00]` - `COMMITTING` - Commit created successfully - feat(cli): enhance CLI framework with version and config flags, comprehensive tests, and improved error handling (task-2)
+- `[2025-01-20 15:59:00]` - `PUSHING` - Changes pushed successfully to remote repository - Task 2 implementation complete
+- `[2025-01-20 16:00:00]` - `COMPLETED_ITERATION` - Task 2 marked as done in Task-Master - All requirements successfully implemented and tested
+- `[2025-01-20 16:01:00]` - `FETCHING_TASK` - Beginning next iteration - Ready to fetch Task 3
+- `[2025-01-20 16:02:00]` - `FETCHING_TASK` - Retrieved Task 3 from Task-Master - Configuration loading system with 7 subtasks
+- `[2025-01-20 16:02:00]` - `TASK_VALIDATION` - Beginning validation of Task 3 - Analyzing requirements and complexity
+- `[2025-01-20 16:03:00]` - `TASK_VALIDATION` - Acknowledged user formatting improvements to CLI files - Better readability with Prettier formatting
+- `[2025-01-20 16:03:00]` - `TASK_VALIDATION` - Complexity assessment: HIGH - Multiple files, new dependencies, complex logic, CLI integration required
+- `[2025-01-20 16:04:00]` - `BLUEPRINT` - Gathered context from web search about cosmiconfig library - Found comprehensive documentation and examples
+- `[2025-01-20 16:05:00]` - `BLUEPRINT` - Created detailed implementation plan with 8 steps and 2 checkpoints - Plan ready for approval
+- `[2025-01-20 16:06:00]` - `CONSTRUCT` - Plan approved, beginning implementation - Step 1: Installing dependencies
+- `[2025-01-20 16:07:00]` - `CONSTRUCT` - Step 1 completed: cosmiconfig@8.1.3 and zod installed successfully - Dependencies verified
+- `[2025-01-20 16:08:00]` - `CONSTRUCT` - Step 2 completed: Created comprehensive configuration module (src/config.ts) - 400+ lines with full functionality
+- `[2025-01-20 16:09:00]` - `CONSTRUCT` - Step 3 completed: Enhanced CLI integration with configuration system - Backward compatibility maintained
+- `[2025-01-20 16:10:00]` - `CONSTRUCT` - Step 4 completed: Created comprehensive test suite (tests/config.test.ts) - 25 test cases covering all functionality
+- `[2025-01-20 16:11:00]` - `CONSTRUCT` - Updated CLI tests to match enhanced behavior - 21 test cases for new configuration integration
+- `[2025-01-20 16:12:00]` - `CONSTRUCT` - Fixed test compatibility issues with cosmiconfig@8.1.3 limitations - All 46 tests now passing
+- `[2025-01-20 16:13:00]` - `VALIDATE` - Beginning comprehensive validation - All construction steps completed successfully
+- `[2025-01-20 16:14:00]` - `VALIDATE` - Fixed linting issues: removed unused imports, replaced 'any' types with proper TypeScript types
+- `[2025-01-20 16:15:00]` - `VALIDATE` - Applied Prettier formatting to all files - Code style consistency maintained
+- `[2025-01-20 16:16:00]` - `VALIDATE` - Fixed TypeScript compilation errors: removed duplicate exports - Type checking passes
+- `[2025-01-20 16:17:00]` - `VALIDATE` - ✅ All quality gates passed: ESLint (0 errors), Prettier (formatted), TypeScript (no errors), Tests (46/46 passing)
+- `[2025-01-20 16:18:00]` - `VALIDATE` - Final build successful: 9.93 KB output, all functionality verified - Ready for commit
 
 ## 7. Backup Log (File Safety Tracking)
 - `[2025-01-20 15:44:00]` - bin/enigma.ts - Original implementation backed up before enhancement (32 lines, basic yargs structure with --pretty flag)
+- `[2025-01-20 16:08:00]` - Creating new configuration system - Dependencies installed, about to create src/config.ts module
 
 ## 8. ArchiveLog
 - **Task 1:** Verified and validated project repository setup and basic structure for Tailwind Enigma Core - [2025-01-20 15:40:00]

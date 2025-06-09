@@ -1,6 +1,6 @@
 # Task ID: 2
 # Title: Implement CLI framework with yargs
-# Status: pending
+# Status: done
 # Dependencies: 1
 # Priority: high
 # Description: Set up the command-line interface using yargs library to handle command parsing and help generation.
@@ -16,37 +16,37 @@
 Unit tests for CLI argument parsing and help text generation
 
 # Subtasks:
-## 1. Install yargs and Initialize Project [pending]
+## 1. Install yargs and Initialize Project [done]
 ### Dependencies: None
 ### Description: Set up the Node.js project and install the yargs package as a dependency.
 ### Details:
 Run 'npm init -y' to create package.json. Install yargs using 'npm install yargs'. Ensure the project directory is ready for CLI development.
 
-## 2. Configure package.json for CLI Usage [pending]
+## 2. Configure package.json for CLI Usage [done]
 ### Dependencies: 2.1
 ### Description: Update package.json to define the CLI entry point and make the CLI executable.
 ### Details:
 Add a 'bin' field mapping the CLI command name to the entry script (e.g., 'cli.js'). Set 'preferGlobal' to true if global installation is desired. Ensure metadata such as name, version, and description are accurate.
 
-## 3. Create CLI Entry Point Script [pending]
+## 3. Create CLI Entry Point Script [done]
 ### Dependencies: 2.2
 ### Description: Create the main CLI script file and set up the shebang for Node.js execution.
 ### Details:
 Create a file (e.g., 'cli.js'). Add the shebang line '#!/usr/bin/env node' at the top. Import yargs and set up the basic structure for argument parsing.
 
-## 4. Implement CLI Flags and Command Logic [pending]
+## 4. Implement CLI Flags and Command Logic [done]
 ### Dependencies: 2.3
 ### Description: Define and implement each CLI flag and its corresponding logic using yargs.
 ### Details:
 Use yargs to define all required flags and options. Implement the logic for each flag, including validation and error handling. Ensure each flag behaves as specified in the CLI requirements.
 
-## 5. Generate and Validate Help Text [pending]
+## 5. Generate and Validate Help Text [done]
 ### Dependencies: 2.4
 ### Description: Configure yargs to generate help text and usage information for the CLI.
 ### Details:
 Use yargs's .usage(), .help(), and .alias() methods to provide clear help and usage instructions. Test the CLI with '--help' and '-h' to ensure the output is informative and accurate.
 
-## 6. Test and Validate CLI Functionality [pending]
+## 6. Test and Validate CLI Functionality [done]
 ### Dependencies: 2.5
 ### Description: Test the CLI end-to-end, including all flags, help output, and installation via npm.
 ### Details:
