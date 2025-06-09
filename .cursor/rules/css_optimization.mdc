@@ -1,0 +1,357 @@
+---
+description: This document defines patterns and best practices for CSS processing, optimization, and Tailwind CSS manipulation in the Tailwind Enigma Core project.
+globs: 
+alwaysApply: false
+---
+# CSS Optimization Patterns
+
+This document defines patterns and best practices for CSS processing, optimization, and Tailwind CSS manipulation in the Tailwind Enigma Core project.
+
+## **Core CSS Processing Principles**
+
+- **Performance First:** All CSS operations should be optimized for speed and memory efficiency
+- **Safe Parsing:** Always validate CSS syntax before processing to prevent crashes
+- **Modular Design:** CSS processors should be pluggable and framework-agnostic
+- **Preserve Semantics:** Never alter the visual outcome when optimizing CSS
+
+## **Tailwind Class Extraction Patterns**
+
+### **✅ DO: Comprehensive Class Pattern Matching**
+
+```typescript
+// ✅ Handle multiple className patterns
+const classPatterns = [
+  /className\s*=\s*["'](mdc:[^"']*?)["']/g,           // Static classes
+  /className\s*=\s*{`([^`]*?)`}/g,                // Template literals
+  /className\s*=\s*{\s*([^}]*?)\s*}/g,           // Dynamic expressions
+  /class\s*=\s*["'](mdc:[^"']*?)["']/g                // HTML class attribute
+];
+
+// ✅ Extract from template literals with variables
+const extractFromTemplate = (content: string) => {
+  const matches = content.match(/`([^`]*?)`/g);
+  return matches?.map(match => 
+    match.replace(/\$\{[^}]*\}/g, '').trim()
+  ) || [];
+};
+```
+
+### **❌ DON'T: Naive String Replacement**
+
+```typescript
+// ❌ Don't use simple string replacement
+content.replace('flex', 'display: flex'); // Breaks other occurrences
+
+// ❌ Don't ignore context
+const classes = content.match(/class="([^"]*?)"/g); // Misses template literals
+
+// ❌ Don't assume static classes only  
+const tailwindClasses = content.match(/[\w-]+/g); // Too broad, catches non-Tailwind
+```
+
+## **PostCSS Integration Patterns**
+
+### **✅ DO: Robust Plugin Architecture**
+
+```typescript
+// ✅ Create pluggable PostCSS processors
+interface CSSProcessor {
+  name: string;
+  process(css: string, options?: ProcessOptions): Promise<ProcessResult>;
+  validate(css: string): boolean;
+}
+
+// ✅ Handle PostCSS errors gracefully
+const processCSS = async (css: string): Promise<ProcessResult> => {
+  try {
+    const result = await postcss(plugins).process(css, { from: undefined });
+    return { success: true, css: result.css, warnings: result.warnings() };
+  } catch (error) {
+    return { success: false, error: error.message, originalCSS: css };
+  }
+};
+```
+
+### **❌ DON'T: Brittle PostCSS Usage**
+
+```typescript
+// ❌ Don't ignore PostCSS warnings
+const result = postcss(plugins).process(css); // Sync processing can fail
+
+// ❌ Don't assume plugins are always available
+const optimized = autoprefixer(css); // Plugin might not be installed
+
+// ❌ Don't process without validation
+postcss().process(invalidCSS); // Will throw and crash
+```
+
+## **File Processing Optimization**
+
+### **✅ DO: Efficient File Operations**
+
+```typescript
+// ✅ Process files in parallel with concurrency limits
+const processBatch = async (files: string[], batchSize = 10) => {
+  const batches = chunk(files, batchSize);
+  const results = [];
+  
+  for (const batch of batches) {
+    const batchResults = await Promise.all(
+      batch.map(file => processFileWithRetry(file))
+    );
+    results.push(...batchResults);
+  }
+  return results;
+};
+
+// ✅ Cache processed results
+const processCache = new Map<string, ProcessResult>();
+
+const processWithCache = async (content: string, hash: string) => {
+  if (processCache.has(hash)) {
+    return processCache.get(hash);
+  }
+  
+  const result = await processCSS(content);
+  processCache.set(hash, result);
+  return result;
+};
+```
+
+### **❌ DON'T: Inefficient Processing**
+
+```typescript
+// ❌ Don't process files sequentially
+for (const file of files) {
+  await processFile(file); // Blocks other files
+}
+
+// ❌ Don't reprocess identical content
+const processFile = (file: string) => {
+  return processCSS(readFileSync(file)); // No caching
+};
+
+// ❌ Don't ignore memory usage
+const allFiles = await Promise.all(
+  files.map(file => processLargeFile(file)) // Memory explosion
+);
+```
+
+## **Error Handling & Validation**
+
+### **✅ DO: Comprehensive Error Handling**
+
+```typescript
+// ✅ Validate CSS before processing
+const validateCSS = (css: string): ValidationResult => {
+  try {
+    postcss.parse(css);
+    return { valid: true };
+  } catch (error) {
+    return { 
+      valid: false, 
+      error: error.message,
+      line: error.line,
+      column: error.column 
+    };
+  }
+};
+
+// ✅ Provide helpful error messages
+const processWithValidation = async (css: string, filename: string) => {
+  const validation = validateCSS(css);
+  if (!validation.valid) {
+    throw new ProcessError(
+      `Invalid CSS in ${filename} at line ${validation.line}: ${validation.error}`
+    );
+  }
+  return await processCSS(css);
+};
+```
+
+### **❌ DON'T: Silent Failures**
+
+```typescript
+// ❌ Don't swallow errors
+try {
+  await processCSS(css);
+} catch {
+  return ''; // Lost information about what failed
+}
+
+// ❌ Don't use generic error messages
+throw new Error('CSS processing failed'); // Not actionable
+
+// ❌ Don't continue with invalid CSS
+if (!isValidCSS(css)) {
+  console.warn('Invalid CSS, continuing anyway...'); // Will likely fail later
+}
+```
+
+## **Performance Optimization**
+
+### **✅ DO: Optimize for Large Projects**
+
+```typescript
+// ✅ Use streaming for large files
+const processLargeCSS = async (filePath: string) => {
+  const readable = createReadStream(filePath);
+  const transform = new Transform({
+    transform(chunk, encoding, callback) {
+      // Process CSS in chunks
+      this.push(processChunk(chunk.toString()));
+      callback();
+    }
+  });
+  
+  return pipeline(readable, transform, writable);
+};
+
+// ✅ Monitor memory usage
+const processWithMemoryMonitor = async (files: string[]) => {
+  const initialMemory = process.memoryUsage().heapUsed;
+  const results = await processBatch(files);
+  const finalMemory = process.memoryUsage().heapUsed;
+  
+  if (finalMemory - initialMemory > MEMORY_THRESHOLD) {
+    console.warn(`High memory usage: ${finalMemory - initialMemory} bytes`);
+  }
+  
+  return results;
+};
+```
+
+### **❌ DON'T: Ignore Performance**
+
+```typescript
+// ❌ Don't load everything into memory
+const allCSS = files.map(file => readFileSync(file, 'utf8')); // Memory issue
+
+// ❌ Don't ignore processing time
+const result = await processCSS(css); // No timeout or progress tracking
+
+// ❌ Don't duplicate work
+files.forEach(file => {
+  const css = readFileSync(file);
+  processCSS(css); // Re-reading and processing
+});
+```
+
+## **Testing Patterns**
+
+### **✅ DO: Comprehensive CSS Testing**
+
+```typescript
+// ✅ Test CSS extraction accuracy
+describe('CSS Class Extraction', () => {
+  it('should extract classes from JSX className', () => {
+    const jsx = '<div className="flex items-center bg-blue-500">Content</div>';
+    const extracted = extractTailwindClasses(jsx);
+    expect(extracted).toEqual(['flex', 'items-center', 'bg-blue-500']);
+  });
+  
+  it('should handle template literals with variables', () => {
+    const jsx = 'className={`flex ${isActive ? "bg-green-500" : "bg-gray-500"}`}';
+    const extracted = extractTailwindClasses(jsx);
+    expect(extracted).toContain('flex');
+  });
+});
+
+// ✅ Test optimization results
+describe('CSS Optimization', () => {
+  it('should reduce CSS size while preserving functionality', async () => {
+    const original = await readFile('test.css', 'utf8');
+    const optimized = await optimizeCSS(original);
+    
+    expect(optimized.length).toBeLessThan(original.length);
+    expect(await isVisuallyEquivalent(original, optimized)).toBe(true);
+  });
+});
+```
+
+## **Configuration Patterns**
+
+### **✅ DO: Flexible Configuration**
+
+```typescript
+// ✅ Support multiple configuration formats
+interface OptimizationConfig {
+  extractors: ExtractorConfig[];
+  processors: ProcessorConfig[];
+  output: OutputConfig;
+  performance: PerformanceConfig;
+}
+
+// ✅ Validate configuration
+const validateConfig = (config: OptimizationConfig): ValidationResult => {
+  const errors: string[] = [];
+  
+  if (!config.extractors || config.extractors.length === 0) {
+    errors.push('At least one extractor must be configured');
+  }
+  
+  if (config.performance.maxMemoryMB < 100) {
+    errors.push('Maximum memory must be at least 100MB');
+  }
+  
+  return { valid: errors.length === 0, errors };
+};
+```
+
+## **CLI Integration**
+
+### **✅ DO: User-Friendly CLI Patterns**
+
+```typescript
+// ✅ Provide progress feedback
+const optimizeWithProgress = async (files: string[]) => {
+  const progressBar = new ProgressBar('Processing [:bar] :percent :etas', {
+    total: files.length,
+    width: 40
+  });
+  
+  const results = [];
+  for (const file of files) {
+    const result = await processFile(file);
+    results.push(result);
+    progressBar.tick();
+  }
+  
+  return results;
+};
+
+// ✅ Handle interruption gracefully
+process.on('SIGINT', async () => {
+  console.log('\nGracefully shutting down...');
+  await cleanupTempFiles();
+  process.exit(0);
+});
+```
+
+## **Security Considerations**
+
+### **✅ DO: Safe File Operations**
+
+```typescript
+// ✅ Validate file paths
+const validatePath = (filePath: string): boolean => {
+  const resolved = path.resolve(filePath);
+  const workingDir = process.cwd();
+  return resolved.startsWith(workingDir) && !resolved.includes('..');
+};
+
+// ✅ Sanitize CSS content
+const sanitizeCSS = (css: string): string => {
+  // Remove potential XSS vectors in CSS
+  return css.replace(/<script.*?<\/script>/gi, '')
+            .replace(/javascript:/gi, '')
+            .replace(/expression\s*\(/gi, '');
+};
+```
+
+---
+
+**Related Rules:**
+- See [project_config.mdc](mdc:.cursor/rules/project_config.mdc) for project-specific standards
+- See [performance_patterns.mdc](mdc:.cursor/rules/performance_patterns.mdc) for performance guidelines
+- See [security_patterns.mdc](mdc:.cursor/rules/security_patterns.mdc) for security requirements

@@ -1,0 +1,246 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Project Configuration (LTM)
+
+## 1. Project Overview
+- **Project Name:** Tailwind Enigma Core
+- **Goal:** An intelligent CSS optimization engine that automatically detects, extracts, and optimizes Tailwind CSS classes from various file formats and frameworks to dramatically reduce bundle sizes while maintaining functionality.
+- **Primary Objective for AI:** To autonomously implement tasks provided by Task-Master (derived from project requirements and detailed task lists), ensuring code quality, comprehensive testing, and adherence to project standards and version control best practices.
+
+## 2. Technology Stack
+- **Programming Languages:** TypeScript (primary), JavaScript
+- **Frameworks/Libraries:** Node.js CLI framework, PostCSS, CSS parsing libraries
+- **Databases:** File system-based (no traditional database)
+- **Testing Tools:** Jest, TypeScript type checking
+- **Build/Package Management:** pnpm (primary), TypeScript compiler (tsc), tsup for bundling
+- **Key APIs/Services Used:** File system APIs, PostCSS plugins, CSS AST parsing, Tailwind CSS configuration APIs
+
+## 3. Core Principles & Coding Standards
+- **Clarity & Readability:** Code should be well-commented and easy to understand. Follow TypeScript best practices and maintain consistent naming conventions.
+- **Modularity:** Design components, services, and functions to be reusable and focused (Single Responsibility Principle). Each optimization engine should be modular and pluggable.
+- **DRY (Don't Repeat Yourself):** Avoid redundant code; create utility functions, shared components, and reusable modules where appropriate.
+- **Error Handling:** Implement robust error handling with proper logging, user-friendly messages, and graceful degradation.
+- **Security:** Follow security best practices: input validation, output encoding, secure file operations, and protection against path traversal attacks.
+- **Style Guide:** ESLint 9.x with flat config, Prettier formatting, TypeScript strict mode
+
+## 4. Task Management Workflow
+- **Task Source:** Tasks are fetched sequentially using the MCP `next_task` tool which serves tasks from the project's Task-Master system.
+- **Task Completion:** A task is considered complete after successful implementation of all requirements, passing all relevant tests (unit, integration), and pushing changes to the remote repository with proper commit messages.
+- **End Condition:** The process stops when `next_task` indicates no more tasks are available.
+- **Task Status Updates:** Use `set_task_status` MCP tool to mark completed tasks as done.
+
+## 5. Context Gathering Strategy
+- **Primary Context Tool:** Context7 (invoked via `@context7 [query]`) for accessing project documentation, API references, and existing codebase patterns.
+- **Usage:** Before starting implementation, use `@context7` with keywords from the task description, relevant file paths, function names, or technology stack components to gather existing project context, architectural patterns, and implementation examples.
+- **Additional MCP Servers:** 
+    - `@context7`: For TypeScript/Node.js documentation and best practices
+    - `@context7`: For PostCSS and CSS parsing documentation
+    - `@context7`: For CLI framework patterns and file system operations
+    - `@context7`: For Tailwind CSS configuration and optimization techniques
+- **Information Integration:** Synthesize information from these sources, project requirements, and existing codebase to inform implementation decisions. Prioritize project-specific requirements and established patterns.
+
+## 6. Enhanced Testing Strategy
+- **Test Commands:** 
+    - Unit/Integration Tests: `pnpm test` (Jest)
+    - E2E Tests: `pnpm test:e2e` (CLI integration tests)
+    - Linting: `pnpm lint` (ESLint 9.x)
+    - Type Checking: `pnpm type-check` (TypeScript compiler)
+    - Security Scans: `pnpm audit` (npm audit)
+    - Performance Tests: `pnpm test:perf` (optimization benchmarks)
+- **Test Coverage Requirements:** 
+    - **Minimum Coverage:** 80% for critical business logic (CSS parsing, optimization algorithms), 70% overall
+    - **Critical Path Coverage:** 95% for core optimization engines, file processing, and CLI commands
+    - **New Feature Coverage:** 90% for all new optimization features and file format handlers
+- **Quality Gates:** 100% test success and passing linting/type checks are required before marking a task complete.
+- **Test File Patterns:** 
+    - Unit tests: `*.test.ts`
+    - Integration tests: `*.integration.test.ts`
+    - E2E tests: `*.e2e.spec.ts`
+
+## 7. Enhanced Quality Gates
+- **Code Quality Gates:**
+    - **Syntax & Formatting:** Code passes ESLint 9.x and Prettier formatting checks
+    - **Type Safety:** Strict TypeScript checking with no errors
+    - **Security:** No new security vulnerabilities, safe file operations, path validation
+    - **Performance:** No significant performance regressions in CSS processing speed
+    - **Documentation:** All public APIs and optimization algorithms documented
+- **Test Quality Gates:**
+    - **Coverage Thresholds:** Meet or exceed defined coverage requirements
+    - **Test Quality:** Tests are meaningful and test actual optimization behavior
+    - **Test Performance:** Tests complete within acceptable time limits (<2 minutes)
+    - **Test Reliability:** Tests are stable and not flaky
+- **Integration Quality Gates:**
+    - **Dependencies:** All dependencies are up-to-date and secure
+    - **Backwards Compatibility:** No breaking changes to CLI API unless versioned
+    - **API Contracts:** All CLI interfaces maintained unless versioned
+    - **File Format Compatibility:** Ensure compatibility with target file formats
+
+## 8. Error Recovery Configuration
+- **Error Classification Thresholds:**
+    - **Syntax Errors:** Fix immediately, unlimited retries (should always be solvable)
+    - **Dependency Errors:** 2 retry attempts, then escalate
+    - **Test Failures:** 3 retry attempts with different strategies
+    - **Build Errors:** 2 retry attempts, check environment
+    - **Infrastructure Errors:** 0 retries, immediate escalation
+    - **Context/Understanding:** 2 retries with context refresh
+    - **Command Timeouts:** 2 retries with optimized parameters, then escalate
+- **Escalation Triggers:**
+    - Multiple consecutive failures of the same type
+    - Security-related issues
+    - Breaking changes to external dependencies
+    - Infrastructure or environment problems
+    - Consistent command timeouts indicating environment issues
+- **Recovery Strategies:**
+    - **Context Refresh:** Use Context7 with updated queries after failures
+    - **Dependency Reset:** Clear caches and reinstall dependencies
+    - **Environment Check:** Validate development environment setup
+    - **Rollback Points:** Automatic backup creation before major changes
+    - **Command Optimization:** Reduce scope or add incremental flags on timeout retry
+
+## 8a. Command Timeout Configuration
+- **Timeout Thresholds:**
+    - **Quick Commands:** 10 seconds (git status, ls, cd, file operations)
+    - **Package Management:** 3 minutes (pnpm install, pnpm update)
+    - **Build Commands:** 5 minutes (pnpm build, tsc compilation)
+    - **Test Suites:** 5 minutes (pnpm test, jest execution)
+    - **Database Operations:** N/A (file system based)
+    - **Git Operations:** 90 seconds (push, pull, clone, fetch)
+    - **Linting/Formatting:** 60 seconds (eslint, prettier)
+    - **Task-Master Commands:** 30 seconds (task management operations)
+    - **Context/MCP Queries:** 90 seconds (@context7, other MCP server queries)
+    - **Custom Project Commands:** CSS processing: 120 seconds, File analysis: 90 seconds
+- **Timeout Handling:**
+    - **Immediate Termination:** Force kill processes exceeding timeout
+    - **Background Process Management:** Proper cleanup of background jobs
+    - **Resource Monitoring:** Track CPU/memory usage during long commands
+    - **Progressive Retry Strategy:** Each retry uses more conservative parameters
+    - **Escalation Pattern:** 2 consecutive timeouts = human escalation
+- **Performance Monitoring:**
+    - **Baseline Performance:** Track normal execution times for comparison
+    - **Performance Degradation Alerts:** Commands taking >150% of baseline
+    - **Environment Health Checks:** Monitor disk space, memory, network connectivity
+
+## 9. Checkpoint Configuration
+- **Mandatory Checkpoints (Human Approval Required):**
+    - **Security Changes:** File system access patterns, path validation modifications
+    - **Database Schema Changes:** N/A (file system based)
+    - **External API Integration:** New file format support, external tool integrations
+    - **Breaking Changes:** Changes that affect CLI API or configuration format
+    - **Infrastructure Changes:** Build pipeline or distribution modifications
+- **Optional Checkpoints (Progress Reviews):**
+    - **50% Task Completion:** Mid-task progress review for complex optimization tasks
+    - **Major Refactoring:** Large-scale code restructuring of optimization engines
+    - **Performance Optimization:** Changes affecting CSS processing performance
+- **Checkpoint Documentation Requirements:**
+    - Clear description of what is being changed and why
+    - Impact assessment on existing functionality
+    - Rollback plan if changes need to be reverted
+    - Testing strategy for validating the changes
+
+## 10. Build & Development
+- **Development Server:** N/A (CLI tool, no server)
+- **Build Command:** `pnpm build` (tsup bundling)
+- **Environment Variables:** Configuration via config files and CLI arguments
+- **Dependencies:** 
+    - Install: `pnpm install`
+    - Update: `pnpm update`
+- **Pre-commit Hooks:** ESLint, Prettier, TypeScript type checking
+- **Build Performance:**
+    - **Build Time Threshold:** <2 minutes for full build
+    - **Test Time Threshold:** <2 minutes for unit tests, <5 minutes for integration tests
+    - **Development Feedback Loop:** <10 seconds for TypeScript compilation
+
+## 11. Version Control & Git Workflow
+- **Branching Strategy:** Feature branch workflow
+    - Feature branches: `feature/task-[id]-[short-description]` (e.g., `feature/task-1-cli-framework`)
+    - Hotfix branches: `hotfix/[issue-description]`
+    - Release branches: `release/[version-number]`
+- **Staging Strategy:** Stage meaningful changes related to the current task. Be selective with `git add` to ensure only relevant changes are included.
+- **Commit Message Format:** Conventional commits
+    - Examples:
+        - `feat(cli): implement configuration parser framework`
+        - `fix(optimization): resolve CSS class extraction edge case`
+        - `test(parser): add unit tests for HTML class extraction`
+        - `docs(readme): update installation instructions`
+        - `chore(deps): upgrade TypeScript to latest version`
+    - Include task references when applicable: `feat(optimization): implement CSS deduplication (task-11)`
+- **Pre-commit Validation:**
+    - **Automated Checks:** ESLint, Prettier, TypeScript compilation
+    - **Test Requirements:** Unit tests must pass before commit
+    - **Security Scans:** Basic dependency audit
+- **Backup & Recovery:**
+    - **Automatic Backups:** Before major file modifications
+    - **Rollback Strategy:** Maintain rollback points for quick recovery
+    - **Change Documentation:** Track all modifications for audit purposes
+
+## 12. Deployment & Infrastructure
+- **Deployment Strategy:** npm package distribution
+- **Environment Management:** Development (local), CI/CD (GitHub Actions), npm registry (production)
+- **CI/CD Pipeline:** GitHub Actions for testing, building, and publishing
+- **Monitoring & Logging:** Console logging with configurable levels, performance metrics collection
+- **Performance Monitoring:** CSS processing speed, memory usage, file system operations
+- **Security Monitoring:** Dependency vulnerability scanning, file access auditing
+
+## 13. AI Operational Rules
+- **State Management:** Strictly follow instructions and maintain state in `workflow_state.mdc`. Update workflow state before starting and after completing each significant step.
+- **🚨 CRITICAL: Command Execution with Timeout Protection:** 
+  - **NEVER run commands without timeout awareness** - Commands can hang indefinitely and block progress
+  - **ALWAYS set is_background=false** unless command is designed to run in background (servers, long-running processes)
+  - **MONITOR command execution time** against defined thresholds in section 8a
+  - **TERMINATE commands exceeding timeout** and apply timeout recovery strategies immediately
+  - **LOG timeout incidents** for performance monitoring and escalation patterns
+  - **USE progressive retry strategy** with more conservative parameters on timeout retry
+- **File Modifications:** Use available editing capabilities to modify project files. Review changes carefully and ensure they align with project standards.
+- **Error Recovery:** Follow enhanced error classification and recovery strategies. After systematic attempts, document issues in workflow state and request human guidance if needed.
+- **Quality Assurance:** Ensure all code changes meet project standards, pass all tests, and are properly documented before considering a task complete.
+- **Context Utilization:** Leverage Context7 and available MCP servers to gather relevant information before making implementation decisions.
+- **Checkpoint Management:** Stop at mandatory checkpoints and request human approval before proceeding with sensitive or complex changes.
+- **Backup Protocol:** Create backups before major changes and maintain rollback capability.
+
+## 14. Project-Specific Patterns & Conventions
+- **CSS Processing Architecture:** Modular optimization engines with pluggable parsers for different file formats
+- **CLI Design Standards:** Consistent command structure, helpful error messages, progress indicators for long operations
+- **File System Operations:** Safe path handling, efficient file reading/writing, proper error handling for file operations
+- **Security Requirements:** Path traversal protection, safe file operations, input validation for all file paths
+- **Performance Standards:** Sub-second response for small projects (<100 files), linear scaling for larger projects
+- **Configuration Management:** JSON/JavaScript configuration files, CLI argument override capability
+- **Code Organization:** 
+  - `src/core/` - Core optimization engines
+  - `src/parsers/` - File format parsers
+  - `src/cli/` - CLI interface and commands
+  - `src/utils/` - Shared utilities
+  - `bin/` - Executable entry points
+- **Documentation Standards:** JSDoc for public APIs, README for setup and usage, inline comments for complex algorithms
+
+## 15. Context Validation Rules
+- **Documentation Freshness:** Verify TypeScript/Node.js docs are current (latest LTS versions)
+- **Code Pattern Matching:** Ensure examples align with current TypeScript and ESLint 9.x patterns
+- **Dependency Compatibility:** Validate that suggested libraries are compatible with Node.js LTS and TypeScript
+- **Performance Impact:** Assess performance implications of CSS processing changes
+- **Security Implications:** Evaluate security impact of file system operations and path handling
+
+## 16. Changelog
+[Automatically maintained by AI agents using RULE_SUMMARY_01]
+- [2025-01-20] - Project configuration established with Tailwind Enigma Core details
+- [2025-01-20] - Task Master project initialized with 39 tasks and 243 subtasks from PRD
+- [2025-01-20] - ESLint 9.x successfully configured with TypeScript support
+
+## 17. Learning & Improvement Tracking
+- **Pattern Recognition:** CSS parsing patterns, optimization algorithm effectiveness, file format handling strategies
+- **Error Analysis:** Common CSS parsing errors, file system operation failures, performance bottlenecks
+- **Performance Insights:** Optimization speed improvements, memory usage patterns, file processing efficiency
+- **Best Practices Evolution:** TypeScript patterns, CLI design principles, testing strategies for CSS tools
+- **Tool Effectiveness:** PostCSS plugin performance, file parsing accuracy, optimization result quality
+
+---
+
+**Configuration Template Instructions:**
+1. Replace all placeholder values in brackets with your project-specific information
+2. Customize technology stack sections based on your project's requirements
+3. Define specific quality gates and thresholds appropriate for your project
+4. Configure error recovery strategies based on your team's tolerance and expertise
+5. Set up checkpoints based on your project's risk profile and compliance requirements
+6. Regularly update this configuration as your project evolves

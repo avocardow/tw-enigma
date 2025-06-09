@@ -1,0 +1,97 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# 🚨 CRITICAL TIMEOUT PROTECTION RULES
+
+## NEVER FORGET: Commands Can Hang Indefinitely!
+
+### BEFORE EVERY SINGLE COMMAND EXECUTION:
+
+1. **CHECK THE TIMEOUT THRESHOLD** (see table below)
+2. **SET `is_background=false`** (unless specifically a background process)
+3. **MONITOR EXECUTION TIME** actively during command run
+4. **BE READY TO TERMINATE** hanging commands immediately
+5. **LOG TIMEOUT INCIDENTS** in workflow_state.mdc ## 5. Items
+
+---
+
+## Quick Timeout Reference Table
+
+| Command Type | Timeout | Examples |
+|--------------|---------|----------|
+| **Quick Operations** | 10s | `git status`, `ls`, `cd`, file operations |
+| **Package Management** | 3min | `npm install`, `pip install`, `pnpm install`, `composer install` |
+| **Build Commands** | 5min | `npm run build`, `cargo build`, `mvn compile`, `go build` |
+| **Test Suites** | 5min | `npm test`, `pytest`, `jest`, `cargo test`, `go test` |
+| **Database Operations** | 90s | migrations, schema updates, seed data, ORM operations |
+| **Git Operations** | 90s | `git push`, `git pull`, `git clone`, `git fetch` |
+| **Linting/Formatting** | 60s | `eslint`, `prettier`, `black`, `rustfmt`, `gofmt` |
+| **Task-Master Commands** | 30s | `task-master next`, `task-master set-status` |
+| **Context/MCP Queries** | 90s | `@context7`, other MCP server queries |
+| **Custom Project Commands** | [As defined in project_config.mdc section 8a] |
+
+---
+
+## 🔥 COMMANDS THAT COMMONLY HANG:
+
+- ❌ **Package installs** - Network issues, registry problems, dependency conflicts
+- ❌ **Test suites** - Infinite loops, resource exhaustion, waiting for user input  
+- ❌ **Git push/pull** - Network timeouts, authentication issues, large file transfers
+- ❌ **Database operations** - Connection problems, lock contention, migration issues
+- ❌ **Build commands** - Memory exhaustion, infinite compilation, circular dependencies
+- ❌ **Type checking** - Complex type resolution, circular references, large codebases
+
+---
+
+## TIMEOUT ESCALATION PATTERN:
+
+1. **First Timeout**: Terminate, retry with conservative parameters
+2. **Second Timeout (same command type)**: Terminate, retry with minimal scope
+3. **Third Timeout**: **ESCALATE TO HUMAN** - Document the issue
+
+---
+
+## LOGGING REQUIREMENTS:
+
+Always log in `workflow_state.mdc ## 5. Items > Command Timeout Tracking`:
+```
+- Recent timeouts: [command type, timeout duration, retry attempts]
+- Performance degradation: [commands taking longer than usual]  
+- Environment issues: [network, disk, CPU constraints affecting commands]
+```
+
+---
+
+## BACKGROUND PROCESS EXCEPTION:
+
+**ONLY set `is_background=true` for:**
+- Development servers (`npm start`, `python manage.py runserver`, `go run`)
+- Long-running services designed to run continuously
+- **NEVER** for builds, tests, git operations, package management, or one-time commands
+
+---
+
+## 🚨 IMMEDIATE ACTION REQUIRED:
+
+If you see ANY command running longer than its timeout threshold:
+1. **TERMINATE IT IMMEDIATELY** 
+2. **LOG THE INCIDENT**
+3. **APPLY RECOVERY STRATEGY**
+4. **ESCALATE IF PATTERN CONTINUES**
+
+**Remember: A hanging command blocks ALL progress. Prevention is critical!**
+
+---
+
+## PROJECT-SPECIFIC CUSTOMIZATION:
+
+Update section 8a in your `project_config.mdc` to define custom timeout thresholds for:
+- Framework-specific commands
+- Custom build processes  
+- Specialized testing tools
+- Project-specific deployment scripts
+- Domain-specific tooling
+
+**Always err on the side of shorter timeouts rather than longer ones.**

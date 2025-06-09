@@ -1,0 +1,332 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Workflow State (STM) - [Date Time]
+
+## 🚨 CRITICAL COMMAND TIMEOUT REMINDERS
+**BEFORE EVERY COMMAND EXECUTION:**
+1. **CHECK TIMEOUT THRESHOLD** from section 8a of project_config.mdc for command type
+2. **SET is_background=false** for all commands (unless specifically background processes)
+3. **MONITOR execution time** and be prepared to terminate hanging commands
+4. **ESCALATE after 2 consecutive timeouts** of same command type to human
+5. **LOG all timeout incidents** in ## 5. Items > Command Timeout Tracking
+
+**Command Type Quick Reference:**
+- Quick Operations: 10s | Package Management: 3min | Build Commands: 5min
+- Tests: 5min | Database: 90s | Git: 90s | Linting: 60s | Task-Master: 30s
+- Context/MCP: 90s | Custom Project Commands: [as defined]
+
+**⚠️ Commands that commonly hang:** package installs, tests, git push, database operations, builds, type checking
+
+## 0. Current Overall Goal
+- Autonomously process tasks using available task management systems (preferably Task-Master), implement solutions following project standards, validate implementation, and commit changes.
+
+## 1. State
+- **Phase:** `INITIALIZING` | `FETCHING_TASK` | `TASK_VALIDATION` | `BLUEPRINT` | `CONSTRUCT` | `VALIDATE` | `DEBUGGING_VALIDATE` | `COMMITTING` | `PUSHING` | `COMPLETED_ITERATION` | `ALL_TASKS_DONE` | `AWAITING_HUMAN_INPUT`
+- **Status:** `ACTIVE` | `NEEDS_PLAN_APPROVAL` | `PLAN_APPROVED` | `COMPLETED_ITERATION_SUCCESS` | `AWAITING_HUMAN_INPUT` | `AWAITING_CLARIFICATION`
+
+## 2. Current Task
+- **Task ID/Raw Output:** [To be populated by AI]
+- **Parsed Task Description:** [To be populated by AI after parsing the raw output]
+- **Implementation Priority:** `high` | `medium` | `low`
+- **Dependencies:** [List any task dependencies identified]
+- **Complexity Assessment:** [simple/medium/complex with reasoning]
+- **Estimated Files to Modify:** [Number and list of files]
+- **Checkpoint Markers:** [List of checkpoints in plan that require human approval]
+
+## 3. Plan
+*(Detailed step-by-step implementation plan created during BLUEPRINT phase)*
+- **Step 1:** [Detailed action description] [CHECKPOINT] (if applicable)
+- **Step 2:** [Detailed action description]
+- **Step 3:** [Detailed action description] [CHECKPOINT] (if applicable)
+- [Continue as needed...]
+- **Testing Strategy:** [Unit/Integration/E2E test plans]
+- **Rollback Plan:** [How to revert changes if needed]
+
+## 4. Rules for Current Phase
+
+---
+**Phase: `INITIALIZING`**
+- **Action:** 
+    1. Read and thoroughly understand `project_config.mdc` (or available project documentation)
+    2. Initialize workflow state structure
+    3. Verify all necessary tools and access are available
+- **Next Step:** Set `Phase = FETCHING_TASK` and update this file.
+
+---
+**Phase: `FETCHING_TASK`**
+- **Action:**
+    1. Execute `task-master next` (preferred) or equivalent task management command
+    2. Capture and analyze the output
+    3. Log the raw task output for reference
+- **Rules:**
+    1. If no tasks available (empty output, "No tasks remaining", completion indicators):
+        - Update "Current Task" to "No more tasks"
+        - Set `Phase = ALL_TASKS_DONE`
+    2. If new task received:
+        - Populate "Task ID/Raw Output" with raw command output
+        - Parse and populate "Parsed Task Description"
+        - Set `Phase = TASK_VALIDATION`
+- **Next Step:** Update this file with task details and transition to next phase.
+
+---
+**Phase: `TASK_VALIDATION` (Enhanced)**
+- **Action:**
+    1. Validate task is well-formed and understandable
+    2. Check if dependencies exist and are accessible in codebase
+    3. Assess task complexity using complexity indicators
+    4. Estimate file modifications and scope
+    5. Determine if task needs breakdown before planning
+- **Complexity Indicators (Auto-escalate to breakdown):**
+    - Modifying >5 files
+    - >2 hours estimated work
+    - Affects >3 other components  
+    - Requires >10 new tests
+    - Involves new API integrations
+    - Security-sensitive changes
+    - Major architectural changes
+- **Rules:**
+    - If task unclear or ambiguous: Set `Status = AWAITING_CLARIFICATION`
+    - If dependencies missing or inaccessible: Document and escalate
+    - If complexity high: Consider using `task-master expand --id=<id>` or manual breakdown
+    - If valid and manageable: Set `Phase = BLUEPRINT`
+- **Log:** Document complexity assessment, dependency checks, and validation results
+- **Next Step:** Transition based on validation results.
+
+---
+**Phase: `BLUEPRINT` (Enhanced Planning)**
+- **Action:**
+    1. Analyze the current task requirements and context
+    2. Use Context7 (`@context7 [relevant terms]`) and other MCP servers for documentation gathering
+    3. Validate context freshness and relevance using validation rules
+    4. Research existing codebase patterns and architectural decisions
+    5. Draft detailed step-by-step implementation plan in ## 3. Plan section
+    6. Include file modifications, new components/functions, tests, and integration points
+    7. Add checkpoint markers for complex or sensitive operations
+    8. Create rollback strategy
+- **Context Validation Rules:**
+    - Verify Context7 results are relevant to current task
+    - Check if documentation references are current (not outdated)
+    - Validate examples match current project patterns and conventions
+    - Cross-reference with existing codebase structure
+- **Checkpoint Identification:**
+    - Mark steps requiring human approval
+    - Identify security-sensitive operations
+    - Note major architectural decisions
+    - Flag external API integrations
+- **Completion Criteria:**
+    - Set `Status = NEEDS_PLAN_APPROVAL`
+    - Explicitly state: "Plan ready for approval. Please review ## 3. Plan and confirm to proceed."
+- **Human Action Required:** User reviews plan and sets `Status = PLAN_APPROVED` or provides feedback
+- **Next Step:** When `Status = PLAN_APPROVED`, set `Phase = CONSTRUCT`
+
+---
+**Phase: `CONSTRUCT` (Enhanced Implementation)**
+- **🚨 TIMEOUT PROTECTION:** Monitor ALL command execution times. Set is_background=false. Log timeouts in ## 5. Items.
+- **Action:**
+    1. Create backup state before starting major changes (RULE_BACKUP_01)
+    2. Follow the approved plan in ## 3. Plan exactly
+    3. Implement code changes according to project standards in `project_config.mdc`
+    4. Write complete, functional code without TODOs or placeholders
+    5. Include proper imports, dependencies, and naming conventions
+    6. Write relevant tests according to project testing standards
+    7. **⚠️ TIMEOUT-AWARE:** Run intermediate tests/linters after logical groups of changes
+    8. Check for checkpoint triggers during implementation
+    9. Document significant changes and decisions
+- **Checkpoint Triggers:**
+    - After 50% Plan Completion (optional progress review)
+    - Before Major Refactoring (auto-pause for confirmation)
+    - External API Changes (require human approval)
+    - Security-Related Changes (mandatory checkpoint)
+    - Database Schema Changes (require approval)
+    - Breaking Changes to Public APIs (mandatory checkpoint)
+- **Backup Protocol:**
+    - Note files being modified in ## 7. Backup Log
+    - Create logical restore points
+    - Document change rationale
+- **Rules:**
+    - Adhere strictly to the approved plan
+    - If plan needs minor adjustments, document the change and reasoning
+    - If major deviations needed, set `Status = AWAITING_HUMAN_INPUT`
+    - Backup files before major modifications
+    - Stop at checkpoints and request human approval
+- **Log:** Confirm completion of each plan step in ## 6. Action Log
+- **Next Step:** When all plan steps complete and intermediate tests pass, set `Phase = VALIDATE`
+
+---
+**Phase: `VALIDATE` (Enhanced Final Checks)**
+- **🚨 TIMEOUT PROTECTION:** Validation commands commonly hang! Monitor times strictly. Set is_background=false.
+- **Action:**
+    1. Execute comprehensive quality gates as defined in `project_config.mdc`
+    2. **⚠️ TIMEOUT-AWARE:** Run all validation checks in proper order: unit → integration → E2E tests
+    3. Verify all quality criteria are met using enhanced quality gates
+    4. Check test coverage requirements
+    5. Validate performance requirements (if specified)
+    6. **⚠️ TIMEOUT-AWARE:** Run security scans (if configured)
+    7. Verify no regressions introduced
+- **Enhanced Quality Gate Definitions:**
+    - **Code Quality**: Passes linting, type checking, formatting
+    - **Test Coverage**: Meets project-defined coverage thresholds  
+    - **Functionality**: All acceptance criteria met
+    - **Performance**: No regressions in build/test times
+    - **Security**: No new vulnerabilities introduced
+    - **Documentation**: Code changes properly documented
+    - **Backwards Compatibility**: No breaking changes (unless planned)
+- **Rules:**
+    1. If all validations pass:
+        - Set `Status = COMPLETED_ITERATION_SUCCESS`
+        - Trigger automatic summary (RULE_SUMMARY_01)
+        - Set `Phase = COMMITTING`
+    2. If validations fail:
+        - Categorize failures by type and priority using error classification
+        - Log specific errors and failures with context
+        - Set `Phase = DEBUGGING_VALIDATE`
+- **Log:** Record all validation commands and their complete outputs
+- **Next Step:** Transition based on validation results
+
+---
+**Phase: `DEBUGGING_VALIDATE` (Enhanced Debugging)**
+- **Action:**
+    1. Classify failures using enhanced error classification system
+    2. Apply appropriate recovery strategy based on error type and retry limits
+    3. Analyze validation failures systematically
+    4. Implement targeted fixes with proper error handling
+    5. Re-run specific failing validations
+    6. Refresh context if needed (RULE_CONTEXT_REFRESH_01 after 3 failed attempts)
+    7. Consider rollback if fixes are not working
+- **Error Classification & Recovery:**
+    - **Syntax Errors**: Fix immediately, no retry limit
+    - **Test Failures**: Analyze test type, 3 attempts max
+    - **Build Errors**: Check environment/deps, 2 attempts max
+    - **Dependency Errors**: Install/update deps, 2 attempts max
+    - **Infrastructure Errors**: Escalate immediately
+    - **Context/Understanding Errors**: Refresh context, 2 attempts max
+- **Rules:**
+    - Apply error-specific retry limits and strategies
+    - Focus on specific validation failures from VALIDATE phase
+    - If fixes successful, return to `Phase = VALIDATE`
+    - If systematic attempts exhausted, set `Status = AWAITING_HUMAN_INPUT`
+    - Document all attempted solutions for learning
+- **Log:** Document debugging hypotheses, attempted fixes, results, and classification
+- **Next Step:** Return to `VALIDATE` when fixes applied, or await human input if stuck
+
+---
+**Phase: `COMMITTING` (Enhanced Committing)**
+- **🚨 TIMEOUT PROTECTION:** Git commands can hang! Monitor git add/commit times. Set is_background=false.
+- **Action:**
+    1. Create final backup state
+    2. Review all changes against plan and requirements
+    3. **⚠️ TIMEOUT-AWARE:** Stage relevant changes: `git add .` (or specific files)
+    4. Create conventional commit message following project standards
+    5. **⚠️ TIMEOUT-AWARE:** Execute commit: `git commit -m "[conventional commit message]"`
+    6. Verify commit success and integrity
+    7. Update change log with commit details
+- **Rules:**
+    - Use project-specific commit message format from `project_config.mdc`
+    - Include task ID and descriptive summary
+    - Reference any breaking changes or migration notes
+    - If commit fails (pre-commit hooks, etc.), analyze and fix or escalate
+    - Document all changes for audit trail
+- **Log:** Record git commands and outputs
+- **Next Step:** If successful, set `Phase = PUSHING`. If issues, debug or escalate.
+
+---
+**Phase: `PUSHING` (Enhanced Pushing)**
+- **🚨 TIMEOUT PROTECTION:** Git push frequently hangs on network issues! Monitor strictly. Set is_background=false.
+- **Action:**
+    1. **⚠️ TIMEOUT-AWARE:** Push changes to remote repository: `git push`
+    2. Verify push success
+    3. Validate remote state consistency
+    4. Check if CI/CD pipeline triggered successfully
+- **Rules:**
+    - If push successful, set `Phase = COMPLETED_ITERATION`
+    - If push fails (conflicts, auth, etc.), log error and set `Status = AWAITING_HUMAN_INPUT`
+    - Monitor CI/CD pipeline if configured
+- **Log:** Record push command and result
+- **Next Step:** Transition based on push result
+
+---
+**Phase: `COMPLETED_ITERATION` (Enhanced Completion)**
+- **🚨 TIMEOUT PROTECTION:** Task-Master commands have 30s timeout! Monitor strictly. Set is_background=false.
+- **Action:**
+    1. **⚠️ TIMEOUT-AWARE:** Mark task complete using `task-master set-status --id=<taskId> --status=done` or equivalent
+    2. Clear task-specific data for next iteration
+    3. Archive current action log if needed (RULE_LOG_ROTATE_01)
+    4. Update progress tracking and metrics
+    5. Clean up temporary files and backup states
+- **Log:** "Task [Task ID] completed successfully and pushed."
+- **Next Step:** Set `Phase = FETCHING_TASK` to continue with next task
+
+---
+**Phase: `ALL_TASKS_DONE`**
+- **Action:** All available tasks processed successfully
+- **Log:** "All tasks from task management system have been processed."
+- **Next Step:** Report completion summary and await new instructions
+
+---
+**Phase: `AWAITING_HUMAN_INPUT` (Enhanced)**
+- **Action:** Encountered unrecoverable error or complex decision point
+- **Requirements:**
+    - Clearly document the specific problem in ## 6. Action Log
+    - Describe attempted solutions and why they failed
+    - Include error classification and recovery attempts made
+    - Specify what type of human assistance is needed
+    - Provide context about current state and rollback options
+- **Next Step:** Wait for human intervention and guidance
+
+---
+
+## 5. Items (Context & Resources)
+- **Context7 Queries & Summaries:**
+    - Query: `[query text]` -> Summary: `[AI's summary of relevant documentation]`
+    - Freshness: `[timestamp and relevance assessment]`
+- **MCP Server Outputs:**
+    - `@[mcp_command] [query]` -> Summary: `[AI's summary of tool output]`
+- **Codebase Analysis:**
+    - Key patterns identified: `[relevant architectural patterns]`
+    - Dependencies found: `[important project dependencies]`
+    - Potential conflicts: `[areas of concern or conflict]`
+- **External Resources:**
+    - Documentation links: `[relevant documentation URLs]`
+    - Reference implementations: `[links to examples or similar code]`
+- **Error Context:**
+    - Previous failures: `[summary of any previous failures and lessons learned]`
+    - Recovery attempts: `[what has been tried and results]`
+- **Command Timeout Tracking:**
+    - Recent timeouts: `[command type, timeout duration, retry attempts]`
+    - Performance degradation: `[commands taking longer than usual]`
+    - Environment issues: `[network, disk, CPU constraints affecting commands]`
+
+## 6. Log (Action Log for Current Task)
+*(AI appends timestamped entries for each significant action/decision/command)*
+- `[Timestamp]` - `[Phase]` - `[Action/Decision/Command]` - `[Result/Observation]` - `[Error Classification if applicable]`
+- Example: `[2025-01-20 14:30:00] - FETCHING_TASK - Executed 'task-master next' - Received task ID:123 'Implement user authentication'`
+- Example: `[2025-01-20 14:32:00] - TASK_VALIDATION - Assessed complexity: medium (3 files, auth integration) - Proceeding to BLUEPRINT`
+- Example: `[2025-01-20 14:35:00] - BLUEPRINT - Used @context7 authentication patterns - Found JWT best practices and existing auth middleware`
+- Example: `[2025-01-20 14:45:00] - CONSTRUCT - [CHECKPOINT] Before implementing OAuth integration - Requesting approval`
+- Example: `[2025-01-20 15:00:00] - VALIDATE - Ran 'npm test' - All 45 tests passed, coverage 94%`
+
+## 7. Backup Log (File Safety Tracking)
+*(Tracks file modifications and backup states)*
+- **Backup ID:** `[timestamp-taskid]` - **Files:** `[list of files backed up]` - **Reason:** `[major change description]`
+- **Rollback Points:** `[list of git commits or backup states that can be restored]`
+- **Change Summary:** `[description of what was changed and why]`
+
+## 8. ArchiveLog
+*(Summaries of completed iterations to maintain context while keeping ## 6. Log manageable)*
+- **Task [ID]:** [One-sentence summary of completed work] - [Completion timestamp]
+- **Key Learnings:** [Important patterns or solutions discovered during implementation]
+
+---
+
+**Automatic Rules Applied by AI:**
+- **RULE_LOG_ROTATE_01:** When ## 6. Log exceeds 5000 chars, summarize key points to ## 8. ArchiveLog and clear ## 6. Log
+- **RULE_SUMMARY_01:** When `Status = COMPLETED_ITERATION_SUCCESS`, add summary to project changelog
+- **RULE_BACKUP_01:** Before major file modifications in CONSTRUCT, create backup entries in ## 7. Backup Log
+- **RULE_CONTEXT_REFRESH_01:** After 3 consecutive failures on same issue, refresh context using Context7 with updated queries
+- **🚨 RULE_TIMEOUT_PROTECTION:** **MANDATORY**: Check timeout threshold, set is_background=false, monitor execution time, log timeouts in ## 5. Items
+- **RULE_TIMEOUT_RECOVERY_01:** Command exceeds defined timeout threshold → Terminate command immediately, log timeout error with classification, apply progressive retry strategy with conservative parameters
+- **RULE_CHECKPOINT_01:** Stop at checkpoints and request human approval before proceeding
+- **RULE_ERROR_CLASSIFY_01:** Classify all errors using the error classification system for appropriate recovery strategies

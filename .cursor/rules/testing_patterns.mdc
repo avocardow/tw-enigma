@@ -1,0 +1,690 @@
+---
+description: This document defines comprehensive testing strategies and patterns for the Tailwind Enigma Core project, covering CSS processing, CLI functionality, and performance testing.
+globs: 
+alwaysApply: false
+---
+# Testing Patterns for CSS Optimization Tools
+
+This document defines comprehensive testing strategies and patterns for the Tailwind Enigma Core project, covering CSS processing, CLI functionality, and performance testing.
+
+## **Core Testing Principles**
+
+- **Comprehensive Coverage:** Test both happy paths and edge cases, especially for CSS parsing
+- **Performance Awareness:** Include performance benchmarks for CSS processing operations
+- **Real-World Data:** Use actual CSS files and framework patterns in tests
+- **Isolation:** Each test should be independent and not affect others
+- **Deterministic:** Tests should produce consistent results across environments
+
+## **CSS Processing Test Patterns**
+
+### **✅ DO: Comprehensive CSS Parsing Tests**
+
+```typescript
+// ✅ Test with real Tailwind CSS patterns
+describe('CSS Class Extraction', () => {
+  const testCases = [
+    {
+      name: 'basic Tailwind classes',
+      input: '<div className="flex items-center justify-between p-4 bg-white">',
+      expected: ['flex', 'items-center', 'justify-between', 'p-4', 'bg-white']
+    },
+    {
+      name: 'dynamic classes with template literals',
+      input: `<div className={\`flex \${isActive ? 'bg-blue-500' : 'bg-gray-500'}\`}>`,
+      expected: ['flex', 'bg-blue-500', 'bg-gray-500']
+    },
+    {
+      name: 'conditional classes',
+      input: '<div className={clsx("base-class", { "active": isActive, "disabled": !isEnabled })}>',
+      expected: ['base-class', 'active', 'disabled']
+    },
+    {
+      name: 'spread props with classes',
+      input: '<div {...props} className="override-class" />',
+      expected: ['override-class']
+    }
+  ];
+
+  testCases.forEach(({ name, input, expected }) => {
+    it(`should extract classes from ${name}`, () => {
+      const result = extractTailwindClasses(input);
+      expect(result.sort()).toEqual(expected.sort());
+    });
+  });
+
+  // ✅ Test edge cases and malformed input
+  it('should handle malformed JSX gracefully', () => {
+    const malformedInputs = [
+      '<div className="unclosed',
+      '<div className={}>',
+      '<div className=""">',
+      '<div className={}',
+      ''
+    ];
+
+    malformedInputs.forEach(input => {
+      expect(() => extractTailwindClasses(input)).not.toThrow();
+    });
+  });
+
+  // ✅ Test performance with large files
+  it('should process large files efficiently', async () => {
+    const largeFile = generateLargeJSXFile(10000); // 10k lines
+    const startTime = performance.now();
+    
+    const result = await extractTailwindClasses(largeFile);
+    
+    const duration = performance.now() - startTime;
+    expect(duration).toBeLessThan(1000); // Should complete in < 1 second
+    expect(result.length).toBeGreaterThan(0);
+  });
+});
+
+// ✅ Test CSS generation and optimization
+describe('CSS Generation', () => {
+  it('should generate minimal CSS from extracted classes', () => {
+    const classes = ['flex', 'items-center', 'p-4', 'bg-white'];
+    const result = generateOptimizedCSS(classes);
+    
+    expect(result).toContain('.flex{display:flex}');
+    expect(result).toContain('.items-center{align-items:center}');
+    expect(result).not.toContain('unused-class');
+  });
+
+  it('should handle custom utility classes', () => {
+    const customConfig = {
+      theme: {
+        extend: {
+          colors: {
+            brand: '#ff6b35'
+          }
+        }
+      }
+    };
+    
+    const classes = ['text-brand', 'bg-brand'];
+    const result = generateOptimizedCSS(classes, customConfig);
+    
+    expect(result).toContain('color:#ff6b35');
+    expect(result).toContain('background-color:#ff6b35');
+  });
+});
+```
+
+### **❌ DON'T: Incomplete CSS Testing**
+
+```typescript
+// ❌ Don't test only happy paths
+describe('CSS Parsing', () => {
+  it('should parse CSS', () => {
+    const result = parseCSS('.test { color: red; }');
+    expect(result).toBeTruthy(); // Too vague
+  });
+});
+
+// ❌ Don't ignore performance implications
+it('should process CSS', () => {
+  const result = processLargeCSS(massiveString);
+  expect(result).toBeDefined(); // No performance verification
+});
+
+// ❌ Don't use synthetic test data exclusively
+const testData = '<div className="test-class">'; // Not realistic
+```
+
+## **CLI Testing Patterns**
+
+### **✅ DO: Comprehensive CLI Testing**
+
+```typescript
+// ✅ Test CLI commands end-to-end
+describe('CLI Integration', () => {
+  let tempDir: string;
+  
+  beforeEach(async () => {
+    tempDir = await createTempDirectory();
+  });
+  
+  afterEach(async () => {
+    await cleanup(tempDir);
+  });
+
+  it('should optimize CSS from command line', async () => {
+    // Setup test files
+    const inputFile = join(tempDir, 'input.tsx');
+    await writeFile(inputFile, `
+      import React from 'react';
+      export const Component = () => (
+        <div className="flex items-center p-4 bg-white shadow-lg">
+          <span className="text-gray-700 font-medium">Hello World</span>
+        </div>
+      );
+    `);
+
+    const outputFile = join(tempDir, 'output.css');
+    
+    // Run CLI command
+    const result = await runCLI([
+      'optimize',
+      '--input', inputFile,
+      '--output', outputFile,
+      '--format', 'minified'
+    ]);
+
+    // Verify results
+    expect(result.exitCode).toBe(0);
+    expect(result.stderr).toBe('');
+    expect(existsSync(outputFile)).toBe(true);
+    
+    const generatedCSS = await readFile(outputFile, 'utf-8');
+    expect(generatedCSS).toContain('.flex{display:flex}');
+    expect(generatedCSS).toContain('.items-center{align-items:center}');
+    expect(generatedCSS).not.toContain('unused-class');
+  });
+
+  // ✅ Test error handling
+  it('should handle invalid input gracefully', async () => {
+    const result = await runCLI([
+      'optimize',
+      '--input', '/nonexistent/file.tsx',
+      '--output', join(tempDir, 'output.css')
+    ]);
+
+    expect(result.exitCode).toBe(1);
+    expect(result.stderr).toContain('File not found');
+    expect(result.stderr).toContain('Check the file path is correct');
+  });
+
+  // ✅ Test configuration handling
+  it('should respect configuration files', async () => {
+    const configFile = join(tempDir, 'enigma.config.js');
+    await writeFile(configFile, `
+      module.exports = {
+        theme: {
+          extend: {
+            colors: { brand: '#ff6b35' }
+          }
+        },
+        optimization: {
+          minify: true,
+          removeUnused: true
+        }
+      };
+    `);
+
+    const result = await runCLI([
+      'optimize',
+      '--config', configFile,
+      '--input', join(tempDir, 'input.tsx'),
+      '--output', join(tempDir, 'output.css')
+    ]);
+
+    expect(result.exitCode).toBe(0);
+  });
+});
+
+// ✅ CLI utility for testing
+const runCLI = async (args: string[]): Promise<CLIResult> => {
+  return new Promise((resolve) => {
+    const child = spawn('node', [join(__dirname, '../bin/enigma.js'), ...args], {
+      stdio: ['pipe', 'pipe', 'pipe'],
+      cwd: tempDir
+    });
+
+    let stdout = '';
+    let stderr = '';
+
+    child.stdout?.on('data', (data) => { stdout += data; });
+    child.stderr?.on('data', (data) => { stderr += data; });
+
+    child.on('close', (code) => {
+      resolve({
+        exitCode: code || 0,
+        stdout: stdout.trim(),
+        stderr: stderr.trim()
+      });
+    });
+
+    // Timeout after 30 seconds
+    setTimeout(() => {
+      child.kill('SIGTERM');
+      resolve({
+        exitCode: -1,
+        stdout,
+        stderr: stderr + '\nTest timeout'
+      });
+    }, 30000);
+  });
+};
+```
+
+### **❌ DON'T: Insufficient CLI Testing**
+
+```typescript
+// ❌ Don't test only the happy path
+it('should run command', async () => {
+  const result = await runCLI(['optimize']);
+  expect(result.exitCode).toBe(0); // What about error cases?
+});
+
+// ❌ Don't ignore configuration and environment
+it('should optimize CSS', () => {
+  // No setup of test environment, configuration, or cleanup
+  const result = optimizeCSS('test');
+  expect(result).toBeTruthy();
+});
+
+// ❌ Don't use synchronous operations for CLI tests
+const result = execSync('enigma optimize'); // Blocks and hard to test
+```
+
+## **Performance Testing Patterns**
+
+### **✅ DO: Comprehensive Performance Testing**
+
+```typescript
+// ✅ Benchmark critical operations
+describe('Performance Benchmarks', () => {
+  const performanceThresholds = {
+    smallFile: { maxTime: 10, size: '< 1KB' },      // 10ms for small files
+    mediumFile: { maxTime: 100, size: '< 100KB' },  // 100ms for medium files  
+    largeFile: { maxTime: 1000, size: '< 1MB' },    // 1s for large files
+    hugeFile: { maxTime: 5000, size: '< 10MB' }     // 5s for huge files
+  };
+
+  Object.entries(performanceThresholds).forEach(([size, { maxTime, description }]) => {
+    it(`should process ${size} (${description}) within ${maxTime}ms`, async () => {
+      const testFile = generateTestFile(size);
+      
+      const startTime = performance.now();
+      const result = await extractTailwindClasses(testFile);
+      const duration = performance.now() - startTime;
+
+      expect(duration).toBeLessThan(maxTime);
+      expect(result).toBeInstanceOf(Array);
+    });
+  });
+
+  // ✅ Memory usage testing
+  it('should not leak memory during processing', async () => {
+    const initialMemory = process.memoryUsage().heapUsed;
+    
+    // Process multiple files
+    for (let i = 0; i < 100; i++) {
+      const testFile = generateTestFile('medium');
+      await extractTailwindClasses(testFile);
+    }
+    
+    // Force garbage collection if available
+    if (global.gc) global.gc();
+    
+    const finalMemory = process.memoryUsage().heapUsed;
+    const memoryIncrease = finalMemory - initialMemory;
+    
+    // Memory shouldn't increase by more than 50MB
+    expect(memoryIncrease).toBeLessThan(50 * 1024 * 1024);
+  });
+
+  // ✅ Concurrent processing performance
+  it('should handle concurrent processing efficiently', async () => {
+    const files = Array.from({ length: 10 }, () => generateTestFile('medium'));
+    
+    const startTime = performance.now();
+    const results = await Promise.all(
+      files.map(file => extractTailwindClasses(file))
+    );
+    const duration = performance.now() - startTime;
+
+    expect(results).toHaveLength(10);
+    expect(duration).toBeLessThan(500); // Should complete all in < 500ms
+  });
+});
+
+// ✅ CSS generation performance
+describe('CSS Generation Performance', () => {
+  it('should generate CSS for large class sets efficiently', () => {
+    const largeClassSet = Array.from({ length: 1000 }, (_, i) => `class-${i}`);
+    
+    const startTime = performance.now();
+    const css = generateOptimizedCSS(largeClassSet);
+    const duration = performance.now() - startTime;
+
+    expect(duration).toBeLessThan(100); // < 100ms for 1000 classes
+    expect(css.length).toBeGreaterThan(0);
+  });
+});
+```
+
+### **❌ DON'T: Ignore Performance Testing**
+
+```typescript
+// ❌ Don't skip performance verification
+it('should process files', async () => {
+  const result = await processLargeFile(massiveFile);
+  expect(result).toBeTruthy(); // No performance check
+});
+
+// ❌ Don't use arbitrary timeouts
+setTimeout(() => {
+  // Test times out - but why? Too slow or hung?
+}, 5000);
+
+// ❌ Don't ignore memory implications  
+for (let i = 0; i < 10000; i++) {
+  const result = processFile(file); // Potential memory leak
+}
+```
+
+## **Framework Integration Testing**
+
+### **✅ DO: Test Framework-Specific Patterns**
+
+```typescript
+// ✅ Test React-specific patterns
+describe('React Integration', () => {
+  it('should extract classes from React components', () => {
+    const reactComponent = `
+      import React, { useState } from 'react';
+      import clsx from 'clsx';
+
+      export const Button = ({ variant = 'primary', disabled = false }) => {
+        const [isHovered, setIsHovered] = useState(false);
+        
+        return (
+          <button
+            className={clsx(
+              'px-4 py-2 rounded-lg transition-colors',
+              {
+                'bg-blue-500 text-white hover:bg-blue-600': variant === 'primary',
+                'bg-gray-200 text-gray-800 hover:bg-gray-300': variant === 'secondary',
+                'opacity-50 cursor-not-allowed': disabled
+              },
+              isHovered && 'shadow-lg'
+            )}
+            disabled={disabled}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+          >
+            Click me
+          </button>
+        );
+      };
+    `;
+
+    const result = extractTailwindClasses(reactComponent);
+    
+    expect(result).toContain('px-4');
+    expect(result).toContain('py-2');
+    expect(result).toContain('bg-blue-500');
+    expect(result).toContain('hover:bg-blue-600');
+    expect(result).toContain('opacity-50');
+    expect(result).toContain('shadow-lg');
+  });
+
+  // ✅ Test Next.js patterns
+  it('should handle Next.js specific patterns', () => {
+    const nextjsCode = `
+      import styles from './component.module.css';
+      
+      export default function Page() {
+        return (
+          <div className={cn(styles.container, "flex items-center")}>
+            <Image 
+              className="w-10 h-10 rounded-full" 
+              src="/avatar.jpg" 
+              alt="Avatar"
+              width={40}
+              height={40}
+            />
+          </div>
+        );
+      }
+    `;
+
+    const result = extractTailwindClasses(nextjsCode);
+    expect(result).toContain('flex');
+    expect(result).toContain('items-center');
+    expect(result).toContain('w-10');
+    expect(result).toContain('h-10');
+    expect(result).toContain('rounded-full');
+  });
+});
+
+// ✅ Test Vue.js patterns
+describe('Vue Integration', () => {
+  it('should extract classes from Vue SFC templates', () => {
+    const vueComponent = `
+      <template>
+        <div 
+          :class="[
+            'flex items-center p-4',
+            isActive ? 'bg-blue-500' : 'bg-gray-100',
+            { 'opacity-50': disabled }
+          ]"
+        >
+          <span class="text-sm font-medium">{{ title }}</span>
+        </div>
+      </template>
+    `;
+
+    const result = extractTailwindClasses(vueComponent);
+    expect(result).toContain('flex');
+    expect(result).toContain('items-center');
+    expect(result).toContain('bg-blue-500');
+    expect(result).toContain('text-sm');
+  });
+});
+```
+
+## **Error Recovery Testing**
+
+### **✅ DO: Test Error Handling and Recovery**
+
+```typescript
+// ✅ Test malformed CSS handling
+describe('Error Recovery', () => {
+  it('should handle malformed CSS gracefully', () => {
+    const malformedCSS = [
+      '.class { color: red',           // Missing closing brace
+      '.class { color: ; }',          // Missing value
+      '.class color: red; }',         // Missing opening brace
+      '@media screen and {',          // Incomplete media query
+      '/* unclosed comment',          // Unclosed comment
+      ''                              // Empty string
+    ];
+
+    malformedCSS.forEach(css => {
+      expect(() => {
+        const result = parseCSS(css);
+        expect(result.errors).toBeDefined();
+      }).not.toThrow();
+    });
+  });
+
+  // ✅ Test file system error handling
+  it('should handle file system errors gracefully', async () => {
+    const testCases = [
+      { path: '/nonexistent/file.css', error: 'ENOENT' },
+      { path: '/proc/version', error: 'EACCES' }, // Permission denied on many systems
+      { path: '', error: 'INVALID_PATH' }
+    ];
+
+    for (const { path, error } of testCases) {
+      const result = await processFile(path).catch(err => err);
+      expect(result).toBeInstanceOf(Error);
+      expect(result.code || result.message).toContain(error);
+    }
+  });
+
+  // ✅ Test network timeout simulation
+  it('should handle network timeouts for remote resources', async () => {
+    const slowResponse = new Promise(resolve => 
+      setTimeout(resolve, 10000) // 10 second delay
+    );
+
+    const result = await Promise.race([
+      fetchRemoteCSS('http://slow-server.test/styles.css'),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('TIMEOUT')), 1000)
+      )
+    ]).catch(err => err);
+
+    expect(result).toBeInstanceOf(Error);
+    expect(result.message).toContain('TIMEOUT');
+  });
+});
+```
+
+## **Test Utilities and Helpers**
+
+### **✅ DO: Create Reusable Test Utilities**
+
+```typescript
+// ✅ Test file generators
+export const generateTestFile = (size: 'small' | 'medium' | 'large' | 'huge'): string => {
+  const classCounts = {
+    small: 10,
+    medium: 100,
+    large: 1000,
+    huge: 10000
+  };
+
+  const count = classCounts[size];
+  const classes = Array.from({ length: count }, (_, i) => 
+    `class-${i} hover:class-${i} md:class-${i}`
+  );
+
+  return `
+    import React from 'react';
+    export const Component = () => (
+      <div>
+        ${classes.map((cls, i) => 
+          `<div key="${i}" className="${cls}">Content ${i}</div>`
+        ).join('\n        ')}
+      </div>
+    );
+  `;
+};
+
+// ✅ CSS assertion helpers
+export const expectValidCSS = (css: string): void => {
+  expect(css).toBeTruthy();
+  expect(css).not.toContain('undefined');
+  expect(css).not.toContain('null');
+  
+  // Basic CSS syntax validation
+  const openBraces = (css.match(/{/g) || []).length;
+  const closeBraces = (css.match(/}/g) || []).length;
+  expect(openBraces).toBe(closeBraces);
+};
+
+// ✅ Performance measurement helpers
+export const measurePerformance = async <T>(
+  operation: () => Promise<T>,
+  maxTime: number,
+  description: string
+): Promise<T> => {
+  const startTime = performance.now();
+  const result = await operation();
+  const duration = performance.now() - startTime;
+  
+  expect(duration).toBeLessThan(maxTime);
+  console.log(`✓ ${description}: ${duration.toFixed(2)}ms`);
+  
+  return result;
+};
+
+// ✅ Temporary directory management
+export const createTempDirectory = async (): Promise<string> => {
+  const tempDir = join(os.tmpdir(), `enigma-test-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`);
+  await mkdir(tempDir, { recursive: true });
+  return tempDir;
+};
+
+export const cleanup = async (tempDir: string): Promise<void> => {
+  if (existsSync(tempDir)) {
+    await rm(tempDir, { recursive: true, force: true });
+  }
+};
+```
+
+### **❌ DON'T: Duplicate Test Setup**
+
+```typescript
+// ❌ Don't repeat setup in every test
+describe('Test Suite 1', () => {
+  it('test 1', async () => {
+    const tempDir = await mkdir(/*...*/); // Repeated
+    const testFile = join(tempDir, 'test.css');
+    await writeFile(testFile, 'test content');
+    // ... test logic
+    await rm(tempDir, { recursive: true });
+  });
+});
+
+// ❌ Don't create one-off utilities
+const measureTime = (fn) => { /* custom timing */ }; // Should be shared
+const createTestFile = () => { /* custom file creation */ }; // Should be shared
+```
+
+## **Coverage and Quality Metrics**
+
+### **✅ DO: Maintain High Test Coverage**
+
+```typescript
+// ✅ Coverage configuration in jest.config.js
+module.exports = {
+  collectCoverage: true,
+  coverageDirectory: 'coverage',
+  coverageThreshold: {
+    global: {
+      branches: 85,
+      functions: 90,
+      lines: 90,
+      statements: 90
+    },
+    // Higher thresholds for critical paths
+    './src/core/': {
+      branches: 95,
+      functions: 95,
+      lines: 95,
+      statements: 95
+    }
+  },
+  coverageReporters: ['text', 'lcov', 'html'],
+  collectCoverageFrom: [
+    'src/**/*.{ts,tsx}',
+    'bin/**/*.{ts,tsx}',
+    '!src/**/*.d.ts',
+    '!src/**/*.test.ts',
+    '!src/**/*.spec.ts'
+  ]
+};
+
+// ✅ Test critical error paths
+describe('Error Path Coverage', () => {
+  it('should handle all CSS parser error types', () => {
+    const errorTypes = [
+      'SYNTAX_ERROR',
+      'INVALID_SELECTOR', 
+      'UNKNOWN_AT_RULE',
+      'CIRCULAR_IMPORT',
+      'FILE_NOT_FOUND'
+    ];
+
+    errorTypes.forEach(errorType => {
+      const input = generateErrorCase(errorType);
+      const result = parseCSS(input);
+      expect(result.errors).toContain(errorType);
+    });
+  });
+});
+```
+
+---
+
+**Related Rules:**
+- See [css_optimization.mdc](mdc:.cursor/rules/css_optimization.mdc) for CSS processing patterns
+- See [cli_patterns.mdc](mdc:.cursor/rules/cli_patterns.mdc) for CLI testing patterns  
+- See [project_config.mdc](mdc:.cursor/rules/project_config.mdc) for testing standards
+- See [timeout_protection.mdc](mdc:.cursor/rules/timeout_protection.mdc) for test timeout handling

@@ -1,0 +1,282 @@
+# Tailwind Enigma Core - Product Requirements Document
+
+# Overview  
+Tailwind Enigma Core is a post-build CLI optimization tool for the Tailwind CSS ecosystem that provides best-in-class HTML/JS asset optimization by bundling utility class patterns into single, obfuscated identifiers. 
+
+**Problem:** Modern Tailwind projects, especially component-heavy applications, contain highly repetitive class patterns (e.g., `"flex items-center justify-center text-white"`) that appear dozens or hundreds of times across HTML and JS bundles, leading to unnecessary asset bloat.
+
+**Solution:** Pattern-based optimization that identifies frequently used class combinations and replaces them with short, generated identifiers while maintaining full CSS functionality through programmatic `@apply` rule generation.
+
+**Target Audience:** Web development agencies and developers using Tailwind CSS with modern frameworks (React, Next.js, Vite) who prioritize production performance and asset optimization.
+
+**Value Proposition:** Dramatic reduction in HTML/JS bundle sizes (up to 97% reduction for repetitive patterns) while maintaining development workflow simplicity and framework compatibility.
+
+# Core Features  
+
+## 1. Pattern-Based Class Analysis
+**What it does:** Scans built HTML and JS files to identify unique combinations of Tailwind classes and their frequency of occurrence.
+
+**Why it's important:** Unlike existing tools that optimize individual classes, pattern-based analysis captures the reality of component-driven development where entire class combinations repeat frequently.
+
+**How it works:** Uses `glob` for file discovery, `cheerio` for HTML parsing, and robust regex for JS class attribute extraction to build a frequency map of class patterns.
+
+## 2. Intelligent Name Generation
+**What it does:** Generates optimal short identifiers to replace class patterns, with two algorithms: Standard (shortest possible) and Pretty (aesthetic, no repeating characters).
+
+**Why it's important:** Minimizes the length of replacement identifiers while providing aesthetic control for projects requiring specific visual characteristics.
+
+**How it works:** 
+- Standard: Uses base-26 alphabet calculation for minimum length (e.g., 26 patterns = 2 chars: `aa`, `ab`, etc.)
+- Pretty: Uses permutations without character repetition (e.g., `ab`, `ac`, `ad` - never `aa`)
+
+## 3. CSS Generation with PostCSS Integration
+**What it does:** Automatically generates CSS rules using Tailwind's `@apply` directive and processes them through the project's existing Tailwind configuration.
+
+**Why it's important:** Ensures perfect CSS compatibility and theme consistency by leveraging the project's own Tailwind setup.
+
+**How it works:** Creates CSS rules like `.ab { @apply flex items-center; }` and processes them through `postcss` with the project's `tailwind.config.js`.
+
+## 4. Safe Asset Rewriting
+**What it does:** Performs surgical replacement of class patterns in HTML and JS files with generated identifiers, then injects the generated CSS.
+
+**Why it's important:** Must maintain asset integrity while transforming production builds without breaking functionality.
+
+**How it works:** Uses targeted regex replacement within class attributes and automatic `<link>` tag injection for CSS inclusion.
+
+## 5. Comprehensive Error Handling
+**What it does:** Provides clear, actionable error messages and handles edge cases gracefully with appropriate logging.
+
+**Why it's important:** Agency production environments require reliability and clear debugging information.
+
+**How it works:** Validates Tailwind patterns, checks PostCSS processing, and provides color-coded console output with `chalk`.
+
+# User Experience  
+
+## User Personas
+**Primary:** Full-stack developers and agencies building production Tailwind projects
+**Secondary:** Performance-conscious developers optimizing bundle sizes
+
+## Key User Flows
+
+### Basic Optimization Flow
+1. Developer completes normal Tailwind development workflow
+2. Runs production build command: `npm run build`
+3. Executes: `enigma` (post-build)
+4. Tool analyzes, generates CSS, and rewrites assets
+5. Deploys optimized production build
+
+### Pretty Names Flow  
+1. Same as basic flow
+2. Executes: `enigma --pretty`
+3. Receives aesthetically pleasing class names (no character repetition)
+
+### Configuration Flow
+1. Creates `enigma.config.js` in project root
+2. Configures build directory, source patterns, and output paths
+3. CLI flags override config file settings
+
+## UI/UX Considerations
+- **CLI-First Experience:** All interaction through command line with clear, colored output
+- **Zero Development Impact:** Never interferes with development workflow
+- **Clear Feedback:** Progress indicators, success metrics, and actionable error messages
+- **Framework Agnostic:** Works identically across React, Next.js, Vite, static HTML
+
+# Technical Architecture  
+
+## System Components
+- **CLI Interface:** `yargs` for command parsing and help generation
+- **File Discovery:** `glob` for flexible pattern-based file finding
+- **HTML Processing:** `cheerio` for jQuery-like DOM manipulation
+- **CSS Processing:** `postcss` + `tailwindcss` for rule generation
+- **Configuration Management:** Unified config merging with CLI precedence
+- **Logging System:** `chalk` for color-coded, user-friendly output
+
+## Data Models
+```javascript
+// Pattern Frequency Map
+Map<string, number> // {"flex items-center": 15, "p-4 text-white": 8}
+
+// Pattern to Mangled Name Map  
+Map<string, string> // {"flex items-center": "ab", "p-4 text-white": "ac"}
+
+// Configuration Object
+{
+  buildDir: string,
+  source: string[],
+  output: { css: string },
+  usePrettyNames: boolean
+}
+```
+
+## APIs and Integrations
+- **PostCSS API:** Programmatic CSS processing
+- **Tailwind Config:** Automatic detection and usage of project's `tailwind.config.js`
+- **File System:** Non-destructive reading, safe rewriting with validation
+
+## Infrastructure Requirements
+- **Node.js:** Latest LTS version with ES Modules support
+- **Dependencies:** Minimal, production-ready packages only
+- **Compatibility:** npm, yarn, pnpm package managers
+
+# Development Roadmap  
+
+## Phase 1: Foundation & CLI Framework (MVP Core)
+**Scope:** Basic CLI structure, configuration loading, and file discovery
+**Deliverables:**
+- `yargs` CLI with `--help`, `--version`, `--pretty`, `--config` flags
+- Configuration file loading and merging logic
+- `glob`-based file discovery with configurable patterns
+- Basic error handling and logging framework
+- Unit tests for configuration merging
+
+## Phase 2: Pattern Analysis Engine
+**Scope:** Core pattern detection and frequency mapping
+**Deliverables:**
+- HTML class extraction using `cheerio`
+- Robust JS class extraction with regex: `class(?:Name)?=["'\`]([^"'\`]+)["'\`]`
+- Pattern frequency map generation
+- Comprehensive regex testing against edge cases
+- Unit tests for pattern detection accuracy
+
+## Phase 3: Name Generation & CSS Processing
+**Scope:** Identifier generation and CSS rule creation
+**Deliverables:**
+- Standard name generation algorithm (optimal length calculation)
+- Pretty name generation algorithm (permutation-based)
+- CSS generation with `@apply` directives
+- PostCSS integration with project's Tailwind config
+- Unit tests for both name generation algorithms
+
+## Phase 4: Asset Rewriting & Integration
+**Scope:** Safe file modification and CSS injection
+**Deliverables:**
+- Targeted class pattern replacement in HTML/JS files
+- Automatic `<link>` tag injection in HTML files
+- File integrity validation and backup mechanisms
+- Relative path calculation for CSS references
+
+## Phase 5: Production Hardening & Testing
+**Scope:** Comprehensive error handling and end-to-end validation
+**Deliverables:**
+- Complete error handling for all failure modes
+- Integration tests with real project fixtures
+- Performance optimization for large codebases
+- Final CLI polish and success reporting
+
+## Phase 6: Documentation & Release Preparation
+**Scope:** User documentation and open-source preparation
+**Deliverables:**
+- Comprehensive README with examples and benchmarks
+- Contributing guidelines and development setup
+- npm package configuration and publishing setup
+- License selection and legal compliance
+
+# Logical Dependency Chain
+
+## Foundation Layer (Phase 1)
+**Must be built first:** CLI framework and configuration system
+**Rationale:** All subsequent features depend on proper configuration loading and command parsing
+
+## Analysis Layer (Phase 2) 
+**Dependencies:** Foundation Layer complete
+**Rationale:** Pattern detection is the core value proposition and foundation for optimization
+
+## Generation Layer (Phase 3)
+**Dependencies:** Analysis Layer complete  
+**Rationale:** Cannot generate CSS or names without pattern analysis data
+
+## Integration Layer (Phase 4)
+**Dependencies:** Generation Layer complete
+**Rationale:** Asset rewriting requires generated CSS and name mappings
+
+## Validation Layer (Phase 5)
+**Dependencies:** Integration Layer complete
+**Rationale:** End-to-end testing requires complete pipeline functionality
+
+## Release Layer (Phase 6)
+**Dependencies:** Validation Layer complete
+**Rationale:** Documentation and packaging require stable, tested functionality
+
+## Quick Value Milestone
+After Phase 3 completion, the tool provides visible value (generated CSS and name mappings) even without asset rewriting, enabling early validation and feedback.
+
+# Risks and Mitigations  
+
+## Technical Challenges
+
+### Risk: Regex Complexity for JS Pattern Detection
+**Impact:** Missed patterns or false positives in class extraction
+**Mitigation:** Comprehensive test suite with real-world examples, conservative regex approach that prioritizes accuracy over completeness
+
+### Risk: PostCSS Integration Failures  
+**Impact:** Invalid `@apply` rules breaking CSS generation
+**Mitigation:** Pre-validation of detected patterns against Tailwind class list, graceful error handling with clear user feedback
+
+### Risk: Asset Corruption During Rewriting
+**Impact:** Broken production builds
+**Mitigation:** Atomic file operations, validation checksums, and automatic backup creation before any modifications
+
+## MVP Definition and Scope
+
+### Risk: Feature Creep and Delayed Delivery
+**Impact:** Never reaching usable product state
+**Mitigation:** Strict MVP definition focusing on core pattern optimization only, deferring all advanced features to post-1.0 releases
+
+### Risk: Framework Compatibility Issues
+**Impact:** Tool doesn't work with target frameworks
+**Mitigation:** Early testing with real Next.js and Vite projects, framework-agnostic design patterns
+
+## Resource Constraints
+
+### Risk: Over-Engineering Initial Version
+**Impact:** Delayed internal agency deployment
+**Mitigation:** Internal-first development approach, focusing on working solution over perfect architecture
+
+### Risk: Insufficient Testing Coverage
+**Impact:** Production failures in agency projects
+**Mitigation:** Agency project serves as primary integration test, comprehensive unit test coverage for core algorithms
+
+# Appendix  
+
+## Technical Specifications
+
+### Supported File Types
+- **HTML:** `.html` files with `class` attributes
+- **JavaScript:** `.js` files with `className` or `class` attribute assignments
+
+### Naming Algorithm Details
+```javascript
+// Standard Algorithm
+const requiredLength = Math.ceil(Math.log(patternCount) / Math.log(26));
+
+// Pretty Algorithm  
+const maxPermutations = factorial(26) / factorial(26 - length);
+```
+
+### Performance Benchmarks (Target)
+- **Pattern Analysis:** <1 second for 1000+ files
+- **CSS Generation:** <500ms for 100+ patterns  
+- **Asset Rewriting:** <2 seconds for 10MB+ of HTML/JS
+
+### Configuration Schema
+```javascript
+/** @type {import('tw-enigma').EnigmaConfig} */
+export default {
+  buildDir: "dist" | "build" | ".next",
+  source: ["**/*.{html,js}"],
+  output: { css: "assets/enigma.css" }
+}
+```
+
+## Research Findings
+
+### Competitive Analysis
+- **Existing tools** focus on individual class optimization
+- **Pattern-based approach** is novel and more effective for component-heavy applications
+- **Post-build strategy** offers maximum compatibility and safety
+
+### Agency Requirements
+- **Zero development workflow impact** is non-negotiable
+- **Production reliability** is critical for client projects
+- **Clear error messages** essential for team adoption
+- **Framework agnostic** approach maximizes utility across projects 

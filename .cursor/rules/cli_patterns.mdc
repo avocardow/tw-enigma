@@ -1,0 +1,551 @@
+---
+description: This document defines patterns and best practices for developing command-line interfaces in the Tailwind Enigma Core project.
+globs: 
+alwaysApply: false
+---
+# CLI Development Patterns
+
+This document defines patterns and best practices for developing command-line interfaces in the Tailwind Enigma Core project.
+
+## **Core CLI Principles**
+
+- **Consistency:** Commands should follow predictable patterns and naming conventions
+- **Usability:** Provide helpful error messages, progress feedback, and intuitive workflows
+- **Flexibility:** Support both interactive and non-interactive modes
+- **Reliability:** Handle errors gracefully and provide clear exit codes
+
+## **Command Structure Patterns**
+
+### **✅ DO: Consistent Command Hierarchy**
+
+```typescript
+// ✅ Use predictable command structure
+// enigma <command> [subcommand] [options] [arguments]
+
+// Example command definitions
+interface CommandDefinition {
+  name: string;
+  description: string;
+  aliases?: string[];
+  options: OptionDefinition[];
+  subcommands?: CommandDefinition[];
+  handler: CommandHandler;
+}
+
+// ✅ Group related functionality
+const commands = {
+  optimize: {
+    description: 'Optimize CSS and extract Tailwind classes',
+    subcommands: {
+      scan: 'Scan files for Tailwind classes',
+      extract: 'Extract classes from files',
+      generate: 'Generate optimized CSS'
+    }
+  },
+  config: {
+    description: 'Manage configuration',
+    subcommands: {
+      init: 'Initialize configuration',
+      validate: 'Validate configuration',
+      show: 'Show current configuration'
+    }
+  }
+};
+```
+
+### **❌ DON'T: Inconsistent Command Patterns**
+
+```typescript
+// ❌ Don't mix naming conventions
+commands = {
+  'optimize-css': {}, // kebab-case
+  extractClasses: {}, // camelCase  
+  'gen_output': {}    // snake_case
+};
+
+// ❌ Don't create deeply nested hierarchies
+// enigma css optimize tailwind classes extract from jsx files
+// Too many levels - confusing for users
+
+// ❌ Don't use unclear command names
+commands = {
+  do: {},     // Too vague
+  process: {} // Not specific enough
+};
+```
+
+## **Option and Argument Patterns**
+
+### **✅ DO: Standard Option Conventions**
+
+```typescript
+// ✅ Follow GNU/POSIX conventions
+interface OptionDefinition {
+  short?: string;     // Single letter: -h
+  long: string;       // Full word: --help
+  description: string;
+  type: 'boolean' | 'string' | 'number' | 'array';
+  required?: boolean;
+  default?: any;
+  choices?: string[];
+}
+
+// ✅ Common option patterns
+const standardOptions = {
+  help: { short: 'h', long: 'help', description: 'Show help information' },
+  version: { short: 'v', long: 'version', description: 'Show version number' },
+  verbose: { short: 'V', long: 'verbose', description: 'Enable verbose output' },
+  quiet: { short: 'q', long: 'quiet', description: 'Suppress output' },
+  config: { short: 'c', long: 'config', description: 'Configuration file path' },
+  output: { short: 'o', long: 'output', description: 'Output file or directory' },
+  force: { short: 'f', long: 'force', description: 'Force overwrite existing files' }
+};
+
+// ✅ Validate option combinations
+const validateOptions = (options: ParsedOptions): ValidationResult => {
+  if (options.quiet && options.verbose) {
+    return { valid: false, error: 'Cannot use --quiet and --verbose together' };
+  }
+  
+  if (options.output && !options.force && existsSync(options.output)) {
+    return { valid: false, error: 'Output exists. Use --force to overwrite' };
+  }
+  
+  return { valid: true };
+};
+```
+
+### **❌ DON'T: Inconsistent Option Handling**
+
+```typescript
+// ❌ Don't use inconsistent option formats
+const badOptions = {
+  h: {},          // Missing long form
+  '--help-me': {} // Non-standard format
+};
+
+// ❌ Don't ignore option validation
+const processCommand = (options: any) => {
+  // No validation - could lead to runtime errors
+  fs.writeFileSync(options.output, data); // Might overwrite important files
+};
+
+// ❌ Don't use confusing option names
+const confusingOptions = {
+  d: { description: 'Delete files' },     // Ambiguous
+  delete: { description: 'Debug mode' }  // Misleading
+};
+```
+
+## **Error Handling and Messages**
+
+### **✅ DO: Helpful Error Messages**
+
+```typescript
+// ✅ Provide context and solutions
+class CLIError extends Error {
+  constructor(
+    message: string,
+    public code: string,
+    public suggestions?: string[]
+  ) {
+    super(message);
+    this.name = 'CLIError';
+  }
+}
+
+// ✅ Structured error handling
+const handleError = (error: Error | CLIError, command?: string): never => {
+  if (error instanceof CLIError) {
+    console.error(`❌ ${error.message}`);
+    
+    if (error.suggestions) {
+      console.error('\n💡 Suggestions:');
+      error.suggestions.forEach(suggestion => {
+        console.error(`   • ${suggestion}`);
+      });
+    }
+    
+    process.exit(getExitCode(error.code));
+  }
+  
+  // Unexpected errors
+  console.error(`💥 Unexpected error in ${command || 'unknown command'}:`);
+  console.error(error.message);
+  console.error('\nThis appears to be a bug. Please report it with the command you ran.');
+  process.exit(1);
+};
+
+// ✅ Specific error types with helpful messages
+const validateFile = (filePath: string): void => {
+  if (!existsSync(filePath)) {
+    throw new CLIError(
+      `File not found: ${filePath}`,
+      'FILE_NOT_FOUND',
+      [
+        'Check the file path is correct',
+        'Ensure the file exists and is accessible',
+        `Try: ls -la ${dirname(filePath)}`
+      ]
+    );
+  }
+  
+  if (!statSync(filePath).isFile()) {
+    throw new CLIError(
+      `Path is not a file: ${filePath}`,
+      'NOT_A_FILE',
+      ['Provide a file path, not a directory']
+    );
+  }
+};
+```
+
+### **❌ DON'T: Generic or Unhelpful Errors**
+
+```typescript
+// ❌ Don't use generic error messages
+throw new Error('Something went wrong'); // Not actionable
+
+// ❌ Don't exit without explanation
+if (error) {
+  process.exit(1); // User has no idea what happened
+}
+
+// ❌ Don't expose internal errors
+try {
+  await processCSS(css);
+} catch (error) {
+  console.error(error.stack); // Confusing technical details
+}
+```
+
+## **Progress and Feedback**
+
+### **✅ DO: Provide User Feedback**
+
+```typescript
+// ✅ Show progress for long-running operations
+import { ProgressBar } from 'cli-progress';
+
+const processFilesWithProgress = async (files: string[]) => {
+  const progressBar = new ProgressBar.SingleBar({
+    format: 'Processing |{bar}| {percentage}% | {value}/{total} files | ETA: {eta}s',
+    barCompleteChar: '\u2588',
+    barIncompleteChar: '\u2591',
+    hideCursor: true
+  });
+  
+  progressBar.start(files.length, 0);
+  
+  const results = [];
+  for (let i = 0; i < files.length; i++) {
+    const result = await processFile(files[i]);
+    results.push(result);
+    progressBar.update(i + 1);
+  }
+  
+  progressBar.stop();
+  return results;
+};
+
+// ✅ Use spinners for indeterminate operations
+import ora from 'ora';
+
+const analyzeProject = async (projectPath: string) => {
+  const spinner = ora('Analyzing project structure...').start();
+  
+  try {
+    const analysis = await performAnalysis(projectPath);
+    spinner.succeed('Project analysis completed');
+    return analysis;
+  } catch (error) {
+    spinner.fail('Project analysis failed');
+    throw error;
+  }
+};
+
+// ✅ Provide clear status messages
+const logStep = (message: string, type: 'info' | 'success' | 'warning' | 'error' = 'info') => {
+  const icons = {
+    info: 'ℹ️',
+    success: '✅', 
+    warning: '⚠️',
+    error: '❌'
+  };
+  
+  console.log(`${icons[type]} ${message}`);
+};
+```
+
+### **❌ DON'T: Silent or Overwhelming Output**
+
+```typescript
+// ❌ Don't run silently for long operations
+const processFiles = async (files: string[]) => {
+  // No indication of progress - user thinks it's frozen
+  return await Promise.all(files.map(processFile));
+};
+
+// ❌ Don't overwhelm with verbose output
+files.forEach(file => {
+  console.log(`Starting to process ${file}`);
+  console.log(`Reading file contents...`);
+  console.log(`Parsing CSS...`);
+  console.log(`Extracting classes...`);
+  // Too much noise
+});
+
+// ❌ Don't use unclear status messages
+console.log('Doing stuff...'); // Not informative
+console.log('Almost done...'); // No context
+```
+
+## **Configuration and Environment**
+
+### **✅ DO: Flexible Configuration Management**
+
+```typescript
+// ✅ Support multiple configuration sources
+interface ConfigSources {
+  file?: string;           // Config file path
+  environment: NodeJS.ProcessEnv;
+  commandLine: ParsedOptions;
+  defaults: DefaultConfig;
+}
+
+const loadConfig = async (sources: ConfigSources): Promise<Config> => {
+  const configs = [];
+  
+  // 1. Load defaults
+  configs.push(sources.defaults);
+  
+  // 2. Load from config file (if exists)
+  if (sources.file && existsSync(sources.file)) {
+    const fileConfig = await loadConfigFile(sources.file);
+    configs.push(fileConfig);
+  }
+  
+  // 3. Apply environment variables
+  const envConfig = extractEnvConfig(sources.environment);
+  configs.push(envConfig);
+  
+  // 4. Apply command line options (highest priority)
+  configs.push(sources.commandLine);
+  
+  return mergeConfigs(configs);
+};
+
+// ✅ Validate configuration
+const validateConfig = (config: Config): ValidationResult => {
+  const errors: string[] = [];
+  
+  if (!config.input || config.input.length === 0) {
+    errors.push('At least one input file or directory is required');
+  }
+  
+  if (config.output && !isValidPath(config.output)) {
+    errors.push(`Invalid output path: ${config.output}`);
+  }
+  
+  return { valid: errors.length === 0, errors };
+};
+```
+
+### **❌ DON'T: Inflexible Configuration**
+
+```typescript
+// ❌ Don't require configuration files
+const config = JSON.parse(readFileSync('enigma.config.json')); // Might not exist
+
+// ❌ Don't ignore environment context
+const processFiles = (files: string[]) => {
+  // Doesn't consider CI environment, user preferences, etc.
+  return files.map(processFile);
+};
+
+// ❌ Don't hardcode paths or settings
+const OUTPUT_DIR = '/usr/local/enigma/output'; // Won't work on all systems
+```
+
+## **Testing CLI Commands**
+
+### **✅ DO: Comprehensive CLI Testing**
+
+```typescript
+// ✅ Test command parsing
+describe('Command Parsing', () => {
+  it('should parse optimize command with options', () => {
+    const args = ['optimize', '--input', 'src/', '--output', 'dist/', '--verbose'];
+    const parsed = parseCommand(args);
+    
+    expect(parsed.command).toBe('optimize');
+    expect(parsed.options.input).toBe('src/');
+    expect(parsed.options.output).toBe('dist/');
+    expect(parsed.options.verbose).toBe(true);
+  });
+  
+  it('should handle invalid option combinations', () => {
+    const args = ['optimize', '--quiet', '--verbose'];
+    expect(() => parseCommand(args)).toThrow('Cannot use --quiet and --verbose together');
+  });
+});
+
+// ✅ Test command execution
+describe('Command Execution', () => {
+  it('should process files and generate output', async () => {
+    const tempDir = await createTempDir();
+    const inputFile = join(tempDir, 'input.css');
+    const outputFile = join(tempDir, 'output.css');
+    
+    await writeFile(inputFile, 'test CSS content');
+    
+    const result = await runCommand(['optimize', '--input', inputFile, '--output', outputFile]);
+    
+    expect(result.exitCode).toBe(0);
+    expect(existsSync(outputFile)).toBe(true);
+    
+    await cleanup(tempDir);
+  });
+});
+
+// ✅ Use test utilities
+const runCommand = async (args: string[]): Promise<CommandResult> => {
+  const originalArgv = process.argv;
+  const originalExit = process.exit;
+  
+  let exitCode = 0;
+  process.exit = ((code = 0) => { exitCode = code; }) as any;
+  process.argv = ['node', 'enigma', ...args];
+  
+  try {
+    await main();
+    return { exitCode, stdout: capturedOutput };
+  } finally {
+    process.argv = originalArgv;
+    process.exit = originalExit;
+  }
+};
+```
+
+## **Help and Documentation**
+
+### **✅ DO: Comprehensive Help System**
+
+```typescript
+// ✅ Generate help from command definitions
+const generateHelp = (command: CommandDefinition): string => {
+  const sections = [
+    `USAGE: enigma ${command.name} [options]`,
+    '',
+    `DESCRIPTION: ${command.description}`,
+    ''
+  ];
+  
+  if (command.options.length > 0) {
+    sections.push('OPTIONS:');
+    command.options.forEach(option => {
+      const short = option.short ? `-${option.short}, ` : '    ';
+      const long = `--${option.long}`;
+      const desc = option.description;
+      sections.push(`  ${short}${long.padEnd(20)} ${desc}`);
+    });
+    sections.push('');
+  }
+  
+  if (command.subcommands) {
+    sections.push('SUBCOMMANDS:');
+    Object.entries(command.subcommands).forEach(([name, desc]) => {
+      sections.push(`  ${name.padEnd(20)} ${desc}`);
+    });
+    sections.push('');
+  }
+  
+  sections.push('EXAMPLES:');
+  sections.push(...generateExamples(command));
+  
+  return sections.join('\n');
+};
+
+// ✅ Provide contextual examples
+const generateExamples = (command: CommandDefinition): string[] => {
+  switch (command.name) {
+    case 'optimize':
+      return [
+        '  enigma optimize --input src/ --output dist/',
+        '  enigma optimize -i "**/*.jsx" -o build/styles.css',
+        '  enigma optimize --config enigma.config.js --verbose'
+      ];
+    default:
+      return [`  enigma ${command.name} --help`];
+  }
+};
+```
+
+### **❌ DON'T: Poor Documentation**
+
+```typescript
+// ❌ Don't provide minimal help
+const help = 'enigma [command] [options]'; // Not useful
+
+// ❌ Don't forget examples
+const showHelp = () => {
+  console.log('Available commands: optimize, config');
+  // No examples of how to use them
+};
+
+// ❌ Don't hide advanced options
+// Users should know about all available functionality
+```
+
+## **Exit Codes and Status**
+
+### **✅ DO: Standard Exit Codes**
+
+```typescript
+// ✅ Use conventional exit codes
+enum ExitCode {
+  SUCCESS = 0,
+  GENERAL_ERROR = 1,
+  MISUSE = 2,          // Wrong command usage
+  CANNOT_EXECUTE = 126, // Command found but not executable
+  COMMAND_NOT_FOUND = 127,
+  INVALID_ARGUMENT = 128,
+  INTERRUPTED = 130     // Ctrl+C
+}
+
+// ✅ Map error types to exit codes
+const getExitCode = (errorCode: string): number => {
+  switch (errorCode) {
+    case 'INVALID_COMMAND':
+    case 'INVALID_OPTION':
+      return ExitCode.MISUSE;
+    case 'FILE_NOT_FOUND':
+    case 'PERMISSION_DENIED':
+      return ExitCode.CANNOT_EXECUTE;
+    case 'INTERRUPTED':
+      return ExitCode.INTERRUPTED;
+    default:
+      return ExitCode.GENERAL_ERROR;
+  }
+};
+
+// ✅ Handle process termination gracefully
+process.on('SIGINT', async () => {
+  console.log('\n⚠️  Operation interrupted by user');
+  await cleanup();
+  process.exit(ExitCode.INTERRUPTED);
+});
+
+process.on('SIGTERM', async () => {
+  console.log('🛑 Received termination signal');
+  await cleanup();
+  process.exit(0);
+});
+```
+
+---
+
+**Related Rules:**
+- See [css_optimization.mdc](mdc:.cursor/rules/css_optimization.mdc) for CSS processing patterns
+- See [project_config.mdc](mdc:.cursor/rules/project_config.mdc) for project standards
+- See [timeout_protection.mdc](mdc:.cursor/rules/timeout_protection.mdc) for command timeout handling
