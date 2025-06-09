@@ -439,7 +439,7 @@
       "id": 7,
       "title": "Develop JS class extraction with regex",
       "description": "Create a robust regex-based system to extract Tailwind CSS class patterns from JavaScript and JSX files, focusing on React/JSX syntax and dynamic class assignments.",
-      "status": "pending",
+      "status": "done",
       "dependencies": [
         4
       ],
@@ -453,7 +453,7 @@
           "description": "Implement logic to detect JavaScript and JSX files and, where possible, identify the JSX framework (React, Preact, Solid, etc.).",
           "dependencies": [],
           "details": "Scan project files for .js, .jsx, .ts, and .tsx extensions. Analyze import statements and file content to infer the framework. Prepare files for targeted class extraction.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 2,
@@ -463,7 +463,7 @@
             1
           ],
           "details": "Write regex to match className and class attributes in JSX, supporting both single and double quotes, as well as backticks. Ensure patterns capture static and simple dynamic assignments.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 3,
@@ -473,7 +473,7 @@
             2
           ],
           "details": "Implement logic to parse template literals (backtick strings) and extract all possible Tailwind class names, including those within embedded expressions. Handle multiline and nested template literals.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 4,
@@ -483,7 +483,7 @@
             3
           ],
           "details": "Analyze JSX props for className/class attributes passed via props or spread syntax. Extract class names from these patterns, supporting common utility libraries and custom components.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 5,
@@ -493,7 +493,7 @@
             4
           ],
           "details": "Support extraction from ternary expressions, logical AND/OR, and utility libraries like clsx/classnames. Ensure all possible Tailwind classes are captured from dynamic patterns.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 6,
@@ -503,7 +503,7 @@
             5
           ],
           "details": "Use profiling tools to identify bottlenecks in regex and parsing. Refactor code for efficiency and maintainability. Document performance improvements.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 7,
@@ -511,7 +511,7 @@
           "description": "Develop and execute a comprehensive suite of automated tests using real-world JSX components and patterns.",
           "dependencies": [],
           "details": "Write unit and integration tests for all extraction logic, covering static, dynamic, conditional, and prop-based class assignments. Use test frameworks (e.g., Jest, Mocha) and ensure high code coverage.",
-          "status": "pending"
+          "status": "done"
         }
       ]
     },

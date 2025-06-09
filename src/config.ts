@@ -2,6 +2,11 @@ import { cosmiconfig, cosmiconfigSync } from "cosmiconfig";
 import { z } from "zod";
 import { HtmlExtractionOptionsSchema, type HtmlExtractionOptions } from "./htmlExtractor.js";
 import { JsExtractionOptionsSchema, type JsExtractionOptions } from "./jsExtractor.js";
+import { ConfigError } from "./errors.js";
+import { createLogger } from "./logger.js";
+
+// Re-export ConfigError for backward compatibility
+export { ConfigError };
 
 /**
  * Configuration schema using Zod for validation
@@ -133,19 +138,8 @@ export interface ConfigResult {
   isEmpty?: boolean;
 }
 
-/**
- * Configuration error with helpful context
- */
-export class ConfigError extends Error {
-  constructor(
-    message: string,
-    public filepath?: string,
-    public cause?: Error,
-  ) {
-    super(message);
-    this.name = "ConfigError";
-  }
-}
+// Create a logger instance for configuration operations
+const configLogger = createLogger('Config');
 
 /**
  * Default configuration values
@@ -277,24 +271,45 @@ function normalizeCliArguments(args: CliArguments): Partial<EnigmaConfig> {
  * Validate configuration using Zod schema
  */
 function validateConfig(config: unknown, filepath?: string): EnigmaConfig {
+  configLogger.debug('Validating configuration', { filePath: filepath });
+  
   try {
-    return EnigmaConfigSchema.parse(config);
+    const validatedConfig = EnigmaConfigSchema.parse(config);
+    configLogger.debug('Configuration validation successful', { 
+      filePath: filepath,
+      configKeys: Object.keys(validatedConfig)
+    });
+    return validatedConfig;
   } catch (error) {
     if (error instanceof z.ZodError) {
       const issues = error.issues
         .map((issue) => `  - ${issue.path.join(".")}: ${issue.message}`)
         .join("\n");
 
+      configLogger.error('Configuration validation failed', {
+        filePath: filepath,
+        issueCount: error.issues.length,
+        issues: error.issues
+      });
+
       throw new ConfigError(
         `Invalid configuration${filepath ? ` in ${filepath}` : ""}:\n${issues}`,
         filepath,
-        error,
+        error as Error,
+        { operation: 'validateConfig', issueCount: error.issues.length }
       );
     }
+    
+    configLogger.error('Unexpected configuration validation error', {
+      filePath: filepath,
+      errorType: error instanceof Error ? error.constructor.name : typeof error
+    });
+    
     throw new ConfigError(
       `Configuration validation failed${filepath ? ` for ${filepath}` : ""}`,
       filepath,
       error as Error,
+      { operation: 'validateConfig' }
     );
   }
 }
@@ -310,22 +325,35 @@ async function loadConfigFromFile(
   filepath?: string;
   isEmpty?: boolean;
 }> {
+  configLogger.debug('Loading configuration from file', { 
+    searchFrom, 
+    configFile,
+    operation: 'loadConfigFromFile'
+  });
+  
   const explorer = cosmiconfig("enigma");
 
   try {
     let result;
 
     if (configFile) {
-      // Load specific config file
+      configLogger.debug('Loading specific config file', { configFile });
       result = await explorer.load(configFile);
     } else {
-      // Search for config file
+      configLogger.debug('Searching for config file', { searchFrom });
       result = await explorer.search(searchFrom);
     }
 
     if (!result) {
+      configLogger.info('No configuration file found, using defaults');
       return { config: {} };
     }
+
+    configLogger.info('Configuration file loaded successfully', {
+      filepath: result.filepath,
+      isEmpty: result.isEmpty,
+      hasConfig: !!result.config
+    });
 
     return {
       config: result.config || {},
@@ -333,10 +361,17 @@ async function loadConfigFromFile(
       isEmpty: result.isEmpty,
     };
   } catch (error) {
+    configLogger.error('Failed to load configuration file', {
+      configFile,
+      searchFrom,
+      errorMessage: error instanceof Error ? error.message : String(error)
+    });
+    
     throw new ConfigError(
       `Failed to load configuration${configFile ? ` from ${configFile}` : ""}`,
       configFile,
       error as Error,
+      { operation: 'loadConfigFromFile', searchFrom }
     );
   }
 }
@@ -352,22 +387,35 @@ function loadConfigFromFileSync(
   filepath?: string;
   isEmpty?: boolean;
 } {
+  configLogger.debug('Loading configuration from file (sync)', { 
+    searchFrom, 
+    configFile,
+    operation: 'loadConfigFromFileSync'
+  });
+  
   const explorer = cosmiconfigSync("enigma");
 
   try {
     let result;
 
     if (configFile) {
-      // Load specific config file
+      configLogger.debug('Loading specific config file (sync)', { configFile });
       result = explorer.load(configFile);
     } else {
-      // Search for config file
+      configLogger.debug('Searching for config file (sync)', { searchFrom });
       result = explorer.search(searchFrom);
     }
 
     if (!result) {
+      configLogger.info('No configuration file found (sync), using defaults');
       return { config: {} };
     }
+
+    configLogger.info('Configuration file loaded successfully (sync)', {
+      filepath: result.filepath,
+      isEmpty: result.isEmpty,
+      hasConfig: !!result.config
+    });
 
     return {
       config: result.config || {},
@@ -375,10 +423,17 @@ function loadConfigFromFileSync(
       isEmpty: result.isEmpty,
     };
   } catch (error) {
+    configLogger.error('Failed to load configuration file (sync)', {
+      configFile,
+      searchFrom,
+      errorMessage: error instanceof Error ? error.message : String(error)
+    });
+    
     throw new ConfigError(
       `Failed to load configuration${configFile ? ` from ${configFile}` : ""}`,
       configFile,
       error as Error,
+      { operation: 'loadConfigFromFileSync', searchFrom }
     );
   }
 }
@@ -391,9 +446,17 @@ export async function loadConfig(
   cliArgs: CliArguments = {},
   searchFrom?: string,
 ): Promise<ConfigResult> {
+  const startTime = Date.now();
+  configLogger.info('Loading configuration from all sources', {
+    hasCliArgs: Object.keys(cliArgs).length > 0,
+    searchFrom,
+    operation: 'loadConfig'
+  });
+  
   try {
     // Step 1: Start with defaults
     let mergedConfig = { ...DEFAULT_CONFIG };
+    configLogger.debug('Applied default configuration');
 
     // Step 2: Load and merge config file
     const {
@@ -404,16 +467,30 @@ export async function loadConfig(
 
     if (Object.keys(fileConfig).length > 0) {
       mergedConfig = deepMerge(mergedConfig, fileConfig);
+      configLogger.debug('Merged file configuration', {
+        configKeys: Object.keys(fileConfig)
+      });
     }
 
     // Step 3: Apply CLI arguments (highest precedence)
     const normalizedCliArgs = normalizeCliArguments(cliArgs);
     if (Object.keys(normalizedCliArgs).length > 0) {
       mergedConfig = deepMerge(mergedConfig, normalizedCliArgs);
+      configLogger.debug('Applied CLI arguments', {
+        cliKeys: Object.keys(normalizedCliArgs)
+      });
     }
 
     // Step 4: Validate final configuration
     const validatedConfig = validateConfig(mergedConfig, filepath);
+
+    const processingTime = Date.now() - startTime;
+    configLogger.info('Configuration loaded successfully', {
+      filepath,
+      isEmpty,
+      processingTime,
+      totalConfigKeys: Object.keys(validatedConfig).length
+    });
 
     return {
       config: validatedConfig,
@@ -421,13 +498,27 @@ export async function loadConfig(
       isEmpty,
     };
   } catch (error) {
+    const processingTime = Date.now() - startTime;
+    
     if (error instanceof ConfigError) {
+      configLogger.error('Configuration loading failed', {
+        processingTime,
+        errorCode: error.code
+      });
       throw error;
     }
+    
+    configLogger.error('Unexpected error during configuration loading', {
+      processingTime,
+      errorType: error instanceof Error ? error.constructor.name : typeof error,
+      errorMessage: error instanceof Error ? error.message : String(error)
+    });
+    
     throw new ConfigError(
       "Failed to load configuration",
       undefined,
       error as Error,
+      { operation: 'loadConfig', processingTime }
     );
   }
 }

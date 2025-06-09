@@ -15,6 +15,7 @@ import {
   discoverFilesFromConfig,
   FileDiscoveryError,
 } from "../src/fileDiscovery.js";
+import { createLogger, LogLevel } from "../src/logger.js";
 import type { CliArguments } from "../src/config.js";
 
 // Get package.json for version information
@@ -23,6 +24,9 @@ const __dirname = dirname(__filename);
 // In built version, we need to go up from dist/bin to project root
 const packageJsonPath = join(__dirname, "..", "..", "package.json");
 const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf8"));
+
+// Initialize CLI logger
+const cliLogger = createLogger('CLI');
 
 console.log(chalk.blue("🔵 Tailwind Enigma"));
 
@@ -106,11 +110,9 @@ const argv = await yargs(hideBin(process.argv))
   })
   .command("init-config", "Create a sample configuration file", {}, () => {
     const sampleConfig = createSampleConfig();
-    console.log(chalk.green("Sample configuration file content:"));
-    console.log(sampleConfig);
-    console.log(
-      chalk.yellow("\nSave this as enigma.config.js in your project root."),
-    );
+    cliLogger.info("Sample configuration file content:");
+    console.log(sampleConfig); // Keep raw output for config content
+    cliLogger.info("Save this as enigma.config.js in your project root.");
   })
   .help()
   .alias("help", "h")
@@ -141,29 +143,26 @@ try {
   // Load and merge configuration from all sources
   const configResult = getConfigSync(cliArgs);
 
-  if (argv.debug) {
-    console.log(chalk.cyan("🐛 Debug mode enabled"));
-    console.log(chalk.gray("Final configuration:"));
-    console.log(JSON.stringify(configResult, null, 2));
+  // Configure logger based on CLI arguments and config
+  if (argv.debug || configResult.debug) {
+    cliLogger.setLevel(LogLevel.DEBUG);
+    cliLogger.debug("Debug mode enabled");
+    cliLogger.debug("Final configuration:", configResult);
+  } else if (argv.verbose || configResult.verbose) {
+    cliLogger.setLevel(LogLevel.INFO);
   }
 
-  if (argv.verbose || configResult.verbose) {
-    console.log(chalk.green("✅ Configuration loaded successfully"));
-    if (configResult.input) {
-      console.log(chalk.gray(`📁 Input: ${configResult.input}`));
-    }
-    if (configResult.output) {
-      console.log(chalk.gray(`📁 Output: ${configResult.output}`));
-    }
+  cliLogger.info("Configuration loaded successfully");
+  if (configResult.input) {
+    cliLogger.info("Input configured", { input: configResult.input });
+  }
+  if (configResult.output) {
+    cliLogger.info("Output configured", { output: configResult.output });
   }
 
   // Main processing logic would go here
   if (configResult.pretty) {
-    console.log(
-      chalk.green(
-        "🎨 Pretty mode enabled - output will be formatted for readability",
-      ),
-    );
+    cliLogger.info("Pretty mode enabled - output will be formatted for readability");
   }
 
   // File discovery
@@ -171,43 +170,38 @@ try {
     try {
       const discoveryResult = discoverFilesFromConfig(configResult);
       
-      if (configResult.verbose || configResult.debug) {
-        console.log(chalk.cyan(`🔍 File Discovery Results:`));
-        console.log(chalk.gray(`   Found ${discoveryResult.count} files in ${discoveryResult.duration}ms`));
-        
-        if (Object.keys(discoveryResult.breakdown).length > 0) {
-          console.log(chalk.gray(`   Breakdown:`));
-          Object.entries(discoveryResult.breakdown).forEach(([type, count]) => {
-            console.log(chalk.gray(`     ${type}: ${count} files`));
-          });
-        }
-        
-        if (discoveryResult.emptyPatterns.length > 0) {
-          console.log(chalk.yellow(`   ⚠️  No files found for patterns: ${discoveryResult.emptyPatterns.join(', ')}`));
-        }
-        
-        if (configResult.debug) {
-          console.log(chalk.gray(`   Files found:`));
-          discoveryResult.files.forEach(file => {
-            console.log(chalk.gray(`     ${file}`));
-          });
-        }
+      cliLogger.info("File Discovery Results", { 
+        count: discoveryResult.count, 
+        duration: discoveryResult.duration 
+      });
+      
+      if (Object.keys(discoveryResult.breakdown).length > 0) {
+        cliLogger.debug("File type breakdown", discoveryResult.breakdown);
+      }
+      
+      if (discoveryResult.emptyPatterns.length > 0) {
+        cliLogger.warn("No files found for patterns", { patterns: discoveryResult.emptyPatterns });
+      }
+      
+      if (configResult.debug) {
+        cliLogger.debug("Files found", { files: discoveryResult.files });
       }
       
       if (discoveryResult.count === 0) {
-        console.log(chalk.yellow("⚠️  No files found matching the specified patterns"));
-        console.log(chalk.gray(`   Patterns searched: ${Array.isArray(configResult.input) ? configResult.input.join(', ') : configResult.input}`));
+        cliLogger.warn("No files found matching the specified patterns");
+        cliLogger.info("Patterns searched", { 
+          patterns: Array.isArray(configResult.input) ? configResult.input : [configResult.input] 
+        });
       } else {
-        console.log(chalk.green(`✅ Found ${discoveryResult.count} files to process`));
+        cliLogger.info("Files ready for processing", { count: discoveryResult.count });
       }
       
     } catch (error) {
       if (error instanceof FileDiscoveryError) {
-        console.error(chalk.red("❌ File Discovery Error:"));
-        console.error(chalk.red(error.message));
-        if (error.patterns) {
-          console.error(chalk.gray(`   Patterns: ${Array.isArray(error.patterns) ? error.patterns.join(', ') : error.patterns}`));
-        }
+        cliLogger.error("File Discovery Error", { 
+          message: error.message,
+          patterns: error.patterns 
+        });
         process.exit(1);
       } else {
         throw error; // Re-throw unexpected errors
@@ -216,29 +210,24 @@ try {
   }
 
   // For now, just display the configuration for demonstration
-  console.log(chalk.blue("🚀 Tailwind Enigma is ready to optimize your CSS!"));
+  cliLogger.info("Tailwind Enigma is ready to optimize your CSS!");
 
   if (!configResult.input && !argv._.length) {
-    console.log(
-      chalk.yellow("💡 Tip: Use --input to specify files to process"),
-    );
-    console.log(
-      chalk.yellow(
-        "💡 Tip: Run 'enigma init-config' to create a sample configuration file",
-      ),
-    );
+    cliLogger.info("Tip: Use --input to specify files to process");
+    cliLogger.info("Tip: Run 'enigma init-config' to create a sample configuration file");
   }
 } catch (error) {
   if (error instanceof ConfigError) {
-    console.error(chalk.red("❌ Configuration Error:"));
-    console.error(chalk.red(error.message));
-    if (error.filepath) {
-      console.error(chalk.gray(`   File: ${error.filepath}`));
-    }
+    cliLogger.error("Configuration Error", { 
+      message: error.message,
+      filepath: error.filepath 
+    });
     process.exit(1);
   } else {
-    console.error(chalk.red("❌ Unexpected Error:"));
-    console.error(chalk.red((error as Error).message));
+    cliLogger.fatal("Unexpected Error", { 
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined
+    });
     process.exit(1);
   }
 }

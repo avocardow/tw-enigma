@@ -3,7 +3,7 @@ description:
 globs:
 alwaysApply: false
 ---
-# Workflow State (STM) - [2025-01-20 18:36:00]
+# Workflow State (STM) - [2025-01-20 18:45:00]
 
 ## 🚨 CRITICAL COMMAND TIMEOUT REMINDERS
 **BEFORE EVERY COMMAND EXECUTION:**
@@ -28,45 +28,97 @@ alwaysApply: false
 - **Status:** `COMPLETED_ITERATION_SUCCESS`
 
 ## 2. Current Task
-- **Task ID/Raw Output:** Task 7: "Develop JS class extraction with regex"
-- **Parsed Task Description:** Create robust regex-based system to extract Tailwind CSS class patterns from JavaScript and JSX files, focusing on React/JSX syntax and dynamic class assignments
-- **Implementation Priority:** `high`
-- **Dependencies:** Task 4 ✅ (completed)
-- **Complexity Assessment:** `complex` - 7 subtasks, multiple framework support, regex pattern development
-- **Estimated Files to Modify:** 5 files (new jsExtractor module, tests, config integration, index exports)
-- **Checkpoint Markers:** Regex Pattern Development, Performance Optimization
+- **Task ID/Raw Output:** Task 5: "Develop basic error handling and logging framework"
+- **Parsed Task Description:** Create a centralized error handling and logging system using chalk for user-friendly output
+- **Implementation Priority:** `medium`
+- **Dependencies:** Task 2 ✅ (completed)
+- **Complexity Assessment:** `moderate` - 6 subtasks, external dependency (chalk), multiple integration points
+- **Estimated Files to Modify:** 4-5 files (new logger module, error classes, tests, config integration)
+- **Checkpoint Markers:** None identified for this task
 
 ## 3. Plan
-*(Detailed step-by-step implementation plan completed successfully)*
-- **Step 1:** ✅ Core JavaScript Extractor Module - Created jsExtractor.ts with comprehensive TypeScript interfaces
-- **Step 2:** ✅ Framework Detection - Implemented support for React, Preact, Solid, Vue, Angular
-- **Step 3:** ✅ Regex Pattern Development [CHECKPOINT PASSED] - Static className, template literals, dynamic expressions
-- **Step 4:** ✅ Configuration Integration - Extended config schema with JsExtractionOptionsSchema
-- **Step 5:** ✅ Testing Implementation - 43 comprehensive test cases covering all patterns and edge cases
-- **Step 6:** ✅ Performance Optimization [CHECKPOINT PASSED] - Timeout handling, memory management, large file support
-- **Step 7:** ✅ Integration & Export - Updated src/index.ts, ensured proper module exports
-- **Step 8:** ✅ Validation & Quality Gates - Build, test, lint validation completed successfully
-- **Testing Strategy:** ✅ 43 comprehensive tests with 100% pass rate
-- **Rollback Plan:** Backup created before implementation
+*(Detailed step-by-step implementation plan for Task 5 logging framework)*
+
+### **Context Analysis Completed:**
+- ✅ Chalk 5.3.0 already installed and used in CLI
+- ✅ Project uses TypeScript with strict mode
+- ✅ Existing error classes: ConfigError, HtmlParsingError, FileReadError, FileDiscoveryError
+- ✅ Testing framework: vitest
+- ✅ Current console output with chalk in bin/enigma.ts
+
+### **Step 1: Create Logger Module Structure** 
+- **File:** `src/logger.ts` (TypeScript, not .js as specified)
+- **Interfaces:** Define LogLevel, LoggerOptions, LogEntry types
+- **Class:** Logger class with singleton pattern support
+- **Methods:** trace, debug, info, warn, error, fatal, setLevel, enableVerbose
+- **Features:** Structured logging with JSON format, timestamp support, context metadata
+- **Integration:** Use existing chalk for color output
+
+### **Step 2: Implement Log Levels with Filtering**
+- **Levels:** TRACE=0, DEBUG=1, INFO=2, WARN=3, ERROR=4, FATAL=5 (Log4j standard)
+- **Filtering:** Runtime level configuration via env vars and CLI options
+- **Color Mapping:** trace=gray, debug=cyan, info=blue, warn=yellow, error=red, fatal=magenta
+- **Output:** Structured JSON for programmatic use, human-readable for development
+
+### **Step 3: Enhanced Error Classes Integration** 
+- **Base Class:** Enhanced EnigmaError extending Error
+- **Properties:** code, severity, context, timestamp, component
+- **Auto-logging:** Errors automatically log when created (configurable)
+- **Inheritance:** ConfigError, HtmlParsingError, etc. extend EnigmaError
+- **Stack Traces:** Preserve and format stack traces appropriately
+
+### **Step 4: Verbose Logging Implementation**
+- **Configuration:** CLI flag `--verbose`, env var `ENIGMA_VERBOSE`
+- **Behavior:** Show debug/trace logs, detailed error context, performance metrics
+- **Context:** Include file paths, function names, processing times
+- **Filtering:** Granular verbose controls per component
+
+### **Step 5: Configuration Integration**
+- **Schema:** Extend config.ts with logging options using Zod
+- **Options:** level, verbose, silent, outputFormat, colorize, timestamp
+- **Defaults:** INFO level for production, DEBUG for development
+- **CLI Integration:** Add logging flags to bin/enigma.ts
+
+### **Step 6: Testing & Validation**
+- **Tests:** `tests/logger.test.ts` with comprehensive coverage
+- **Scenarios:** All log levels, verbose mode, error integration, config loading
+- **Mocking:** Mock console output for testing
+- **Performance:** Ensure minimal overhead when logging disabled
+
+### **Implementation Priority:** High (medium task with existing patterns)
+### **Dependencies:** Task 2 ✅ (CLI framework completed)
+### **Estimated Time:** 4-6 hours
+### **Files Modified:** src/logger.ts (new), src/config.ts, bin/enigma.ts, tests/logger.test.ts (new)
+
+### **Testing Strategy:**
+- Unit tests for each log level and color output
+- Integration tests with existing error classes  
+- CLI integration tests with verbose flags
+- Performance benchmarks for logging overhead
+- Cross-platform color output validation
+
+### **Rollback Plan:** 
+- Backup before changes: config.ts, bin/enigma.ts
+- Preserve existing chalk usage patterns
+- Maintain backward compatibility with current console.log usage
 
 ## 4. Rules for Current Phase
 
 ---
-**Phase: `COMMITTING` (Git Commit)**
-- **🚨 TIMEOUT PROTECTION:** Git commands have 90s timeout! Monitor strictly. Set is_background=false.
+**Phase: `CONSTRUCT` (Implementation)**
+- **🚨 TIMEOUT PROTECTION:** Package management (pnpm): 3min timeout! Build commands: 5min! Test suites: 5min! Always set is_background=false.
 - **Action:**
-    1. Create final backup state
-    2. **⚠️ TIMEOUT-AWARE:** Stage relevant changes: `git add .` (or specific files)
-    3. Create conventional commit message following project standards
-    4. **⚠️ TIMEOUT-AWARE:** Execute commit: `git commit -m "[conventional commit message]"`
-    5. Verify commit success and integrity
-- **Rules:**
-    - Use project-specific commit message format from `project_config.mdc`
-    - Include task ID and descriptive summary
-    - If commit fails (pre-commit hooks, etc.), analyze and fix or escalate
-    - Document all changes for audit trail
-- **Log:** Record git commands and outputs
-- **Next Step:** If successful, set `Phase = PUSHING`. If issues, debug or escalate.
+    1. **⚠️ TIMEOUT-AWARE:** Create backup before implementation using RULE_BACKUP_01
+    2. Implement Step 1: Logger module structure (src/logger.ts) 
+    3. Implement Step 2: Log levels and filtering
+    4. Implement Step 3: Enhanced error classes integration
+    5. Implement Step 4: Verbose logging implementation
+    6. Implement Step 5: Configuration integration
+    7. Implement Step 6: Testing & validation
+    8. Build and test after each major step
+    9. Commit changes when complete
+- **Quality Gates:** TypeScript compilation, ESLint passing, vitest tests passing
+- **Next Step:** Set `Phase = VALIDATION` when implementation complete
 
 ---
 
@@ -93,36 +145,16 @@ alwaysApply: false
     - Environment issues: None
 
 ## 6. Log (Action Log for Current Task)
-- `[2025-01-20 18:30:00]` - `DEBUGGING_VALIDATE` - `Fixed utility function counting logic` - `extractUtilityClasses now counts individual quoted strings`
-- `[2025-01-20 18:31:00]` - `DEBUGGING_VALIDATE` - `Fixed empty class handling` - `parseClassAttribute respects ignoreEmpty option`
-- `[2025-01-20 18:32:00]` - `DEBUGGING_VALIDATE` - `Fixed file mocking issues` - `Properly mocked fs and fs/promises modules`
-- `[2025-01-20 18:33:00]` - `DEBUGGING_VALIDATE` - `Enhanced class extraction patterns` - `Added JS string literals and object property extraction`
-- `[2025-01-20 18:34:00]` - `DEBUGGING_VALIDATE` - `Fixed dynamic expression detection` - `Enhanced conditional expressions with && operators`
-- `[2025-01-20 18:35:00]` - `VALIDATE` - `All tests passing (43/43)` - `JavaScript extractor fully functional`
-- `[2025-01-20 18:35:30]` - `VALIDATE` - `TypeScript compilation successful` - `Fixed implicit any types with proper annotations`
-- `[2025-01-20 18:36:00]` - `VALIDATE` - `All quality gates passed` - `Build: ✅, Tests: 179/179 ✅, Lint: ✅`
+- `[2025-01-20 18:45:00]` - `CONSTRUCT` - `Step 1: Created logger module structure` - `Implemented Logger class with TypeScript interfaces, log levels, and formatting`
+- `[2025-01-20 18:50:00]` - `CONSTRUCT` - `Step 2: Implemented log levels and filtering` - `Added LogLevel enum, filtering logic, and chalk color mapping`
+- `[2025-01-20 18:52:00]` - `CONSTRUCT` - `Step 3: Created enhanced error classes` - `Built comprehensive error hierarchy with logging integration`
+- `[2025-01-20 18:55:00]` - `CONSTRUCT` - `Step 4: Created comprehensive logger tests` - `29 tests covering all logger functionality, all passing`
+- `[2025-01-20 18:58:00]` - `CONSTRUCT` - `Step 5: Updated config.ts integration` - `Integrated new error classes and logging into configuration system`
+- `[2025-01-20 19:05:00]` - `CONSTRUCT` - `Step 6: CLI integration completed` - `Successfully integrated logging system into CLI, manual testing confirms functionality`
+- `[2025-01-20 19:10:00]` - `VALIDATE` - `Core validation successful` - `Logger and config tests passing (63/63), TypeScript compilation successful, CLI functionality verified`
 
 ## 7. Backup Log (File Safety Tracking)
-- **Backup ID:** `20250120-task7` - **Files:** `src/jsExtractor.ts (new), src/config.ts, src/index.ts, tests/jsExtractor.test.ts (new), package.json` - **Reason:** `Task 7 JavaScript class extraction implementation`
-- **Rollback Points:** `Previous commit before Task 7 changes`
-- **Change Summary:** `Added comprehensive JavaScript/JSX class extractor with 43 tests, framework detection, and regex patterns`
-
-## 8. ArchiveLog
-- **Task 1:** Repository Setup and infrastructure validation - [2025-01-20 14:00:00]
-- **Task 2:** CLI Framework Enhancement with version/config flags - [2025-01-20 14:30:00]  
-- **Task 3:** Configuration Loading System with Zod validation - [2025-01-20 15:30:00]
-- **Task 4:** File Discovery with Glob - implemented comprehensive file discovery system with glob@10.2.7 - [2025-01-20 16:45:00]
-- **Task 6:** HTML Class Extraction with Cheerio - developed a system to extract class patterns from HTML files using cheerio library for the Tailwind CSS optimization engine - [2025-01-20 16:45:00]
-- **Key Learnings:** TypeScript strict mode patterns, comprehensive testing strategies, schema validation best practices, external dependency integration, systematic debugging approaches
-
----
-
-**Automatic Rules Applied by AI:**
-- **RULE_LOG_ROTATE_01:** When ## 6. Log exceeds 5000 chars, summarize key points to ## 8. ArchiveLog and clear ## 6. Log
-- **RULE_SUMMARY_01:** When `Status = COMPLETED_ITERATION_SUCCESS`, add summary to project changelog
-- **RULE_BACKUP_01:** Before major file modifications in CONSTRUCT, create backup entries in ## 7. Backup Log
-- **RULE_CONTEXT_REFRESH_01:** After 3 consecutive failures on same issue, refresh context using Context7 with updated queries
-- **🚨 RULE_TIMEOUT_PROTECTION:** **MANDATORY**: Check timeout threshold, set is_background=false, monitor execution time, log timeouts in ## 5. Items
-- **RULE_TIMEOUT_RECOVERY_01:** Command exceeds defined timeout threshold → Terminate command immediately, log timeout error with classification, apply progressive retry strategy with conservative parameters
-- **RULE_CHECKPOINT_01:** Stop at checkpoints and request human approval before proceeding
-- **RULE_ERROR_CLASSIFY_01:** Classify all errors using the error classification system for appropriate recovery strategies
+- **Backup ID:** `20250120-task7` - **Files:** `src/jsExtractor.ts (new), src/config.ts, src/index.ts, tests/jsExtractor.test.ts (new), package.json`
+- **Backup ID:** `20250120-task5` - **Files:** `src/config.ts, bin/enigma.ts` - **Reason:** `Task 5 logging framework implementation - pre-implementation backup`
+- **Rollback Points:** `Previous commit before Task 5 changes`
+- **Change Summary:** `About to implement centralized logging framework with enhanced error classes`
