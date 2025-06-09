@@ -1,4 +1,5 @@
 import * as cheerio from 'cheerio';
+import { AnyNode } from 'domhandler';
 import * as fs from 'fs/promises';
 import { z } from 'zod';
 
@@ -253,7 +254,7 @@ export class HtmlExtractor {
   /**
    * Calculate the depth of an element in the DOM tree
    */
-  private calculateDepth($element: cheerio.Cheerio<cheerio.Element>): number {
+  private calculateDepth($element: cheerio.Cheerio<AnyNode>): number {
     let depth = 0;
     let current = $element.parent();
     

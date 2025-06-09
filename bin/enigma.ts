@@ -11,12 +11,17 @@ import {
   ConfigError,
   createSampleConfig,
 } from "../src/config.js";
+import {
+  discoverFilesFromConfig,
+  FileDiscoveryError,
+} from "../src/fileDiscovery.js";
 import type { CliArguments } from "../src/config.js";
 
 // Get package.json for version information
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const packageJsonPath = join(__dirname, "..", "package.json");
+// In built version, we need to go up from dist/bin to project root
+const packageJsonPath = join(__dirname, "..", "..", "package.json");
 const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf8"));
 
 console.log(chalk.blue("🔵 Tailwind Enigma"));
@@ -82,6 +87,23 @@ const argv = await yargs(hideBin(process.argv))
     type: "boolean",
     description: "Generate source maps",
   })
+  .option("follow-symlinks", {
+    type: "boolean",
+    description: "Follow symbolic links during file discovery",
+  })
+  .option("max-files", {
+    type: "number",
+    description: "Maximum number of files to process",
+  })
+  .option("include-file-types", {
+    type: "array",
+    choices: ["HTML", "JAVASCRIPT", "CSS", "TEMPLATE"],
+    description: "Specific file types to include",
+  })
+  .option("exclude-extensions", {
+    type: "array",
+    description: "File extensions to exclude",
+  })
   .command("init-config", "Create a sample configuration file", {}, () => {
     const sampleConfig = createSampleConfig();
     console.log(chalk.green("Sample configuration file content:"));
@@ -107,6 +129,10 @@ const cliArgs: CliArguments = {
   maxConcurrency: argv["max-concurrency"],
   classPrefix: argv["class-prefix"],
   excludePatterns: argv["exclude-patterns"] as string[],
+  followSymlinks: argv["follow-symlinks"],
+  maxFiles: argv["max-files"],
+  includeFileTypes: argv["include-file-types"] as ("HTML" | "JAVASCRIPT" | "CSS" | "TEMPLATE")[],
+  excludeExtensions: argv["exclude-extensions"] as string[],
   preserveComments: argv["preserve-comments"],
   sourceMaps: argv["source-maps"],
 };
@@ -138,6 +164,55 @@ try {
         "🎨 Pretty mode enabled - output will be formatted for readability",
       ),
     );
+  }
+
+  // File discovery
+  if (configResult.input) {
+    try {
+      const discoveryResult = discoverFilesFromConfig(configResult);
+      
+      if (configResult.verbose || configResult.debug) {
+        console.log(chalk.cyan(`🔍 File Discovery Results:`));
+        console.log(chalk.gray(`   Found ${discoveryResult.count} files in ${discoveryResult.duration}ms`));
+        
+        if (Object.keys(discoveryResult.breakdown).length > 0) {
+          console.log(chalk.gray(`   Breakdown:`));
+          Object.entries(discoveryResult.breakdown).forEach(([type, count]) => {
+            console.log(chalk.gray(`     ${type}: ${count} files`));
+          });
+        }
+        
+        if (discoveryResult.emptyPatterns.length > 0) {
+          console.log(chalk.yellow(`   ⚠️  No files found for patterns: ${discoveryResult.emptyPatterns.join(', ')}`));
+        }
+        
+        if (configResult.debug) {
+          console.log(chalk.gray(`   Files found:`));
+          discoveryResult.files.forEach(file => {
+            console.log(chalk.gray(`     ${file}`));
+          });
+        }
+      }
+      
+      if (discoveryResult.count === 0) {
+        console.log(chalk.yellow("⚠️  No files found matching the specified patterns"));
+        console.log(chalk.gray(`   Patterns searched: ${Array.isArray(configResult.input) ? configResult.input.join(', ') : configResult.input}`));
+      } else {
+        console.log(chalk.green(`✅ Found ${discoveryResult.count} files to process`));
+      }
+      
+    } catch (error) {
+      if (error instanceof FileDiscoveryError) {
+        console.error(chalk.red("❌ File Discovery Error:"));
+        console.error(chalk.red(error.message));
+        if (error.patterns) {
+          console.error(chalk.gray(`   Patterns: ${Array.isArray(error.patterns) ? error.patterns.join(', ') : error.patterns}`));
+        }
+        process.exit(1);
+      } else {
+        throw error; // Re-throw unexpected errors
+      }
+    }
   }
 
   // For now, just display the configuration for demonstration

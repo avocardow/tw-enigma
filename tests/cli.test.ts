@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { spawn } from "child_process";
 import { join } from "path";
 
-const CLI_PATH = join(process.cwd(), "dist", "enigma.js");
+const CLI_PATH = join(process.cwd(), "dist", "bin", "enigma.js");
 
 // Helper function to run CLI and capture output
 function runCLI(args: string[]): Promise<{

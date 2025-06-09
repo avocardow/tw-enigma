@@ -1,6 +1,7 @@
 import { cosmiconfig, cosmiconfigSync } from "cosmiconfig";
 import { z } from "zod";
 import { HtmlExtractionOptionsSchema, type HtmlExtractionOptions } from "./htmlExtractor.js";
+import { JsExtractionOptionsSchema, type JsExtractionOptions } from "./jsExtractor.js";
 
 /**
  * Configuration schema using Zod for validation
@@ -74,6 +75,11 @@ export const EnigmaConfigSchema = z.object({
   htmlExtractor: HtmlExtractionOptionsSchema
     .optional()
     .describe("HTML class extraction configuration options"),
+
+  // JavaScript/JSX Class Extractor Configuration
+  jsExtractor: JsExtractionOptionsSchema
+    .optional()
+    .describe("JavaScript/JSX class extraction configuration options"),
 });
 
 /**
@@ -108,6 +114,14 @@ export interface CliArguments {
   htmlMaxFileSize?: number;
   htmlTimeout?: number;
   htmlPreserveWhitespace?: boolean;
+  // JavaScript/JSX extractor CLI options
+  jsEnableFrameworkDetection?: boolean;
+  jsIncludeDynamicClasses?: boolean;
+  jsCaseSensitive?: boolean;
+  jsIgnoreEmpty?: boolean;
+  jsMaxFileSize?: number;
+  jsTimeout?: number;
+  jsSupportedFrameworks?: string[];
 }
 
 /**
@@ -232,6 +246,28 @@ function normalizeCliArguments(args: CliArguments): Partial<EnigmaConfig> {
   if (Object.keys(htmlExtractorConfig).length > 0) {
     // Apply defaults using the schema to ensure all fields have proper values
     config.htmlExtractor = HtmlExtractionOptionsSchema.parse(htmlExtractorConfig);
+  }
+
+  // JavaScript/JSX extractor options
+  const jsExtractorConfig: Partial<JsExtractionOptions> = {};
+  if (args.jsEnableFrameworkDetection !== undefined)
+    jsExtractorConfig.enableFrameworkDetection = args.jsEnableFrameworkDetection;
+  if (args.jsIncludeDynamicClasses !== undefined)
+    jsExtractorConfig.includeDynamicClasses = args.jsIncludeDynamicClasses;
+  if (args.jsCaseSensitive !== undefined)
+    jsExtractorConfig.caseSensitive = args.jsCaseSensitive;
+  if (args.jsIgnoreEmpty !== undefined)
+    jsExtractorConfig.ignoreEmpty = args.jsIgnoreEmpty;
+  if (args.jsMaxFileSize !== undefined)
+    jsExtractorConfig.maxFileSize = args.jsMaxFileSize;
+  if (args.jsTimeout !== undefined)
+    jsExtractorConfig.timeout = args.jsTimeout;
+  if (args.jsSupportedFrameworks !== undefined)
+    jsExtractorConfig.supportedFrameworks = args.jsSupportedFrameworks;
+
+  if (Object.keys(jsExtractorConfig).length > 0) {
+    // Apply defaults using the schema to ensure all fields have proper values
+    config.jsExtractor = JsExtractionOptionsSchema.parse(jsExtractorConfig);
   }
 
   return config;

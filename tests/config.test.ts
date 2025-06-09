@@ -54,6 +54,7 @@ describe("Configuration System", () => {
         followSymlinks: false, // default value
         excludeExtensions: [], // default value
         htmlExtractor: undefined, // default value
+        jsExtractor: undefined, // default value
       });
     });
 
@@ -74,6 +75,8 @@ describe("Configuration System", () => {
         excludeExtensions: [],
         preserveComments: false,
         sourceMaps: false,
+        htmlExtractor: undefined,
+        jsExtractor: undefined,
       });
     });
 
@@ -148,6 +151,62 @@ describe("Configuration System", () => {
       const result = EnigmaConfigSchema.parse(configWithPartialHtml);
       expect(result.htmlExtractor?.caseSensitive).toBe(false);
     });
+
+    it("should validate JavaScript/JSX extractor configuration", () => {
+      const configWithJsExtractor = {
+        jsExtractor: {
+          enableFrameworkDetection: false,
+          includeDynamicClasses: false,
+          caseSensitive: false,
+          maxFileSize: 8000000,
+          timeout: 5000,
+          supportedFrameworks: ['react', 'vue'],
+        },
+      };
+
+      const result = EnigmaConfigSchema.parse(configWithJsExtractor);
+      expect(result.jsExtractor).toEqual({
+        enableFrameworkDetection: false,
+        includeDynamicClasses: false,
+        caseSensitive: false,
+        ignoreEmpty: true, // default
+        maxFileSize: 8000000,
+        timeout: 5000,
+        supportedFrameworks: ['react', 'vue'],
+      });
+    });
+
+    it("should reject invalid JavaScript extractor options", () => {
+      expect(() => {
+        EnigmaConfigSchema.parse({
+          jsExtractor: { maxFileSize: -1 }
+        });
+      }).toThrow();
+
+      expect(() => {
+        EnigmaConfigSchema.parse({
+          jsExtractor: { timeout: -1 }
+        });
+      }).toThrow();
+
+      expect(() => {
+        EnigmaConfigSchema.parse({
+          jsExtractor: { enableFrameworkDetection: "true" }
+        });
+      }).toThrow();
+    });
+
+    it("should allow partial JavaScript extractor configuration", () => {
+      const configWithPartialJs = {
+        jsExtractor: {
+          includeDynamicClasses: false,
+        },
+      };
+
+      const result = EnigmaConfigSchema.parse(configWithPartialJs);
+      expect(result.jsExtractor?.includeDynamicClasses).toBe(false);
+      expect(result.jsExtractor?.enableFrameworkDetection).toBe(true); // default
+    });
   });
 
   describe("Configuration File Loading", () => {
@@ -184,6 +243,8 @@ describe("Configuration System", () => {
         excludeExtensions: [],
         preserveComments: false,
         sourceMaps: false,
+        htmlExtractor: undefined,
+        jsExtractor: undefined,
       });
       expect(result.filepath).toBeUndefined();
     });
@@ -317,6 +378,28 @@ describe("Configuration System", () => {
         maxFileSize: 5000000,
         timeout: 3000,
         preserveWhitespace: false, // default value
+      });
+    });
+
+    it("should handle JavaScript extractor CLI arguments", async () => {
+      const cliArgs: CliArguments = {
+        jsEnableFrameworkDetection: false,
+        jsIncludeDynamicClasses: false,
+        jsCaseSensitive: false,
+        jsMaxFileSize: 8000000,
+        jsTimeout: 5000,
+        jsSupportedFrameworks: ['react', 'vue'],
+      };
+
+      const result = await loadConfig(cliArgs, TEST_DIR);
+      expect(result.config.jsExtractor).toEqual({
+        enableFrameworkDetection: false,
+        includeDynamicClasses: false,
+        caseSensitive: false,
+        ignoreEmpty: true, // default value
+        maxFileSize: 8000000,
+        timeout: 5000,
+        supportedFrameworks: ['react', 'vue'],
       });
     });
 
