@@ -49,7 +49,12 @@ describe("Configuration System", () => {
       };
 
       const result = EnigmaConfigSchema.parse(validConfig);
-      expect(result).toEqual(validConfig);
+      expect(result).toEqual({
+        ...validConfig,
+        followSymlinks: false, // default value
+        excludeExtensions: [], // default value
+        htmlExtractor: undefined, // default value
+      });
     });
 
     it("should apply defaults for missing optional fields", () => {
@@ -65,6 +70,8 @@ describe("Configuration System", () => {
         maxConcurrency: 4,
         classPrefix: "",
         excludePatterns: [],
+        followSymlinks: false,
+        excludeExtensions: [],
         preserveComments: false,
         sourceMaps: false,
       });
@@ -88,6 +95,58 @@ describe("Configuration System", () => {
       expect(() => {
         EnigmaConfigSchema.parse({ excludePatterns: "pattern" });
       }).toThrow();
+    });
+
+    it("should validate HTML extractor configuration", () => {
+      const configWithHtmlExtractor = {
+        htmlExtractor: {
+          caseSensitive: false,
+          ignoreEmpty: false,
+          maxFileSize: 5000000,
+          timeout: 3000,
+          preserveWhitespace: true,
+        },
+      };
+
+      const result = EnigmaConfigSchema.parse(configWithHtmlExtractor);
+      expect(result.htmlExtractor).toEqual({
+        caseSensitive: false,
+        ignoreEmpty: false,
+        maxFileSize: 5000000,
+        timeout: 3000,
+        preserveWhitespace: true,
+      });
+    });
+
+    it("should reject invalid HTML extractor options", () => {
+      expect(() => {
+        EnigmaConfigSchema.parse({
+          htmlExtractor: { maxFileSize: -1 }
+        });
+      }).toThrow();
+
+      expect(() => {
+        EnigmaConfigSchema.parse({
+          htmlExtractor: { timeout: -1 }
+        });
+      }).toThrow();
+
+      expect(() => {
+        EnigmaConfigSchema.parse({
+          htmlExtractor: { caseSensitive: "true" }
+        });
+      }).toThrow();
+    });
+
+    it("should allow partial HTML extractor configuration", () => {
+      const configWithPartialHtml = {
+        htmlExtractor: {
+          caseSensitive: false,
+        },
+      };
+
+      const result = EnigmaConfigSchema.parse(configWithPartialHtml);
+      expect(result.htmlExtractor?.caseSensitive).toBe(false);
     });
   });
 
@@ -121,6 +180,8 @@ describe("Configuration System", () => {
         maxConcurrency: 4,
         classPrefix: "",
         excludePatterns: [],
+        followSymlinks: false,
+        excludeExtensions: [],
         preserveComments: false,
         sourceMaps: false,
       });
@@ -240,6 +301,50 @@ describe("Configuration System", () => {
       expect(result.config.pretty).toBe(false); // Default
       expect(result.config.verbose).toBe(false); // Default
     });
+
+    it("should handle HTML extractor CLI arguments", async () => {
+      const cliArgs: CliArguments = {
+        htmlCaseSensitive: false,
+        htmlIgnoreEmpty: false,
+        htmlMaxFileSize: 5000000,
+        htmlTimeout: 3000,
+      };
+
+      const result = await loadConfig(cliArgs, TEST_DIR);
+      expect(result.config.htmlExtractor).toEqual({
+        caseSensitive: false,
+        ignoreEmpty: false,
+        maxFileSize: 5000000,
+        timeout: 3000,
+        preserveWhitespace: false, // default value
+      });
+    });
+
+    it("should merge HTML extractor CLI args with file config", async () => {
+      const fileConfig = {
+        htmlExtractor: {
+          caseSensitive: true,
+          timeout: 5000,
+          preserveWhitespace: false,
+        },
+      };
+
+      writeFileSync(TEST_CONFIG_FILE, JSON.stringify(fileConfig));
+
+      const cliArgs: CliArguments = {
+        htmlCaseSensitive: false,
+        htmlMaxFileSize: 2000000,
+      };
+
+      const result = await loadConfig(cliArgs, TEST_DIR);
+      
+      // CLI should override caseSensitive, add maxFileSize
+      // File config should provide timeout and preserveWhitespace
+      expect(result.config.htmlExtractor?.caseSensitive).toBe(false);
+      expect(result.config.htmlExtractor?.maxFileSize).toBe(2000000);
+      expect(result.config.htmlExtractor?.timeout).toBe(5000);
+      expect(result.config.htmlExtractor?.preserveWhitespace).toBe(false);
+    });
   });
 
   describe("Configuration Merging", () => {
@@ -296,6 +401,8 @@ describe("Configuration System", () => {
         maxConcurrency: 4, // default
         classPrefix: "", // default
         excludePatterns: ["cli-pattern1", "cli-pattern2"], // CLI override
+        followSymlinks: false, // default
+        excludeExtensions: [], // default
         preserveComments: false, // default
         sourceMaps: false, // default
       });
@@ -412,6 +519,7 @@ describe("Configuration System", () => {
         excludePatterns: [],
         preserveComments: false,
         sourceMaps: false,
+        // htmlExtractor is optional
       };
 
       expect(validConfig).toBeDefined();
@@ -432,6 +540,8 @@ describe("Configuration System", () => {
         maxConcurrency: 4,
         classPrefix: "",
         excludePatterns: [],
+        followSymlinks: false,
+        excludeExtensions: [],
         preserveComments: false,
         sourceMaps: false,
       });

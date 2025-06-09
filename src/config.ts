@@ -1,5 +1,6 @@
 import { cosmiconfig, cosmiconfigSync } from "cosmiconfig";
 import { z } from "zod";
+import { HtmlExtractionOptionsSchema, type HtmlExtractionOptions } from "./htmlExtractor.js";
 
 /**
  * Configuration schema using Zod for validation
@@ -42,12 +43,37 @@ export const EnigmaConfigSchema = z.object({
     .default([])
     .describe("Patterns to exclude from processing"),
 
+  // File Discovery Options
+  followSymlinks: z
+    .boolean()
+    .default(false)
+    .describe("Follow symbolic links during file discovery"),
+  maxFiles: z
+    .number()
+    .int()
+    .min(1)
+    .optional()
+    .describe("Maximum number of files to process"),
+  includeFileTypes: z
+    .array(z.enum(["HTML", "JAVASCRIPT", "CSS", "TEMPLATE"]))
+    .optional()
+    .describe("Specific file types to include"),
+  excludeExtensions: z
+    .array(z.string())
+    .default([])
+    .describe("File extensions to exclude"),
+
   // Advanced options
   preserveComments: z
     .boolean()
     .default(false)
     .describe("Preserve CSS comments in output"),
   sourceMaps: z.boolean().default(false).describe("Generate source maps"),
+
+  // HTML Class Extractor Configuration
+  htmlExtractor: HtmlExtractionOptionsSchema
+    .optional()
+    .describe("HTML class extraction configuration options"),
 });
 
 /**
@@ -70,8 +96,18 @@ export interface CliArguments {
   maxConcurrency?: number;
   classPrefix?: string;
   excludePatterns?: string[];
+  followSymlinks?: boolean;
+  maxFiles?: number;
+  includeFileTypes?: ("HTML" | "JAVASCRIPT" | "CSS" | "TEMPLATE")[];
+  excludeExtensions?: string[];
   preserveComments?: boolean;
   sourceMaps?: boolean;
+  // HTML extractor CLI options
+  htmlCaseSensitive?: boolean;
+  htmlIgnoreEmpty?: boolean;
+  htmlMaxFileSize?: number;
+  htmlTimeout?: number;
+  htmlPreserveWhitespace?: boolean;
 }
 
 /**
@@ -109,6 +145,8 @@ const DEFAULT_CONFIG: EnigmaConfig = {
   maxConcurrency: 4,
   classPrefix: "",
   excludePatterns: [],
+  followSymlinks: false,
+  excludeExtensions: [],
   preserveComments: false,
   sourceMaps: false,
 };
@@ -167,9 +205,34 @@ function normalizeCliArguments(args: CliArguments): Partial<EnigmaConfig> {
   if (args.classPrefix !== undefined) config.classPrefix = args.classPrefix;
   if (args.excludePatterns !== undefined)
     config.excludePatterns = args.excludePatterns;
+  if (args.followSymlinks !== undefined)
+    config.followSymlinks = args.followSymlinks;
+  if (args.maxFiles !== undefined) config.maxFiles = args.maxFiles;
+  if (args.includeFileTypes !== undefined)
+    config.includeFileTypes = args.includeFileTypes;
+  if (args.excludeExtensions !== undefined)
+    config.excludeExtensions = args.excludeExtensions;
   if (args.preserveComments !== undefined)
     config.preserveComments = args.preserveComments;
   if (args.sourceMaps !== undefined) config.sourceMaps = args.sourceMaps;
+
+  // HTML extractor options
+  const htmlExtractorConfig: Partial<HtmlExtractionOptions> = {};
+  if (args.htmlCaseSensitive !== undefined)
+    htmlExtractorConfig.caseSensitive = args.htmlCaseSensitive;
+  if (args.htmlIgnoreEmpty !== undefined)
+    htmlExtractorConfig.ignoreEmpty = args.htmlIgnoreEmpty;
+  if (args.htmlMaxFileSize !== undefined)
+    htmlExtractorConfig.maxFileSize = args.htmlMaxFileSize;
+  if (args.htmlTimeout !== undefined)
+    htmlExtractorConfig.timeout = args.htmlTimeout;
+  if (args.htmlPreserveWhitespace !== undefined)
+    htmlExtractorConfig.preserveWhitespace = args.htmlPreserveWhitespace;
+
+  if (Object.keys(htmlExtractorConfig).length > 0) {
+    // Apply defaults using the schema to ensure all fields have proper values
+    config.htmlExtractor = HtmlExtractionOptionsSchema.parse(htmlExtractorConfig);
+  }
 
   return config;
 }
@@ -425,6 +488,12 @@ module.exports = {
   // Output customization
   classPrefix: "",
   excludePatterns: ["node_modules/**", "*.test.*"],
+  
+  // File Discovery Options
+  followSymlinks: false,
+  // maxFiles: 1000,
+  // includeFileTypes: ["HTML", "JAVASCRIPT"],
+  excludeExtensions: [".min.js", ".min.css"],
   
   // Advanced options
   preserveComments: false,
