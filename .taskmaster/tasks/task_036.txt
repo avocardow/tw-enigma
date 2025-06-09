@@ -1,0 +1,57 @@
+# Task ID: 36
+# Title: Implement CSS Output Optimization System for Production
+# Status: pending
+# Dependencies: 11, 12
+# Priority: medium
+# Description: Develop a comprehensive CSS output management system to optimize CSS assets for production, including chunking, minification, hash generation, delivery optimization, and reporting.
+# Details:
+1. Design a flexible CSS output strategy configuration (e.g., via enigma.config.js) allowing users to select output formats (single file, chunked, modular), enable/disable features (minification, source maps, critical CSS extraction), and set thresholds for chunking/splitting.
+2. Implement logic for CSS file chunking and splitting based on size, usage patterns, or route/page association. Ensure modular output supports dynamic imports where applicable.
+3. Integrate asset hash generation and fingerprinting for all CSS outputs to enable cache-busting and asset versioning. Maintain a manifest mapping original filenames to hashed outputs.
+4. Apply CSS minification using tools like cssnano and compression (e.g., Brotli or gzip) for all production builds, ensuring compatibility with PostCSS plugins and Tailwind workflows[2][5].
+5. Extract and inline critical CSS for above-the-fold content, supporting preloading and async loading for non-critical CSS. Provide configuration for critical CSS extraction per route or template[5].
+6. Generate source maps for all CSS outputs to aid debugging, with options to enable/disable in production builds.
+7. Analyze CSS file sizes post-build, generate detailed reports (including per-chunk/module breakdown), and surface warnings for large or inefficient outputs. Optionally, integrate with CI for automated performance checks.
+8. Ensure all optimizations are compatible with the existing CSS generation (Task 11) and PostCSS integration (Task 12), and provide extensibility for future enhancements.
+
+# Test Strategy:
+- Configure various output strategies and verify correct CSS file generation (single, chunked, modular) with expected content and structure.
+- Confirm that asset hashes and fingerprints are unique per content change and that the manifest accurately maps original to hashed filenames.
+- Validate that minified and compressed CSS files are significantly smaller than unoptimized outputs, and that minification does not break CSS functionality.
+- Test critical CSS extraction by measuring render performance and ensuring above-the-fold styles are inlined or preloaded as configured.
+- Check that source maps are generated and correctly map minified code to original sources.
+- Review generated CSS size reports for accuracy and ensure warnings are triggered for large files.
+- Run integration tests to ensure compatibility with CSS generation and PostCSS workflows.
+- Perform manual and automated browser tests to verify optimized CSS delivery and cache-busting in production environments.
+
+# Subtasks:
+## 1. Design Configurable CSS Output Strategy [pending]
+### Dependencies: None
+### Description: Develop a flexible configuration system (e.g., enigma.config.js) that allows users to select CSS output formats, enable or disable optimization features, and set thresholds for chunking and splitting.
+### Details:
+The configuration should support options for single file, chunked, or modular outputs, toggles for minification, source maps, and critical CSS extraction, and allow custom thresholds for splitting CSS assets.
+
+## 2. Implement CSS Chunking, Splitting, and Modular Output [pending]
+### Dependencies: 36.1
+### Description: Create logic to split and chunk CSS files based on size, usage patterns, or route/page association, ensuring support for modular output and dynamic imports where applicable.
+### Details:
+Implement algorithms to analyze CSS usage and split files accordingly, supporting both static and dynamic import scenarios for optimal delivery.
+
+## 3. Integrate Asset Hashing, Minification, and Compression [pending]
+### Dependencies: 36.2
+### Description: Add asset hash generation for cache-busting, apply CSS minification using tools like cssnano, and compress outputs with Brotli or gzip, ensuring compatibility with PostCSS and Tailwind workflows.
+### Details:
+Generate unique hashes for each CSS output, maintain a manifest mapping originals to hashed files, and ensure all outputs are minified and compressed for production.
+
+## 4. Extract and Inline Critical CSS with Delivery Optimization [pending]
+### Dependencies: 36.3
+### Description: Implement extraction and inlining of critical CSS for above-the-fold content, supporting preloading and async loading for non-critical CSS, with per-route or template configuration.
+### Details:
+Analyze rendered output to determine critical CSS, inline it in HTML, and configure preloading or async loading for remaining CSS assets.
+
+## 5. Generate Source Maps, Analyze Output, and Report Optimization Metrics [pending]
+### Dependencies: 36.4
+### Description: Produce source maps for all CSS outputs, analyze file sizes post-build, generate detailed reports (including per-chunk/module breakdown), and surface warnings for large or inefficient outputs.
+### Details:
+Provide options to enable/disable source maps, generate comprehensive reports on CSS asset sizes and efficiency, and integrate with CI for automated performance checks.
+

@@ -1,0 +1,68 @@
+# Task ID: 14
+# Title: Implement class pattern replacement in JS files
+# Status: pending
+# Dependencies: 7, 9, 10, 20
+# Priority: high
+# Description: Develop a system to extract and safely replace Tailwind CSS class patterns in JavaScript and JSX files, focusing on className and class attributes within JSX elements. The system must handle static and dynamic class patterns, preserve JSX syntax and formatting, and support various JSX frameworks.
+# Details:
+1. Detect and parse JavaScript/JSX files, identifying React, Preact, and similar frameworks.
+2. Extract class patterns from className and class attributes in JSX elements, including static strings and template literals.
+3. Parse and handle dynamic class composition patterns, such as conditional classes within template literals and ternary expressions.
+4. Support component prop spreading scenarios (e.g., <div {...props} className="..." />) and ensure correct class extraction and replacement.
+5. Preserve original JSX syntax, formatting, and comments during transformation.
+6. Safely replace Tailwind class patterns with generated identifiers or alternative representations without breaking JavaScript or JSX logic.
+7. Ensure compatibility with various JSX frameworks and their specific patterns.
+8. Optimize for performance with large codebases and complex component structures.
+
+# Test Strategy:
+Unit and integration tests using real-world React/JSX component samples. Test scenarios must include static and dynamic className/class attributes, template literals, prop spreading, and framework-specific edge cases. Validate that transformed code preserves original functionality and JSX integrity.
+
+# Subtasks:
+## 1. JSX/React File Detection and Parsing [pending]
+### Dependencies: None
+### Description: Implement detection and parsing for JavaScript/JSX files, focusing on React and similar frameworks.
+### Details:
+Set up file reading and parsing logic to identify and process files containing JSX syntax. Ensure compatibility with .js, .jsx, .ts, and .tsx extensions. Include error handling for malformed or unsupported files.
+
+## 2. Class Attribute Extraction Patterns [pending]
+### Dependencies: 14.1
+### Description: Develop extraction logic for className and class attributes in JSX elements.
+### Details:
+Create robust patterns to identify className and class attributes in JSX, including static strings and template literals. Ensure extraction works for both standard and framework-specific JSX syntax.
+
+## 3. Template Literal and Dynamic Class Parsing [pending]
+### Dependencies: 14.2
+### Description: Handle parsing of template literals and dynamic class composition in className attributes.
+### Details:
+Implement logic to parse template literals, ternary expressions, and dynamic class composition patterns within className attributes. Ensure accurate extraction and replacement of all Tailwind class patterns, including those generated at runtime.
+
+## 4. Component Prop Spreading and Attribute Merging [pending]
+### Dependencies: 14.2
+### Description: Support extraction and replacement in scenarios with prop spreading and merged attributes.
+### Details:
+Detect and handle cases where className or class attributes are merged via prop spreading (e.g., <div {...props} className="..." />). Ensure correct extraction and replacement without breaking component logic.
+
+## 5. JSX Syntax and Formatting Preservation [pending]
+### Dependencies: 14.3, 14.4
+### Description: Preserve original JSX syntax, formatting, and comments during class pattern replacement.
+### Details:
+Develop mechanisms to maintain original code formatting, whitespace, indentation, and comments during transformation. Ensure transformed JSX remains valid and readable.
+
+## 6. Framework-Specific Pattern Handling [pending]
+### Dependencies: 14.3, 14.4
+### Description: Ensure compatibility with various JSX frameworks and their unique patterns.
+### Details:
+Identify and support framework-specific JSX patterns (e.g., React, Preact, Solid). Adapt extraction and replacement logic to handle differences in attribute naming, prop handling, and dynamic class composition.
+
+## 7. Error Handling and Reporting [pending]
+### Dependencies: 14.5, 14.6
+### Description: Implement robust error handling and reporting system for class pattern replacement.
+### Details:
+Create comprehensive error handling for all extraction and replacement operations, including detailed logging, error classification, and recovery mechanisms. Implement a reporting system to provide summaries of changes made and potential issues encountered.
+
+## 8. Testing with Real React/JSX Components [pending]
+### Dependencies: 14.7
+### Description: Develop a testing framework using real-world React/JSX component samples.
+### Details:
+Create a testing system to validate that transformed code maintains the same functionality and JSX integrity as the original. Include unit tests for extraction and replacement logic, integration tests for the complete system, and performance benchmarks.
+

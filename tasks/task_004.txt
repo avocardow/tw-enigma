@@ -1,0 +1,54 @@
+# Task ID: 4
+# Title: Implement file discovery with glob
+# Status: pending
+# Dependencies: 3
+# Priority: high
+# Description: Create a system to discover HTML and JS files based on configurable patterns using glob.
+# Details:
+1. Install glob: npm install glob@10.2.7
+2. Create src/fileDiscovery.js
+3. Implement function to discover files based on patterns
+4. Handle multiple source patterns from config
+5. Implement filtering for HTML and JS files
+6. Add error handling for invalid patterns or no files found
+
+# Test Strategy:
+Unit tests with mock file system for various discovery scenarios
+
+# Subtasks:
+## 1. Install and Configure Glob Library [pending]
+### Dependencies: None
+### Description: Set up the project environment and install the glob library required for file pattern matching. Ensure the library is correctly added to the project dependencies and verify installation.
+### Details:
+Run the appropriate package manager command (e.g., npm install glob or pip install glob). Update project documentation to reflect the new dependency. Confirm installation by importing and running a basic glob pattern match in a test script.
+
+## 2. Implement Basic File Discovery Using Glob Patterns [pending]
+### Dependencies: 4.1
+### Description: Develop the core logic to discover files matching a single glob pattern. Ensure the implementation can traverse directories and return matching file paths.
+### Details:
+Write a function that accepts a glob pattern and returns a list of matching files. Test with simple patterns (e.g., *.txt, **/*.py) to ensure correct file discovery. Validate results against known directory structures.
+
+## 3. Support Multiple Glob Patterns for File Discovery [pending]
+### Dependencies: 4.2
+### Description: Extend the file discovery logic to handle multiple glob patterns in a single invocation, aggregating and deduplicating results.
+### Details:
+Modify the discovery function to accept an array of patterns. Implement logic to combine results from each pattern, ensuring no duplicate file paths are returned. Add tests for overlapping and non-overlapping patterns.
+
+## 4. Implement File Type Filtering [pending]
+### Dependencies: 4.3
+### Description: Add functionality to filter discovered files by specific file types or extensions after glob matching.
+### Details:
+Introduce parameters for file type filtering (e.g., by extension or MIME type). Apply filtering after initial discovery. Write tests to confirm only files of the specified type(s) are returned.
+
+## 5. Develop Robust Error Handling for File Discovery [pending]
+### Dependencies: 4.4
+### Description: Implement comprehensive error handling for invalid patterns, inaccessible directories, and unexpected runtime errors during file discovery.
+### Details:
+Identify potential failure points (e.g., malformed patterns, permission errors). Add try-catch or equivalent error handling. Return meaningful error messages or codes. Write tests to simulate and validate error scenarios.
+
+## 6. Test, Validate, and Document File Discovery Functionality [pending]
+### Dependencies: 4.5
+### Description: Perform end-to-end testing of all implemented features, validate correctness, and document usage and limitations.
+### Details:
+Create comprehensive test cases covering single/multiple patterns, file type filtering, and error scenarios. Validate results against expected outputs. Update project documentation with usage examples, configuration options, and troubleshooting tips.
+
