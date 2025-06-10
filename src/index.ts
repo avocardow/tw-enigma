@@ -25,4 +25,96 @@ export { logger } from './logger.js';
 export { ErrorHandler } from './errorHandler/errorHandler.js';
 
 // Performance optimizations
-export * from './performance/index.js'; 
+export * from './performance/index.js';
+
+// Pattern Analysis exports
+export {
+  // Core functions
+  analyzePatterns,
+  aggregateExtractionResults,
+  generateFrequencyMap,
+  generatePatternGroups,
+  quickFrequencyAnalysis,
+  
+  // Statistics and analysis
+  calculateFrequencyStatistics,
+  generateCoOccurrenceAnalysis,
+  generateFrameworkAnalysis,
+  
+  // Utility functions
+  sortFrequencyMap,
+  filterFrequencyMap,
+  exportToJson,
+  
+  // Types and schemas
+  type PatternAnalysisOptions,
+  type AggregatedClassData,
+  type PatternFrequencyMap,
+  type FrequencyAnalysisResult,
+  type CoOccurrencePattern,
+  type FrameworkAnalysis,
+  type PatternGroup,
+  PatternAnalysisOptionsSchema,
+  
+  // Error classes
+  PatternAnalysisError,
+  DataAggregationError,
+  FrequencyCalculationError,
+} from './patternAnalysis.js';
+
+// Name Generation exports
+export {
+  // Base conversion utilities
+  toBase26,
+  fromBase26,
+  toBase36,
+  fromBase36,
+  toCustomBase,
+  calculateOptimalLength,
+  validateBaseConversions,
+  
+  // Sequential generation
+  generateSequentialName,
+  generateSequentialNames,
+  createNameCollisionCache,
+  hasNameCollision,
+  generateNextAvailableName,
+  batchGenerateAvailableNames,
+  calculateGenerationStatistics,
+  validateGenerationSetup,
+  
+  // Frequency-based optimization
+  sortByFrequency,
+  createFrequencyBuckets,
+  optimizeByFrequency,
+  calculateCompressionStats,
+  analyzeFrequencyDistribution,
+  
+  // Main API
+  NameCollisionManager,
+  generateOptimizedNames,
+  exportNameGenerationResult,
+  generateSimpleNames,
+  
+  // Configuration and validation
+  validateNameGenerationOptions,
+  isValidCssIdentifier,
+  isReservedName,
+  
+  // Constants and types
+  ALPHABET_CONFIGS,
+  CSS_RESERVED_KEYWORDS,
+  type NameGenerationOptions,
+  type NameGenerationResult,
+  type GeneratedName,
+  type NameCollisionCache,
+  type BaseConversionResult,
+  type FrequencyBucket,
+  NameGenerationOptionsSchema,
+  
+  // Error classes
+  NameGenerationError,
+  CollisionError,
+  InvalidNameError,
+  CacheError,
+} from './nameGeneration.js'; 
