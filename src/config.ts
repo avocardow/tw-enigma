@@ -2,6 +2,7 @@ import { cosmiconfig, cosmiconfigSync } from "cosmiconfig";
 import { z } from "zod";
 import { HtmlExtractionOptionsSchema, type HtmlExtractionOptions } from "./htmlExtractor.js";
 import { JsExtractionOptionsSchema, type JsExtractionOptions } from "./jsExtractor.js";
+import { CssInjectionOptionsSchema, type CssInjectionOptions } from "./cssInjector.js";
 import { ConfigError } from "./errors.js";
 import { createLogger } from "./logger.js";
 
@@ -85,6 +86,11 @@ export const EnigmaConfigSchema = z.object({
   jsExtractor: JsExtractionOptionsSchema
     .optional()
     .describe("JavaScript/JSX class extraction configuration options"),
+
+  // CSS Injection Configuration
+  cssInjector: CssInjectionOptionsSchema
+    .optional()
+    .describe("CSS injection configuration options"),
 });
 
 /**
@@ -127,6 +133,15 @@ export interface CliArguments {
   jsMaxFileSize?: number;
   jsTimeout?: number;
   jsSupportedFrameworks?: string[];
+  // CSS injector CLI options
+  cssPath?: string;
+  htmlPath?: string;
+  cssUseRelativePaths?: boolean;
+  cssPreventDuplicates?: boolean;
+  cssInsertPosition?: "first" | "last" | "before-existing" | "after-meta";
+  cssCreateBackup?: boolean;
+  cssMaxFileSize?: number;
+  cssTimeout?: number;
 }
 
 /**
@@ -262,6 +277,30 @@ function normalizeCliArguments(args: CliArguments): Partial<EnigmaConfig> {
   if (Object.keys(jsExtractorConfig).length > 0) {
     // Apply defaults using the schema to ensure all fields have proper values
     config.jsExtractor = JsExtractionOptionsSchema.parse(jsExtractorConfig);
+  }
+
+  // CSS injector options
+  const cssInjectorConfig: Partial<CssInjectionOptions> = {};
+  if (args.cssPath !== undefined)
+    cssInjectorConfig.cssPath = args.cssPath;
+  if (args.htmlPath !== undefined)
+    cssInjectorConfig.htmlPath = args.htmlPath;
+  if (args.cssUseRelativePaths !== undefined)
+    cssInjectorConfig.useRelativePaths = args.cssUseRelativePaths;
+  if (args.cssPreventDuplicates !== undefined)
+    cssInjectorConfig.preventDuplicates = args.cssPreventDuplicates;
+  if (args.cssInsertPosition !== undefined)
+    cssInjectorConfig.insertPosition = args.cssInsertPosition;
+  if (args.cssCreateBackup !== undefined)
+    cssInjectorConfig.createBackup = args.cssCreateBackup;
+  if (args.cssMaxFileSize !== undefined)
+    cssInjectorConfig.maxFileSize = args.cssMaxFileSize;
+  if (args.cssTimeout !== undefined)
+    cssInjectorConfig.timeout = args.cssTimeout;
+
+  if (Object.keys(cssInjectorConfig).length > 0) {
+    // Apply defaults using the schema to ensure all fields have proper values
+    config.cssInjector = CssInjectionOptionsSchema.parse(cssInjectorConfig);
   }
 
   return config;

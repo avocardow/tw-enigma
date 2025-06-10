@@ -10,6 +10,9 @@ export * from "./htmlExtractor.js";
 // JavaScript/JSX class extraction module
 export * from "./jsExtractor.js";
 
+// CSS injection module
+export * from "./cssInjector.js";
+
 // Main entry point for the library
 export { version } from "../package.json";
 
@@ -19,6 +22,7 @@ export * from './fileDiscovery.js';
 export * from './htmlExtractor.js';
 export * from './jsExtractor.js';
 export * from './patternAnalysis.js';
+export * from './cssInjector.js';
 
 // Core components
 export { logger } from './logger.js';
@@ -117,4 +121,7 @@ export {
   CollisionError,
   InvalidNameError,
   CacheError,
-} from './nameGeneration.js'; 
+} from './nameGeneration.js';
+
+// HTML rewriter module
+export * from "./htmlRewriter.js"; 
