@@ -2586,7 +2586,7 @@
         1,
         2
       ],
-      "status": "pending",
+      "status": "done",
       "subtasks": [
         {
           "id": 1,
@@ -2594,7 +2594,7 @@
           "description": "Review and update all metadata fields in package.json to ensure accuracy, completeness, and adherence to best practices. This includes name, version, description, author, license, keywords, and repository fields.",
           "dependencies": [],
           "details": "Check for missing or outdated fields. Remove unnecessary or unclear metadata. Ensure organization-wide scopes and consistent formatting. Validate JSON syntax.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 2,
@@ -2604,7 +2604,7 @@
             1
           ],
           "details": "List only essential source files, documentation, and license. Exclude build artifacts, tests, and sensitive files. Cross-reference with .npmignore for consistency.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 3,
@@ -2614,7 +2614,7 @@
             1
           ],
           "details": "Use clear, descriptive script names (e.g., 'build:client' instead of 'build-client'). Ensure scripts are functional and documented in the README. Test each script for expected behavior.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 4,
@@ -2624,7 +2624,7 @@
             2
           ],
           "details": "List files such as node_modules, test directories, local configs, and build artifacts. Validate that only intended files are included in the package using 'npm pack' or similar commands.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 5,
@@ -2634,7 +2634,7 @@
             1
           ],
           "details": "Define main and subpath exports for both CommonJS and ESM if needed. Test package import scenarios to verify correct resolution.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 6,
@@ -2644,7 +2644,7 @@
             1
           ],
           "details": "Update the version field according to the nature of changes (major, minor, patch). Avoid version wildcards in dependencies. Document versioning policy in the README.",
-          "status": "pending"
+          "status": "done"
         }
       ]
     },

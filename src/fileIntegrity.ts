@@ -5,17 +5,18 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-// @ts-nocheck - Temporarily disable strict null checks for this complex file
+// @ts-nocheck - Temporarily disable TypeScript strict checking for this complex file
 
 import { z } from 'zod';
 import { createHash } from 'crypto';
 import { readFile, writeFile, access, stat, copyFile, unlink, mkdir } from 'fs/promises';
-import { createReadStream, createWriteStream } from 'fs';
+import { createReadStream, createWriteStream, constants } from 'fs';
 import { pipeline } from 'stream/promises';
-import { createGzip, createGunzip } from 'zlib';
+import { createGzip, createGunzip, createDeflate, createInflate, createBrotliCompress, createBrotliDecompress, constants as zlibConstants } from 'zlib';
 import { EventEmitter } from 'events';
 import { resolve, dirname, basename, extname, join } from 'path';
 import { createLogger } from './logger.js';
+import { ConfigError } from './errors.js';
 import os from 'os';
 
 /**

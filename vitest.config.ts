@@ -36,9 +36,40 @@ export default defineConfig({
     // Reporter configuration - use basic reporter to avoid hanging
     reporter: ['verbose'],
     
-    // Disable coverage by default to prevent hanging
+    // Coverage configuration for CI/CD
     coverage: {
-      enabled: false
+      enabled: true,
+      provider: 'v8',
+      reporter: ['text', 'lcov', 'html', 'json'],
+      reportsDirectory: './coverage',
+      exclude: [
+        'node_modules/**',
+        'dist/**',
+        'coverage/**',
+        'test-files/**',
+        'test-temp/**',
+        'scripts/**',
+        'tasks/**',
+        '.taskmaster/**',
+        '**/*.test.ts',
+        '**/*.spec.ts',
+        '**/*.config.js',
+        '**/*.config.ts',
+        '**/debug_test.js',
+        '.github/**',
+        'bin/**',
+        'vitest.config.ts',
+        'tsup.config.ts',
+        'eslint.config.js'
+      ],
+      thresholds: {
+        global: {
+          lines: 80,
+          functions: 75,
+          branches: 70,
+          statements: 80
+        }
+      }
     }
   }
 }) 
