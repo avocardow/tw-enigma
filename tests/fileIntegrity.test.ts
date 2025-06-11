@@ -1,5 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { readFile, writeFile, mkdir, stat } from 'node:fs/promises';
+import { createReadStream } from 'node:fs';
+import { pipeline } from 'node:stream/promises';
+import { createGunzip, createInflate, createBrotliDecompress } from 'node:zlib';
 import { resolve, join } from 'node:path';
 import { tmpdir } from 'node:os';
 import {
@@ -798,6 +801,318 @@ describe('Error Classes', () => {
       expect(error.name).toBe('RollbackError');
       expect(error.code).toBe('ROLLBACK_ERROR');
       expect(error.operation).toBe('rollback');
+    });
+  });
+});
+
+describe('Compression Feature Tests', () => {
+  let testDir: string;
+  let testFile: string;
+  let testContent: string;
+  let largeTestFile: string;
+  let compressedValidator: FileIntegrityValidator;
+
+  beforeEach(async () => {
+    testDir = join(tmpdir(), `compression-test-${Date.now()}`);
+    await mkdir(testDir, { recursive: true });
+
+    // Create test file
+    testFile = join(testDir, 'test.txt');
+    testContent = 'Hello, compression world!\nThis is test content for compression validation.';
+    await writeFile(testFile, testContent, 'utf8');
+
+    // Create a larger test file that will meet compression threshold
+    largeTestFile = join(testDir, 'large-test.txt');
+    const largeContent = 'Large content '.repeat(200); // ~2.6KB content
+    await writeFile(largeTestFile, largeContent, 'utf8');
+
+    // Create validator with compression enabled
+    compressedValidator = new FileIntegrityValidator({
+      backupDirectory: join(testDir, '.backups'),
+      enableCompression: true,
+      compressionAlgorithm: 'gzip',
+      compressionLevel: 6,
+      compressionThreshold: 1024, // 1KB threshold
+      timeout: 5000
+    });
+  });
+
+  afterEach(async () => {
+    try {
+      const { rm } = await import('node:fs/promises');
+      await rm(testDir, { recursive: true, force: true });
+    } catch {
+      // Ignore cleanup errors
+    }
+  });
+
+  describe('Compression Configuration', () => {
+    it('should validate compression options schema', () => {
+      const compressionOptions = {
+        enableCompression: true,
+        compressionAlgorithm: 'gzip' as const,
+        compressionLevel: 9,
+        compressionThreshold: 512
+      };
+
+      const result = FileIntegrityOptionsSchema.parse(compressionOptions);
+      expect(result).toMatchObject(compressionOptions);
+    });
+
+    it('should apply compression defaults', () => {
+      const result = FileIntegrityOptionsSchema.parse({});
+      
+      expect(result.enableCompression).toBe(false);
+      expect(result.compressionAlgorithm).toBe('gzip');
+      expect(result.compressionLevel).toBe(6);
+      expect(result.compressionThreshold).toBe(1024);
+    });
+
+    it('should validate compression algorithm enum', () => {
+      const algorithms = ['gzip', 'deflate', 'brotli'] as const;
+      
+      algorithms.forEach(algorithm => {
+        const result = FileIntegrityOptionsSchema.parse({ 
+          enableCompression: true,
+          compressionAlgorithm: algorithm 
+        });
+        expect(result.compressionAlgorithm).toBe(algorithm);
+      });
+    });
+
+    it('should enforce compression level constraints', () => {
+      // Valid range 0-11
+      expect(() => FileIntegrityOptionsSchema.parse({ compressionLevel: -1 })).toThrow();
+      expect(() => FileIntegrityOptionsSchema.parse({ compressionLevel: 12 })).toThrow();
+      expect(() => FileIntegrityOptionsSchema.parse({ compressionLevel: 0 })).not.toThrow();
+      expect(() => FileIntegrityOptionsSchema.parse({ compressionLevel: 11 })).not.toThrow();
+    });
+  });
+
+  describe('Compression Decision Logic', () => {
+    it('should not compress when compression disabled', async () => {
+      const uncompressedValidator = new FileIntegrityValidator({
+        backupDirectory: join(testDir, '.backups'),
+        enableCompression: false
+      });
+
+      const result = await uncompressedValidator.createBackup(largeTestFile);
+      
+      expect(result.success).toBe(true);
+      expect(result.compressed).toBe(false);
+      expect(result.compressionAlgorithm).toBeUndefined();
+      expect(result.compressionRatio).toBeUndefined();
+      expect(result.backupPath).toMatch(/\.backup$/);
+    });
+
+    it('should not compress files below threshold', async () => {
+      const result = await compressedValidator.createBackup(testFile);
+      
+      expect(result.success).toBe(true);
+      expect(result.compressed).toBe(false);
+      expect(result.compressionAlgorithm).toBeUndefined();
+      expect(result.backupPath).toMatch(/\.backup$/);
+    });
+
+    it('should compress files above threshold', async () => {
+      const result = await compressedValidator.createBackup(largeTestFile);
+      
+      expect(result.success).toBe(true);
+      expect(result.compressed).toBe(true);
+      expect(result.compressionAlgorithm).toBe('gzip');
+      expect(result.compressionRatio).toBeGreaterThan(1);
+      expect(result.backupPath).toMatch(/\.backup\.gz$/);
+      expect(result.originalSize).toBeGreaterThan(result.backupSize!);
+    });
+  });
+
+  describe('Compression Algorithms', () => {
+    it('should compress with gzip algorithm', async () => {
+      const gzipValidator = new FileIntegrityValidator({
+        backupDirectory: join(testDir, '.backups'),
+        enableCompression: true,
+        compressionAlgorithm: 'gzip',
+        compressionThreshold: 100
+      });
+
+      const result = await gzipValidator.createBackup(largeTestFile);
+      
+      expect(result.compressed).toBe(true);
+      expect(result.compressionAlgorithm).toBe('gzip');
+      expect(result.backupPath).toMatch(/\.backup\.gz$/);
+    });
+
+    it('should compress with deflate algorithm', async () => {
+      const deflateValidator = new FileIntegrityValidator({
+        backupDirectory: join(testDir, '.backups'),
+        enableCompression: true,
+        compressionAlgorithm: 'deflate',
+        compressionThreshold: 100
+      });
+
+      const result = await deflateValidator.createBackup(largeTestFile);
+      
+      expect(result.compressed).toBe(true);
+      expect(result.compressionAlgorithm).toBe('deflate');
+      expect(result.backupPath).toMatch(/\.backup\.deflate$/);
+    });
+
+    it('should compress with brotli algorithm', async () => {
+      const brotliValidator = new FileIntegrityValidator({
+        backupDirectory: join(testDir, '.backups'),
+        enableCompression: true,
+        compressionAlgorithm: 'brotli',
+        compressionThreshold: 100,
+        compressionLevel: 4 // Brotli quality level
+      });
+
+      const result = await brotliValidator.createBackup(largeTestFile);
+      
+      expect(result.compressed).toBe(true);
+      expect(result.compressionAlgorithm).toBe('brotli');
+      expect(result.backupPath).toMatch(/\.backup\.br$/);
+    });
+  });
+
+  describe('Compression Restore Operations', () => {
+    it('should restore from gzip compressed backup', async () => {
+      // Create compressed backup
+      const backupResult = await compressedValidator.createBackup(largeTestFile);
+      expect(backupResult.compressed).toBe(true);
+
+      // Modify original file
+      await writeFile(largeTestFile, 'Modified content', 'utf8');
+
+      // Restore from backup
+      const restoreResult = await compressedValidator.restoreFromBackup(largeTestFile, backupResult.backupPath);
+      
+      expect(restoreResult.success).toBe(true);
+      
+      // Verify content was restored
+      const restoredContent = await readFile(largeTestFile, 'utf8');
+      const originalContent = 'Large content '.repeat(200);
+      expect(restoredContent).toBe(originalContent);
+    });
+
+    it('should restore from deflate compressed backup', async () => {
+      const deflateValidator = new FileIntegrityValidator({
+        backupDirectory: join(testDir, '.backups'),
+        enableCompression: true,
+        compressionAlgorithm: 'deflate',
+        compressionThreshold: 100
+      });
+
+      const backupResult = await deflateValidator.createBackup(largeTestFile);
+      expect(backupResult.compressed).toBe(true);
+
+      await writeFile(largeTestFile, 'Modified content', 'utf8');
+
+      const restoreResult = await deflateValidator.restoreFromBackup(largeTestFile, backupResult.backupPath);
+      expect(restoreResult.success).toBe(true);
+    });
+
+    it('should restore from brotli compressed backup', async () => {
+      const brotliValidator = new FileIntegrityValidator({
+        backupDirectory: join(testDir, '.backups'),
+        enableCompression: true,
+        compressionAlgorithm: 'brotli',
+        compressionThreshold: 100,
+        compressionLevel: 4
+      });
+
+      const backupResult = await brotliValidator.createBackup(largeTestFile);
+      expect(backupResult.compressed).toBe(true);
+
+      await writeFile(largeTestFile, 'Modified content', 'utf8');
+
+      const restoreResult = await brotliValidator.restoreFromBackup(largeTestFile, backupResult.backupPath);
+      expect(restoreResult.success).toBe(true);
+    });
+  });
+
+  describe('Compression Verification', () => {
+    it('should verify compressed backups during restore', async () => {
+      const verifyingValidator = new FileIntegrityValidator({
+        backupDirectory: join(testDir, '.backups'),
+        enableCompression: true,
+        compressionThreshold: 100,
+        verifyAfterRollback: true
+      });
+
+      const backupResult = await verifyingValidator.createBackup(largeTestFile);
+      await writeFile(largeTestFile, 'Modified content', 'utf8');
+
+      const restoreResult = await verifyingValidator.restoreFromBackup(largeTestFile, backupResult.backupPath);
+      
+      expect(restoreResult.success).toBe(true);
+      expect(restoreResult.integrityVerified).toBe(true);
+    });
+
+    it('should handle compressed backup verification correctly', async () => {
+      // Create compressed backup
+      const backupResult = await compressedValidator.createBackup(largeTestFile);
+      
+      // Manually verify the compressed file can be read
+      const compressedSource = createReadStream(backupResult.backupPath);
+      const decompressor = createGunzip();
+      
+      let decompressedContent = '';
+      await pipeline(
+        compressedSource,
+        decompressor,
+        async function* (source) {
+          for await (const chunk of source) {
+            decompressedContent += chunk.toString();
+            yield chunk;
+          }
+        }
+      );
+
+      const originalContent = 'Large content '.repeat(200);
+      expect(decompressedContent).toBe(originalContent);
+    });
+  });
+
+  describe('Compression Performance', () => {
+    it('should provide compression ratio information', async () => {
+      const result = await compressedValidator.createBackup(largeTestFile);
+      
+      expect(result.compressed).toBe(true);
+      expect(result.originalSize).toBeGreaterThan(0);
+      expect(result.backupSize).toBeGreaterThan(0);
+      expect(result.compressionRatio).toBeGreaterThan(1);
+      
+      // Log compression efficiency for analysis
+      console.log(`Compression ratio: ${result.compressionRatio?.toFixed(2)}x`);
+      console.log(`Original size: ${result.originalSize} bytes`);
+      console.log(`Compressed size: ${result.backupSize} bytes`);
+    });
+
+    it('should handle different compression levels', async () => {
+      const lowCompressionValidator = new FileIntegrityValidator({
+        backupDirectory: join(testDir, '.backups'),
+        enableCompression: true,
+        compressionLevel: 1,
+        compressionThreshold: 100
+      });
+
+      const highCompressionValidator = new FileIntegrityValidator({
+        backupDirectory: join(testDir, '.backups'),
+        enableCompression: true,
+        compressionLevel: 9,
+        compressionThreshold: 100
+      });
+
+      const lowResult = await lowCompressionValidator.createBackup(largeTestFile);
+      await new Promise(resolve => setTimeout(resolve, 10));
+      const highResult = await highCompressionValidator.createBackup(largeTestFile);
+
+      expect(lowResult.compressed).toBe(true);
+      expect(highResult.compressed).toBe(true);
+      
+      // Higher compression should generally result in smaller files
+      // (though this may not always be true for small test files)
+      expect(highResult.backupSize).toBeLessThanOrEqual(lowResult.backupSize!);
     });
   });
 }); 

@@ -159,6 +159,11 @@ export interface CliArguments {
   integrityBatchSize?: number;
   integrityEnableCaching?: boolean;
   integrityCacheSize?: number;
+  // File integrity compression options
+  integrityEnableCompression?: boolean;
+  integrityCompressionAlgorithm?: "gzip" | "deflate" | "brotli";
+  integrityCompressionLevel?: number;
+  integrityCompressionThreshold?: number;
 }
 
 /**
@@ -342,6 +347,15 @@ function normalizeCliArguments(args: CliArguments): Partial<EnigmaConfig> {
     fileIntegrityConfig.enableCaching = args.integrityEnableCaching;
   if (args.integrityCacheSize !== undefined)
     fileIntegrityConfig.cacheSize = args.integrityCacheSize;
+  // Compression options
+  if (args.integrityEnableCompression !== undefined)
+    fileIntegrityConfig.enableCompression = args.integrityEnableCompression;
+  if (args.integrityCompressionAlgorithm !== undefined)
+    fileIntegrityConfig.compressionAlgorithm = args.integrityCompressionAlgorithm;
+  if (args.integrityCompressionLevel !== undefined)
+    fileIntegrityConfig.compressionLevel = args.integrityCompressionLevel;
+  if (args.integrityCompressionThreshold !== undefined)
+    fileIntegrityConfig.compressionThreshold = args.integrityCompressionThreshold;
 
   if (Object.keys(fileIntegrityConfig).length > 0) {
     // Apply defaults using the schema to ensure all fields have proper values
