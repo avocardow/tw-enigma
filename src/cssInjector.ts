@@ -194,10 +194,9 @@ export class CssInjector {
       // Initialize PathUtils with configuration matching CSS injection options
       this.pathUtils = new PathUtils({
         basePath: this.options.basePath,
-        caseSensitive: false, // Web paths are typically case-insensitive
         enableSecurity: true, // Enable security checks for path validation
-        forceWebNormalization: true, // Always use forward slashes for web compatibility
-        enableCaching: true, // Enable caching for performance
+        normalizeForWeb: true, // Always use forward slashes for web compatibility
+        useRelativePaths: this.options.useRelativePaths,
       });
       
       this.logger.debug('CssInjector initialized', {
@@ -577,7 +576,7 @@ export class CssInjector {
         if (!validationResult.isValid) {
           this.logger.warn('CSS path validation failed, using as-is', {
             cssPath: this.options.cssPath,
-            validationDetails: validationResult.details
+            validationDetails: validationResult.errors.join(', ')
           });
         }
         
@@ -599,16 +598,16 @@ export class CssInjector {
       );
 
       this.logger.debug('Relative path calculated using PathUtils', {
-        fromPath: result.fromPath,
-        toPath: result.toPath,
+        fromPath: result.metadata.fromPath,
+        toPath: result.metadata.toPath,
         relativePath: result.relativePath,
         isValid: result.isValid,
-        security: result.security
+        depth: result.metadata.depth
       });
 
       if (!result.isValid) {
         throw new PathCalculationError(
-          `Invalid path calculation result: ${result.security?.details || 'Unknown validation error'}`,
+          `Invalid path calculation result: Unknown validation error`,
           this.options.htmlPath,
           this.options.cssPath
         );

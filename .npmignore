@@ -1,0 +1,56 @@
+# Project Configuration
+.DS_Store
+*.env
+.env.*
+.gitignore
+.prettierrc.json
+.vscode/
+.idea/
+pnpm-lock.yaml
+pnpm-workspace.yaml
+tsconfig.json
+tsup.config.ts
+vitest.config.ts
+eslint.config.js
+CHANGELOG.md
+
+# Source & Test files
+src/
+tests/
+test-files/
+
+# Scripts & Tasks
+scripts/
+tasks/
+.taskmaster/
+
+# Reports and Logs
+coverage/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+dist/**/*.js.map
+
+# Heap Snapshots
+*.heapsnapshot
+
+# Temp / Backup Dirs (from ls)
+.dedup*
+.differential*
+.incremental
+.backups
+.roo
+test-temp
+
+# Root files
+.roomodes
+.windsurfrules
+debug_test.js
+.cursor/
+
+# Prevent pnpm from publishing its files
+!/dist
+!/README.md
+!/LICENSE 

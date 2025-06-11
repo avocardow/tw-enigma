@@ -264,6 +264,7 @@ export function aggregateExtractionResults(
   const defaultOptions: PatternAnalysisOptions = {
     caseSensitive: false,
     outputFormat: 'map',
+    enableValidation: false,
     minimumFrequency: 1,
     enablePatternGrouping: false,
     enableCoOccurrenceAnalysis: false,
@@ -484,6 +485,7 @@ export function generateFrequencyMap(
   const defaultOptions: PatternAnalysisOptions = {
     caseSensitive: false,
     outputFormat: 'map',
+    enableValidation: false,
     minimumFrequency: 1,
     enablePatternGrouping: false,
     enableCoOccurrenceAnalysis: false,
@@ -527,6 +529,7 @@ export function generatePatternGroups(
   const defaultOptions: PatternAnalysisOptions = {
     caseSensitive: false,
     outputFormat: 'map',
+    enableValidation: false,
     minimumFrequency: 1,
     enablePatternGrouping: false,
     enableCoOccurrenceAnalysis: false,
@@ -672,6 +675,7 @@ export function calculateFrequencyStatistics(
   const defaultOptions: PatternAnalysisOptions = {
     caseSensitive: false,
     outputFormat: 'map',
+    enableValidation: false,
     minimumFrequency: 1,
     enablePatternGrouping: false,
     enableCoOccurrenceAnalysis: false,
@@ -762,6 +766,7 @@ export function generateCoOccurrenceAnalysis(
   const defaultOptions: PatternAnalysisOptions = {
     caseSensitive: false,
     outputFormat: 'map',
+    enableValidation: false,
     minimumFrequency: 1,
     enablePatternGrouping: false,
     enableCoOccurrenceAnalysis: false,
@@ -851,6 +856,7 @@ export function generateFrameworkAnalysis(
   const defaultOptions: PatternAnalysisOptions = {
     caseSensitive: false,
     outputFormat: 'map',
+    enableValidation: false,
     minimumFrequency: 1,
     enablePatternGrouping: false,
     enableCoOccurrenceAnalysis: false,
@@ -939,6 +945,7 @@ export function sortFrequencyMap(
   const defaultOptions: PatternAnalysisOptions = {
     caseSensitive: false,
     outputFormat: 'map',
+    enableValidation: false,
     minimumFrequency: 1,
     enablePatternGrouping: false,
     enableCoOccurrenceAnalysis: false,
@@ -1024,6 +1031,7 @@ export function exportToJson(
   const defaultOptions: PatternAnalysisOptions = {
     caseSensitive: false,
     outputFormat: 'map',
+    enableValidation: false,
     minimumFrequency: 1,
     enablePatternGrouping: false,
     enableCoOccurrenceAnalysis: false,

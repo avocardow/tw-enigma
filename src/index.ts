@@ -5,42 +5,88 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-// Core configuration module
-export * from "./config.js";
-
-// File discovery module
-export * from "./fileDiscovery.js";
-
-// HTML class extraction module
-export * from "./htmlExtractor.js";
-
-// JavaScript/JSX class extraction module
-export * from "./jsExtractor.js";
-
-// CSS injection module
-export * from "./cssInjector.js";
-
-// File integrity validation module
-export * from "./fileIntegrity.js";
+// #region Main Library Exports
 
 // Main entry point for the library
 export { version } from "../package.json";
 
-// Main exports for Tailwind Enigma Core
+// Core Modules
 export * from './config.js';
 export * from './fileDiscovery.js';
 export * from './htmlExtractor.js';
 export * from './jsExtractor.js';
-export * from './patternAnalysis.js';
 export * from './cssInjector.js';
-export * from './fileIntegrity.js';
+export * from './performance/index.js';
 
-// Core components
-export { logger } from './logger.js';
+// Core Utilities
+export { createLogger as logger } from './logger.js';
 export { ErrorHandler } from './errorHandler/errorHandler.js';
 
-// Performance optimizations
-export * from './performance/index.js';
+// Explicit exports from fileIntegrity.ts to avoid conflicts
+export {
+  FileIntegrityOptionsSchema,
+  type FileIntegrityOptions,
+  type ChecksumInfo,
+  type FileValidationResult,
+  type BackupResult,
+  type RollbackResult,
+  type BatchValidationResult,
+  type ValidationMetadata,
+  type DeduplicationEntry,
+  type DeduplicationIndex,
+  type DeduplicationResult,
+  type FileChangeState,
+  type IncrementalBackupEntry,
+  type IncrementalIndex,
+  type IncrementalBackupResult,
+  type DifferentialBackupEntry,
+  type DifferentialIndex,
+  type DifferentialBackupResult,
+  type SystemMetrics,
+  type BatchProcessingConfig,
+  type ProgressInfo,
+  type BatchOperationResult as FileIntegrityBatchResult, // Aliased export
+  type LargeProjectResult,
+  IntegrityError,
+  ChecksumError,
+  ValidationError,
+  RollbackError,
+  FileIntegrityValidator,
+  createFileIntegrityValidator,
+  calculateFileChecksum,
+  validateFileIntegrity
+} from './fileIntegrity.js';
+
+// Explicit exports from htmlRewriter.ts to avoid conflicts
+export {
+  HtmlRewriteOptionsSchema,
+  type HtmlRewriteOptions,
+  type PatternMatchResult,
+  type PatternCondition,
+  type PatternSet,
+  type HtmlPattern,
+  type PatternReplacement,
+  type HtmlRewriteResult,
+  type BackupConfig,
+  type RewriteCache,
+  type BatchOperationResult as HtmlRewriterBatchResult, // Aliased export
+  type FormatPreservationOptions,
+  type FormatAnalysis,
+  type HtmlRewriterIntegration,
+  type BatchOperationOptions,
+  type FileOperationOptions,
+  HtmlRewriteError,
+  PatternValidationError,
+  BackupError,
+  ConflictResolutionError,
+  HtmlValidationError,
+  HtmlRewriter,
+  createHtmlRewriter
+} from './htmlRewriter.js';
+
+// #endregion
+
+// #region Granular Feature Exports
 
 // Pattern Analysis exports
 export {
@@ -134,5 +180,4 @@ export {
   CacheError,
 } from './nameGeneration.js';
 
-// HTML rewriter module
-export * from "./htmlRewriter.js"; 
+// #endregion 
