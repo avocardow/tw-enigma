@@ -200,4 +200,48 @@ export { ReactDetector } from './detectors/reactDetector.js';
 export { NextjsDetector } from './detectors/nextjsDetector.js';
 export { ViteDetector } from './detectors/viteDetector.js';
 
+// Build Tool Integrations
+export { 
+  IntegrationManager, 
+  createIntegrationManager,
+  type IntegrationManagerConfig, 
+  type IntegrationStatus 
+} from './integrations/core/integrationManager.js';
+
+// Build Tool Plugins
+export { 
+  EnigmaWebpackPlugin, 
+  createWebpackPlugin 
+} from './integrations/webpack/webpackPlugin.js';
+
+export { 
+  EnigmaVitePlugin, 
+  createVitePlugin, 
+  enigmaVite 
+} from './integrations/vite/vitePlugin.js';
+
+// Core Integration Types and Utilities
+export type { 
+  BuildToolPlugin, 
+  BuildToolPluginConfig,
+  BuildToolContext,
+  BuildToolResult,
+  BuildToolType,
+  BuildToolHooks,
+  OptimizationResult,
+  HMRUpdate
+} from './integrations/core/buildToolPlugin.js';
+
+export { 
+  ConfigDetector,
+  type AutoConfigResult,
+  type DetectedBuildConfig 
+} from './integrations/core/configDetector.js';
+
+export { 
+  createHMRHandler,
+  type HMRHandler,
+  type HMRConfig 
+} from './integrations/core/hmrHandler.js';
+
 // #endregion 
