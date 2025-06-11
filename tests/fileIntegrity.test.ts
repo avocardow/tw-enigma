@@ -1115,4 +1115,314 @@ describe('Compression Feature Tests', () => {
       expect(highResult.backupSize).toBeLessThanOrEqual(lowResult.backupSize!);
     });
   });
+
+  describe('File Deduplication', () => {
+    let deduplicationValidator: FileIntegrityValidator;
+    let duplicateFile1: string;
+    let duplicateFile2: string;
+    let uniqueFile: string;
+    let duplicateContent: string;
+
+    beforeEach(async () => {
+      deduplicationValidator = new FileIntegrityValidator({
+        backupDirectory: join(testDir, '.backups'),
+        enableDeduplication: true,
+        deduplicationDirectory: join(testDir, '.dedup'),
+        deduplicationThreshold: 10, // Low threshold for testing
+        useHardLinks: true
+      });
+
+      // Create files with duplicate content
+      duplicateContent = 'This is duplicate content for deduplication testing.\n'.repeat(10);
+      duplicateFile1 = join(testDir, 'duplicate1.txt');
+      duplicateFile2 = join(testDir, 'duplicate2.txt');
+      uniqueFile = join(testDir, 'unique.txt');
+
+      await writeFile(duplicateFile1, duplicateContent, 'utf8');
+      await writeFile(duplicateFile2, duplicateContent, 'utf8');
+      await writeFile(uniqueFile, 'This is unique content.', 'utf8');
+    });
+
+    it('should be disabled by default', async () => {
+      const defaultValidator = new FileIntegrityValidator();
+      const stats = await defaultValidator.getDeduplicationStats();
+      
+      expect(stats.enabled).toBe(false);
+      expect(stats.totalEntries).toBe(0);
+    });
+
+    it('should enable deduplication when configured', async () => {
+      const stats = await deduplicationValidator.getDeduplicationStats();
+      
+      expect(stats.enabled).toBe(true);
+      expect(stats.indexPath).toContain('.dedup');
+    });
+
+    it('should deduplicate identical files', async () => {
+      // First file - should be stored
+      const result1 = await deduplicationValidator.deduplicateFile(duplicateFile1);
+      
+      expect(result1.deduplicated).toBe(true);
+      expect(result1.isNewEntry).toBe(true);
+      expect(result1.referenceCount).toBe(1);
+      expect(result1.spaceSaved).toBe(0); // No space saved for first occurrence
+      expect(result1.contentHash).toBeTruthy();
+
+      // Second file with same content - should be deduplicated
+      const result2 = await deduplicationValidator.deduplicateFile(duplicateFile2);
+      
+      expect(result2.deduplicated).toBe(true);
+      expect(result2.isNewEntry).toBe(false);
+      expect(result2.referenceCount).toBe(2);
+      expect(result2.spaceSaved).toBeGreaterThan(0);
+      expect(result2.contentHash).toBe(result1.contentHash); // Same hash
+    });
+
+    it('should not deduplicate unique content', async () => {
+      const result1 = await deduplicationValidator.deduplicateFile(duplicateFile1);
+      const result2 = await deduplicationValidator.deduplicateFile(uniqueFile);
+      
+      expect(result1.contentHash).not.toBe(result2.contentHash);
+      expect(result1.isNewEntry).toBe(true);
+      expect(result2.isNewEntry).toBe(true);
+    });
+
+    it('should respect deduplication threshold', async () => {
+      const thresholdValidator = new FileIntegrityValidator({
+        enableDeduplication: true,
+        deduplicationThreshold: 1000, // High threshold
+        deduplicationDirectory: join(testDir, '.dedup-threshold')
+      });
+
+      const result = await thresholdValidator.deduplicateFile(testFile);
+      
+      expect(result.deduplicated).toBe(false);
+      expect(result.spaceSaved).toBe(0);
+    });
+
+    it('should calculate deduplication statistics', async () => {
+      // Deduplicate multiple files
+      await deduplicationValidator.deduplicateFile(duplicateFile1);
+      await deduplicationValidator.deduplicateFile(duplicateFile2);
+      await deduplicationValidator.deduplicateFile(uniqueFile);
+
+      const stats = await deduplicationValidator.getDeduplicationStats();
+      
+      expect(stats.enabled).toBe(true);
+      expect(stats.totalEntries).toBe(2); // Two unique content entries
+      expect(stats.duplicatesFound).toBe(1); // One duplicate found
+      expect(stats.spaceSaved).toBeGreaterThan(0);
+      expect(stats.averageReferenceCount).toBeGreaterThan(1);
+    });
+
+    it('should create deduplication index file', async () => {
+      await deduplicationValidator.deduplicateFile(duplicateFile1);
+      
+      const indexPath = join(testDir, '.dedup', 'dedup-index.json');
+      const indexContent = await readFile(indexPath, 'utf8');
+      const index = JSON.parse(indexContent);
+      
+      expect(index).toMatchObject({
+        version: '1.0.0',
+        totalEntries: 1,
+        lastUpdated: expect.any(String),
+        entries: expect.any(Object),
+        stats: expect.any(Object)
+      });
+    });
+
+    it('should handle deduplication with compression disabled', async () => {
+      const noCompressionValidator = new FileIntegrityValidator({
+        enableDeduplication: true,
+        enableCompression: false,
+        deduplicationDirectory: join(testDir, '.dedup-no-compress'),
+        deduplicationThreshold: 10
+      });
+
+      const result = await noCompressionValidator.deduplicateFile(duplicateFile1);
+      
+      expect(result.deduplicated).toBe(true);
+      expect(result.isNewEntry).toBe(true);
+    });
+
+    it('should fallback to copy when hard links fail', async () => {
+      const copyValidator = new FileIntegrityValidator({
+        enableDeduplication: true,
+        useHardLinks: false, // Force copy mode
+        deduplicationDirectory: join(testDir, '.dedup-copy'),
+        deduplicationThreshold: 10
+      });
+
+      const result = await copyValidator.deduplicateFile(duplicateFile1);
+      
+      expect(result.deduplicated).toBe(true);
+      expect(result.isNewEntry).toBe(true);
+    });
+
+    it('should handle errors gracefully', async () => {
+      const nonExistentFile = join(testDir, 'nonexistent.txt');
+      
+      const result = await deduplicationValidator.deduplicateFile(nonExistentFile);
+      
+      expect(result.deduplicated).toBe(false);
+      expect(result.error).toBeTruthy();
+    });
+  });
+
+  describe('Backup with Deduplication Integration', () => {
+    let deduplicationBackupValidator: FileIntegrityValidator;
+    let largeDeduplicateFile1: string;
+    let largeDeduplicateFile2: string;
+
+    beforeEach(async () => {
+      deduplicationBackupValidator = new FileIntegrityValidator({
+        backupDirectory: join(testDir, '.backups'),
+        enableDeduplication: true,
+        deduplicationDirectory: join(testDir, '.dedup'),
+        deduplicationThreshold: 100,
+        enableCompression: false // Test deduplication without compression
+      });
+
+      // Create large files with duplicate content for backup testing
+      const largeContent = 'Large duplicate content for backup testing.\n'.repeat(50);
+      largeDeduplicateFile1 = join(testDir, 'large_duplicate1.txt');
+      largeDeduplicateFile2 = join(testDir, 'large_duplicate2.txt');
+
+      await writeFile(largeDeduplicateFile1, largeContent, 'utf8');
+      await writeFile(largeDeduplicateFile2, largeContent, 'utf8');
+    });
+
+    it('should create deduplicated backup for first occurrence', async () => {
+      const result = await deduplicationBackupValidator.createBackup(largeDeduplicateFile1);
+      
+      expect(result.success).toBe(true);
+      expect(result.deduplicated).toBe(true);
+      expect(result.contentHash).toBeTruthy();
+      expect(result.referenceCount).toBe(1);
+      expect(result.deduplicationPath).toBeTruthy();
+      expect(result.backupPath).toMatch(/\.backup\.dedup$/);
+    });
+
+    it('should create deduplicated backup for duplicate content', async () => {
+      // First backup
+      const result1 = await deduplicationBackupValidator.createBackup(largeDeduplicateFile1);
+      
+      // Second backup with same content
+      const result2 = await deduplicationBackupValidator.createBackup(largeDeduplicateFile2);
+      
+      expect(result1.contentHash).toBe(result2.contentHash);
+      expect(result1.deduplicated).toBe(true);
+      expect(result2.deduplicated).toBe(true);
+      expect(result2.referenceCount).toBe(2);
+      expect(result2.deduplicationPath).toBe(result1.deduplicationPath);
+    });
+
+    it('should create deduplication reference metadata in backup', async () => {
+      const result = await deduplicationBackupValidator.createBackup(largeDeduplicateFile1);
+      
+      // Read backup metadata file
+      const metadataContent = await readFile(result.backupPath, 'utf8');
+      const metadata = JSON.parse(metadataContent);
+      
+      expect(metadata).toMatchObject({
+        type: 'deduplication_reference',
+        originalPath: largeDeduplicateFile1,
+        contentHash: result.contentHash,
+        storagePath: result.deduplicationPath,
+        referenceCount: 1,
+        timestamp: expect.any(String),
+        algorithm: 'sha256'
+      });
+    });
+
+    it('should prefer deduplication over compression', async () => {
+      const dedupCompressionValidator = new FileIntegrityValidator({
+        backupDirectory: join(testDir, '.backups'),
+        enableDeduplication: true,
+        enableCompression: true,
+        deduplicationThreshold: 100,
+        compressionThreshold: 100,
+        deduplicationDirectory: join(testDir, '.dedup-compress')
+      });
+
+      const result = await dedupCompressionValidator.createBackup(largeDeduplicateFile1);
+      
+      expect(result.deduplicated).toBe(true);
+      expect(result.compressed).toBe(false); // Deduplication takes precedence
+    });
+
+    it('should fall back to compression when deduplication threshold not met', async () => {
+      const fallbackValidator = new FileIntegrityValidator({
+        backupDirectory: join(testDir, '.backups'),
+        enableDeduplication: true,
+        enableCompression: true,
+        deduplicationThreshold: 10000, // High threshold
+        compressionThreshold: 10, // Low threshold
+        deduplicationDirectory: join(testDir, '.dedup-fallback')
+      });
+
+      const result = await fallbackValidator.createBackup(testFile);
+      
+      expect(result.deduplicated).toBe(false);
+      expect(result.compressed).toBe(true); // Falls back to compression
+    });
+
+    it('should handle deduplication statistics after backup operations', async () => {
+      // Create multiple backups with duplicate content
+      await deduplicationBackupValidator.createBackup(largeDeduplicateFile1);
+      await deduplicationBackupValidator.createBackup(largeDeduplicateFile2);
+
+      const stats = await deduplicationBackupValidator.getDeduplicationStats();
+      
+      expect(stats.totalEntries).toBe(1); // One unique content entry
+      expect(stats.duplicatesFound).toBe(1); // One duplicate found
+      expect(stats.spaceSaved).toBeGreaterThan(0);
+    });
+  });
+
+  describe('Configuration Schema Validation', () => {
+    it('should validate deduplication options in schema', () => {
+      const validConfig = {
+        enableDeduplication: true,
+        deduplicationDirectory: '.custom-dedup',
+        deduplicationAlgorithm: 'sha256' as const,
+        deduplicationThreshold: 1024,
+        useHardLinks: true
+      };
+
+      const result = FileIntegrityOptionsSchema.parse(validConfig);
+      
+      expect(result.enableDeduplication).toBe(true);
+      expect(result.deduplicationDirectory).toBe('.custom-dedup');
+      expect(result.deduplicationAlgorithm).toBe('sha256');
+      expect(result.deduplicationThreshold).toBe(1024);
+      expect(result.useHardLinks).toBe(true);
+    });
+
+    it('should use default values for deduplication options', () => {
+      const result = FileIntegrityOptionsSchema.parse({});
+      
+      expect(result.enableDeduplication).toBe(false);
+      expect(result.deduplicationDirectory).toBe('.dedup');
+      expect(result.deduplicationAlgorithm).toBe('sha256');
+      expect(result.deduplicationThreshold).toBe(1024);
+      expect(result.useHardLinks).toBe(true);
+    });
+
+    it('should reject invalid deduplication algorithm', () => {
+      expect(() => {
+        FileIntegrityOptionsSchema.parse({
+          deduplicationAlgorithm: 'invalid'
+        });
+      }).toThrow();
+    });
+
+    it('should reject negative deduplication threshold', () => {
+      expect(() => {
+        FileIntegrityOptionsSchema.parse({
+          deduplicationThreshold: -1
+        });
+      }).toThrow();
+    });
+  });
 }); 

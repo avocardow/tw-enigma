@@ -164,6 +164,12 @@ export interface CliArguments {
   integrityCompressionAlgorithm?: "gzip" | "deflate" | "brotli";
   integrityCompressionLevel?: number;
   integrityCompressionThreshold?: number;
+  // File integrity deduplication options
+  integrityEnableDeduplication?: boolean;
+  integrityDeduplicationDirectory?: string;
+  integrityDeduplicationAlgorithm?: "md5" | "sha1" | "sha256" | "sha512";
+  integrityDeduplicationThreshold?: number;
+  integrityUseHardLinks?: boolean;
 }
 
 /**
@@ -356,6 +362,17 @@ function normalizeCliArguments(args: CliArguments): Partial<EnigmaConfig> {
     fileIntegrityConfig.compressionLevel = args.integrityCompressionLevel;
   if (args.integrityCompressionThreshold !== undefined)
     fileIntegrityConfig.compressionThreshold = args.integrityCompressionThreshold;
+  // Deduplication options
+  if (args.integrityEnableDeduplication !== undefined)
+    fileIntegrityConfig.enableDeduplication = args.integrityEnableDeduplication;
+  if (args.integrityDeduplicationDirectory !== undefined)
+    fileIntegrityConfig.deduplicationDirectory = args.integrityDeduplicationDirectory;
+  if (args.integrityDeduplicationAlgorithm !== undefined)
+    fileIntegrityConfig.deduplicationAlgorithm = args.integrityDeduplicationAlgorithm;
+  if (args.integrityDeduplicationThreshold !== undefined)
+    fileIntegrityConfig.deduplicationThreshold = args.integrityDeduplicationThreshold;
+  if (args.integrityUseHardLinks !== undefined)
+    fileIntegrityConfig.useHardLinks = args.integrityUseHardLinks;
 
   if (Object.keys(fileIntegrityConfig).length > 0) {
     // Apply defaults using the schema to ensure all fields have proper values

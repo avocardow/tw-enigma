@@ -55,6 +55,22 @@ export const FileIntegrityOptionsSchema = z.object({
   
   /** Minimum file size in bytes to compress (default: 1KB) */
   compressionThreshold: z.number().min(0).default(1024),
+  
+  // === DEDUPLICATION OPTIONS ===
+  /** Whether to enable deduplication for backup files (default: false) */
+  enableDeduplication: z.boolean().default(false),
+  
+  /** Directory for storing deduplicated content (default: '.dedup') */
+  deduplicationDirectory: z.string().default('.dedup'),
+  
+  /** Hash algorithm for content deduplication (default: 'sha256') */
+  deduplicationAlgorithm: z.enum(['md5', 'sha1', 'sha256', 'sha512']).default('sha256'),
+  
+  /** Minimum file size in bytes to deduplicate (default: 1KB) */
+  deduplicationThreshold: z.number().min(0).default(1024),
+  
+  /** Whether to use hard links for deduplication (platform dependent, default: true) */
+  useHardLinks: z.boolean().default(true),
 });
 
 /**
@@ -124,6 +140,14 @@ export interface BackupResult {
   originalSize?: number;
   /** Compression ratio (originalSize / backupSize) */
   compressionRatio?: number;
+  /** Whether deduplication was used */
+  deduplicated?: boolean;
+  /** Content hash used for deduplication */
+  contentHash?: string;
+  /** Number of references to this content */
+  referenceCount?: number;
+  /** Deduplication storage path */
+  deduplicationPath?: string;
 }
 
 /**
@@ -171,7 +195,7 @@ export interface ValidationMetadata {
   /** Source of the validation operation */
   source: string;
   /** Operation type */
-  operation: 'checksum' | 'validation' | 'backup' | 'rollback' | 'cleanup';
+  operation: 'checksum' | 'validation' | 'backup' | 'rollback' | 'cleanup' | 'deduplication';
   /** Timestamp of the operation */
   timestamp: Date;
   /** Processing time in milliseconds */
@@ -180,6 +204,81 @@ export interface ValidationMetadata {
   options: FileIntegrityOptions;
   /** Any additional context */
   context?: Record<string, unknown>;
+}
+
+/**
+ * Deduplication content entry
+ */
+export interface DeduplicationEntry {
+  /** Content hash (primary key) */
+  hash: string;
+  /** Hash algorithm used */
+  algorithm: string;
+  /** Size of the original content */
+  size: number;
+  /** Path to the deduplicated content storage */
+  storagePath: string;
+  /** Number of references to this content */
+  referenceCount: number;
+  /** Original file paths that reference this content */
+  referencePaths: string[];
+  /** First time this content was seen */
+  firstSeen: Date;
+  /** Last time this content was accessed */
+  lastAccessed: Date;
+  /** Whether the stored content is compressed */
+  compressed: boolean;
+  /** Compression algorithm if compressed */
+  compressionAlgorithm?: 'gzip' | 'deflate' | 'brotli';
+}
+
+/**
+ * Deduplication index structure
+ */
+export interface DeduplicationIndex {
+  /** Index format version */
+  version: string;
+  /** Total number of deduplicated entries */
+  totalEntries: number;
+  /** Total space saved through deduplication */
+  spaceSaved: number;
+  /** Last index update timestamp */
+  lastUpdated: Date;
+  /** Content entries by hash */
+  entries: Record<string, DeduplicationEntry>;
+  /** Statistics */
+  stats: {
+    /** Total original size */
+    totalOriginalSize: number;
+    /** Total deduplicated size */
+    totalDeduplicatedSize: number;
+    /** Number of duplicates found */
+    duplicatesFound: number;
+    /** Average reference count */
+    averageReferenceCount: number;
+  };
+}
+
+/**
+ * Deduplication operation result
+ */
+export interface DeduplicationResult {
+  /** Whether deduplication was performed */
+  deduplicated: boolean;
+  /** Content hash */
+  contentHash: string;
+  /** Path to deduplicated storage */
+  storagePath?: string;
+  /** Whether this is a new or existing entry */
+  isNewEntry: boolean;
+  /** Current reference count */
+  referenceCount: number;
+  /** Space saved in bytes */
+  spaceSaved: number;
+  /** Error message if deduplication failed */
+  error?: string;
+  /** Processing time in milliseconds */
+  processingTime: number;
 }
 
 /**
@@ -254,6 +353,8 @@ export class FileIntegrityValidator {
   private readonly options: FileIntegrityOptions;
   private readonly logger: ReturnType<typeof createLogger>;
   private readonly checksumCache: Map<string, ChecksumInfo> = new Map();
+  private deduplicationIndex: DeduplicationIndex | null = null;
+  private deduplicationIndexPath: string;
   
   constructor(options: Partial<FileIntegrityOptions> = {}) {
     // Validate and merge options with defaults
@@ -270,13 +371,18 @@ export class FileIntegrityValidator {
     
     this.logger = createLogger('FileIntegrity');
     
+    // Initialize deduplication index path
+    this.deduplicationIndexPath = join(this.options.deduplicationDirectory, 'dedup-index.json');
+    
     this.logger.debug('FileIntegrityValidator initialized', {
       algorithm: this.options.algorithm,
       createBackups: this.options.createBackups,
       backupDirectory: this.options.backupDirectory,
       maxFileSize: this.options.maxFileSize,
       timeout: this.options.timeout,
-      enableCaching: this.options.enableCaching
+      enableCaching: this.options.enableCaching,
+      enableDeduplication: this.options.enableDeduplication,
+      deduplicationDirectory: this.options.deduplicationDirectory
     });
   }
 
@@ -868,6 +974,448 @@ export class FileIntegrityValidator {
     }
   }
 
+  // === DEDUPLICATION METHODS ===
+
+  /**
+   * Load the deduplication index from disk
+   */
+  private async loadDeduplicationIndex(): Promise<DeduplicationIndex> {
+    if (this.deduplicationIndex) {
+      return this.deduplicationIndex;
+    }
+
+    try {
+      await access(this.deduplicationIndexPath);
+      const indexData = await readFile(this.deduplicationIndexPath, 'utf-8');
+      this.deduplicationIndex = JSON.parse(indexData);
+      
+      this.logger.debug('Deduplication index loaded', {
+        indexPath: this.deduplicationIndexPath,
+        totalEntries: this.deduplicationIndex?.totalEntries
+      });
+      
+      return this.deduplicationIndex!;
+    } catch {
+      // Create new index if file doesn't exist
+      this.deduplicationIndex = {
+        version: '1.0.0',
+        totalEntries: 0,
+        spaceSaved: 0,
+        lastUpdated: new Date(),
+        entries: {},
+        stats: {
+          totalOriginalSize: 0,
+          totalDeduplicatedSize: 0,
+          duplicatesFound: 0,
+          averageReferenceCount: 0
+        }
+      };
+      
+      await this.saveDeduplicationIndex();
+      
+      this.logger.debug('Created new deduplication index', {
+        indexPath: this.deduplicationIndexPath
+      });
+      
+      return this.deduplicationIndex;
+    }
+  }
+
+  /**
+   * Save the deduplication index to disk
+   */
+  private async saveDeduplicationIndex(): Promise<void> {
+    if (!this.deduplicationIndex) {
+      return;
+    }
+
+    try {
+      // Ensure deduplication directory exists
+      const dedupDir = resolve(this.options.deduplicationDirectory);
+      try {
+        await access(dedupDir);
+      } catch {
+        const { mkdir } = await import('node:fs/promises');
+        await mkdir(dedupDir, { recursive: true });
+        this.logger.debug('Created deduplication directory', { dedupDir });
+      }
+
+      // Update timestamp and stats
+      this.deduplicationIndex.lastUpdated = new Date();
+      this.updateDeduplicationStats();
+
+      // Save to disk
+      const indexData = JSON.stringify(this.deduplicationIndex, null, 2);
+      await import('node:fs/promises').then(fs => 
+        fs.writeFile(this.deduplicationIndexPath, indexData, 'utf-8')
+      );
+
+      this.logger.debug('Deduplication index saved', {
+        indexPath: this.deduplicationIndexPath,
+        totalEntries: this.deduplicationIndex.totalEntries
+      });
+    } catch (error) {
+      this.logger.error('Failed to save deduplication index', {
+        indexPath: this.deduplicationIndexPath,
+        error: error instanceof Error ? error.message : String(error)
+      });
+      throw new IntegrityError(
+        `Failed to save deduplication index: ${error instanceof Error ? error.message : String(error)}`,
+        'DEDUP_INDEX_SAVE_ERROR'
+      );
+    }
+  }
+
+  /**
+   * Update deduplication statistics
+   */
+  private updateDeduplicationStats(): void {
+    if (!this.deduplicationIndex) {
+      return;
+    }
+
+    const entries = Object.values(this.deduplicationIndex.entries);
+    this.deduplicationIndex.totalEntries = entries.length;
+    
+    let totalOriginalSize = 0;
+    let totalDeduplicatedSize = 0;
+    let duplicatesFound = 0;
+    let totalReferences = 0;
+
+    for (const entry of entries) {
+      const originalSize = entry.size * entry.referenceCount;
+      totalOriginalSize += originalSize;
+      totalDeduplicatedSize += entry.size;
+      
+      if (entry.referenceCount > 1) {
+        duplicatesFound += entry.referenceCount - 1;
+      }
+      
+      totalReferences += entry.referenceCount;
+    }
+
+    this.deduplicationIndex.spaceSaved = totalOriginalSize - totalDeduplicatedSize;
+    this.deduplicationIndex.stats = {
+      totalOriginalSize,
+      totalDeduplicatedSize,
+      duplicatesFound,
+      averageReferenceCount: entries.length > 0 ? totalReferences / entries.length : 0
+    };
+  }
+
+  /**
+   * Calculate content hash for deduplication
+   */
+  private async createContentHash(filePath: string): Promise<string> {
+    const startTime = Date.now();
+    const resolvedPath = resolve(filePath);
+    
+    try {
+      const hash = createHash(this.options.deduplicationAlgorithm);
+      const stream = createReadStream(resolvedPath);
+      
+      return new Promise<string>((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          stream.destroy();
+          reject(new IntegrityError(
+            `Content hash calculation timed out after ${this.options.timeout}ms`,
+            'CONTENT_HASH_TIMEOUT',
+            resolvedPath
+          ));
+        }, this.options.timeout);
+
+        stream.on('data', (chunk) => {
+          hash.update(chunk);
+        });
+
+        stream.on('end', () => {
+          clearTimeout(timeout);
+          const contentHash = hash.digest('hex');
+          const processingTime = Date.now() - startTime;
+          
+          this.logger.debug('Content hash calculated', {
+            filePath: resolvedPath,
+            contentHash,
+            algorithm: this.options.deduplicationAlgorithm,
+            processingTime
+          });
+          
+          resolve(contentHash);
+        });
+
+        stream.on('error', (error) => {
+          clearTimeout(timeout);
+          reject(new IntegrityError(
+            `Failed to calculate content hash: ${error.message}`,
+            'CONTENT_HASH_ERROR',
+            resolvedPath,
+            'deduplication',
+            error
+          ));
+        });
+      });
+    } catch (error) {
+      throw new IntegrityError(
+        `Content hash calculation failed: ${error instanceof Error ? error.message : String(error)}`,
+        'CONTENT_HASH_ERROR',
+        resolvedPath,
+        'deduplication',
+        error as Error
+      );
+    }
+  }
+
+  /**
+   * Check if file should be deduplicated based on size and configuration
+   */
+  private async shouldDeduplicateFile(filePath: string): Promise<boolean> {
+    if (!this.options.enableDeduplication) {
+      return false;
+    }
+
+    try {
+      const stats = await stat(filePath);
+      return stats.size >= this.options.deduplicationThreshold;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Perform deduplication for a file
+   */
+  async deduplicateFile(filePath: string, targetPath?: string): Promise<DeduplicationResult> {
+    const startTime = Date.now();
+    const resolvedPath = resolve(filePath);
+    const finalTargetPath = targetPath ? resolve(targetPath) : resolvedPath;
+    
+    this.logger.debug('Starting file deduplication', {
+      filePath: resolvedPath,
+      targetPath: finalTargetPath,
+      threshold: this.options.deduplicationThreshold
+    });
+
+    try {
+      // Check if file exists first
+      try {
+        await stat(resolvedPath);
+      } catch (error) {
+        const processingTime = Date.now() - startTime;
+        return {
+          deduplicated: false,
+          contentHash: '',
+          isNewEntry: false,
+          referenceCount: 0,
+          spaceSaved: 0,
+          error: `File does not exist: ${resolvedPath}`,
+          processingTime
+        };
+      }
+
+      // Check if deduplication should be performed
+      const shouldDeduplicate = await this.shouldDeduplicateFile(resolvedPath);
+      if (!shouldDeduplicate) {
+        return {
+          deduplicated: false,
+          contentHash: '',
+          isNewEntry: false,
+          referenceCount: 0,
+          spaceSaved: 0,
+          processingTime: Date.now() - startTime
+        };
+      }
+
+      // Calculate content hash
+      const contentHash = await this.createContentHash(resolvedPath);
+      
+      // Load deduplication index
+      const index = await this.loadDeduplicationIndex();
+      
+      // Get file stats
+      const stats = await stat(resolvedPath);
+      const fileSize = stats.size;
+
+      // Check if content already exists
+      const existingEntry = index.entries[contentHash];
+      
+      if (existingEntry) {
+        // Content already exists - create reference
+        existingEntry.referenceCount++;
+        existingEntry.referencePaths.push(finalTargetPath);
+        existingEntry.lastAccessed = new Date();
+        
+        // Create hard link or copy if hard links not supported/enabled
+        if (this.options.useHardLinks) {
+          try {
+            const { link } = await import('node:fs/promises');
+            await link(existingEntry.storagePath, finalTargetPath);
+            this.logger.debug('Created hard link for deduplicated content', {
+              source: existingEntry.storagePath,
+              target: finalTargetPath
+            });
+          } catch (error) {
+            // Fallback to copy if hard linking fails
+            await copyFile(existingEntry.storagePath, finalTargetPath);
+            this.logger.debug('Hard link failed, used copy for deduplicated content', {
+              source: existingEntry.storagePath,
+              target: finalTargetPath,
+              error: error instanceof Error ? error.message : String(error)
+            });
+          }
+        } else {
+          await copyFile(existingEntry.storagePath, finalTargetPath);
+          this.logger.debug('Copied deduplicated content', {
+            source: existingEntry.storagePath,
+            target: finalTargetPath
+          });
+        }
+
+        await this.saveDeduplicationIndex();
+
+        const processingTime = Date.now() - startTime;
+        const spaceSaved = fileSize; // We saved the full file size
+
+        this.logger.info('File deduplicated (existing content)', {
+          filePath: resolvedPath,
+          contentHash,
+          referenceCount: existingEntry.referenceCount,
+          spaceSaved,
+          processingTime
+        });
+
+        return {
+          deduplicated: true,
+          contentHash,
+          storagePath: existingEntry.storagePath,
+          isNewEntry: false,
+          referenceCount: existingEntry.referenceCount,
+          spaceSaved,
+          processingTime
+        };
+      } else {
+        // New content - store it
+        const dedupDir = resolve(this.options.deduplicationDirectory);
+        const storageFileName = `${contentHash}${extname(resolvedPath)}`;
+        const storagePath = join(dedupDir, storageFileName);
+
+        // Copy content to deduplication storage
+        await copyFile(resolvedPath, storagePath);
+
+        // Create deduplication entry
+        const entry: DeduplicationEntry = {
+          hash: contentHash,
+          algorithm: this.options.deduplicationAlgorithm,
+          size: fileSize,
+          storagePath,
+          referenceCount: 1,
+          referencePaths: [finalTargetPath],
+          firstSeen: new Date(),
+          lastAccessed: new Date(),
+          compressed: false // TODO: Add compression support
+        };
+
+        index.entries[contentHash] = entry;
+
+        // If target is different from source, create link/copy to target
+        if (finalTargetPath !== resolvedPath) {
+          if (this.options.useHardLinks) {
+            try {
+              const { link } = await import('node:fs/promises');
+              await link(storagePath, finalTargetPath);
+              this.logger.debug('Created hard link for new deduplicated content', {
+                source: storagePath,
+                target: finalTargetPath
+              });
+            } catch (error) {
+              await copyFile(storagePath, finalTargetPath);
+              this.logger.debug('Hard link failed, used copy for new deduplicated content', {
+                source: storagePath,
+                target: finalTargetPath,
+                error: error instanceof Error ? error.message : String(error)
+              });
+            }
+          } else {
+            await copyFile(storagePath, finalTargetPath);
+          }
+        }
+
+        await this.saveDeduplicationIndex();
+
+        const processingTime = Date.now() - startTime;
+
+        this.logger.info('File deduplicated (new content)', {
+          filePath: resolvedPath,
+          contentHash,
+          storagePath,
+          fileSize,
+          processingTime
+        });
+
+        return {
+          deduplicated: true,
+          contentHash,
+          storagePath,
+          isNewEntry: true,
+          referenceCount: 1,
+          spaceSaved: 0, // No space saved for first occurrence
+          processingTime
+        };
+      }
+
+    } catch (error) {
+      const processingTime = Date.now() - startTime;
+      this.logger.error('File deduplication failed', {
+        filePath: resolvedPath,
+        error: error instanceof Error ? error.message : String(error),
+        processingTime
+      });
+
+      return {
+        deduplicated: false,
+        contentHash: '',
+        isNewEntry: false,
+        referenceCount: 0,
+        spaceSaved: 0,
+        error: error instanceof Error ? error.message : String(error),
+        processingTime
+      };
+    }
+  }
+
+  /**
+   * Get deduplication statistics
+   */
+  async getDeduplicationStats(): Promise<{
+    enabled: boolean;
+    totalEntries: number;
+    spaceSaved: number;
+    duplicatesFound: number;
+    averageReferenceCount: number;
+    indexPath: string;
+  }> {
+    if (!this.options.enableDeduplication) {
+      return {
+        enabled: false,
+        totalEntries: 0,
+        spaceSaved: 0,
+        duplicatesFound: 0,
+        averageReferenceCount: 0,
+        indexPath: this.deduplicationIndexPath
+      };
+    }
+
+    const index = await this.loadDeduplicationIndex();
+    
+    return {
+      enabled: true,
+      totalEntries: index.totalEntries,
+      spaceSaved: index.spaceSaved,
+      duplicatesFound: index.stats.duplicatesFound,
+      averageReferenceCount: index.stats.averageReferenceCount,
+      indexPath: this.deduplicationIndexPath
+    };
+  }
+
   /**
    * Create a backup of a file before modification
    */
@@ -878,7 +1426,8 @@ export class FileIntegrityValidator {
     this.logger.debug('Creating backup', {
       filePath: resolvedPath,
       backupDirectory: this.options.backupDirectory,
-      compressionEnabled: this.options.enableCompression
+      compressionEnabled: this.options.enableCompression,
+      deduplicationEnabled: this.options.enableDeduplication
     });
 
     try {
@@ -906,8 +1455,17 @@ export class FileIntegrityValidator {
         this.logger.debug('Created backup directory', { backupDir });
       }
 
-      // Determine if compression should be used
-      const shouldCompress = await this.shouldCompressFile(resolvedPath);
+      // Check if deduplication should be attempted first
+      const shouldDeduplicate = await this.shouldDeduplicateFile(resolvedPath);
+      let deduplicationResult: DeduplicationResult | null = null;
+      
+      if (shouldDeduplicate) {
+        this.logger.debug('Attempting deduplication for backup', { filePath: resolvedPath });
+        deduplicationResult = await this.deduplicateFile(resolvedPath);
+      }
+
+      // Determine if compression should be used (if not using deduplication)
+      const shouldCompress = !shouldDeduplicate && await this.shouldCompressFile(resolvedPath);
       
       // Generate backup file path with timestamp
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
@@ -916,25 +1474,60 @@ export class FileIntegrityValidator {
       const nameWithoutExt = originalName.slice(0, -extension.length);
       
       let backupName: string;
-      if (shouldCompress) {
-        const compressExt = this.getCompressedExtension();
-        backupName = `${nameWithoutExt}.${timestamp}${extension}.backup${compressExt}`;
-      } else {
-        backupName = `${nameWithoutExt}.${timestamp}${extension}.backup`;
-      }
-      
-      const backupPath = join(backupDir, backupName);
+      let backupPath: string;
+      let backupSize: number;
 
-      // Create backup with optional compression
-      if (shouldCompress) {
-        await this.createCompressedBackup(resolvedPath, backupPath);
+      if (deduplicationResult?.deduplicated) {
+        // Use deduplication result - create reference in backup directory
+        backupName = `${nameWithoutExt}.${timestamp}${extension}.backup.dedup`;
+        backupPath = join(backupDir, backupName);
+        
+        // Create metadata file pointing to deduplicated content
+        const dedupMetadata = {
+          type: 'deduplication_reference',
+          originalPath: resolvedPath,
+          contentHash: deduplicationResult.contentHash,
+          storagePath: deduplicationResult.storagePath,
+          referenceCount: deduplicationResult.referenceCount,
+          timestamp: new Date(),
+          algorithm: this.options.deduplicationAlgorithm
+        };
+        
+        await import('node:fs/promises').then(fs => 
+          fs.writeFile(backupPath, JSON.stringify(dedupMetadata, null, 2), 'utf-8')
+        );
+        
+        const metadataStats = await stat(backupPath);
+        backupSize = metadataStats.size;
+        
+        this.logger.debug('Created deduplication reference backup', {
+          originalPath: resolvedPath,
+          backupPath,
+          contentHash: deduplicationResult.contentHash,
+          referenceCount: deduplicationResult.referenceCount
+        });
       } else {
-        await copyFile(resolvedPath, backupPath);
-      }
+        // Traditional backup with optional compression
+        if (shouldCompress) {
+          const compressExt = this.getCompressedExtension();
+          backupName = `${nameWithoutExt}.${timestamp}${extension}.backup${compressExt}`;
+        } else {
+          backupName = `${nameWithoutExt}.${timestamp}${extension}.backup`;
+        }
+        
+        backupPath = join(backupDir, backupName);
 
-      // Get backup file stats
-      const backupStats = await stat(backupPath);
-      const backupSize = backupStats.size;
+        // Create backup with optional compression
+        if (shouldCompress) {
+          await this.createCompressedBackup(resolvedPath, backupPath);
+        } else {
+          await copyFile(resolvedPath, backupPath);
+        }
+
+        // Get backup file stats
+        const backupStats = await stat(backupPath);
+        backupSize = backupStats.size;
+      }
 
       const processingTime = Date.now() - startTime;
 
@@ -947,7 +1540,11 @@ export class FileIntegrityValidator {
         originalSize,
         compressed: shouldCompress,
         compressionAlgorithm: shouldCompress ? this.options.compressionAlgorithm : undefined,
-        compressionRatio: shouldCompress ? (originalSize / backupSize) : undefined
+        compressionRatio: shouldCompress ? (originalSize / backupSize) : undefined,
+        deduplicated: deduplicationResult?.deduplicated || false,
+        contentHash: deduplicationResult?.contentHash,
+        referenceCount: deduplicationResult?.referenceCount,
+        deduplicationPath: deduplicationResult?.storagePath
       };
 
       this.logger.info('Backup created successfully', {
@@ -957,6 +1554,9 @@ export class FileIntegrityValidator {
         backupSize,
         compressed: shouldCompress,
         compressionRatio: result.compressionRatio,
+        deduplicated: result.deduplicated,
+        contentHash: result.contentHash,
+        spaceSaved: deduplicationResult?.spaceSaved || 0,
         processingTime
       });
 
