@@ -1,9 +1,17 @@
+/**
+ * Copyright (c) 2025 Rowan Cardow
+ * 
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
 import { cosmiconfig, cosmiconfigSync } from "cosmiconfig";
 import { z } from "zod";
 import { HtmlExtractionOptionsSchema, type HtmlExtractionOptions } from "./htmlExtractor.js";
 import { JsExtractionOptionsSchema, type JsExtractionOptions } from "./jsExtractor.js";
 import { CssInjectionOptionsSchema, type CssInjectionOptions } from "./cssInjector.js";
 import { FileIntegrityOptionsSchema, type FileIntegrityOptions } from "./fileIntegrity.js";
+import { SimpleValidatorConfigSchema, type SimpleValidatorConfig } from "./patternValidator.js";
 import { ConfigError } from "./errors.js";
 import { createLogger } from "./logger.js";
 
@@ -97,6 +105,11 @@ export const EnigmaConfigSchema = z.object({
   fileIntegrity: FileIntegrityOptionsSchema
     .optional()
     .describe("File integrity validation configuration options"),
+
+  // Pattern Validator Configuration
+  patternValidator: SimpleValidatorConfigSchema
+    .optional()
+    .describe("Tailwind CSS pattern validation configuration options"),
 });
 
 /**
@@ -195,6 +208,11 @@ export interface CliArguments {
   integrityBatchProcessingStrategy?: "sequential" | "parallel" | "adaptive";
   integrityEnableProgressTracking?: boolean;
   integrityProgressUpdateInterval?: number;
+  // Pattern Validator CLI options (simplified)
+  patternValidatorEnable?: boolean;
+  patternValidatorSkipInvalid?: boolean;
+  patternValidatorWarnOnInvalid?: boolean;
+  patternValidatorCustomClasses?: string[];
 }
 
 /**
@@ -451,6 +469,22 @@ function normalizeCliArguments(args: CliArguments): Partial<EnigmaConfig> {
   if (Object.keys(fileIntegrityConfig).length > 0) {
     // Apply defaults using the schema to ensure all fields have proper values
     config.fileIntegrity = FileIntegrityOptionsSchema.parse(fileIntegrityConfig);
+  }
+
+  // Pattern validator options (simplified)
+  const patternValidatorConfig: Partial<SimpleValidatorConfig> = {};
+  if (args.patternValidatorEnable !== undefined)
+    patternValidatorConfig.enableValidation = args.patternValidatorEnable;
+  if (args.patternValidatorSkipInvalid !== undefined)
+    patternValidatorConfig.skipInvalidClasses = args.patternValidatorSkipInvalid;
+  if (args.patternValidatorWarnOnInvalid !== undefined)
+    patternValidatorConfig.warnOnInvalidClasses = args.patternValidatorWarnOnInvalid;
+  if (args.patternValidatorCustomClasses !== undefined)
+    patternValidatorConfig.customClasses = args.patternValidatorCustomClasses;
+
+  if (Object.keys(patternValidatorConfig).length > 0) {
+    // Apply defaults using the schema to ensure all fields have proper values
+    config.patternValidator = SimpleValidatorConfigSchema.parse(patternValidatorConfig);
   }
 
   return config;

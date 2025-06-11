@@ -1,4 +1,11 @@
 /**
+ * Copyright (c) 2025 Rowan Cardow
+ * 
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+/**
  * Tailwind Optimizer Plugin
  * Optimizes Tailwind CSS classes by extracting patterns and applying frequency-based optimizations
  */

@@ -1,4 +1,11 @@
 /**
+ * Copyright (c) 2025 Rowan Cardow
+ * 
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+/**
  * Plugin API Integration Layer
  * Provides the main API contract, hooks, and validation for the PostCSS plugin system
  */

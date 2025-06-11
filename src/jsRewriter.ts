@@ -1,4 +1,11 @@
 /**
+ * Copyright (c) 2025 Rowan Cardow
+ * 
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+/**
  * JavaScript/TypeScript/JSX Class Pattern Replacement System
  * 
  * An intelligent AST-based system for replacing Tailwind CSS class patterns

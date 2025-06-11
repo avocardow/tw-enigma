@@ -1,4 +1,11 @@
 /**
+ * Copyright (c) 2025 Rowan Cardow
+ * 
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+/**
  * PostCSS Plugin Configuration System
  * Provides schema validation, configuration management, and integration with main config
  */

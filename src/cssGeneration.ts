@@ -1,6 +1,12 @@
+/**
+ * Copyright (c) 2025 Rowan Cardow
+ * 
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
 import { z } from 'zod';
 import type { AggregatedClassData, FrequencyAnalysisResult, PatternFrequencyMap } from './patternAnalysis.js';
-import type { NameGenerationOptions } from './nameGeneration.js';
 import { createPluginAPI } from './pluginApi.js';
 import { createDefaultPluginConfigManager } from './pluginConfig.js';
 import type { EnigmaPostCSSProcessor } from './postcssIntegration.js';
@@ -9,7 +15,6 @@ import type { EnigmaConfig } from './config.js';
 import type { FrequencyAnalyzer } from './frequencyAnalyzer.js';
 import type { GeneratedCSS } from './generatedCss.js';
 import type { CSSGenerationOptions } from './cssGeneration.js';
-import type { ValidationResult } from './patternValidator.js';
 
 // ===== ZOD SCHEMAS =====
 

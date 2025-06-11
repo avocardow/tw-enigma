@@ -1,4 +1,11 @@
 /**
+ * Copyright (c) 2025 Rowan Cardow
+ * 
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+/**
  * Worker Thread Pool Manager for Tailwind Enigma Core
  * 
  * Provides high-performance parallel processing using Node.js worker threads

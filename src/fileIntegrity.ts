@@ -1,3 +1,10 @@
+/**
+ * Copyright (c) 2025 Rowan Cardow
+ * 
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
 import { createHash } from 'node:crypto';
 import { createReadStream, createWriteStream } from 'node:fs';
 import { readFile, stat, copyFile, unlink, access, mkdir, writeFile } from 'node:fs/promises';

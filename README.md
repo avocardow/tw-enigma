@@ -643,3 +643,31 @@ Can you analyze the complexity of our tasks to help me understand which ones nee
 ```
 Can you show me the complexity report in a more readable format?
 ```
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+### License Information
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+- **License Type**: MIT License
+- **Commercial Use**: ✅ Permitted
+- **Modification**: ✅ Permitted  
+- **Distribution**: ✅ Permitted
+- **Private Use**: ✅ Permitted
+- **Patent Use**: ❌ Not granted
+- **Liability**: ❌ Limited liability
+- **Warranty**: ❌ No warranty provided
+
+All source files include appropriate license headers. The project maintains MIT compatibility with all dependencies.
+
+For license compliance, see the automated license management tools:
+```bash
+# Check license header status
+npm run license:check
+
+# Add license headers to new files
+npm run license:add
+```

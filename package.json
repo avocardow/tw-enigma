@@ -31,7 +31,9 @@
     "prepublishOnly": "pnpm build",
     "list": "node scripts/dev.js list",
     "generate": "node scripts/dev.js generate",
-    "parse-prd": "node scripts/dev.js parse-prd"
+    "parse-prd": "node scripts/dev.js parse-prd",
+    "license:add": "node scripts/add-license-headers.js",
+    "license:check": "node scripts/add-license-headers.js --dry-run --verbose"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",

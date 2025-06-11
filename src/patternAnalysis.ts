@@ -1,7 +1,14 @@
+/**
+ * Copyright (c) 2025 Rowan Cardow
+ * 
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
 import { z } from 'zod';
-import type { HtmlClassExtractionResult, ClassData } from './htmlExtractor.js';
-import type { JsClassExtractionResult, JsClassData, SupportedFramework } from './jsExtractor.js';
-import type { ValidationResult, SimplePatternValidator, SimpleValidatorConfig } from './patternValidator.js';
+import type { HtmlClassExtractionResult } from './htmlExtractor.js';
+import type { JsClassExtractionResult, SupportedFramework } from './jsExtractor.js';
+import type { ValidationResult } from './patternValidator.js';
 
 /**
  * Configuration options for pattern analysis
