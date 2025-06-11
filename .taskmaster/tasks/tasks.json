@@ -1249,7 +1249,7 @@
       "id": 17,
       "title": "Develop backup mechanism for modified files",
       "description": "Create a system to automatically backup files before modification.",
-      "status": "pending",
+      "status": "done",
       "dependencies": [
         16
       ],
