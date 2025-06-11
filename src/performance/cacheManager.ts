@@ -133,8 +133,9 @@ export class CacheManager<T = unknown> extends EventEmitter {
       if (!entry) {
         // Try loading from persistence if enabled
         if (this.config.persistence) {
-          entry = await this.loadFromPersistence(key);
-          if (entry) {
+          const persistedEntry = await this.loadFromPersistence(key);
+          if (persistedEntry) {
+            entry = persistedEntry;
             this.cache.set(key, entry);
           }
         }
@@ -331,8 +332,16 @@ export class CacheManager<T = unknown> extends EventEmitter {
    * Ensure there's enough space for new entry
    */
   private async ensureSpace(requiredSize: number): Promise<void> {
+    let iterations = 0;
     while (this.stats.totalSize + requiredSize > this.config.maxSize && this.cache.size > 0) {
+      iterations++;
+      if (iterations > 10) {
+        console.error('ensureSpace: Too many iterations, breaking to prevent infinite loop');
+        break;
+      }
+      
       const keyToEvict = this.selectEvictionCandidate();
+      
       if (keyToEvict) {
         await this.evict(keyToEvict);
       } else {
@@ -577,7 +586,7 @@ export class CacheManager<T = unknown> extends EventEmitter {
    */
   private updateHitRate(): void {
     const totalAccesses = this.stats.hits + this.stats.misses;
-    this.stats.hitRate = totalAccesses > 0 ? (this.stats.hits / totalAccesses) * 100 : 0;
+    this.stats.hitRate = totalAccesses > 0 ? (this.stats.hits / totalAccesses) : 0;
   }
 
   /**
@@ -600,9 +609,10 @@ export class CacheManager<T = unknown> extends EventEmitter {
    * Start periodic cleanup of expired entries
    */
   private startPeriodicCleanup(): void {
+    const interval = this.config.cleanupInterval || 60000; // Default to 1 minute
     this.cleanupTimer = setInterval(() => {
       this.cleanup().catch(error => this.emit('error', error));
-    }, 60000); // Cleanup every minute
+    }, interval);
   }
 
   /**

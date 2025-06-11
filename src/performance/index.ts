@@ -58,6 +58,13 @@ export {
   createEnvironmentConfig
 } from './config.js';
 
+// Import for internal use
+import { 
+  DEFAULT_PERFORMANCE_CONFIG as _DEFAULT_PERFORMANCE_CONFIG,
+  type SystemResources as _SystemResources,
+  type PerformanceConfig as _PerformanceConfig
+} from './config.js';
+
 // Performance constants
 export const PERFORMANCE_CONSTANTS = {
   DEFAULT_WORKER_POOL_SIZE: 4,
@@ -185,7 +192,7 @@ export function formatDuration(milliseconds: number): string {
 /**
  * Get current system resource information
  */
-export function getSystemResources(): SystemResources {
+export function getSystemResources(): _SystemResources {
   const os = require('os');
   
   return {
@@ -242,9 +249,9 @@ export function checkSystemRequirements(): {
 /**
  * Create optimized performance configuration based on system resources
  */
-export function createOptimizedConfig(): PerformanceConfig {
+export function createOptimizedConfig(): _PerformanceConfig {
   const resources = getSystemResources();
-  const baseConfig = DEFAULT_PERFORMANCE_CONFIG;
+  const baseConfig = _DEFAULT_PERFORMANCE_CONFIG;
   
   // Optimize worker pool size based on CPU cores
   const workerPoolSize = Math.max(2, Math.min(resources.cpuCount, PERFORMANCE_CONSTANTS.MAX_WORKER_POOL_SIZE));

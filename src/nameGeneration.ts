@@ -10,8 +10,13 @@ export const NameGenerationOptionsSchema = z.object({
   numericSuffix: z.boolean().default(true), // Allow 0-9 in names (but not at start)
   
   // Generation strategy
-  strategy: z.enum(['sequential', 'frequency-optimized', 'hybrid']).default('frequency-optimized'),
+  strategy: z.enum(['sequential', 'frequency-optimized', 'hybrid', 'pretty']).default('frequency-optimized'),
   startIndex: z.number().min(0).default(0),
+  
+  // Pretty name generation options
+  prettyNameMaxLength: z.number().min(1).max(10).default(6), // Maximum length for pretty names
+  prettyNamePreferShorter: z.boolean().default(true), // Prefer shorter names when possible
+  prettyNameExhaustionStrategy: z.enum(['fallback-sequential', 'fallback-hybrid', 'error']).default('fallback-hybrid'),
   
   // Frequency optimization
   enableFrequencyOptimization: z.boolean().default(true),
@@ -112,6 +117,42 @@ export interface FrequencyBucket {
 }
 
 /**
+ * Pretty name permutation cache for performance optimization
+ */
+export interface PrettyNameCache {
+  permutations: Map<number, string[]>; // length -> sorted permutations array
+  usedPermutations: Set<string>; // track exhaustion
+  currentIndex: Map<number, number>; // length -> current index in permutations
+  totalGenerated: number;
+  totalExhausted: number;
+  lastGenerated?: string;
+}
+
+/**
+ * Pretty name generation result with aesthetic scoring
+ */
+export interface PrettyNameResult {
+  name: string;
+  length: number;
+  aestheticScore: number; // 0-1, higher is more aesthetic
+  isExhausted: boolean; // true if we've run out of permutations
+  fallbackUsed: boolean; // true if fallback strategy was used
+  generationStrategy: 'permutation' | 'fallback-sequential' | 'fallback-hybrid';
+}
+
+/**
+ * Pretty name generation statistics
+ */
+export interface PrettyNameStatistics {
+  totalPermutations: number;
+  usedPermutations: number;
+  exhaustionRate: number; // percentage of permutations used
+  averageAestheticScore: number;
+  fallbackUsageRate: number;
+  lengthDistribution: Map<number, number>;
+}
+
+/**
  * Error classes for name generation operations
  */
 export class NameGenerationError extends Error {
@@ -153,6 +194,19 @@ export class InvalidNameError extends NameGenerationError {
   ) {
     super(message, cause);
     this.name = 'InvalidNameError';
+  }
+}
+
+export class PrettyNameExhaustionError extends NameGenerationError {
+  constructor(
+    message: string,
+    public maxLength: number,
+    public totalGenerated: number,
+    public availableStrategies: string[],
+    cause?: Error
+  ) {
+    super(message, cause);
+    this.name = 'PrettyNameExhaustionError';
   }
 }
 
@@ -628,6 +682,402 @@ export function generateSequentialNames(
   }
   
   return names;
+}
+
+/**
+ * ===================================================================
+ * PRETTY NAME GENERATION ALGORITHM (Step 2: Permutation Algorithm)
+ * ===================================================================
+ */
+
+/**
+ * Generate all permutations of alphabet characters without repetition up to maxLength
+ * 
+ * @param alphabet - Available characters for generation
+ * @param maxLength - Maximum length for generated names
+ * @returns Sorted array of permutations by length then aesthetic score
+ */
+export function generatePermutationsWithoutRepetition(alphabet: string, maxLength: number): string[] {
+  if (maxLength <= 0 || alphabet.length === 0) {
+    return [];
+  }
+  
+  const result: string[] = [];
+  const chars = [...new Set(alphabet)]; // Remove duplicates
+  
+  // Generate permutations for each length from 1 to maxLength
+  for (let length = 1; length <= Math.min(maxLength, chars.length); length++) {
+    const permutations = generatePermutationsOfLength(chars, length);
+    result.push(...permutations);
+  }
+  
+  // Sort by aesthetic criteria: shorter first, then by aesthetic score
+  return result.sort((a, b) => {
+    if (a.length !== b.length) {
+      return a.length - b.length;
+    }
+    return calculateAestheticScore(b) - calculateAestheticScore(a); // Higher score first
+  });
+}
+
+/**
+ * Generate all permutations of specified length without character repetition
+ * 
+ * @param chars - Array of available characters
+ * @param length - Target length for permutations
+ * @returns Array of permutations of specified length
+ */
+function generatePermutationsOfLength(chars: string[], length: number): string[] {
+  if (length === 0) return [''];
+  if (length > chars.length) return [];
+  if (length === 1) return chars.slice();
+  
+  const result: string[] = [];
+  const maxResults = 10000; // Safety limit to prevent memory issues
+  
+  for (let i = 0; i < chars.length; i++) {
+    const char = chars[i];
+    const remaining = chars.slice(0, i).concat(chars.slice(i + 1));
+    const subPermutations = generatePermutationsOfLength(remaining, length - 1);
+    
+    for (const subPerm of subPermutations) {
+      if (result.length >= maxResults) {
+        console.warn(`Permutation generation limited to ${maxResults} results for performance`);
+        return result;
+      }
+      result.push(char + subPerm);
+    }
+  }
+  
+  return result;
+}
+
+/**
+ * Calculate aesthetic score for a name (0-1, higher is better)
+ * Considers factors like pronounceability, character flow, and visual appeal
+ * 
+ * @param name - Name to score
+ * @returns Aesthetic score between 0 and 1
+ */
+export function calculateAestheticScore(name: string): number {
+  if (!name || name.length === 0) return 0;
+  
+  let score = 0.3; // Lower base score to allow for differentiation
+  const lower = name.toLowerCase();
+  
+  // Prefer shorter names (more moderate preference)
+  score += Math.max(0, (6 - name.length) * 0.05); // Reduced from 0.1
+  
+  // Vowel-consonant alternation bonus (more pronounceable)
+  const vowels = new Set(['a', 'e', 'i', 'o', 'u']);
+  let alternationBonus = 0;
+  for (let i = 0; i < lower.length - 1; i++) {
+    const isVowel = vowels.has(lower[i]);
+    const nextIsVowel = vowels.has(lower[i + 1]);
+    if (isVowel !== nextIsVowel) {
+      alternationBonus += 0.03; // Reduced from 0.05
+    }
+  }
+  score += Math.min(0.15, alternationBonus); // Reduced from 0.2
+  
+  // Avoid awkward letter combinations
+  const awkwardCombos = ['xz', 'qw', 'zx', 'bk', 'gk', 'pk', 'tk'];
+  for (const combo of awkwardCombos) {
+    if (lower.includes(combo)) {
+      score -= 0.08; // Reduced from 0.1
+    }
+  }
+  
+  // Prefer names that start with common letters (with different weights)
+  const commonStartWeights: Record<string, number> = {
+    'a': 0.08, 'b': 0.06, 'c': 0.05, 'd': 0.04, 'e': 0.07, // Reduced weights
+    'f': 0.03, 'g': 0.02, 'h': 0.02, 'l': 0.03, 'm': 0.04,
+    'n': 0.03, 'p': 0.02, 'r': 0.04, 's': 0.05, 't': 0.04
+  };
+  const startWeight = commonStartWeights[lower[0]] || 0.01; // Reduced from 0.02
+  score += startWeight;
+  
+  // Small bonus for lowercase start (CSS convention)
+  if (name[0] >= 'a' && name[0] <= 'z') {
+    score += 0.01; // Reduced from 0.02
+  }
+  
+  return Math.max(0, Math.min(1, score));
+}
+
+/**
+ * Create a pretty name cache for performance optimization
+ * 
+ * @param alphabet - Available characters
+ * @param maxLength - Maximum length for generated names
+ * @returns Initialized pretty name cache
+ */
+export function createPrettyNameCache(alphabet: string, maxLength: number): PrettyNameCache {
+  const cache: PrettyNameCache = {
+    permutations: new Map(),
+    usedPermutations: new Set(),
+    currentIndex: new Map(),
+    totalGenerated: 0,
+    totalExhausted: 0,
+  };
+  
+  // Pre-generate permutations for each length (lazy loading approach)
+  for (let length = 1; length <= maxLength; length++) {
+    cache.currentIndex.set(length, 0);
+  }
+  
+  return cache;
+}
+
+/**
+ * Get next permutation from cache, generating on demand
+ * 
+ * @param cache - Pretty name cache
+ * @param length - Desired length
+ * @param alphabet - Available alphabet
+ * @returns Next permutation or null if exhausted
+ */
+function getNextPermutation(cache: PrettyNameCache, length: number, alphabet: string): string | null {
+  // Get or generate permutations for this length
+  if (!cache.permutations.has(length)) {
+    const chars = [...new Set(alphabet)];
+    if (length > chars.length) return null;
+    
+    const perms = generatePermutationsOfLength(chars, length);
+    const sortedPerms = perms.sort((a, b) => calculateAestheticScore(b) - calculateAestheticScore(a));
+    cache.permutations.set(length, sortedPerms);
+  }
+  
+  const permutations = cache.permutations.get(length)!;
+  let currentIndex = cache.currentIndex.get(length) || 0;
+  
+  // Find next unused permutation
+  while (currentIndex < permutations.length) {
+    const candidate = permutations[currentIndex];
+    currentIndex++;
+    cache.currentIndex.set(length, currentIndex);
+    
+    if (!cache.usedPermutations.has(candidate)) {
+      cache.usedPermutations.add(candidate);
+      cache.totalGenerated++;
+      cache.lastGenerated = candidate;
+      return candidate;
+    }
+  }
+  
+  // This length is exhausted
+  cache.totalExhausted++;
+  return null;
+}
+
+/**
+ * Generate a pretty name for a given index with exhaustion handling
+ * 
+ * @param index - Sequential index for consistent generation
+ * @param options - Name generation options
+ * @returns Pretty name generation result
+ */
+// Global cache for pretty name generation (shared across calls)
+const globalPrettyCache = new Map<string, PrettyNameCache>();
+
+export function generatePrettyName(index: number, options: NameGenerationOptions): PrettyNameResult {
+  if (index < 0) {
+    throw new NameGenerationError(`Invalid index: ${index}. Must be non-negative.`);
+  }
+  
+  const { alphabet, prettyNameMaxLength, prettyNamePreferShorter, prettyNameExhaustionStrategy } = options;
+  const maxLength = prettyNameMaxLength ?? 6; // Use nullish coalescing instead of || to handle 0 properly
+  
+  // Add validation for invalid options
+  if (maxLength <= 0) {
+    throw new NameGenerationError(`Invalid prettyNameMaxLength: ${maxLength}. Must be positive.`);
+  }
+  
+  if (!alphabet || alphabet.length === 0) {
+    throw new NameGenerationError(`Invalid alphabet: empty or undefined.`);
+  }
+  
+  // Create or reuse cache based on alphabet and maxLength
+  const cacheKey = `${alphabet}-${maxLength}`;
+  let cache = globalPrettyCache.get(cacheKey);
+  if (!cache) {
+    cache = createPrettyNameCache(alphabet, maxLength);
+    globalPrettyCache.set(cacheKey, cache);
+  }
+  
+  // Try to generate a pretty name
+  let result: PrettyNameResult | null = null;
+  
+  // Strategy: try shorter lengths first if preferred
+  const lengths = prettyNamePreferShorter 
+    ? Array.from({ length: maxLength }, (_, i) => i + 1)
+    : Array.from({ length: maxLength }, (_, i) => maxLength - i);
+  
+  for (const length of lengths) {
+    const permutation = getNextPermutation(cache, length, alphabet);
+    if (permutation) {
+      const aestheticScore = calculateAestheticScore(permutation);
+      result = {
+        name: permutation,
+        length,
+        aestheticScore,
+        isExhausted: false,
+        fallbackUsed: false,
+        generationStrategy: 'permutation',
+      };
+      break;
+    }
+  }
+  
+  // Handle exhaustion with fallback strategies
+  if (!result) {
+    result = handlePrettyNameExhaustion(index, options, cache);
+  }
+  
+  // Apply prefix/suffix
+  const finalName = `${options.prefix || ''}${result.name}${options.suffix || ''}`;
+  
+  // Validate CSS compliance
+  if (options.ensureCssValid && !isValidCssIdentifier(finalName)) {
+    // Try fallback if CSS validation fails
+    if (!result.fallbackUsed) {
+      return handlePrettyNameExhaustion(index, options, cache);
+    }
+    throw new InvalidNameError(
+      `Generated pretty name "${finalName}" is not a valid CSS identifier`,
+      finalName,
+      'css-invalid'
+    );
+  }
+  
+  return {
+    ...result,
+    name: finalName,
+  };
+}
+
+/**
+ * Handle pretty name exhaustion with configured fallback strategy
+ * 
+ * @param index - Current generation index
+ * @param options - Name generation options
+ * @param cache - Pretty name cache with exhaustion info
+ * @returns Fallback result
+ */
+function handlePrettyNameExhaustion(
+  index: number, 
+  options: NameGenerationOptions, 
+  cache: PrettyNameCache
+): PrettyNameResult {
+  const strategy = options.prettyNameExhaustionStrategy || 'fallback-hybrid';
+  
+  switch (strategy) {
+    case 'error':
+      throw new PrettyNameExhaustionError(
+        `Pretty name generation exhausted after ${cache.totalGenerated} names`,
+        options.prettyNameMaxLength || 6,
+        cache.totalGenerated,
+        ['fallback-sequential', 'fallback-hybrid']
+      );
+    
+    case 'fallback-sequential':
+      // Handle single-character alphabets specially
+      if (options.alphabet.length === 1) {
+        const char = options.alphabet[0];
+        const fallbackName = char.repeat(Math.min(index + 1, 6)); // Repeat character
+        return {
+          name: fallbackName,
+          length: fallbackName.length,
+          aestheticScore: 0.1, // Low aesthetic score for fallback
+          isExhausted: true,
+          fallbackUsed: true,
+          generationStrategy: 'fallback-sequential',
+        };
+      }
+      
+      const sequentialName = generateSequentialName(index, options);
+      return {
+        name: sequentialName,
+        length: sequentialName.length,
+        aestheticScore: 0.1, // Low aesthetic score for fallback
+        isExhausted: true,
+        fallbackUsed: true,
+        generationStrategy: 'fallback-sequential',
+      };
+    
+    case 'fallback-hybrid':
+    default:
+      // Handle single-character alphabets specially
+      if (options.alphabet.length === 1) {
+        const char = options.alphabet[0];
+        const fallbackName = char + (index % 10).toString(); // Add number suffix
+        return {
+          name: fallbackName,
+          length: fallbackName.length,
+          aestheticScore: 0.15, // Slightly better than sequential
+          isExhausted: true,
+          fallbackUsed: true,
+          generationStrategy: 'fallback-hybrid',
+        };
+      }
+      
+      // Use hybrid approach: try to make sequential names more aesthetic
+      const baseName = generateSequentialName(index, options);
+      const enhancedName = enhanceNameAesthetics(baseName, options);
+      return {
+        name: enhancedName,
+        length: enhancedName.length,
+        aestheticScore: calculateAestheticScore(enhancedName),
+        isExhausted: true,
+        fallbackUsed: true,
+        generationStrategy: 'fallback-hybrid',
+      };
+  }
+}
+
+/**
+ * Enhance the aesthetics of a generated name by applying transformations
+ * 
+ * @param name - Base name to enhance
+ * @param options - Generation options
+ * @returns Enhanced name with better aesthetics
+ */
+function enhanceNameAesthetics(name: string, options: NameGenerationOptions): string {
+  // Simple enhancement: try to add vowels or replace awkward combinations
+  // This is a fallback, so we keep it simple
+  let enhanced = name.toLowerCase();
+  
+  // Replace awkward combinations with more aesthetic alternatives
+  const replacements: Record<string, string> = {
+    'aa': 'ab',
+    'bb': 'ba',
+    'cc': 'ca',
+    'dd': 'da',
+    'ff': 'fa',
+    'gg': 'ga',
+    'hh': 'ha',
+    'jj': 'ja',
+    'kk': 'ka',
+    'll': 'la',
+    'mm': 'ma',
+    'nn': 'na',
+    'pp': 'pa',
+    'qq': 'qa',
+    'rr': 'ra',
+    'ss': 'sa',
+    'tt': 'ta',
+    'vv': 'va',
+    'ww': 'wa',
+    'xx': 'xa',
+    'yy': 'ya',
+    'zz': 'za',
+  };
+  
+  for (const [awkward, better] of Object.entries(replacements)) {
+    enhanced = enhanced.replace(new RegExp(awkward, 'g'), better);
+  }
+  
+  return enhanced;
 }
 
 /**
@@ -1326,11 +1776,30 @@ getStats(): {
  */
 export async function generateOptimizedNames(
   frequencyMap: PatternFrequencyMap,
-  options: NameGenerationOptions = {},
+  options: Partial<NameGenerationOptions> = {},
   existingCache?: Map<string, string>
 ): Promise<NameGenerationResult> {
   const startTime = Date.now();
-  const validatedOptions = validateNameGenerationOptions(options);
+  const defaultOptions: NameGenerationOptions = {
+    strategy: 'frequency-optimized',
+    batchSize: 1000,
+    alphabet: 'abcdefghijklmnopqrstuvwxyz',
+    numericSuffix: false,
+    startIndex: 0,
+    enableFrequencyOptimization: true,
+    frequencyThreshold: 1,
+    enableCaching: false,
+    reservedNames: ['a', 'an', 'and', 'or', 'not'],
+    avoidConflicts: true,
+    maxCacheSize: 50000,
+    prefix: '',
+    suffix: '',
+    ensureCssValid: true,
+    prettyNameMaxLength: 6,
+    prettyNamePreferShorter: true,
+    prettyNameExhaustionStrategy: 'fallback-hybrid'
+  };
+  const validatedOptions = validateNameGenerationOptions({ ...defaultOptions, ...options });
   
   // Validate setup
   const validation = validateGenerationSetup(validatedOptions);
@@ -1356,6 +1825,10 @@ export async function generateOptimizedNames(
       
     case 'hybrid':
       nameMap = generateHybridMapping(frequencyMap, validatedOptions);
+      break;
+      
+    case 'pretty':
+      nameMap = generatePrettyMapping(frequencyMap, validatedOptions);
       break;
       
     default:
@@ -1457,6 +1930,172 @@ function generateHybridMapping(
   }
   
   return nameMap;
+}
+
+/**
+ * Generate pretty name mapping using permutation-based approach
+ */
+function generatePrettyMapping(
+  frequencyMap: PatternFrequencyMap,
+  options: NameGenerationOptions
+): Map<string, string> {
+  const nameMap = new Map<string, string>();
+  const sortedClasses = sortByFrequency(frequencyMap, options);
+  
+  // Create a shared pretty name cache for efficient permutation management
+  const prettyCache = createPrettyNameCache(options.alphabet, options.prettyNameMaxLength || 6);
+  const collisionCache = createNameCollisionCache(options);
+  
+  let index = 0;
+  const statistics = {
+    permutationCount: 0,
+    fallbackCount: 0,
+    totalAestheticScore: 0,
+  };
+  
+  for (const classItem of sortedClasses) {
+    try {
+      // Generate pretty name for this class
+      const prettyResult = generatePrettyNameWithCache(index, options, prettyCache, collisionCache);
+      
+      // Track statistics
+      statistics.totalAestheticScore += prettyResult.aestheticScore;
+      if (prettyResult.fallbackUsed) {
+        statistics.fallbackCount++;
+      } else {
+        statistics.permutationCount++;
+      }
+      
+      nameMap.set(classItem.name, prettyResult.name);
+      index++;
+      
+    } catch (error) {
+      // If pretty name generation fails completely, fall back to sequential
+      if (error instanceof PrettyNameExhaustionError && options.prettyNameExhaustionStrategy === 'error') {
+        throw error; // Re-throw if error strategy is selected
+      }
+      
+      // Fallback to sequential generation
+      const fallbackResult = generateNextAvailableName(collisionCache, options);
+      nameMap.set(classItem.name, fallbackResult.name);
+      statistics.fallbackCount++;
+      index++;
+    }
+  }
+  
+  // Log statistics for debugging
+  console.debug(`Pretty name generation complete: ${statistics.permutationCount} permutations, ${statistics.fallbackCount} fallbacks, average aesthetic score: ${statistics.totalAestheticScore / sortedClasses.length}`);
+  
+  return nameMap;
+}
+
+/**
+ * Generate pretty name with shared cache management and collision detection
+ */
+function generatePrettyNameWithCache(
+  index: number,
+  options: NameGenerationOptions,
+  prettyCache: PrettyNameCache,
+  collisionCache: NameCollisionCache
+): PrettyNameResult {
+  const maxAttempts = 1000; // Prevent infinite loops
+  let attempts = 0;
+  
+  while (attempts < maxAttempts) {
+    const result = generatePrettyNameFromCache(index + attempts, options, prettyCache);
+    
+    // Check for collisions with existing names
+    if (!hasNameCollision(result.name, collisionCache)) {
+      // Success - add to collision cache and return
+      collisionCache.usedNames.add(result.name);
+      return result;
+    }
+    
+    // Collision detected, try next permutation
+    attempts++;
+    
+    // If we're using fallback strategy, collision handling is different
+    if (result.fallbackUsed) {
+      // For fallback names, we can modify them to avoid collisions
+      let modifiedName = result.name + attempts;
+      if (!hasNameCollision(modifiedName, collisionCache)) {
+        collisionCache.usedNames.add(modifiedName);
+        return {
+          ...result,
+          name: modifiedName,
+        };
+      }
+    }
+  }
+  
+  // If we can't find a non-colliding name, throw an error
+  throw new CollisionError(
+    `Unable to generate non-colliding pretty name after ${maxAttempts} attempts`,
+    'multiple-collisions',
+    'pretty-name-generation'
+  );
+}
+
+/**
+ * Generate pretty name from cache without collision checking (internal use)
+ */
+function generatePrettyNameFromCache(
+  index: number,
+  options: NameGenerationOptions,
+  cache: PrettyNameCache
+): PrettyNameResult {
+  const { alphabet, prettyNameMaxLength, prettyNamePreferShorter, prettyNameExhaustionStrategy } = options;
+  const maxLength = prettyNameMaxLength || 6;
+  
+  // Try to generate a pretty name from permutations
+  let result: PrettyNameResult | null = null;
+  
+  // Strategy: try lengths in order based on preference
+  const lengths = prettyNamePreferShorter 
+    ? Array.from({ length: maxLength }, (_, i) => i + 1)
+    : Array.from({ length: maxLength }, (_, i) => maxLength - i);
+  
+  for (const length of lengths) {
+    const permutation = getNextPermutation(cache, length, alphabet);
+    if (permutation) {
+      const aestheticScore = calculateAestheticScore(permutation);
+      result = {
+        name: permutation,
+        length,
+        aestheticScore,
+        isExhausted: false,
+        fallbackUsed: false,
+        generationStrategy: 'permutation',
+      };
+      break;
+    }
+  }
+  
+  // Handle exhaustion with fallback strategies
+  if (!result) {
+    result = handlePrettyNameExhaustion(index, options, cache);
+  }
+  
+  // Apply prefix/suffix
+  const finalName = `${options.prefix || ''}${result.name}${options.suffix || ''}`;
+  
+  // Validate CSS compliance
+  if (options.ensureCssValid && !isValidCssIdentifier(finalName)) {
+    // Try fallback if CSS validation fails
+    if (!result.fallbackUsed) {
+      return handlePrettyNameExhaustion(index, options, cache);
+    }
+    throw new InvalidNameError(
+      `Generated pretty name "${finalName}" is not a valid CSS identifier`,
+      finalName,
+      'css-invalid'
+    );
+  }
+  
+  return {
+    ...result,
+    name: finalName,
+  };
 }
 
 /**
@@ -1578,9 +2217,28 @@ export function exportNameGenerationResult(result: NameGenerationResult): {
  */
 export async function generateSimpleNames(
   classNames: string[],
-  options: NameGenerationOptions = {}
+  options: Partial<NameGenerationOptions> = {}
 ): Promise<Map<string, string>> {
-  const validatedOptions = validateNameGenerationOptions(options);
+  const defaultOptions: NameGenerationOptions = {
+    strategy: 'sequential',
+    batchSize: 1000,
+    alphabet: 'abcdefghijklmnopqrstuvwxyz',
+    numericSuffix: false,
+    startIndex: 0,
+    enableFrequencyOptimization: false,
+    frequencyThreshold: 1,
+    enableCaching: false,
+    reservedNames: ['a', 'an', 'and', 'or', 'not'],
+    avoidConflicts: true,
+    maxCacheSize: 50000,
+    prefix: '',
+    suffix: '',
+    ensureCssValid: true,
+    prettyNameMaxLength: 6,
+    prettyNamePreferShorter: true,
+    prettyNameExhaustionStrategy: 'fallback-hybrid'
+  };
+  const validatedOptions = validateNameGenerationOptions({ ...defaultOptions, ...options });
   const nameMap = new Map<string, string>();
   const cache = createNameCollisionCache(validatedOptions);
   

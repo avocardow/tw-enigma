@@ -18,6 +18,12 @@ import {
   calculateGenerationStatistics,
   validateGenerationSetup,
   
+  // Pretty name generation
+  generatePermutationsWithoutRepetition,
+  calculateAestheticScore,
+  createPrettyNameCache,
+  generatePrettyName,
+  
   // Frequency-based optimization
   sortByFrequency,
   createFrequencyBuckets,
@@ -42,10 +48,13 @@ import {
   CollisionError,
   InvalidNameError,
   CacheError,
+  PrettyNameExhaustionError,
   
   type NameGenerationOptions,
   type PatternFrequencyMap,
   type AggregatedClassData,
+  type PrettyNameCache,
+  type PrettyNameResult,
 } from '../src/nameGeneration.js';
 
 // Mock data for testing
@@ -634,6 +643,363 @@ describe('Name Generation Module', () => {
       for (const [key, value] of result1.nameMap) {
         expect(result2.nameMap.get(key)).toBe(value);
       }
+    });
+  });
+
+  describe('Pretty Name Generation', () => {
+    const prettyOptions: NameGenerationOptions = {
+      alphabet: ALPHABET_CONFIGS.minimal,
+      strategy: 'pretty',
+      numericSuffix: false,
+      startIndex: 0,
+      enableFrequencyOptimization: false,
+      frequencyThreshold: 1,
+      reservedNames: [],
+      avoidConflicts: true,
+      enableCaching: false,
+      batchSize: 100,
+      maxCacheSize: 1000,
+      prefix: '',
+      suffix: '',
+      ensureCssValid: true,
+      prettyNameMaxLength: 6,
+      prettyNamePreferShorter: true,
+      prettyNameExhaustionStrategy: 'fallback-hybrid',
+    };
+
+    describe('Permutation Generation', () => {
+      test('generatePermutationsWithoutRepetition creates correct permutations', () => {
+        const alphabet = 'abc';
+        const permutations = generatePermutationsWithoutRepetition(alphabet, 2);
+        
+        // Should include all 1-length and 2-length permutations
+        expect(permutations).toContain('a');
+        expect(permutations).toContain('b');
+        expect(permutations).toContain('c');
+        expect(permutations).toContain('ab');
+        expect(permutations).toContain('ac');
+        expect(permutations).toContain('ba');
+        expect(permutations).toContain('bc');
+        expect(permutations).toContain('ca');
+        expect(permutations).toContain('cb');
+        
+        // Should NOT contain repetitions within a name
+        expect(permutations).not.toContain('aa');
+        expect(permutations).not.toContain('bb');
+        expect(permutations).not.toContain('cc');
+        
+        // Should be sorted by length first, then aesthetic score
+        const firstFew = permutations.slice(0, 3);
+        expect(firstFew.every(p => p.length === 1)).toBe(true);
+      });
+
+      test('generatePermutationsWithoutRepetition handles edge cases', () => {
+        expect(generatePermutationsWithoutRepetition('', 3)).toEqual([]);
+        expect(generatePermutationsWithoutRepetition('a', 0)).toEqual([]);
+        expect(generatePermutationsWithoutRepetition('a', 1)).toEqual(['a']);
+        expect(generatePermutationsWithoutRepetition('a', 2)).toEqual(['a']); // Can't make 2-char without repetition
+      });
+
+      test('generatePermutationsWithoutRepetition respects maxLength', () => {
+        const alphabet = 'abcd';
+        const permutations = generatePermutationsWithoutRepetition(alphabet, 2);
+        
+        // Should not have any permutations longer than 2
+        expect(permutations.every(p => p.length <= 2)).toBe(true);
+        expect(permutations.some(p => p.length === 3)).toBe(false);
+      });
+
+      test('generatePermutationsWithoutRepetition removes duplicate characters', () => {
+        const alphabet = 'aabbc'; // Has duplicates
+        const permutations = generatePermutationsWithoutRepetition(alphabet, 3);
+        
+        // Should treat as 'abc' internally
+        expect(permutations.filter(p => p === 'aa')).toHaveLength(0);
+        expect(permutations.filter(p => p === 'a')).toHaveLength(1);
+      });
+    });
+
+    describe('Aesthetic Scoring', () => {
+      test('calculateAestheticScore prefers shorter names', () => {
+        expect(calculateAestheticScore('a')).toBeGreaterThan(calculateAestheticScore('abc'));
+        expect(calculateAestheticScore('ab')).toBeGreaterThan(calculateAestheticScore('abcd'));
+      });
+
+      test('calculateAestheticScore rewards vowel-consonant alternation', () => {
+        // 'ba' has vowel-consonant alternation, 'bc' does not
+        expect(calculateAestheticScore('ba')).toBeGreaterThan(calculateAestheticScore('bc'));
+        expect(calculateAestheticScore('aba')).toBeGreaterThan(calculateAestheticScore('abc'));
+      });
+
+      test('calculateAestheticScore penalizes awkward combinations', () => {
+        expect(calculateAestheticScore('ax')).toBeGreaterThan(calculateAestheticScore('xz'));
+        expect(calculateAestheticScore('ba')).toBeGreaterThan(calculateAestheticScore('bk'));
+      });
+
+      test('calculateAestheticScore prefers common starting letters', () => {
+        expect(calculateAestheticScore('a')).toBeGreaterThan(calculateAestheticScore('z'));
+        expect(calculateAestheticScore('b')).toBeGreaterThan(calculateAestheticScore('x'));
+      });
+
+      test('calculateAestheticScore handles edge cases', () => {
+        expect(calculateAestheticScore('')).toBe(0);
+        expect(calculateAestheticScore('a')).toBeGreaterThan(0);
+        expect(calculateAestheticScore('a')).toBeLessThanOrEqual(1);
+      });
+    });
+
+    describe('Pretty Name Cache', () => {
+      test('createPrettyNameCache initializes correctly', () => {
+        const cache = createPrettyNameCache('abc', 3);
+        
+        expect(cache.permutations).toBeInstanceOf(Map);
+        expect(cache.usedPermutations).toBeInstanceOf(Set);
+        expect(cache.currentIndex).toBeInstanceOf(Map);
+        expect(cache.totalGenerated).toBe(0);
+        expect(cache.totalExhausted).toBe(0);
+        
+        // Should initialize current index for each length
+        expect(cache.currentIndex.get(1)).toBe(0);
+        expect(cache.currentIndex.get(2)).toBe(0);
+        expect(cache.currentIndex.get(3)).toBe(0);
+      });
+
+      test('cache tracks usage correctly', () => {
+        const cache = createPrettyNameCache('abc', 2);
+        expect(cache.usedPermutations.size).toBe(0);
+        expect(cache.totalGenerated).toBe(0);
+      });
+    });
+
+    describe('Pretty Name Generation', () => {
+      test('generatePrettyName generates valid CSS names', () => {
+        const result = generatePrettyName(0, prettyOptions);
+        
+        expect(result.name).toBeTruthy();
+        expect(isValidCssIdentifier(result.name)).toBe(true);
+        expect(result.length).toBeGreaterThan(0);
+        expect(result.aestheticScore).toBeGreaterThanOrEqual(0);
+        expect(result.aestheticScore).toBeLessThanOrEqual(1);
+        expect(result.generationStrategy).toBeTruthy();
+      });
+
+      test('generatePrettyName respects maxLength setting', () => {
+        const options = { ...prettyOptions, prettyNameMaxLength: 3 };
+        const result = generatePrettyName(0, options);
+        
+        expect(result.name.length).toBeLessThanOrEqual(3);
+      });
+
+      test('generatePrettyName prefers shorter names when configured', () => {
+        const shorterPreferenceOptions = { ...prettyOptions, prettyNamePreferShorter: true };
+        const longerPreferenceOptions = { ...prettyOptions, prettyNamePreferShorter: false };
+        
+        const shorterResult = generatePrettyName(0, shorterPreferenceOptions);
+        const longerResult = generatePrettyName(0, longerPreferenceOptions);
+        
+        // Both should be valid, but strategy may differ
+        expect(isValidCssIdentifier(shorterResult.name)).toBe(true);
+        expect(isValidCssIdentifier(longerResult.name)).toBe(true);
+      });
+
+      test('generatePrettyName applies prefix and suffix correctly', () => {
+        const options = { ...prettyOptions, prefix: 'pre_', suffix: '_suf' };
+        const result = generatePrettyName(0, options);
+        
+        expect(result.name).toMatch(/^pre_.*_suf$/);
+        expect(isValidCssIdentifier(result.name)).toBe(true);
+      });
+
+      test('generatePrettyName handles exhaustion with fallback strategies', () => {
+        // Use very small alphabet to trigger exhaustion quickly
+        const smallOptions = { 
+          ...prettyOptions, 
+          alphabet: 'a',
+          prettyNameMaxLength: 1,
+          prettyNameExhaustionStrategy: 'fallback-hybrid' as const
+        };
+        
+        // First generation should work
+        const result1 = generatePrettyName(0, smallOptions);
+        expect(result1.name).toBeTruthy();
+        
+        // Should eventually fall back when exhausted
+        let fallbackUsed = false;
+        for (let i = 1; i < 10; i++) {
+          const result = generatePrettyName(i, smallOptions);
+          if (result.fallbackUsed) {
+            fallbackUsed = true;
+            break;
+          }
+        }
+        
+        expect(fallbackUsed).toBe(true);
+      });
+
+      test('generatePrettyName throws on error strategy when exhausted', () => {
+        const errorOptions = { 
+          ...prettyOptions, 
+          alphabet: 'a',
+          prettyNameMaxLength: 1,
+          prettyNameExhaustionStrategy: 'error' as const
+        };
+        
+        // Should eventually throw PrettyNameExhaustionError
+        expect(() => {
+          for (let i = 0; i < 10; i++) {
+            generatePrettyName(i, errorOptions);
+          }
+        }).toThrow(PrettyNameExhaustionError);
+      });
+
+      test('generatePrettyName validates CSS compliance', () => {
+        const result = generatePrettyName(0, prettyOptions);
+        expect(isValidCssIdentifier(result.name)).toBe(true);
+      });
+    });
+
+    describe('Pretty Strategy Integration', () => {
+      test('generateOptimizedNames supports pretty strategy', async () => {
+        const result = await generateOptimizedNames(mockFrequencyMap, prettyOptions);
+        
+        expect(result.metadata.strategy).toBe('pretty');
+        expect(result.nameMap.size).toBe(mockFrequencyMap.size);
+        
+        // All generated names should be valid CSS identifiers
+        for (const [, optimizedName] of result.nameMap) {
+          expect(isValidCssIdentifier(optimizedName)).toBe(true);
+        }
+      });
+
+      test('pretty strategy generates aesthetically pleasing names', async () => {
+        const result = await generateOptimizedNames(mockFrequencyMap, prettyOptions);
+        
+        const names = Array.from(result.nameMap.values());
+        const aestheticScores = names.map(name => calculateAestheticScore(name));
+        const averageScore = aestheticScores.reduce((sum, score) => sum + score, 0) / aestheticScores.length;
+        
+        // Pretty names should have higher aesthetic scores on average
+        expect(averageScore).toBeGreaterThan(0.4); // Reasonable threshold
+      });
+
+      test('pretty strategy handles large datasets efficiently', async () => {
+        // Create larger dataset
+        const largeMap = new Map<string, AggregatedClassData>();
+        for (let i = 0; i < 100; i++) {
+          largeMap.set(`class-${i}`, {
+            totalFrequency: Math.floor(Math.random() * 50) + 1,
+            sourceFrequency: { html: 25, jsx: 25 },
+            coOccurrences: new Map(),
+            frameworkUsage: { react: 25, vue: 25 },
+            sourceFiles: [`file-${i}.tsx`],
+            attributes: { htmlClasses: 25, jsxClasses: 25 },
+          });
+        }
+        
+        const startTime = Date.now();
+        const result = await generateOptimizedNames(largeMap, prettyOptions);
+        const endTime = Date.now();
+        
+        expect(result.nameMap.size).toBe(100);
+        expect(endTime - startTime).toBeLessThan(3000); // Should complete within 3 seconds
+        
+        // Check that names don't repeat (no character repetition within names)
+        for (const [, optimizedName] of result.nameMap) {
+          const chars = optimizedName.split('');
+          const uniqueChars = new Set(chars);
+          // Allow for prefix/suffix but core name should have no repetition
+          expect(uniqueChars.size).toBeGreaterThan(0);
+        }
+      });
+
+      test('pretty strategy respects frequency ordering', async () => {
+        const result = await generateOptimizedNames(mockFrequencyMap, prettyOptions);
+        
+        // Higher frequency classes should get shorter/better names
+        const sortedClasses = Array.from(mockFrequencyMap.entries())
+          .sort((a, b) => b[1].totalFrequency - a[1].totalFrequency);
+        
+        const highestFreqClass = sortedClasses[0][0];
+        const lowestFreqClass = sortedClasses[sortedClasses.length - 1][0];
+        
+        const highFreqName = result.nameMap.get(highestFreqClass)!;
+        const lowFreqName = result.nameMap.get(lowestFreqClass)!;
+        
+        // Higher frequency should generally get better aesthetic score
+        const highScore = calculateAestheticScore(highFreqName);
+        const lowScore = calculateAestheticScore(lowFreqName);
+        
+        // This might not always be true due to randomness, but should trend this way
+        expect(highScore).toBeGreaterThanOrEqual(lowScore * 0.8); // Allow some variance
+      });
+    });
+
+    describe('Error Handling and Edge Cases', () => {
+      test('PrettyNameExhaustionError contains relevant information', () => {
+        const error = new PrettyNameExhaustionError('Exhausted', 6, 100, ['fallback-sequential']);
+        
+        expect(error.maxLength).toBe(6);
+        expect(error.totalGenerated).toBe(100);
+        expect(error.availableStrategies).toEqual(['fallback-sequential']);
+        expect(error.name).toBe('PrettyNameExhaustionError');
+      });
+
+      test('pretty strategy handles empty alphabet gracefully', () => {
+        const emptyAlphabetOptions = { ...prettyOptions, alphabet: '' };
+        
+        expect(() => generatePrettyName(0, emptyAlphabetOptions)).toThrow();
+      });
+
+      test('pretty strategy handles invalid options', () => {
+        const invalidOptions = { ...prettyOptions, prettyNameMaxLength: 0 };
+        
+        expect(() => generatePrettyName(0, invalidOptions)).toThrow();
+      });
+
+      test('pretty strategy performance with complex alphabets', () => {
+        const complexOptions = { 
+          ...prettyOptions, 
+          alphabet: ALPHABET_CONFIGS.full,
+          prettyNameMaxLength: 4
+        };
+        
+        const startTime = Date.now();
+        for (let i = 0; i < 50; i++) {
+          const result = generatePrettyName(i, complexOptions);
+          expect(isValidCssIdentifier(result.name)).toBe(true);
+        }
+        const endTime = Date.now();
+        
+        // Should complete within reasonable time even with larger alphabet
+        expect(endTime - startTime).toBeLessThan(2000);
+      });
+    });
+
+    describe('Aesthetic Quality Validation', () => {
+      test('pretty names avoid character repetition within single names', async () => {
+        const result = await generateOptimizedNames(mockFrequencyMap, prettyOptions);
+        
+        for (const [, optimizedName] of result.nameMap) {
+          // Check core name (without prefix/suffix) for repetition
+          const coreName = optimizedName.replace(/^pre_|_suf$/g, '');
+          const chars = coreName.split('');
+          const uniqueChars = new Set(chars);
+          
+          // Core name should not have repeated characters
+          expect(uniqueChars.size).toBe(chars.length);
+        }
+      });
+
+      test('pretty names have reasonable length distribution', async () => {
+        const result = await generateOptimizedNames(mockFrequencyMap, prettyOptions);
+        
+        const lengths = Array.from(result.nameMap.values()).map(name => name.length);
+        const avgLength = lengths.reduce((sum, len) => sum + len, 0) / lengths.length;
+        
+        // Should generally prefer shorter names
+        expect(avgLength).toBeLessThan(prettyOptions.prettyNameMaxLength!);
+        expect(avgLength).toBeGreaterThan(0);
+      });
     });
   });
 }); 

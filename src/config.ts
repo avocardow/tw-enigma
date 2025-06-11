@@ -170,6 +170,13 @@ export interface CliArguments {
   integrityDeduplicationAlgorithm?: "md5" | "sha1" | "sha256" | "sha512";
   integrityDeduplicationThreshold?: number;
   integrityUseHardLinks?: boolean;
+  // File integrity incremental backup options
+  integrityEnableIncrementalBackup?: boolean;
+  integrityBackupStrategy?: "full" | "incremental" | "auto";
+  integrityChangeDetectionMethod?: "mtime" | "checksum" | "hybrid";
+  integrityMaxIncrementalChain?: number;
+  integrityFullBackupInterval?: number;
+  integrityIncrementalDirectory?: string;
 }
 
 /**
@@ -373,6 +380,19 @@ function normalizeCliArguments(args: CliArguments): Partial<EnigmaConfig> {
     fileIntegrityConfig.deduplicationThreshold = args.integrityDeduplicationThreshold;
   if (args.integrityUseHardLinks !== undefined)
     fileIntegrityConfig.useHardLinks = args.integrityUseHardLinks;
+  // Incremental backup options
+  if (args.integrityEnableIncrementalBackup !== undefined)
+    fileIntegrityConfig.enableIncrementalBackup = args.integrityEnableIncrementalBackup;
+  if (args.integrityBackupStrategy !== undefined)
+    fileIntegrityConfig.backupStrategy = args.integrityBackupStrategy;
+  if (args.integrityChangeDetectionMethod !== undefined)
+    fileIntegrityConfig.changeDetectionMethod = args.integrityChangeDetectionMethod;
+  if (args.integrityMaxIncrementalChain !== undefined)
+    fileIntegrityConfig.maxIncrementalChain = args.integrityMaxIncrementalChain;
+  if (args.integrityFullBackupInterval !== undefined)
+    fileIntegrityConfig.fullBackupInterval = args.integrityFullBackupInterval;
+  if (args.integrityIncrementalDirectory !== undefined)
+    fileIntegrityConfig.incrementalDirectory = args.integrityIncrementalDirectory;
 
   if (Object.keys(fileIntegrityConfig).length > 0) {
     // Apply defaults using the schema to ensure all fields have proper values

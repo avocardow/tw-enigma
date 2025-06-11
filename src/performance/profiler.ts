@@ -13,7 +13,7 @@ import { execSync, spawn, ChildProcess } from 'child_process';
 import { writeFileSync, existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import { createLogger } from '../logger.js';
-import type { ProfilerConfig, PerformanceMetrics } from './config.js';
+import type { ProfilingConfig, PerformanceMetrics } from './config.js';
 
 const logger = createLogger('PerformanceProfiler');
 
@@ -121,7 +121,7 @@ type ProfilerTool = 'clinic-doctor' | 'clinic-flame' | 'clinic-bubbleprof' | '0x
  * Comprehensive performance profiler and monitoring system
  */
 export class PerformanceProfiler extends EventEmitter {
-  private config: ProfilerConfig;
+  private config: ProfilingConfig;
   private isMonitoring = false;
   private currentSession?: ProfilingSession;
   private monitoringInterval?: NodeJS.Timeout;
@@ -131,11 +131,18 @@ export class PerformanceProfiler extends EventEmitter {
   private baselineMetrics?: ResourceSnapshot;
   private externalProfiler?: ChildProcess;
 
-  constructor(config: Partial<ProfilerConfig> = {}) {
+  constructor(config: Partial<ProfilingConfig> = {}) {
     super();
     
     this.config = {
       enabled: true,
+      samplingRate: 1, // Default sampling rate
+      enableFlameGraphs: false,
+      enableMemoryProfiling: true,
+      enableCPUProfiling: true,
+      outputDirectory: './performance-reports',
+      autoExport: true,
+      enableOpenTelemetry: false,
       sampleInterval: 1000, // 1 second
       enableGC: true,
       enableEventLoop: true,
@@ -317,7 +324,7 @@ export class PerformanceProfiler extends EventEmitter {
       const measurement = this.markEnd(name, detail);
       return { result, measurement };
     } catch (error) {
-      this.markEnd(name, { ...detail, error: true });
+      this.markEnd(name, { ...(detail && typeof detail === 'object' ? detail : {}), error: true });
       throw error;
     }
   }

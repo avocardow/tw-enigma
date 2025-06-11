@@ -59,8 +59,8 @@ interface WorkerPoolStats {
  */
 export class WorkerManager extends EventEmitter {
   private workers: Map<string, WorkerState> = new Map();
-  private taskQueue: TaskContext[] = [];
-  private runningTasks: Map<string, TaskContext> = new Map();
+  private taskQueue: TaskContext<unknown, unknown>[] = [];
+  private runningTasks: Map<string, TaskContext<unknown, unknown>> = new Map();
   private workerScripts: Map<string, string> = new Map();
   private stats = {
     totalTasks: 0,
@@ -156,8 +156,11 @@ export class WorkerManager extends EventEmitter {
     }
 
     return new Promise<R>((resolve, reject) => {
+      // Generate unique ID if not provided or override the provided one
+      const uniqueId = task.id || `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      
       const taskContext: TaskContext<T, R> = {
-        task: { id: `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, ...task },
+        task: { ...task, id: uniqueId },
         resolve,
         reject,
         startTime: Date.now(),
@@ -166,12 +169,12 @@ export class WorkerManager extends EventEmitter {
       // Set task timeout
       if (this.config.taskTimeout > 0) {
         taskContext.timeout = setTimeout(() => {
-          this.handleTaskTimeout(taskContext);
+          this.handleTaskTimeout(taskContext as TaskContext<unknown, unknown>);
         }, this.config.taskTimeout);
       }
 
       this.stats.totalTasks++;
-      this.taskQueue.push(taskContext);
+      this.taskQueue.push(taskContext as TaskContext<unknown, unknown>);
       this.processQueue();
 
       logger.debug('Task queued', {
@@ -357,13 +360,13 @@ export class WorkerManager extends EventEmitter {
     }
 
     // Find available worker
-    const availableWorker = Array.from(this.workers.values())
-      .find(worker => !worker.busy && worker.worker.threadId > 0);
-
+    const availableWorker = Array.from(this.workers.values()).find(worker => !worker.busy);
+    
     if (!availableWorker) {
       return; // No workers available
     }
 
+    // Get next task from queue
     const taskContext = this.taskQueue.shift();
     if (!taskContext) {
       return;
@@ -373,27 +376,24 @@ export class WorkerManager extends EventEmitter {
   }
 
   /**
-   * Assign a task to a specific worker
+   * Assign a task to a worker
    */
-  private assignTaskToWorker(workerState: WorkerState, taskContext: TaskContext): void {
+  private assignTaskToWorker(workerState: WorkerState, taskContext: TaskContext<unknown, unknown>): void {
     workerState.busy = true;
     workerState.lastActivity = Date.now();
-    workerState.tasks++;
-
+    
+    // Store task reference
     this.runningTasks.set(taskContext.task.id, taskContext);
-
+    
     // Send task to worker
     workerState.worker.postMessage({
       type: 'task',
-      id: taskContext.task.id,
-      taskType: taskContext.task.type,
-      data: taskContext.task.data,
-      metadata: taskContext.task.metadata,
+      task: taskContext.task,
     });
 
     logger.debug('Task assigned to worker', {
-      taskId: taskContext.task.id,
       workerId: workerState.id,
+      taskId: taskContext.task.id,
       taskType: taskContext.task.type,
     });
   }
@@ -511,18 +511,34 @@ export class WorkerManager extends EventEmitter {
   /**
    * Handle task timeout
    */
-  private handleTaskTimeout(taskContext: TaskContext): void {
-    const taskId = taskContext.task.id;
+  private handleTaskTimeout(taskContext: TaskContext<unknown, unknown>): void {
+    const task = taskContext.task;
     
     logger.warn('Task timeout', {
-      taskId,
+      taskId: task.id,
+      taskType: task.type,
       timeout: this.config.taskTimeout,
     });
 
-    this.runningTasks.delete(taskId);
+    // Remove from running tasks
+    this.runningTasks.delete(task.id);
+    
+    // Reject the promise
+    taskContext.reject(new Error(`Task timeout after ${this.config.taskTimeout}ms`));
+    
+    // Update stats
     this.stats.failedTasks++;
     
-    taskContext.reject(new Error(`Task ${taskId} timed out after ${this.config.taskTimeout}ms`));
+    // Find and reset the worker
+    const workerState = Array.from(this.workers.values()).find(w => w.busy);
+    if (workerState) {
+      this.restartWorker(workerState.id).catch(error => {
+        logger.error('Failed to restart worker after timeout', {
+          workerId: workerState.id,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      });
+    }
   }
 
   /**

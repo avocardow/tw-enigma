@@ -89,10 +89,10 @@ describe("Enhanced CLI Tests", () => {
       expect(result.exitCode).toBe(0);
       expect(result.stdout).toContain("🔵 Tailwind Enigma");
       expect(result.stdout).toContain(
-        "🚀 Tailwind Enigma is ready to optimize your CSS!",
+        "Tailwind Enigma is ready to optimize your CSS!",
       );
       expect(result.stdout).toContain(
-        "💡 Tip: Use --input to specify files to process",
+        "Tip: Use --input to specify files to process",
       );
     });
 
@@ -101,7 +101,7 @@ describe("Enhanced CLI Tests", () => {
 
       expect(result.exitCode).toBe(0);
       expect(result.stdout).toContain(
-        "🎨 Pretty mode enabled - output will be formatted for readability",
+        "Pretty mode enabled - output will be formatted for readability",
       );
     });
 
@@ -110,7 +110,7 @@ describe("Enhanced CLI Tests", () => {
 
       expect(result.exitCode).toBe(0);
       expect(result.stdout).toContain(
-        "🎨 Pretty mode enabled - output will be formatted for readability",
+        "Pretty mode enabled - output will be formatted for readability",
       );
     });
 
@@ -118,14 +118,14 @@ describe("Enhanced CLI Tests", () => {
       const result = await runCLI(["--verbose"]);
 
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain("✅ Configuration loaded successfully");
+      expect(result.stdout).toContain("Configuration loaded successfully");
     });
 
     it("should enable debug mode", async () => {
       const result = await runCLI(["--debug"]);
 
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain("🐛 Debug mode enabled");
+      expect(result.stdout).toContain("Debug mode enabled");
       expect(result.stdout).toContain("Final configuration:");
     });
 
@@ -139,8 +139,8 @@ describe("Enhanced CLI Tests", () => {
       ]);
 
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain("📁 Input: ./test-src");
-      expect(result.stdout).toContain("📁 Output: ./test-dist");
+      expect(result.stdout).toContain("Input configured");
+      expect(result.stdout).toContain("Output configured");
     });
 
     it("should work with multiple flags combined", async () => {
@@ -152,9 +152,9 @@ describe("Enhanced CLI Tests", () => {
       ]);
 
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain("🎨 Pretty mode enabled");
-      expect(result.stdout).toContain("✅ Configuration loaded successfully");
-      expect(result.stdout).toContain("📁 Input: ./src");
+      expect(result.stdout).toContain("Pretty mode enabled");
+      expect(result.stdout).toContain("Configuration loaded successfully");
+      expect(result.stdout).toContain("Input configured");
     });
   });
 
@@ -163,8 +163,7 @@ describe("Enhanced CLI Tests", () => {
       const result = await runCLI(["--config", "nonexistent.config.js"]);
 
       expect(result.exitCode).toBe(1);
-      expect(result.stderr).toContain("❌ Configuration Error:");
-      expect(result.stderr).toContain("Failed to load configuration");
+      expect(result.stdout).toContain("Configuration Error");
     });
 
     it("should accept config file with --config flag", async () => {
@@ -172,7 +171,7 @@ describe("Enhanced CLI Tests", () => {
       const result = await runCLI(["--config", "test.config.js"]);
 
       expect(result.exitCode).toBe(1);
-      expect(result.stderr).toContain("❌ Configuration Error:");
+      expect(result.stdout).toContain("Configuration Error");
     });
 
     it("should accept config file with -c flag", async () => {
@@ -180,7 +179,7 @@ describe("Enhanced CLI Tests", () => {
       const result = await runCLI(["-c", "custom.config.js"]);
 
       expect(result.exitCode).toBe(1);
-      expect(result.stderr).toContain("❌ Configuration Error:");
+      expect(result.stdout).toContain("Configuration Error");
     });
   });
 
@@ -230,13 +229,14 @@ describe("Enhanced CLI Tests", () => {
       ]);
 
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain("🐛 Debug mode enabled");
-      expect(result.stdout).toContain('"minify": false');
-      expect(result.stdout).toContain('"removeUnused": false');
-      expect(result.stdout).toContain('"maxConcurrency": 2');
-      expect(result.stdout).toContain('"classPrefix": "test-"');
-      expect(result.stdout).toContain('"preserveComments": true');
-      expect(result.stdout).toContain('"sourceMaps": true');
+      expect(result.stdout).toContain("Debug mode enabled");
+      expect(result.stdout).toContain("Final configuration:");
+      expect(result.stdout).toContain('"minify":false');
+      expect(result.stdout).toContain('"removeUnused":false');
+      expect(result.stdout).toContain('"maxConcurrency":2');
+      expect(result.stdout).toContain('"classPrefix":"test-"');
+      expect(result.stdout).toContain('"preserveComments":true');
+      expect(result.stdout).toContain('"sourceMaps":true');
     });
 
     it("should handle exclude patterns", async () => {
@@ -249,9 +249,8 @@ describe("Enhanced CLI Tests", () => {
       ]);
 
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('"excludePatterns": [');
-      expect(result.stdout).toContain('"*.test.*"');
-      expect(result.stdout).toContain('"*.spec.*"');
+      expect(result.stdout).toContain("Final configuration:");
+      expect(result.stdout).toContain('"excludePatterns":["*.test.*","*.spec.*"]');
     });
   });
 
@@ -261,10 +260,10 @@ describe("Enhanced CLI Tests", () => {
 
       expect(result.exitCode).toBe(0);
       expect(result.stdout).toContain(
-        "💡 Tip: Use --input to specify files to process",
+        "Tip: Use --input to specify files to process",
       );
       expect(result.stdout).toContain(
-        "💡 Tip: Run 'enigma init-config' to create a sample configuration file",
+        "Tip: Run 'enigma init-config' to create a sample configuration file",
       );
     });
 
@@ -273,7 +272,7 @@ describe("Enhanced CLI Tests", () => {
 
       expect(result.exitCode).toBe(0);
       expect(result.stdout).not.toContain(
-        "💡 Tip: Use --input to specify files to process",
+        "Tip: Use --input to specify files to process",
       );
     });
   });

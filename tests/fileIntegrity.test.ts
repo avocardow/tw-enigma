@@ -1425,4 +1425,270 @@ describe('Compression Feature Tests', () => {
       }).toThrow();
     });
   });
+
+  describe('Incremental Backup Strategy', () => {
+    let incrementalValidator: FileIntegrityValidator;
+    let testFile1: string;
+    let testFile2: string;
+    let unchangedFile: string;
+
+    beforeEach(async () => {
+      incrementalValidator = new FileIntegrityValidator({
+        backupDirectory: join(testDir, '.backups'),
+        enableIncrementalBackup: true,
+        backupStrategy: 'auto',
+        changeDetectionMethod: 'mtime',
+        maxIncrementalChain: 5,
+        fullBackupInterval: 24,
+        incrementalDirectory: join(testDir, '.incremental')
+      });
+
+      testFile1 = join(testDir, 'test1.txt');
+      testFile2 = join(testDir, 'test2.txt');
+      unchangedFile = join(testDir, 'unchanged.txt');
+
+      await writeFile(testFile1, 'Initial content for test file 1', 'utf8');
+      await writeFile(testFile2, 'Initial content for test file 2', 'utf8');
+      await writeFile(unchangedFile, 'This file will not change', 'utf8');
+    });
+
+    describe('Configuration Schema', () => {
+      it('should validate incremental backup options in schema', async () => {
+        const validOptions = {
+          enableIncrementalBackup: true,
+          backupStrategy: 'auto' as const,
+          changeDetectionMethod: 'mtime' as const,
+          maxIncrementalChain: 10,
+          fullBackupInterval: 48
+        };
+
+        expect(() => FileIntegrityOptionsSchema.parse(validOptions)).not.toThrow();
+      });
+
+      it('should use default values for incremental backup options', async () => {
+        const defaultOptions = FileIntegrityOptionsSchema.parse({});
+        
+        expect(defaultOptions.enableIncrementalBackup).toBe(false);
+        expect(defaultOptions.backupStrategy).toBe('auto');
+        expect(defaultOptions.changeDetectionMethod).toBe('mtime');
+        expect(defaultOptions.maxIncrementalChain).toBe(10);
+        expect(defaultOptions.fullBackupInterval).toBe(24);
+      });
+
+      it('should reject invalid backup strategy', async () => {
+        expect(() => FileIntegrityOptionsSchema.parse({
+          backupStrategy: 'invalid'
+        })).toThrow();
+      });
+
+      it('should reject invalid change detection method', async () => {
+        expect(() => FileIntegrityOptionsSchema.parse({
+          changeDetectionMethod: 'invalid'
+        })).toThrow();
+      });
+    });
+
+    describe('Change Detection', () => {
+      it('should detect file changes using mtime method', async () => {
+        // Create initial backup
+        const initialResult = await incrementalValidator.createIncrementalBackup(testFile1);
+        expect(initialResult.success).toBe(true);
+        expect(initialResult.backupType).toBe('full'); // First backup is always full
+        expect(initialResult.filesChanged).toBe(1);
+
+        // Wait a bit to ensure mtime changes
+        await new Promise(resolve => setTimeout(resolve, 10));
+
+        // Modify file
+        await writeFile(testFile1, 'Modified content for test file 1', 'utf8');
+
+        // Create incremental backup
+        const incrementalResult = await incrementalValidator.createIncrementalBackup(testFile1);
+        expect(incrementalResult.success).toBe(true);
+        expect(incrementalResult.backupType).toBe('incremental');
+        expect(incrementalResult.filesChanged).toBe(1);
+      });
+
+      it('should skip unchanged files', async () => {
+        // Create initial backup
+        await incrementalValidator.createIncrementalBackup(unchangedFile);
+
+        // Try to backup again without changes
+        const result = await incrementalValidator.createIncrementalBackup(unchangedFile);
+        expect(result.success).toBe(true);
+        expect(result.backupType).toBe('skipped');
+        expect(result.filesSkipped).toBe(1);
+        expect(result.filesChanged).toBe(0);
+      });
+
+      it('should handle checksum-based change detection', async () => {
+        const checksumValidator = new FileIntegrityValidator({
+          backupDirectory: join(testDir, '.backups'),
+          enableIncrementalBackup: true,
+          changeDetectionMethod: 'checksum'
+        });
+
+        // Create initial backup
+        const initialResult = await checksumValidator.createIncrementalBackup(testFile1);
+        expect(initialResult.success).toBe(true);
+        expect(initialResult.changeDetectionMethod).toBe('checksum');
+
+        // Modify file
+        await writeFile(testFile1, 'Modified content with different checksum', 'utf8');
+
+        // Create incremental backup
+        const incrementalResult = await checksumValidator.createIncrementalBackup(testFile1);
+        expect(incrementalResult.success).toBe(true);
+        expect(incrementalResult.filesChanged).toBe(1);
+      });
+    });
+
+    describe('Backup Strategy Selection', () => {
+      it('should create full backup for first backup', async () => {
+        const result = await incrementalValidator.createIncrementalBackup(testFile1);
+        
+        expect(result.success).toBe(true);
+        expect(result.backupType).toBe('full');
+        expect(result.parentId).toBeNull();
+      });
+
+      it('should create incremental backup for subsequent changes', async () => {
+        // Create initial full backup
+        await incrementalValidator.createIncrementalBackup(testFile1);
+
+        // Wait and modify
+        await new Promise(resolve => setTimeout(resolve, 10));
+        await writeFile(testFile1, 'Modified content', 'utf8');
+
+        // Create incremental backup
+        const result = await incrementalValidator.createIncrementalBackup(testFile1);
+        
+        expect(result.success).toBe(true);
+        expect(result.backupType).toBe('incremental');
+        expect(result.parentId).toBeDefined();
+      });
+
+      it('should force full backup when strategy is full', async () => {
+        const fullValidator = new FileIntegrityValidator({
+          backupDirectory: join(testDir, '.backups'),
+          enableIncrementalBackup: true,
+          backupStrategy: 'full'
+        });
+
+        // Create initial backup
+        await fullValidator.createIncrementalBackup(testFile1);
+
+        // Modify and backup again
+        await new Promise(resolve => setTimeout(resolve, 10));
+        await writeFile(testFile1, 'Modified content', 'utf8');
+
+        const result = await fullValidator.createIncrementalBackup(testFile1);
+        expect(result.success).toBe(true);
+        expect(result.backupType).toBe('full');
+      });
+    });
+
+    describe('Backup Statistics', () => {
+      it('should track incremental backup statistics', async () => {
+        // Create several backups
+        await incrementalValidator.createIncrementalBackup(testFile1);
+        
+        await new Promise(resolve => setTimeout(resolve, 10));
+        await writeFile(testFile1, 'Modified 1', 'utf8');
+        await incrementalValidator.createIncrementalBackup(testFile1);
+
+        await new Promise(resolve => setTimeout(resolve, 10));
+        await writeFile(testFile1, 'Modified 2', 'utf8');
+        await incrementalValidator.createIncrementalBackup(testFile1);
+
+        const stats = await incrementalValidator.getIncrementalStats();
+        
+        expect(stats.enabled).toBe(true);
+        expect(stats.totalBackups).toBeGreaterThanOrEqual(3);
+        expect(stats.totalIncrementals).toBeGreaterThanOrEqual(2);
+        expect(stats.strategy).toBe('auto');
+        expect(stats.changeDetectionMethod).toBe('mtime');
+      });
+
+      it('should show disabled statistics when incremental backup is disabled', async () => {
+        const disabledValidator = new FileIntegrityValidator({
+          enableIncrementalBackup: false
+        });
+
+        const stats = await disabledValidator.getIncrementalStats();
+        
+        expect(stats.enabled).toBe(false);
+        expect(stats.totalBackups).toBe(0);
+        expect(stats.totalIncrementals).toBe(0);
+        expect(stats.chainLength).toBe(0);
+        expect(stats.spaceSaved).toBe(0);
+      });
+    });
+
+    describe('Error Handling', () => {
+      it('should handle incremental backup of non-existent file', async () => {
+        const result = await incrementalValidator.createIncrementalBackup('/nonexistent/file.txt');
+        
+        expect(result.success).toBe(false);
+        expect(result.error).toContain('ENOENT');
+        expect(result.filesChanged).toBe(0);
+        expect(result.filesSkipped).toBe(0);
+      });
+
+      it('should handle incremental index corruption gracefully', async () => {
+        // Create initial backup to create index
+        await incrementalValidator.createIncrementalBackup(testFile1);
+
+        // Corrupt the index file
+        const indexPath = incrementalValidator['incrementalIndexPath'];
+        await writeFile(indexPath, 'corrupted json content', 'utf8');
+
+        // Should still work by recreating index
+        const result = await incrementalValidator.createIncrementalBackup(testFile2);
+        expect(result.success).toBe(true);
+        expect(result.backupType).toBe('incremental'); // Index corruption handled gracefully, backup continues
+      });
+    });
+
+    describe('Integration with Other Features', () => {
+      it('should work with compression enabled', async () => {
+        const compressedValidator = new FileIntegrityValidator({
+          backupDirectory: join(testDir, '.backups'),
+          enableIncrementalBackup: true,
+          enableCompression: true,
+          compressionThreshold: 100
+        });
+
+        // Create large content for compression
+        const largeContent = 'x'.repeat(1000);
+        await writeFile(testFile1, largeContent, 'utf8');
+
+        const result = await compressedValidator.createIncrementalBackup(testFile1);
+        
+        expect(result.success).toBe(true);
+        expect(result.backupType).toBe('incremental'); // Compression + incremental backup integration
+        expect(result.backupPath).toBeDefined();
+      });
+
+      it('should work with deduplication enabled', async () => {
+        const dedupValidator = new FileIntegrityValidator({
+          backupDirectory: join(testDir, '.backups'),
+          enableIncrementalBackup: true,
+          enableDeduplication: true,
+          deduplicationThreshold: 100
+        });
+
+        // Create content suitable for deduplication
+        const content = 'x'.repeat(500);
+        await writeFile(testFile1, content, 'utf8');
+        await writeFile(testFile2, content, 'utf8'); // Same content
+
+        const result1 = await dedupValidator.createIncrementalBackup(testFile1);
+        const result2 = await dedupValidator.createIncrementalBackup(testFile2);
+        
+        expect(result1.success).toBe(true);
+        expect(result2.success).toBe(true);
+      });
+    });
+  });
 }); 

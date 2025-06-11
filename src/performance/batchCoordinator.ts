@@ -115,6 +115,11 @@ export class BatchCoordinator extends EventEmitter {
     const cpuCount = cpus().length;
     this.config = {
       enabled: true,
+      defaultBatchSize: 50,
+      maxBatchSize: 1000,
+      processingDelay: 10,
+      enablePrioritization: true,
+      maxConcurrentBatches: 5,
       maxConcurrency: Math.max(2, Math.floor(cpuCount * 0.8)),
       batchSize: 50,
       queueTimeout: 30000,

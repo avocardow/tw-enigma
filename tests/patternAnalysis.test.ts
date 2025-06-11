@@ -37,52 +37,51 @@ describe('PatternAnalysis', () => {
     // Mock HTML extraction result
     const htmlClassMap = new Map<string, ClassData>();
     htmlClassMap.set('bg-blue-500', {
+      name: 'bg-blue-500',
       frequency: 5,
-      elements: [
+      contexts: [
         {
           tagName: 'div',
           attributes: { class: 'bg-blue-500 text-white', id: 'header' },
-          depth: 2,
-          filePath: '/test/page1.html'
+          depth: 2
         },
         {
           tagName: 'button',
           attributes: { class: 'bg-blue-500 hover:bg-blue-600' },
-          depth: 3,
-          filePath: '/test/page2.html'
+          depth: 3
         }
       ]
     });
     htmlClassMap.set('text-white', {
+      name: 'text-white',
       frequency: 3,
-      elements: [
+      contexts: [
         {
           tagName: 'div',
           attributes: { class: 'bg-blue-500 text-white' },
-          depth: 2,
-          filePath: '/test/page1.html'
+          depth: 2
         }
       ]
     });
     htmlClassMap.set('container', {
+      name: 'container',
       frequency: 2,
-      elements: [
+      contexts: [
         {
           tagName: 'div',
           attributes: { class: 'container mx-auto' },
-          depth: 1,
-          filePath: '/test/layout.html'
+          depth: 1
         }
       ]
     });
 
     mockHtmlResult = {
-      filePath: '/test/page1.html',
-      classMap: htmlClassMap,
+      classes: htmlClassMap,
       totalElements: 10,
-      elementsWithClasses: 8,
+      totalClasses: 15,
       uniqueClasses: 3,
       metadata: {
+        source: '/test/page1.html',
         processedAt: new Date(),
         processingTime: 100,
         fileSize: 1024,
@@ -93,41 +92,48 @@ describe('PatternAnalysis', () => {
     // Mock JSX extraction result
     const jsxClassMap = new Map<string, JsClassData>();
     jsxClassMap.set('bg-red-500', {
+      name: 'bg-red-500',
       frequency: 4,
-      patterns: [
+      contexts: [
         {
           pattern: 'className="bg-red-500 text-white"',
           lineNumber: 15,
           framework: 'react',
-          extractionType: 'static',
-          filePath: '/test/component1.tsx'
+          extractionType: 'static'
         }
       ]
     });
     jsxClassMap.set('text-white', {
+      name: 'text-white',
       frequency: 6,
-      patterns: [
+      contexts: [
         {
           pattern: 'className="text-white font-bold"',
           lineNumber: 20,
           framework: 'react',
-          extractionType: 'static',
-          filePath: '/test/component2.tsx'
+          extractionType: 'static'
         }
       ]
     });
 
     mockJsxResult = {
-      filePath: '/test/component1.tsx',
-      classMap: jsxClassMap,
+      classes: jsxClassMap,
       totalMatches: 25,
+      totalClasses: 10,
       uniqueClasses: 2,
+      framework: 'react',
       metadata: {
+        source: '/test/component1.tsx',
         processedAt: new Date(),
         processingTime: 150,
         fileSize: 2048,
-        framework: 'react',
-        errors: []
+        errors: [],
+        extractionStats: {
+          staticMatches: 20,
+          dynamicMatches: 3,
+          templateMatches: 2,
+          utilityMatches: 0
+        }
       }
     };
 
@@ -258,7 +264,8 @@ describe('PatternAnalysis', () => {
   describe('Pattern Groups', () => {
     it('should generate pattern groups for Tailwind classes', () => {
       const frequencyMap = generateFrequencyMap(mockInput);
-      const result = generatePatternGroups(frequencyMap);
+      const options: PatternAnalysisOptions = { enablePatternGrouping: true };
+      const result = generatePatternGroups(frequencyMap, options);
 
       expect(result).toBeInstanceOf(Array);
       
@@ -279,7 +286,8 @@ describe('PatternAnalysis', () => {
 
     it('should sort pattern groups by frequency', () => {
       const frequencyMap = generateFrequencyMap(mockInput);
-      const result = generatePatternGroups(frequencyMap);
+      const options: PatternAnalysisOptions = { enablePatternGrouping: true };
+      const result = generatePatternGroups(frequencyMap, options);
 
       if (result.length > 1) {
         for (let i = 1; i < result.length; i++) {
@@ -331,7 +339,8 @@ describe('PatternAnalysis', () => {
   describe('Framework Analysis', () => {
     it('should generate framework-specific statistics', () => {
       const frequencyMap = generateFrequencyMap(mockInput);
-      const result = generateFrameworkAnalysis(frequencyMap);
+      const options: PatternAnalysisOptions = { includeFrameworkAnalysis: true };
+      const result = generateFrameworkAnalysis(frequencyMap, options);
 
       expect(result).toBeInstanceOf(Array);
       
@@ -524,7 +533,7 @@ describe('PatternAnalysis', () => {
 
     it('should handle malformed extraction results gracefully', () => {
       const invalidInput = {
-        htmlResults: [{ ...mockHtmlResult, classMap: null as any }],
+        htmlResults: [{ ...mockHtmlResult, classes: null as any }],
         jsxResults: []
       };
 

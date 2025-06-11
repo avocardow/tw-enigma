@@ -441,7 +441,7 @@ export class MemoryProfiler extends EventEmitter {
           if (entry.entryType === 'gc') {
             const gcStats: GCStats = {
               timestamp: Date.now(),
-              type: entry.detail?.kind === 'minor' ? 'minor' : 'major',
+              type: (entry.detail && typeof entry.detail === 'object' && 'kind' in entry.detail && entry.detail.kind === 'minor') ? 'minor' : 'major',
               duration: entry.duration,
               memoryBefore: 0, // Will be filled by snapshot comparison
               memoryAfter: 0,

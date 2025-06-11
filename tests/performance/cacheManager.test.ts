@@ -73,11 +73,14 @@ describe('CacheManager', () => {
     it('should evict least recently used items when size limit exceeded', async () => {
       // Fill cache to capacity
       await cacheManager.set('key1', 'a'.repeat(20));
+      await new Promise(resolve => setTimeout(resolve, 5)); // Ensure different timestamp
       await cacheManager.set('key2', 'b'.repeat(20));
       
+      await new Promise(resolve => setTimeout(resolve, 5)); // Ensure different timestamp
       // Access key1 to make it more recent
       await cacheManager.get('key1');
       
+      await new Promise(resolve => setTimeout(resolve, 5)); // Ensure different timestamp
       // Add new item that should evict key2 (least recently used)
       await cacheManager.set('key3', 'c'.repeat(20));
       
@@ -87,16 +90,19 @@ describe('CacheManager', () => {
     });
 
     it('should update access order on get', async () => {
-      await cacheManager.set('key1', 'value1');
-      await cacheManager.set('key2', 'value2');
+      await cacheManager.set('key1', 'a'.repeat(15)); // 17 bytes
+      await new Promise(resolve => setTimeout(resolve, 5)); // Ensure different timestamp
+      await cacheManager.set('key2', 'b'.repeat(15)); // 17 bytes
       
+      await new Promise(resolve => setTimeout(resolve, 5)); // Ensure different timestamp
       // Access key1 to make it most recent
       await cacheManager.get('key1');
       
-      // Add item that should evict key2
-      await cacheManager.set('key3', 'c'.repeat(20));
+      await new Promise(resolve => setTimeout(resolve, 5)); // Ensure different timestamp
+      // Add item that should evict key2 (total: 17+17+17=51 > 50)
+      await cacheManager.set('key3', 'c'.repeat(15)); // 17 bytes
       
-      expect(await cacheManager.get('key1')).toBe('value1');
+      expect(await cacheManager.get('key1')).toBe('a'.repeat(15));
       expect(await cacheManager.get('key2')).toBeUndefined();
     });
   });
@@ -167,22 +173,26 @@ describe('CacheManager', () => {
       cacheManager = new CacheManager({ 
         ...mockConfig, 
         strategy: 'arc',
-        maxSize: 100
+        maxSize: 70 // Reduced to ensure eviction
       });
     });
 
     it('should balance between recency and frequency', async () => {
-      // Add items to fill cache
-      await cacheManager.set('key1', 'a'.repeat(20));
-      await cacheManager.set('key2', 'b'.repeat(20));
-      await cacheManager.set('key3', 'c'.repeat(20));
+      // Add items to fill cache (each is ~22 bytes)
+      await cacheManager.set('key1', 'a'.repeat(20)); // 22 bytes
+      await new Promise(resolve => setTimeout(resolve, 5)); // Ensure different timestamp
+      await cacheManager.set('key2', 'b'.repeat(20)); // 22 bytes  
+      await new Promise(resolve => setTimeout(resolve, 5)); // Ensure different timestamp
+      await cacheManager.set('key3', 'c'.repeat(20)); // 22 bytes (total: 66 bytes)
       
+      await new Promise(resolve => setTimeout(resolve, 5)); // Ensure different timestamp
       // Access patterns
       await cacheManager.get('key1'); // Make key1 recent
       await cacheManager.get('key2'); // Make key2 recent
       await cacheManager.get('key1'); // Make key1 frequent
       
-      // Add new item
+      await new Promise(resolve => setTimeout(resolve, 5)); // Ensure different timestamp
+      // Add new item that forces eviction (66 + 22 = 88 > 70)
       await cacheManager.set('key4', 'd'.repeat(20));
       
       // key3 should be evicted (neither recent nor frequent)
@@ -237,8 +247,8 @@ describe('CacheManager', () => {
       await cacheManager.get('missing');
       
       const stats = cacheManager.getStats();
-      expect(stats.hitCount).toBe(2);
-      expect(stats.missCount).toBe(2);
+      expect(stats.hits).toBe(2);
+      expect(stats.misses).toBe(2);
       expect(stats.hitRate).toBe(0.5);
     });
 
@@ -253,7 +263,7 @@ describe('CacheManager', () => {
       await smallCache.set('key2', 'b'.repeat(30)); // Should evict key1
       
       const stats = smallCache.getStats();
-      expect(stats.evictionCount).toBe(1);
+      expect(stats.evictions).toBe(1);
     });
   });
 

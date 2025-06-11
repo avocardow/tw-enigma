@@ -47,6 +47,7 @@ export interface CacheConfig {
   persistencePath?: string;
   compressionEnabled: boolean;
   memoryPressureThreshold: number;
+  cleanupInterval?: number; // Cleanup interval in milliseconds
 }
 
 /**
@@ -73,6 +74,18 @@ export interface ProfilingConfig {
   outputDirectory: string;
   autoExport: boolean;
   enableOpenTelemetry: boolean;
+  // Additional properties used by profiler
+  sampleInterval: number;
+  enableGC: boolean;
+  enableEventLoop: boolean;
+  enableMemoryDetails: boolean;
+  maxSamples: number;
+  autoAnalysis: boolean;
+  outputDir: string;
+  clinicJsPath: string;
+  zeroXPath: string;
+  enableClinicJs: boolean;
+  enable0x: boolean;
 }
 
 /**
@@ -96,6 +109,18 @@ export interface BatchConfig {
   processingDelay: number; // Delay between batches in ms
   enablePrioritization: boolean;
   maxConcurrentBatches: number;
+  // Additional properties used by batchCoordinator
+  maxConcurrency: number;
+  batchSize: number;
+  priorityLevels: string[];
+  retryAttempts: number;
+  queueTimeout: number;
+  enableDependencies: boolean;
+  retryDelay: number;
+  resourceLimits: {
+    maxMemoryUsage: number;
+    maxCpuUsage: number;
+  };
 }
 
 /**
@@ -200,6 +225,7 @@ export const DEFAULT_PERFORMANCE_CONFIG: PerformanceConfig = {
     persistence: false,
     compressionEnabled: true,
     memoryPressureThreshold: 0.8,
+    cleanupInterval: 60000, // 1 minute
   },
   
   memory: {
@@ -220,6 +246,18 @@ export const DEFAULT_PERFORMANCE_CONFIG: PerformanceConfig = {
     outputDirectory: './performance-profiles',
     autoExport: false,
     enableOpenTelemetry: false,
+    // Additional properties used by profiler
+    sampleInterval: 1000, // 1 second
+    enableGC: false,
+    enableEventLoop: false,
+    enableMemoryDetails: false,
+    maxSamples: 1000,
+    autoAnalysis: false,
+    outputDir: './performance-profiles',
+    clinicJsPath: 'clinic',
+    zeroXPath: '0x',
+    enableClinicJs: false,
+    enable0x: false,
   },
   
   streams: {
@@ -237,6 +275,17 @@ export const DEFAULT_PERFORMANCE_CONFIG: PerformanceConfig = {
     processingDelay: 10, // 10ms
     enablePrioritization: true,
     maxConcurrentBatches: 5,
+    maxConcurrency: 10,
+    batchSize: 100,
+    priorityLevels: ['high', 'normal', 'low'],
+    retryAttempts: 3,
+    queueTimeout: 10000,
+    enableDependencies: true,
+    retryDelay: 1000,
+    resourceLimits: {
+      maxMemoryUsage: 1024 * 1024 * 1024, // 1GB
+      maxCpuUsage: 0.8,
+    },
   },
   
   enableAnalytics: true,
@@ -317,15 +366,17 @@ export function createEnvironmentConfig(
   baseConfig: Partial<PerformanceConfig> = {},
   environment: keyof typeof ENVIRONMENT_PROFILES = 'production'
 ): PerformanceConfig {
-  const envOverrides = ENVIRONMENT_PROFILES[environment];
+  const envOverrides = ENVIRONMENT_PROFILES[environment] as any;
   
   return {
     ...DEFAULT_PERFORMANCE_CONFIG,
     ...baseConfig,
-    workers: { ...DEFAULT_PERFORMANCE_CONFIG.workers, ...baseConfig.workers, ...envOverrides.workers },
-    cache: { ...DEFAULT_PERFORMANCE_CONFIG.cache, ...baseConfig.cache, ...envOverrides.cache },
-    memory: { ...DEFAULT_PERFORMANCE_CONFIG.memory, ...baseConfig.memory, ...envOverrides.memory },
-    profiling: { ...DEFAULT_PERFORMANCE_CONFIG.profiling, ...baseConfig.profiling, ...envOverrides.profiling },
+    workers: { ...DEFAULT_PERFORMANCE_CONFIG.workers, ...baseConfig.workers, ...(envOverrides.workers || {}) },
+    cache: { ...DEFAULT_PERFORMANCE_CONFIG.cache, ...baseConfig.cache, ...(envOverrides.cache || {}) },
+    memory: { ...DEFAULT_PERFORMANCE_CONFIG.memory, ...baseConfig.memory, ...(envOverrides.memory || {}) },
+    profiling: { ...DEFAULT_PERFORMANCE_CONFIG.profiling, ...baseConfig.profiling, ...(envOverrides.profiling || {}) },
+    streams: { ...DEFAULT_PERFORMANCE_CONFIG.streams, ...baseConfig.streams, ...(envOverrides.streams || {}) },
+    batching: { ...DEFAULT_PERFORMANCE_CONFIG.batching, ...baseConfig.batching, ...(envOverrides.batching || {}) },
     logLevel: envOverrides.logLevel || baseConfig.logLevel || DEFAULT_PERFORMANCE_CONFIG.logLevel,
     environmentProfile: environment,
   };

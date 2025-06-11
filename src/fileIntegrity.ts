@@ -1,8 +1,8 @@
 import { createHash } from 'node:crypto';
 import { createReadStream, createWriteStream } from 'node:fs';
-import { readFile, stat, copyFile, unlink, access } from 'node:fs/promises';
+import { readFile, stat, copyFile, unlink, access, mkdir, writeFile } from 'node:fs/promises';
 import { constants } from 'node:fs';
-import { resolve, basename, extname, join } from 'node:path';
+import { resolve, basename, extname, join, dirname, relative } from 'node:path';
 import { pipeline } from 'node:stream/promises';
 import { createGzip, createDeflate, createBrotliCompress, createGunzip, createInflate, createBrotliDecompress, constants as zlibConstants } from 'node:zlib';
 import { z } from 'zod';
@@ -71,6 +71,25 @@ export const FileIntegrityOptionsSchema = z.object({
   
   /** Whether to use hard links for deduplication (platform dependent, default: true) */
   useHardLinks: z.boolean().default(true),
+  
+  // === INCREMENTAL BACKUP OPTIONS ===
+  /** Whether to enable incremental backup strategy (default: false) */
+  enableIncrementalBackup: z.boolean().default(false),
+  
+  /** Backup strategy to use (default: 'auto') */
+  backupStrategy: z.enum(['full', 'incremental', 'auto']).default('auto'),
+  
+  /** Change detection method for incremental backups (default: 'mtime') */
+  changeDetectionMethod: z.enum(['mtime', 'checksum', 'hybrid']).default('mtime'),
+  
+  /** Maximum incremental chain length before forcing full backup (default: 10) */
+  maxIncrementalChain: z.number().min(1).default(10),
+  
+  /** Time threshold for forcing full backup in hours (default: 24 = 1 day) */
+  fullBackupInterval: z.number().min(1).default(24),
+  
+  /** Incremental backup metadata directory (default: '.incremental') */
+  incrementalDirectory: z.string().default('.incremental'),
 });
 
 /**
@@ -282,6 +301,122 @@ export interface DeduplicationResult {
 }
 
 /**
+ * File change state for incremental tracking
+ */
+export interface FileChangeState {
+  /** File path */
+  filePath: string;
+  /** File size in bytes */
+  size: number;
+  /** File modification time */
+  mtime: Date;
+  /** File content hash (optional for performance) */
+  contentHash?: string;
+  /** Last backup time */
+  lastBackup: Date;
+  /** Whether file has changed since last backup */
+  hasChanged: boolean;
+}
+
+/**
+ * Incremental backup chain entry
+ */
+export interface IncrementalBackupEntry {
+  /** Backup ID (unique identifier) */
+  id: string;
+  /** Backup type */
+  type: 'full' | 'incremental';
+  /** Parent backup ID (null for full backups) */
+  parentId: string | null;
+  /** Backup file path */
+  backupPath: string;
+  /** Original file path */
+  originalPath: string;
+  /** Backup creation timestamp */
+  createdAt: Date;
+  /** File modification time at backup */
+  mtime: Date;
+  /** File size at backup */
+  size: number;
+  /** Content hash at backup time */
+  contentHash: string;
+  /** Files included in this backup (for incremental: only changed files) */
+  files: string[];
+  /** Change detection method used */
+  changeDetectionMethod: 'mtime' | 'checksum' | 'hybrid';
+  /** Compression used */
+  compressed: boolean;
+  /** Whether deduplication was used */
+  deduplicated: boolean;
+}
+
+/**
+ * Incremental backup index structure
+ */
+export interface IncrementalIndex {
+  /** Index format version */
+  version: string;
+  /** Current backup chain ID */
+  currentChainId: string;
+  /** Last full backup information */
+  lastFullBackup: {
+    id: string;
+    createdAt: Date;
+    filePath: string;
+  } | null;
+  /** Backup chain entries */
+  backupChain: IncrementalBackupEntry[];
+  /** File state tracking for change detection */
+  fileStates: Record<string, FileChangeState>;
+  /** Chain statistics */
+  stats: {
+    totalBackups: number;
+    totalIncrementals: number;
+    chainLength: number;
+    totalSpaceSaved: number;
+    lastBackupAt: Date;
+  };
+  /** Last index update */
+  lastUpdated: Date;
+}
+
+/**
+ * Incremental backup operation result
+ */
+export interface IncrementalBackupResult {
+  /** Backup operation type performed */
+  backupType: 'full' | 'incremental' | 'skipped';
+  /** Backup ID */
+  backupId: string;
+  /** Parent backup ID (for incremental) */
+  parentId?: string;
+  /** Number of files backed up */
+  filesBackedUp: number;
+  /** Number of files changed since last backup */
+  filesChanged: number;
+  /** Number of files skipped (unchanged) */
+  filesSkipped: number;
+  /** Backup file path */
+  backupPath: string;
+  /** Total backup size */
+  backupSize: number;
+  /** Space saved compared to full backup */
+  spaceSaved: number;
+  /** Files included in this backup */
+  backedUpFiles: string[];
+  /** Change detection method used */
+  changeDetectionMethod: 'mtime' | 'checksum' | 'hybrid';
+  /** Processing time in milliseconds */
+  processingTime: number;
+  /** Whether backup was successful */
+  success: boolean;
+  /** Error message if backup failed */
+  error?: string;
+  /** Backup timestamp */
+  createdAt: Date;
+}
+
+/**
  * Custom error class for file integrity validation errors
  */
 export class IntegrityError extends Error {
@@ -355,6 +490,8 @@ export class FileIntegrityValidator {
   private readonly checksumCache: Map<string, ChecksumInfo> = new Map();
   private deduplicationIndex: DeduplicationIndex | null = null;
   private deduplicationIndexPath: string;
+  private incrementalIndex: IncrementalIndex | null = null;
+  private incrementalIndexPath: string;
   
   constructor(options: Partial<FileIntegrityOptions> = {}) {
     // Validate and merge options with defaults
@@ -374,6 +511,9 @@ export class FileIntegrityValidator {
     // Initialize deduplication index path
     this.deduplicationIndexPath = join(this.options.deduplicationDirectory, 'dedup-index.json');
     
+    // Initialize incremental backup index path
+    this.incrementalIndexPath = join(this.options.incrementalDirectory, 'incremental-index.json');
+    
     this.logger.debug('FileIntegrityValidator initialized', {
       algorithm: this.options.algorithm,
       createBackups: this.options.createBackups,
@@ -382,7 +522,10 @@ export class FileIntegrityValidator {
       timeout: this.options.timeout,
       enableCaching: this.options.enableCaching,
       enableDeduplication: this.options.enableDeduplication,
-      deduplicationDirectory: this.options.deduplicationDirectory
+      deduplicationDirectory: this.options.deduplicationDirectory,
+      enableIncrementalBackup: this.options.enableIncrementalBackup,
+      backupStrategy: this.options.backupStrategy,
+      incrementalDirectory: this.options.incrementalDirectory
     });
   }
 
@@ -1413,6 +1556,443 @@ export class FileIntegrityValidator {
       duplicatesFound: index.stats.duplicatesFound,
       averageReferenceCount: index.stats.averageReferenceCount,
       indexPath: this.deduplicationIndexPath
+    };
+  }
+
+  // === INCREMENTAL BACKUP METHODS ===
+
+  /**
+   * Load the incremental backup index from disk
+   */
+  private async loadIncrementalIndex(): Promise<IncrementalIndex> {
+    if (this.incrementalIndex) {
+      return this.incrementalIndex;
+    }
+
+    try {
+      await access(this.incrementalIndexPath);
+      const data = await readFile(this.incrementalIndexPath, 'utf-8');
+      this.incrementalIndex = JSON.parse(data);
+      
+      // Convert date strings back to Date objects
+      if (this.incrementalIndex) {
+        this.incrementalIndex.lastUpdated = new Date(this.incrementalIndex.lastUpdated);
+        if (this.incrementalIndex.lastFullBackup) {
+          this.incrementalIndex.lastFullBackup.createdAt = new Date(this.incrementalIndex.lastFullBackup.createdAt);
+        }
+        this.incrementalIndex.stats.lastBackupAt = new Date(this.incrementalIndex.stats.lastBackupAt);
+        
+        // Convert backup chain dates
+        this.incrementalIndex.backupChain.forEach(entry => {
+          entry.createdAt = new Date(entry.createdAt);
+          entry.mtime = new Date(entry.mtime);
+        });
+        
+        // Convert file state dates
+        Object.values(this.incrementalIndex.fileStates).forEach(state => {
+          state.mtime = new Date(state.mtime);
+          state.lastBackup = new Date(state.lastBackup);
+        });
+      }
+      
+      this.logger.debug('Incremental index loaded', {
+        totalBackups: this.incrementalIndex.stats.totalBackups,
+        chainLength: this.incrementalIndex.stats.chainLength,
+        lastBackup: this.incrementalIndex.stats.lastBackupAt
+      });
+      
+    } catch (error) {
+      // Initialize new index if file doesn't exist
+      this.incrementalIndex = {
+        version: '1.0.0',
+        currentChainId: this.generateBackupId(),
+        lastFullBackup: null,
+        backupChain: [],
+        fileStates: {},
+        stats: {
+          totalBackups: 0,
+          totalIncrementals: 0,
+          chainLength: 0,
+          totalSpaceSaved: 0,
+          lastBackupAt: new Date()
+        },
+        lastUpdated: new Date()
+      };
+      
+      this.logger.debug('Initialized new incremental index', {
+        chainId: this.incrementalIndex.currentChainId,
+        indexPath: this.incrementalIndexPath
+      });
+    }
+
+    return this.incrementalIndex;
+  }
+
+  /**
+   * Save the incremental backup index to disk
+   */
+  private async saveIncrementalIndex(): Promise<void> {
+    if (!this.incrementalIndex) {
+      return;
+    }
+
+    try {
+      // Ensure incremental directory exists
+      const incrementalDir = dirname(this.incrementalIndexPath);
+      try {
+        await access(incrementalDir);
+      } catch {
+        await mkdir(incrementalDir, { recursive: true });
+        this.logger.debug('Created incremental directory', { incrementalDir });
+      }
+
+      // Update timestamp and save
+      this.incrementalIndex.lastUpdated = new Date();
+      await writeFile(
+        this.incrementalIndexPath,
+        JSON.stringify(this.incrementalIndex, null, 2),
+        'utf-8'
+      );
+      
+      this.logger.debug('Incremental index saved', {
+        indexPath: this.incrementalIndexPath,
+        backupCount: this.incrementalIndex.stats.totalBackups
+      });
+      
+    } catch (error) {
+      this.logger.error('Failed to save incremental index', {
+        error: error instanceof Error ? error.message : String(error),
+        indexPath: this.incrementalIndexPath
+      });
+      throw new IntegrityError(
+        `Failed to save incremental index: ${error instanceof Error ? error.message : String(error)}`,
+        'INDEX_SAVE_ERROR'
+      );
+    }
+  }
+
+  /**
+   * Generate a unique backup ID
+   */
+  private generateBackupId(): string {
+    return `backup_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+  }
+
+  /**
+   * Detect file changes since last backup
+   */
+  private async detectFileChanges(filePath: string): Promise<FileChangeState> {
+    const resolvedPath = resolve(filePath);
+    const index = await this.loadIncrementalIndex();
+    const existingState = index.fileStates[resolvedPath];
+    
+    try {
+      const stats = await stat(resolvedPath);
+      const currentState: FileChangeState = {
+        filePath: resolvedPath,
+        size: stats.size,
+        mtime: stats.mtime,
+        lastBackup: existingState?.lastBackup || new Date(0),
+        hasChanged: false,
+        contentHash: undefined
+      };
+
+      // Determine if file has changed based on detection method
+      switch (this.options.changeDetectionMethod) {
+        case 'mtime':
+          currentState.hasChanged = !existingState || stats.mtime > existingState.mtime;
+          break;
+          
+        case 'checksum':
+          currentState.contentHash = await this.createContentHash(resolvedPath);
+          currentState.hasChanged = !existingState || currentState.contentHash !== existingState.contentHash;
+          break;
+          
+        case 'hybrid':
+          // First check mtime for efficiency, then checksum if needed
+          if (!existingState || stats.mtime > existingState.mtime) {
+            currentState.contentHash = await this.createContentHash(resolvedPath);
+            currentState.hasChanged = !existingState || currentState.contentHash !== existingState.contentHash;
+          } else {
+            currentState.hasChanged = false;
+          }
+          break;
+      }
+
+      this.logger.debug('File change detection result', {
+        filePath: resolvedPath,
+        hasChanged: currentState.hasChanged,
+        method: this.options.changeDetectionMethod,
+        mtime: stats.mtime,
+        lastBackup: currentState.lastBackup
+      });
+
+      return currentState;
+      
+    } catch (error) {
+      this.logger.error('File change detection failed', {
+        filePath: resolvedPath,
+        error: error instanceof Error ? error.message : String(error)
+      });
+      
+      // Return default state indicating change (safer)
+      return {
+        filePath: resolvedPath,
+        size: 0,
+        mtime: new Date(),
+        lastBackup: new Date(0),
+        hasChanged: true
+      };
+    }
+  }
+
+  /**
+   * Determine backup strategy based on configuration and current state
+   */
+  private async determineBackupStrategy(filePath: string): Promise<'full' | 'incremental' | 'skip'> {
+    if (!this.options.enableIncrementalBackup) {
+      return 'full';
+    }
+
+    const index = await this.loadIncrementalIndex();
+    
+    // Force full backup if no previous backups exist
+    if (!index.lastFullBackup || index.backupChain.length === 0) {
+      this.logger.debug('No previous backups found, forcing full backup');
+      return 'full';
+    }
+
+    // Force full backup if chain is too long
+    if (index.stats.chainLength >= this.options.maxIncrementalChain) {
+      this.logger.debug('Chain length exceeded maximum, forcing full backup', {
+        chainLength: index.stats.chainLength,
+        maxChain: this.options.maxIncrementalChain
+      });
+      return 'full';
+    }
+
+    // Force full backup if too much time has passed
+    const hoursSinceLastFull = (Date.now() - index.lastFullBackup.createdAt.getTime()) / (1000 * 60 * 60);
+    if (hoursSinceLastFull >= this.options.fullBackupInterval) {
+      this.logger.debug('Time interval exceeded, forcing full backup', {
+        hoursSinceLastFull,
+        maxInterval: this.options.fullBackupInterval
+      });
+      return 'full';
+    }
+
+    // Check if file has changed
+    const changeState = await this.detectFileChanges(filePath);
+    if (!changeState.hasChanged) {
+      this.logger.debug('File unchanged since last backup, skipping');
+      return 'skip';
+    }
+
+    // Use strategy configuration
+    switch (this.options.backupStrategy) {
+      case 'full':
+        return 'full';
+      case 'incremental':
+        return 'incremental';
+      case 'auto':
+      default:
+        // Auto strategy: use incremental if conditions are met
+        return 'incremental';
+    }
+  }
+
+  /**
+   * Create an incremental backup
+   */
+  async createIncrementalBackup(filePath: string): Promise<IncrementalBackupResult> {
+    const startTime = Date.now();
+    const resolvedPath = resolve(filePath);
+    
+    this.logger.debug('Creating incremental backup', {
+      filePath: resolvedPath,
+      strategy: this.options.backupStrategy,
+      changeDetection: this.options.changeDetectionMethod
+    });
+
+    try {
+      // Determine backup strategy
+      const strategy = await this.determineBackupStrategy(resolvedPath);
+      
+      if (strategy === 'skip') {
+        return {
+          backupType: 'skipped',
+          backupId: '',
+          filesBackedUp: 0,
+          filesChanged: 0,
+          filesSkipped: 1,
+          backupPath: '',
+          backupSize: 0,
+          spaceSaved: 0,
+          backedUpFiles: [],
+          changeDetectionMethod: this.options.changeDetectionMethod,
+          processingTime: Date.now() - startTime,
+          success: true,
+          createdAt: new Date()
+        };
+      }
+
+      const index = await this.loadIncrementalIndex();
+      const backupId = this.generateBackupId();
+      const fileStats = await stat(resolvedPath);
+      const changeState = await this.detectFileChanges(resolvedPath);
+      
+      // Create backup using existing backup system
+      const backupResult = await this.createBackup(resolvedPath);
+      
+      if (!backupResult.success) {
+        throw new RollbackError(backupResult.error || 'Backup creation failed', resolvedPath);
+      }
+
+      // Create incremental backup entry
+      const backupEntry: IncrementalBackupEntry = {
+        id: backupId,
+        type: strategy,
+        parentId: strategy === 'full' ? null : (index.lastFullBackup?.id || null),
+        backupPath: backupResult.backupPath,
+        originalPath: resolvedPath,
+        createdAt: new Date(),
+        mtime: fileStats.mtime,
+        size: fileStats.size,
+        contentHash: changeState.contentHash || await this.createContentHash(resolvedPath),
+        files: [resolvedPath],
+        changeDetectionMethod: this.options.changeDetectionMethod,
+        compressed: backupResult.compressed || false,
+        deduplicated: backupResult.deduplicated || false
+      };
+
+      // Update index
+      index.backupChain.push(backupEntry);
+      index.fileStates[resolvedPath] = {
+        ...changeState,
+        lastBackup: new Date(),
+        hasChanged: false
+      };
+
+      // Update statistics
+      index.stats.totalBackups++;
+      if (strategy === 'incremental') {
+        index.stats.totalIncrementals++;
+        index.stats.chainLength++;
+      } else {
+        // Full backup resets chain
+        index.lastFullBackup = {
+          id: backupId,
+          createdAt: new Date(),
+          filePath: resolvedPath
+        };
+        index.stats.chainLength = 1;
+        index.currentChainId = this.generateBackupId();
+      }
+      
+      index.stats.lastBackupAt = new Date();
+      index.stats.totalSpaceSaved += (backupResult.originalSize || 0) - (backupResult.backupSize || 0);
+
+      // Save updated index
+      await this.saveIncrementalIndex();
+
+      const processingTime = Date.now() - startTime;
+      
+      const result: IncrementalBackupResult = {
+        backupType: strategy,
+        backupId,
+        parentId: backupEntry.parentId,
+        filesBackedUp: 1,
+        filesChanged: changeState.hasChanged ? 1 : 0,
+        filesSkipped: 0,
+        backupPath: backupResult.backupPath,
+        backupSize: backupResult.backupSize || 0,
+        spaceSaved: (backupResult.originalSize || 0) - (backupResult.backupSize || 0),
+        backedUpFiles: [resolvedPath],
+        changeDetectionMethod: this.options.changeDetectionMethod,
+        processingTime,
+        success: true,
+        createdAt: new Date()
+      };
+
+      this.logger.info('Incremental backup created successfully', {
+        backupType: strategy,
+        backupId,
+        filePath: resolvedPath,
+        backupPath: result.backupPath,
+        chainLength: index.stats.chainLength,
+        spaceSaved: result.spaceSaved,
+        processingTime
+      });
+
+      return result;
+
+    } catch (error) {
+      const processingTime = Date.now() - startTime;
+      this.logger.error('Incremental backup creation failed', {
+        filePath: resolvedPath,
+        error: error instanceof Error ? error.message : String(error),
+        processingTime
+      });
+
+      return {
+        backupType: 'incremental',
+        backupId: '',
+        filesBackedUp: 0,
+        filesChanged: 0,
+        filesSkipped: 0,
+        backupPath: '',
+        backupSize: 0,
+        spaceSaved: 0,
+        backedUpFiles: [],
+        changeDetectionMethod: this.options.changeDetectionMethod,
+        processingTime,
+        success: false,
+        error: error instanceof Error ? error.message : String(error),
+        createdAt: new Date()
+      };
+    }
+  }
+
+  /**
+   * Get incremental backup statistics
+   */
+  async getIncrementalStats(): Promise<{
+    enabled: boolean;
+    totalBackups: number;
+    totalIncrementals: number;
+    chainLength: number;
+    spaceSaved: number;
+    lastBackupAt: Date;
+    strategy: string;
+    changeDetectionMethod: string;
+    indexPath: string;
+  }> {
+    if (!this.options.enableIncrementalBackup) {
+      return {
+        enabled: false,
+        totalBackups: 0,
+        totalIncrementals: 0,
+        chainLength: 0,
+        spaceSaved: 0,
+        lastBackupAt: new Date(0),
+        strategy: this.options.backupStrategy,
+        changeDetectionMethod: this.options.changeDetectionMethod,
+        indexPath: this.incrementalIndexPath
+      };
+    }
+
+    const index = await this.loadIncrementalIndex();
+    
+    return {
+      enabled: true,
+      totalBackups: index.stats.totalBackups,
+      totalIncrementals: index.stats.totalIncrementals,
+      chainLength: index.stats.chainLength,
+      spaceSaved: index.stats.totalSpaceSaved,
+      lastBackupAt: index.stats.lastBackupAt,
+      strategy: this.options.backupStrategy,
+      changeDetectionMethod: this.options.changeDetectionMethod,
+      indexPath: this.incrementalIndexPath
     };
   }
 

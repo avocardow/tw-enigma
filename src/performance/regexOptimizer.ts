@@ -162,7 +162,7 @@ export class RegexOptimizer extends EventEmitter {
   /**
    * Get or compile regex pattern with caching and optimization
    */
-  compile(pattern: string, flags = '', source = 'unknown'): RegExp {
+  async compile(pattern: string, flags = '', source = 'unknown'): Promise<RegExp> {
     if (!this.config.enabled) {
       return new RegExp(pattern, flags);
     }
@@ -172,7 +172,7 @@ export class RegexOptimizer extends EventEmitter {
 
     try {
       // Check cache first
-      const cached = this.cache.get(cacheKey);
+      const cached = await this.cache.get(cacheKey);
       if (cached) {
         cached.usageCount++;
         cached.lastUsed = Date.now();
@@ -228,7 +228,7 @@ export class RegexOptimizer extends EventEmitter {
   /**
    * Execute regex with performance monitoring
    */
-  exec(pattern: string | RegExp, input: string, flags?: string): RegExpExecArray | null {
+  async exec(pattern: string | RegExp, input: string, flags?: string): Promise<RegExpExecArray | null> {
     const startTime = performance.now();
     
     try {
@@ -240,7 +240,7 @@ export class RegexOptimizer extends EventEmitter {
         patternKey = `${pattern.source}::${pattern.flags}`;
       } else {
         patternKey = `${pattern}::${flags || ''}`;
-        regex = this.compile(pattern, flags);
+        regex = await this.compile(pattern, flags);
       }
 
       const result = regex.exec(input);
@@ -266,15 +266,15 @@ export class RegexOptimizer extends EventEmitter {
   /**
    * Test regex with performance monitoring
    */
-  test(pattern: string | RegExp, input: string, flags?: string): boolean {
-    const result = this.exec(pattern, input, flags);
+  async test(pattern: string | RegExp, input: string, flags?: string): Promise<boolean> {
+    const result = await this.exec(pattern, input, flags);
     return result !== null;
   }
 
   /**
    * Match string with regex and performance monitoring
    */
-  match(input: string, pattern: string | RegExp, flags?: string): RegExpMatchArray | null {
+  async match(input: string, pattern: string | RegExp, flags?: string): Promise<RegExpMatchArray | null> {
     const startTime = performance.now();
     
     try {
@@ -286,7 +286,7 @@ export class RegexOptimizer extends EventEmitter {
         patternKey = `${pattern.source}::${pattern.flags}`;
       } else {
         patternKey = `${pattern}::${flags || ''}`;
-        regex = this.compile(pattern, flags);
+        regex = await this.compile(pattern, flags);
       }
 
       const result = input.match(regex);
@@ -312,7 +312,7 @@ export class RegexOptimizer extends EventEmitter {
   /**
    * Replace with regex and performance monitoring
    */
-  replace(input: string, pattern: string | RegExp, replacement: string | ((match: string, ...args: any[]) => string), flags?: string): string {
+  async replace(input: string, pattern: string | RegExp, replacement: string | ((match: string, ...args: any[]) => string), flags?: string): Promise<string> {
     const startTime = performance.now();
     
     try {
@@ -324,7 +324,7 @@ export class RegexOptimizer extends EventEmitter {
         patternKey = `${pattern.source}::${pattern.flags}`;
       } else {
         patternKey = `${pattern}::${flags || ''}`;
-        regex = this.compile(pattern, flags);
+        regex = await this.compile(pattern, flags);
       }
 
       const result = input.replace(regex, replacement as any);
@@ -687,20 +687,20 @@ export { COMMON_CSS_PATTERNS };
 /**
  * Quick compile function for common use cases
  */
-export function compileRegex(pattern: string, flags?: string): RegExp {
+export function compileRegex(pattern: string, flags?: string): Promise<RegExp> {
   return getGlobalRegexOptimizer().compile(pattern, flags || '');
 }
 
 /**
  * Quick match function with optimization
  */
-export function matchOptimized(input: string, pattern: string | RegExp, flags?: string): RegExpMatchArray | null {
+export function matchOptimized(input: string, pattern: string | RegExp, flags?: string): Promise<RegExpMatchArray | null> {
   return getGlobalRegexOptimizer().match(input, pattern, flags);
 }
 
 /**
  * Quick replace function with optimization
  */
-export function replaceOptimized(input: string, pattern: string | RegExp, replacement: string, flags?: string): string {
+export function replaceOptimized(input: string, pattern: string | RegExp, replacement: string, flags?: string): Promise<string> {
   return getGlobalRegexOptimizer().replace(input, pattern, replacement, flags);
 } 

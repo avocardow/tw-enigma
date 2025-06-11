@@ -274,7 +274,7 @@ export class StreamOptimizer extends EventEmitter {
             callback(null, processed);
           } catch (error) {
             stats.errorCount++;
-            callback(error);
+            callback(error instanceof Error ? error : new Error(String(error)));
           }
         },
       });
@@ -371,52 +371,63 @@ export class StreamOptimizer extends EventEmitter {
       });
 
       const results: T[] = [];
-      const processing: Promise<void>[] = [];
+      const errors: Error[] = [];
       let completedFiles = 0;
 
-      for (const filePath of filePaths) {
-        const promise = this.processFileWithLimiter(
-          filePath,
-          processor,
-          options
-        ).then(result => {
-          results.push(result);
-          stats.itemsProcessed++;
-          completedFiles++;
+      // Process files with concurrency limit using Promise.allSettled in batches
+      for (let i = 0; i < filePaths.length; i += concurrency) {
+        const batch = filePaths.slice(i, i + concurrency);
+        const batchPromises = batch.map(async (filePath, batchIndex) => {
+          try {
+            const result = await this.processFileWithLimiter(filePath, processor, options);
+            stats.itemsProcessed++;
+            completedFiles++;
 
-          // Emit progress
-          if (options.enableProgress) {
-            const progress: StreamProgress = {
-              processedItems: completedFiles,
-              totalItems: filePaths.length,
-              processedBytes: stats.bytesProcessed,
-              percentComplete: (completedFiles / filePaths.length) * 100,
-              estimatedTimeRemaining: this.calculateETA(stats, filePaths.length),
-              currentThroughput: stats.throughput,
-              averageThroughput: stats.bytesProcessed / ((performance.now() - startTime) / 1000),
-            };
-            this.emit('progress', { streamId, progress });
+            // Emit progress
+            if (options.enableProgress) {
+              const progress: StreamProgress = {
+                processedItems: completedFiles,
+                totalItems: filePaths.length,
+                processedBytes: stats.bytesProcessed,
+                percentComplete: (completedFiles / filePaths.length) * 100,
+                estimatedTimeRemaining: this.calculateETA(stats, filePaths.length),
+                currentThroughput: stats.throughput,
+                averageThroughput: stats.bytesProcessed / ((performance.now() - startTime) / 1000),
+              };
+              this.emit('progress', { streamId, progress });
+            }
+
+            return { success: true as const, result, filePath };
+          } catch (error) {
+            stats.errorCount++;
+            logger.error('File processing failed in batch', {
+              filePath,
+              error: error instanceof Error ? error.message : String(error),
+            });
+            return { success: false as const, error, filePath };
           }
-        }).catch(error => {
-          stats.errorCount++;
-          logger.error('File processing failed in batch', {
-            filePath,
-            error: error instanceof Error ? error.message : String(error),
-          });
-          results.push(error);
         });
 
-        processing.push(promise);
-
-        // Limit concurrency
-        if (processing.length >= concurrency) {
-          await Promise.race(processing);
-          processing.splice(processing.findIndex(p => p === promise), 1);
-        }
+        const batchResults = await Promise.allSettled(batchPromises);
+        
+        // Process batch results
+        batchResults.forEach((settledResult, batchIndex) => {
+          if (settledResult.status === 'fulfilled') {
+            const value = settledResult.value;
+            if (value.success) {
+              results.push(value.result);
+            } else {
+              stats.errorCount++;
+              errors.push(value.error instanceof Error ? value.error : new Error(String(value.error)));
+            }
+          } else {
+            // Promise.allSettled rejection (shouldn't happen with our error handling)
+            stats.errorCount++;
+            const error = new Error(`Batch processing failed: ${settledResult.reason}`);
+            errors.push(error);
+          }
+        });
       }
-
-      // Wait for remaining files
-      await Promise.all(processing);
 
       stats.endTime = performance.now();
       const duration = (stats.endTime - stats.startTime) / 1000;
@@ -428,7 +439,7 @@ export class StreamOptimizer extends EventEmitter {
       logger.info('Batch stream processing completed', {
         streamId,
         totalFiles: filePaths.length,
-        successfulFiles: results.filter(r => !(r instanceof Error)).length,
+        successfulFiles: results.length,
         failedFiles: stats.errorCount,
         duration,
         throughput: stats.throughput,
@@ -533,7 +544,7 @@ export class StreamOptimizer extends EventEmitter {
 
           callback(null, result);
         } catch (error) {
-          callback(error);
+          callback(error instanceof Error ? error : new Error(String(error)));
         }
       },
     });
@@ -575,8 +586,8 @@ export class StreamOptimizer extends EventEmitter {
         highWaterMark: options.highWaterMark || this.config.highWaterMark,
       });
 
-      readStream.on('data', (chunk: Buffer) => {
-        chunks.push(chunk);
+      readStream.on('data', (chunk: string | Buffer) => {
+        chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
       });
 
       readStream.on('end', async () => {
