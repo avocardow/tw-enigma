@@ -184,6 +184,17 @@ export interface CliArguments {
   integrityDifferentialFullBackupInterval?: number;
   integrityDifferentialDirectory?: string;
   integrityDifferentialSizeMultiplier?: number;
+  // File integrity batch processing options
+  integrityEnableBatchProcessing?: boolean;
+  integrityMinBatchSize?: number;
+  integrityMaxBatchSize?: number;
+  integrityDynamicBatchSizing?: boolean;
+  integrityMemoryThreshold?: number;
+  integrityCpuThreshold?: number;
+  integrityEventLoopLagThreshold?: number;
+  integrityBatchProcessingStrategy?: "sequential" | "parallel" | "adaptive";
+  integrityEnableProgressTracking?: boolean;
+  integrityProgressUpdateInterval?: number;
 }
 
 /**
@@ -414,6 +425,28 @@ function normalizeCliArguments(args: CliArguments): Partial<EnigmaConfig> {
     fileIntegrityConfig.differentialDirectory = args.integrityDifferentialDirectory;
   if (args.integrityDifferentialSizeMultiplier !== undefined)
     fileIntegrityConfig.differentialSizeMultiplier = args.integrityDifferentialSizeMultiplier;
+  
+  // Batch processing options
+  if (args.integrityEnableBatchProcessing !== undefined)
+    fileIntegrityConfig.enableBatchProcessing = args.integrityEnableBatchProcessing;
+  if (args.integrityMinBatchSize !== undefined)
+    fileIntegrityConfig.minBatchSize = args.integrityMinBatchSize;
+  if (args.integrityMaxBatchSize !== undefined)
+    fileIntegrityConfig.maxBatchSize = args.integrityMaxBatchSize;
+  if (args.integrityDynamicBatchSizing !== undefined)
+    fileIntegrityConfig.dynamicBatchSizing = args.integrityDynamicBatchSizing;
+  if (args.integrityMemoryThreshold !== undefined)
+    fileIntegrityConfig.memoryThreshold = args.integrityMemoryThreshold;
+  if (args.integrityCpuThreshold !== undefined)
+    fileIntegrityConfig.cpuThreshold = args.integrityCpuThreshold;
+  if (args.integrityEventLoopLagThreshold !== undefined)
+    fileIntegrityConfig.eventLoopLagThreshold = args.integrityEventLoopLagThreshold;
+  if (args.integrityBatchProcessingStrategy !== undefined)
+    fileIntegrityConfig.batchProcessingStrategy = args.integrityBatchProcessingStrategy;
+  if (args.integrityEnableProgressTracking !== undefined)
+    fileIntegrityConfig.enableProgressTracking = args.integrityEnableProgressTracking;
+  if (args.integrityProgressUpdateInterval !== undefined)
+    fileIntegrityConfig.progressUpdateInterval = args.integrityProgressUpdateInterval;
 
   if (Object.keys(fileIntegrityConfig).length > 0) {
     // Apply defaults using the schema to ensure all fields have proper values

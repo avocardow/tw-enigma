@@ -2078,4 +2078,328 @@ describe('Compression Feature Tests', () => {
       });
     });
   });
+
+  describe('Large Project Optimization', () => {
+    let largeProjectValidator: FileIntegrityValidator;
+    let testFiles: string[];
+
+    beforeEach(async () => {
+      largeProjectValidator = new FileIntegrityValidator({
+        backupDirectory: join(testDir, '.backups'),
+        enableBatchProcessing: true,
+        batchSize: 5,
+        minBatchSize: 2,
+        maxBatchSize: 10,
+        dynamicBatchSizing: true,
+        memoryThreshold: 80,
+        cpuThreshold: 70,
+        eventLoopLagThreshold: 100,
+        batchProcessingStrategy: 'adaptive',
+        enableProgressTracking: true,
+        progressUpdateInterval: 500
+      });
+
+      // Create test files for large project simulation
+      testFiles = [];
+      for (let i = 0; i < 15; i++) {
+        const testFile = join(testDir, `large-project-file-${i}.txt`);
+        await writeFile(testFile, `Content for large project file ${i} - ${Date.now()}`);
+        testFiles.push(testFile);
+      }
+    });
+
+    describe('Batch Processing Framework', () => {
+      it('should process files in batches with progress tracking', async () => {
+        const progressUpdates: any[] = [];
+        const progressCallback = (progress: any) => {
+          progressUpdates.push({
+            percentage: progress.percentage,
+            processed: progress.processed,
+            total: progress.total
+          });
+        };
+
+        const result = await largeProjectValidator.processLargeProject(
+          testFiles,
+          'checksum',
+          { progressCallback }
+        );
+
+        expect(result.totalFiles).toBe(15);
+        expect(result.batchesProcessed).toBeGreaterThan(1);
+        expect(result.optimizationApplied).toBe(true);
+        expect(result.performanceStats.filesPerSecond).toBeGreaterThan(0);
+        expect(progressUpdates.length).toBeGreaterThan(0);
+        expect(progressUpdates[progressUpdates.length - 1].percentage).toBe(100);
+      });
+
+      it('should handle batch processing errors gracefully', async () => {
+        // Add a non-existent file to trigger errors
+        const filesWithError = [...testFiles, join(testDir, 'non-existent-file.txt')];
+        let errorHandlerCalled = false;
+
+        const result = await largeProjectValidator.processLargeProject(
+          filesWithError,
+          'checksum',
+          {
+            errorHandler: (error, filePath) => {
+              errorHandlerCalled = true;
+              expect(filePath).toContain('non-existent-file.txt');
+              return true; // Continue processing
+            }
+          }
+        );
+
+        expect(errorHandlerCalled).toBe(true);
+        expect(result.totalFiles).toBe(16);
+        // Should have processed the valid files despite error
+        expect(result.performanceStats.filesPerSecond).toBeGreaterThan(0);
+      });
+
+      it('should support different batch processing strategies', async () => {
+        const strategies = ['sequential', 'parallel', 'adaptive'] as const;
+        
+        for (const strategy of strategies) {
+          const validator = new FileIntegrityValidator({
+            enableBatchProcessing: true,
+            batchProcessingStrategy: strategy,
+            batchSize: 3,
+            dynamicBatchSizing: false // Disable dynamic sizing for predictable results
+          });
+
+          const result = await validator.processLargeProject(testFiles.slice(0, 6), 'checksum');
+          
+          expect(result.totalFiles).toBe(6);
+          expect(result.batchesProcessed).toBe(2);
+          expect(result.optimizationDetails.some(detail => detail.includes('Batch processing enabled'))).toBe(true);
+        }
+      });
+    });
+
+    describe('Dynamic Batch Sizing', () => {
+      it('should provide system metrics for batch sizing decisions', async () => {
+        const stats = await largeProjectValidator.getLargeProjectStats();
+        
+        expect(stats.systemMetrics).toBeDefined();
+        expect(stats.systemMetrics.memoryUsage).toBeGreaterThan(0);
+        expect(stats.systemMetrics.freeMemory).toBeGreaterThan(0);
+        expect(stats.systemMetrics.totalMemory).toBeGreaterThan(0);
+        expect(stats.systemMetrics.eventLoopLag).toBeGreaterThanOrEqual(0);
+        expect(stats.systemMetrics.timestamp).toBeInstanceOf(Date);
+      });
+
+      it('should track memory usage during processing', async () => {
+        const result = await largeProjectValidator.processLargeProject(testFiles, 'checksum');
+        
+        expect(result.memoryStats.initial).toBeGreaterThan(0);
+        expect(result.memoryStats.peak).toBeGreaterThanOrEqual(result.memoryStats.initial);
+        expect(result.memoryStats.final).toBeGreaterThan(0);
+        expect(result.memoryStats.average).toBeGreaterThan(0);
+      });
+
+      it('should provide comprehensive statistics', async () => {
+        await largeProjectValidator.processLargeProject(testFiles.slice(0, 8), 'checksum');
+        
+        const stats = await largeProjectValidator.getLargeProjectStats();
+        
+        expect(stats.batchProcessing.enabled).toBe(true);
+        expect(stats.batchProcessing.currentBatchSize).toBeGreaterThan(0);
+        expect(stats.batchProcessing.strategy).toBe('adaptive');
+        expect(stats.batchProcessing.dynamicSizing).toBe(true);
+        
+        expect(stats.performance.filesProcessed).toBe(8);
+        expect(stats.performance.totalProcessingTime).toBeGreaterThanOrEqual(0);
+        expect(stats.performance.averageFileProcessingTime).toBeGreaterThanOrEqual(0);
+        
+        expect(stats.progressTracking.enabled).toBe(true);
+        expect(stats.progressTracking.updateInterval).toBe(500);
+      });
+    });
+
+    describe('Progress Tracking System', () => {
+      it('should emit progress events during processing', async () => {
+        const progressEvents: any[] = [];
+        
+        largeProjectValidator.onProgress((progress) => {
+          progressEvents.push(progress);
+        });
+
+        await largeProjectValidator.processLargeProject(testFiles.slice(0, 6), 'checksum');
+        
+        expect(progressEvents.length).toBeGreaterThan(0);
+        
+        const firstEvent = progressEvents[0];
+        expect(firstEvent.operation).toBe('Large Project Checksum Calculation');
+        expect(firstEvent.total).toBe(6);
+        expect(firstEvent.percentage).toBeGreaterThanOrEqual(0);
+        
+        const lastEvent = progressEvents[progressEvents.length - 1];
+        expect(lastEvent.percentage).toBe(100);
+        expect(lastEvent.processed).toBe(6);
+        expect(lastEvent.currentFile).toBe('Complete');
+      });
+
+      it('should allow progress listener management', async () => {
+        let callCount = 0;
+        const callback = () => { callCount++; };
+
+        largeProjectValidator.onProgress(callback);
+        await largeProjectValidator.processLargeProject(testFiles.slice(0, 3), 'checksum');
+        
+        const firstCallCount = callCount;
+        expect(firstCallCount).toBeGreaterThan(0);
+
+        largeProjectValidator.offProgress(callback);
+        await largeProjectValidator.processLargeProject(testFiles.slice(3, 6), 'checksum');
+        
+        // Should not increase after removing listener
+        expect(callCount).toBe(firstCallCount);
+      });
+
+      it('should provide ETA calculations', async () => {
+        const progressEvents: any[] = [];
+        
+        largeProjectValidator.onProgress((progress) => {
+          if (progress.processed > 0 && progress.processed < progress.total) {
+            progressEvents.push(progress);
+          }
+        });
+
+        await largeProjectValidator.processLargeProject(testFiles, 'checksum');
+        
+        // Check that some progress events have ETA
+        const eventsWithETA = progressEvents.filter(e => e.eta !== null);
+        expect(eventsWithETA.length).toBeGreaterThan(0);
+        
+        for (const event of eventsWithETA) {
+          expect(event.eta).toBeInstanceOf(Date);
+          expect(event.rate).toBeGreaterThan(0);
+          expect(event.elapsed).toBeGreaterThan(0);
+        }
+      });
+    });
+
+    describe('Performance Optimization', () => {
+      it('should reset performance tracking', async () => {
+        await largeProjectValidator.processLargeProject(testFiles.slice(0, 5), 'checksum');
+        
+        let stats = await largeProjectValidator.getLargeProjectStats();
+        expect(stats.performance.filesProcessed).toBe(5);
+
+        largeProjectValidator.resetPerformanceTracking();
+        
+        stats = await largeProjectValidator.getLargeProjectStats();
+        expect(stats.performance.filesProcessed).toBe(0);
+        expect(stats.performance.totalProcessingTime).toBe(0);
+        expect(stats.batchProcessing.adjustments).toBe(0);
+      });
+
+      it('should optimize for different operation types', async () => {
+        // Test checksum operation
+        const checksumResult = await largeProjectValidator.processLargeProject(testFiles.slice(0, 5), 'checksum');
+        expect(checksumResult.optimizationDetails.some(detail => detail.includes('Batch processing enabled'))).toBe(true);
+        
+        // Test backup operation
+        const backupResult = await largeProjectValidator.processLargeProject(testFiles.slice(5, 10), 'backup');
+        expect(backupResult.optimizationDetails.some(detail => detail.includes('Batch processing enabled'))).toBe(true);
+        expect(backupResult.totalFiles).toBe(5);
+      });
+
+      it('should provide optimization recommendations', async () => {
+        const result = await largeProjectValidator.processLargeProject(testFiles, 'checksum');
+        
+        expect(result.optimizationDetails).toBeInstanceOf(Array);
+        expect(result.optimizationDetails.length).toBeGreaterThan(0);
+        expect(result.optimizationDetails.some(detail => detail.includes('Memory tracking'))).toBe(true);
+        expect(result.optimizationDetails.some(detail => detail.includes('System metrics monitoring'))).toBe(true);
+      });
+    });
+
+    describe('Large File Set Handling', () => {
+      it('should handle validation operations with expected checksums', async () => {
+        // First calculate checksums
+        const checksumResult = await largeProjectValidator.processLargeProject(testFiles.slice(0, 5), 'checksum');
+        
+        // Create expected checksums map
+        const expectedChecksums: Record<string, string> = {};
+        if (checksumResult.results) {
+          checksumResult.results.forEach((checksum: any, index: number) => {
+            expectedChecksums[testFiles[index]] = checksum.hash;
+          });
+        }
+
+        // Perform validation
+        const validationResult = await largeProjectValidator.processLargeProject(
+          testFiles.slice(0, 5),
+          'validate',
+          { expectedChecksums }
+        );
+
+        expect(validationResult.totalFiles).toBe(5);
+        expect(validationResult.performanceStats.filesPerSecond).toBeGreaterThan(0);
+      });
+
+      it('should handle mixed success/failure scenarios gracefully', async () => {
+        // Mix valid and invalid files
+        const mixedFiles = [
+          ...testFiles.slice(0, 3),
+          join(testDir, 'non-existent-1.txt'),
+          ...testFiles.slice(3, 6),
+          join(testDir, 'non-existent-2.txt')
+        ];
+
+        let errorCount = 0;
+        const result = await largeProjectValidator.processLargeProject(
+          mixedFiles,
+          'checksum',
+          {
+            errorHandler: (error, filePath) => {
+              errorCount++;
+              return true; // Continue processing
+            }
+          }
+        );
+
+        expect(result.totalFiles).toBe(8);
+        expect(errorCount).toBe(2);
+        expect(result.performanceStats.filesPerSecond).toBeGreaterThan(0);
+      });
+    });
+
+    describe('Integration with Existing Features', () => {
+      it('should work with compression enabled', async () => {
+        const compressedValidator = new FileIntegrityValidator({
+          backupDirectory: join(testDir, '.backups-compressed'),
+          enableBatchProcessing: true,
+          enableCompression: true,
+          compressionAlgorithm: 'gzip',
+          batchSize: 3,
+          dynamicBatchSizing: false
+        });
+
+        const result = await compressedValidator.processLargeProject(testFiles.slice(0, 6), 'backup');
+        
+        expect(result.totalFiles).toBe(6);
+        expect(result.optimizationApplied).toBe(true);
+        expect(result.batchesProcessed).toBe(2);
+      });
+
+      it('should work with deduplication enabled', async () => {
+        const dedupValidator = new FileIntegrityValidator({
+          backupDirectory: join(testDir, '.backups-dedup'),
+          enableBatchProcessing: true,
+          enableDeduplication: true,
+          deduplicationDirectory: '.dedup-batch',
+          batchSize: 4,
+          dynamicBatchSizing: false
+        });
+
+        const result = await dedupValidator.processLargeProject(testFiles.slice(0, 8), 'backup');
+        
+        expect(result.totalFiles).toBe(8);
+        expect(result.optimizationApplied).toBe(true);
+        expect(result.batchesProcessed).toBe(2);
+      });
+    });
+  });
 }); 

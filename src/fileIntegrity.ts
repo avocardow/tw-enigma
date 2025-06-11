@@ -5,6 +5,9 @@ import { constants } from 'node:fs';
 import { resolve, basename, extname, join, dirname, relative } from 'node:path';
 import { pipeline } from 'node:stream/promises';
 import { createGzip, createDeflate, createBrotliCompress, createGunzip, createInflate, createBrotliDecompress, constants as zlibConstants } from 'node:zlib';
+import { cpus, loadavg, freemem, totalmem } from 'node:os';
+import { performance } from 'node:perf_hooks';
+import { EventEmitter } from 'node:events';
 import { z } from 'zod';
 import { createLogger } from './logger.js';
 import { ConfigError } from './errors.js';
@@ -109,6 +112,37 @@ export const FileIntegrityOptionsSchema = z.object({
   
   /** Maximum cumulative size multiplier before forcing full backup (default: 5x original) */
   differentialSizeMultiplier: z.number().min(1).default(5),
+  
+  // === BATCH PROCESSING OPTIONS FOR LARGE PROJECTS ===
+  /** Enable batch processing for large file sets (default: true) */
+  enableBatchProcessing: z.boolean().default(true),
+  
+  /** Minimum batch size (default: 10) */
+  minBatchSize: z.number().min(1).default(10),
+  
+  /** Maximum batch size (default: 1000) */
+  maxBatchSize: z.number().min(1).default(1000),
+  
+  /** Enable dynamic batch sizing based on system metrics (default: true) */
+  dynamicBatchSizing: z.boolean().default(true),
+  
+  /** Memory usage threshold for dynamic sizing (percentage, default: 80) */
+  memoryThreshold: z.number().min(1).max(100).default(80),
+  
+  /** CPU usage threshold for dynamic sizing (percentage, default: 70) */
+  cpuThreshold: z.number().min(1).max(100).default(70),
+  
+  /** Event loop lag threshold for dynamic sizing (milliseconds, default: 100) */
+  eventLoopLagThreshold: z.number().min(1).default(100),
+  
+  /** Batch processing strategy (default: 'adaptive') */
+  batchProcessingStrategy: z.enum(['sequential', 'parallel', 'adaptive']).default('adaptive'),
+  
+  /** Enable progress tracking for long-running operations (default: true) */
+  enableProgressTracking: z.boolean().default(true),
+  
+  /** Progress update interval in milliseconds (default: 1000) */
+  progressUpdateInterval: z.number().min(100).default(1000),
 });
 
 /**
@@ -547,6 +581,123 @@ export interface DifferentialBackupResult {
 }
 
 /**
+ * System metrics for dynamic batch sizing
+ */
+export interface SystemMetrics {
+  /** CPU load average (1 minute) */
+  loadAverage: number;
+  /** Memory usage percentage */
+  memoryUsage: number;
+  /** Free memory in bytes */
+  freeMemory: number;
+  /** Total memory in bytes */
+  totalMemory: number;
+  /** Event loop lag in milliseconds */
+  eventLoopLag: number;
+  /** Timestamp when metrics were collected */
+  timestamp: Date;
+}
+
+/**
+ * Batch processing configuration
+ */
+export interface BatchProcessingConfig {
+  /** Current batch size */
+  batchSize: number;
+  /** Processing strategy */
+  strategy: 'sequential' | 'parallel' | 'adaptive';
+  /** Enable dynamic sizing */
+  dynamicSizing: boolean;
+  /** System metrics thresholds */
+  thresholds: {
+    memory: number;
+    cpu: number;
+    eventLoopLag: number;
+  };
+}
+
+/**
+ * Progress tracking information
+ */
+export interface ProgressInfo {
+  /** Current file being processed */
+  currentFile: string;
+  /** Number of files processed */
+  processed: number;
+  /** Total number of files */
+  total: number;
+  /** Progress percentage (0-100) */
+  percentage: number;
+  /** Estimated time of arrival */
+  eta: Date | null;
+  /** Files processed per second */
+  rate: number;
+  /** Elapsed time in milliseconds */
+  elapsed: number;
+  /** Current operation */
+  operation: string;
+  /** Additional context */
+  context?: Record<string, unknown>;
+}
+
+/**
+ * Batch operation result
+ */
+export interface BatchOperationResult<T> {
+  /** Whether the batch operation was successful */
+  success: boolean;
+  /** Individual results for each item in the batch */
+  results: T[];
+  /** Number of successful operations */
+  successful: number;
+  /** Number of failed operations */
+  failed: number;
+  /** Processing time for the entire batch */
+  processingTime: number;
+  /** Batch size used */
+  batchSize: number;
+  /** Any errors encountered */
+  errors: Array<{
+    item: string;
+    error: string;
+  }>;
+  /** Progress information */
+  progress: ProgressInfo;
+}
+
+/**
+ * Large project optimization result
+ */
+export interface LargeProjectResult {
+  /** Total files processed */
+  totalFiles: number;
+  /** Total processing time */
+  totalProcessingTime: number;
+  /** Number of batches processed */
+  batchesProcessed: number;
+  /** Average batch size used */
+  averageBatchSize: number;
+  /** Memory usage statistics */
+  memoryStats: {
+    initial: number;
+    peak: number;
+    final: number;
+    average: number;
+  };
+  /** Performance statistics */
+  performanceStats: {
+    filesPerSecond: number;
+    averageFileProcessingTime: number;
+    eventLoopLagAverage: number;
+    batchSizeAdjustments: number;
+  };
+  /** Whether optimization was applied */
+  optimizationApplied: boolean;
+  /** Optimization details */
+  optimizationDetails: string[];
+}
+
+/**
  * Custom error class for file integrity validation errors
  */
 export class IntegrityError extends Error {
@@ -625,6 +776,24 @@ export class FileIntegrityValidator {
   private differentialIndex: DifferentialIndex | null = null;
   private differentialIndexPath: string;
   
+  // === BATCH PROCESSING & LARGE PROJECT OPTIMIZATION ===
+  private batchProcessingConfig: BatchProcessingConfig;
+  private progressEmitter: EventEmitter = new EventEmitter();
+  private currentBatchSize: number;
+  private eventLoopLagStart: number = 0;
+  private memoryTracker: {
+    initial: number;
+    peak: number;
+    current: number;
+    samples: number[];
+  };
+  private performanceTracker: {
+    filesProcessed: number;
+    totalProcessingTime: number;
+    batchSizeAdjustments: number;
+    eventLoopLagSamples: number[];
+  };
+  
   constructor(options: Partial<FileIntegrityOptions> = {}) {
     // Validate and merge options with defaults
     try {
@@ -648,6 +817,34 @@ export class FileIntegrityValidator {
     
     // Initialize differential backup index path
     this.differentialIndexPath = join(this.options.differentialDirectory, 'differential-index.json');
+    
+    // Initialize batch processing configuration
+    this.currentBatchSize = this.options.batchSize;
+    this.batchProcessingConfig = {
+      batchSize: this.options.batchSize,
+      strategy: this.options.batchProcessingStrategy,
+      dynamicSizing: this.options.dynamicBatchSizing,
+      thresholds: {
+        memory: this.options.memoryThreshold,
+        cpu: this.options.cpuThreshold,
+        eventLoopLag: this.options.eventLoopLagThreshold
+      }
+    };
+    
+    // Initialize performance tracking
+    this.memoryTracker = {
+      initial: this.getCurrentMemoryUsage(),
+      peak: 0,
+      current: 0,
+      samples: []
+    };
+    
+    this.performanceTracker = {
+      filesProcessed: 0,
+      totalProcessingTime: 0,
+      batchSizeAdjustments: 0,
+      eventLoopLagSamples: []
+    };
     
     this.logger.debug('FileIntegrityValidator initialized', {
       algorithm: this.options.algorithm,
@@ -2657,6 +2854,388 @@ export class FileIntegrityValidator {
     };
   }
 
+  // === BATCH PROCESSING & LARGE PROJECT OPTIMIZATION METHODS ===
+
+  /**
+   * Get current system metrics for dynamic batch sizing
+   */
+  private async getCurrentSystemMetrics(): Promise<SystemMetrics> {
+    const startTime = performance.now();
+    
+    // Measure event loop lag
+    setImmediate(() => {
+      const lag = performance.now() - startTime;
+      this.performanceTracker.eventLoopLagSamples.push(lag);
+      if (this.performanceTracker.eventLoopLagSamples.length > 100) {
+        this.performanceTracker.eventLoopLagSamples.shift(); // Keep last 100 samples
+      }
+    });
+
+    const freeMemory = freemem();
+    const totalMemory = totalmem();
+    const memoryUsage = ((totalMemory - freeMemory) / totalMemory) * 100;
+    const loadAverage = loadavg()[0] || 0; // 1-minute load average
+    
+    // Calculate event loop lag from recent samples
+    const recentLag = this.performanceTracker.eventLoopLagSamples.length > 0 
+      ? this.performanceTracker.eventLoopLagSamples.slice(-10).reduce((a, b) => a + b, 0) / Math.min(10, this.performanceTracker.eventLoopLagSamples.length)
+      : 0;
+
+    return {
+      loadAverage,
+      memoryUsage,
+      freeMemory,
+      totalMemory,
+      eventLoopLag: recentLag,
+      timestamp: new Date()
+    };
+  }
+
+  /**
+   * Get current memory usage in MB
+   */
+  private getCurrentMemoryUsage(): number {
+    const usage = process.memoryUsage();
+    return Math.round(usage.heapUsed / 1024 / 1024); // Convert to MB
+  }
+
+  /**
+   * Update memory tracking statistics
+   */
+  private updateMemoryTracking(): void {
+    const current = this.getCurrentMemoryUsage();
+    this.memoryTracker.current = current;
+    this.memoryTracker.samples.push(current);
+    
+    if (current > this.memoryTracker.peak) {
+      this.memoryTracker.peak = current;
+    }
+    
+    // Keep only last 100 samples
+    if (this.memoryTracker.samples.length > 100) {
+      this.memoryTracker.samples.shift();
+    }
+  }
+
+  /**
+   * Dynamically adjust batch size based on system metrics
+   */
+  private async adjustBatchSize(): Promise<number> {
+    if (!this.batchProcessingConfig.dynamicSizing) {
+      return this.currentBatchSize;
+    }
+
+    const metrics = await this.getCurrentSystemMetrics();
+    let newBatchSize = this.currentBatchSize;
+    let adjustmentReason = '';
+
+    // Memory pressure check
+    if (metrics.memoryUsage > this.batchProcessingConfig.thresholds.memory) {
+      newBatchSize = Math.max(
+        this.options.minBatchSize,
+        Math.floor(this.currentBatchSize * 0.7)
+      );
+      adjustmentReason = `High memory usage: ${metrics.memoryUsage.toFixed(1)}%`;
+    }
+    
+    // CPU load check
+    else if (metrics.loadAverage > this.batchProcessingConfig.thresholds.cpu / 100 * cpus().length) {
+      newBatchSize = Math.max(
+        this.options.minBatchSize,
+        Math.floor(this.currentBatchSize * 0.8)
+      );
+      adjustmentReason = `High CPU load: ${metrics.loadAverage.toFixed(2)}`;
+    }
+    
+    // Event loop lag check
+    else if (metrics.eventLoopLag > this.batchProcessingConfig.thresholds.eventLoopLag) {
+      newBatchSize = Math.max(
+        this.options.minBatchSize,
+        Math.floor(this.currentBatchSize * 0.6)
+      );
+      adjustmentReason = `High event loop lag: ${metrics.eventLoopLag.toFixed(1)}ms`;
+    }
+    
+    // Reduce batch size if good conditions (can increase performance)
+    else if (
+      metrics.memoryUsage < this.batchProcessingConfig.thresholds.memory * 0.5 &&
+      metrics.loadAverage < (this.batchProcessingConfig.thresholds.cpu / 100 * cpus().length) * 0.5 &&
+      metrics.eventLoopLag < this.batchProcessingConfig.thresholds.eventLoopLag * 0.5
+    ) {
+      newBatchSize = Math.min(
+        this.options.maxBatchSize,
+        Math.floor(this.currentBatchSize * 1.2)
+      );
+      adjustmentReason = 'Optimal system conditions, increasing batch size';
+    }
+
+    if (newBatchSize !== this.currentBatchSize) {
+      this.logger.debug('Adjusting batch size', {
+        oldSize: this.currentBatchSize,
+        newSize: newBatchSize,
+        reason: adjustmentReason,
+        metrics: {
+          memoryUsage: `${metrics.memoryUsage.toFixed(1)}%`,
+          loadAverage: metrics.loadAverage.toFixed(2),
+          eventLoopLag: `${metrics.eventLoopLag.toFixed(1)}ms`
+        }
+      });
+
+      this.currentBatchSize = newBatchSize;
+      this.performanceTracker.batchSizeAdjustments++;
+    }
+
+    return this.currentBatchSize;
+  }
+
+  /**
+   * Create progress information for batch operations
+   */
+  private createProgressInfo(
+    processed: number,
+    total: number,
+    currentFile: string,
+    operation: string,
+    startTime: number
+  ): ProgressInfo {
+    const elapsed = Date.now() - startTime;
+    const percentage = total > 0 ? (processed / total) * 100 : 0;
+    const rate = elapsed > 0 ? processed / (elapsed / 1000) : 0;
+    const eta = rate > 0 && total > processed 
+      ? new Date(Date.now() + ((total - processed) / rate) * 1000)
+      : null;
+
+    return {
+      currentFile,
+      processed,
+      total,
+      percentage,
+      eta,
+      rate,
+      elapsed,
+      operation,
+      context: {
+        batchSize: this.currentBatchSize,
+        memoryUsage: `${this.getCurrentMemoryUsage()}MB`,
+        batchSizeAdjustments: this.performanceTracker.batchSizeAdjustments
+      }
+    };
+  }
+
+  /**
+   * Emit progress update if progress tracking is enabled
+   */
+  private emitProgress(progressInfo: ProgressInfo): void {
+    if (this.options.enableProgressTracking) {
+      this.progressEmitter.emit('progress', progressInfo);
+      
+      this.logger.debug('Progress update', {
+        operation: progressInfo.operation,
+        percentage: `${progressInfo.percentage.toFixed(1)}%`,
+        processed: progressInfo.processed,
+        total: progressInfo.total,
+        rate: `${progressInfo.rate.toFixed(2)} files/sec`,
+        eta: progressInfo.eta?.toISOString(),
+        currentFile: progressInfo.currentFile
+      });
+    }
+  }
+
+  /**
+   * Process files in batches with dynamic optimization
+   */
+  async processBatchWithOptimization<T>(
+    files: string[],
+    operation: string,
+    processor: (filePath: string) => Promise<T>,
+    options: {
+      progressCallback?: (progress: ProgressInfo) => void;
+      errorHandler?: (error: Error, filePath: string) => boolean; // return true to continue
+      enableProgressTracking?: boolean;
+    } = {}
+  ): Promise<BatchOperationResult<T>> {
+    const startTime = Date.now();
+    const totalFiles = files.length;
+    let processed = 0;
+    let successful = 0;
+    let failed = 0;
+    
+    const results: T[] = [];
+    const errors: Array<{ item: string; error: string }> = [];
+    
+    this.logger.info(`Starting batch operation: ${operation}`, {
+      totalFiles,
+      initialBatchSize: this.currentBatchSize,
+      strategy: this.batchProcessingConfig.strategy
+    });
+
+    // Reset performance tracking for this operation
+    this.updateMemoryTracking();
+    
+    try {
+      for (let i = 0; i < files.length; i += this.currentBatchSize) {
+        // Adjust batch size dynamically before each batch
+        await this.adjustBatchSize();
+        
+        const batchFiles = files.slice(i, i + this.currentBatchSize);
+        const batchStartTime = Date.now();
+        
+        this.logger.debug(`Processing batch ${Math.floor(i / this.currentBatchSize) + 1}`, {
+          batchSize: batchFiles.length,
+          startIndex: i,
+          endIndex: Math.min(i + this.currentBatchSize - 1, files.length - 1)
+        });
+
+        // Process batch based on strategy
+        let batchResults: Array<{ result?: T; error?: string; filePath: string }> = [];
+        
+        if (this.batchProcessingConfig.strategy === 'parallel') {
+          // Parallel processing
+          const promises = batchFiles.map(async (filePath) => {
+            try {
+              const result = await processor(filePath);
+              return { result, filePath };
+            } catch (error) {
+              return { 
+                error: error instanceof Error ? error.message : String(error), 
+                filePath 
+              };
+            }
+          });
+          
+          batchResults = await Promise.all(promises);
+        } else {
+          // Sequential processing (for sequential and adaptive strategies)
+          for (const filePath of batchFiles) {
+            try {
+              const result = await processor(filePath);
+              batchResults.push({ result, filePath });
+            } catch (error) {
+              batchResults.push({ 
+                error: error instanceof Error ? error.message : String(error), 
+                filePath 
+              });
+            }
+          }
+        }
+
+        // Process batch results
+        for (const batchResult of batchResults) {
+          processed++;
+          
+          if (batchResult.error) {
+            failed++;
+            errors.push({ item: batchResult.filePath, error: batchResult.error });
+            
+            // Call error handler if provided
+            if (options.errorHandler) {
+              const shouldContinue = options.errorHandler(
+                new Error(batchResult.error), 
+                batchResult.filePath
+              );
+              if (!shouldContinue) {
+                throw new Error(`Processing stopped due to error in ${batchResult.filePath}: ${batchResult.error}`);
+              }
+            }
+          } else if (batchResult.result !== undefined) {
+            successful++;
+            results.push(batchResult.result);
+          }
+
+          // Update progress
+          const progress = this.createProgressInfo(
+            processed,
+            totalFiles,
+            batchResult.filePath,
+            operation,
+            startTime
+          );
+
+          // Emit progress events
+          this.emitProgress(progress);
+          
+          // Call progress callback if provided
+          if (options.progressCallback) {
+            options.progressCallback(progress);
+          }
+        }
+
+        // Update memory tracking and batch timing
+        this.updateMemoryTracking();
+        const batchTime = Date.now() - batchStartTime;
+        this.performanceTracker.totalProcessingTime += batchTime;
+        
+        this.logger.debug(`Batch completed`, {
+          batchTime: `${batchTime}ms`,
+          filesInBatch: batchFiles.length,
+          successfulInBatch: batchResults.filter(r => !r.error).length,
+          failedInBatch: batchResults.filter(r => r.error).length
+        });
+
+        // Yield control to event loop between batches
+        await new Promise(resolve => setImmediate(resolve));
+      }
+
+      const totalTime = Date.now() - startTime;
+      this.performanceTracker.filesProcessed += processed;
+
+      // Final progress update
+      const finalProgress = this.createProgressInfo(
+        processed,
+        totalFiles,
+        'Complete',
+        operation,
+        startTime
+      );
+      
+      this.emitProgress(finalProgress);
+      if (options.progressCallback) {
+        options.progressCallback(finalProgress);
+      }
+
+      const result: BatchOperationResult<T> = {
+        success: failed === 0,
+        results,
+        successful,
+        failed,
+        processingTime: totalTime,
+        batchSize: this.currentBatchSize,
+        errors,
+        progress: finalProgress
+      };
+
+      this.logger.info(`Batch operation completed: ${operation}`, {
+        totalFiles,
+        successful,
+        failed,
+        processingTime: `${totalTime}ms`,
+        averageTimePerFile: `${(totalTime / processed).toFixed(2)}ms`,
+        batchSizeAdjustments: this.performanceTracker.batchSizeAdjustments,
+        peakMemoryUsage: `${this.memoryTracker.peak}MB`
+      });
+
+      return result;
+
+    } catch (error) {
+      const totalTime = Date.now() - startTime;
+      
+      this.logger.error(`Batch operation failed: ${operation}`, {
+        error: error instanceof Error ? error.message : String(error),
+        processed,
+        totalFiles,
+        processingTime: `${totalTime}ms`
+      });
+
+      throw new IntegrityError(
+        `Batch operation failed: ${error instanceof Error ? error.message : String(error)}`,
+        'BATCH_OPERATION_ERROR',
+        undefined,
+        operation,
+        error as Error
+      );
+    }
+  }
+
   /**
    * Create a backup of a file before modification
    */
@@ -3138,6 +3717,269 @@ export class FileIntegrityValidator {
         error as Error
       );
     }
+  }
+
+  // === HIGH-LEVEL LARGE PROJECT OPTIMIZATION API ===
+
+  /**
+   * Process multiple files with optimized batching for large projects
+   */
+  async processLargeProject(
+    files: string[],
+    operation: 'checksum' | 'validate' | 'backup',
+    options: {
+      progressCallback?: (progress: ProgressInfo) => void;
+      errorHandler?: (error: Error, filePath: string) => boolean;
+      expectedChecksums?: Record<string, string | ChecksumInfo>;
+    } = {}
+  ): Promise<LargeProjectResult> {
+    const startTime = Date.now();
+    this.logger.info('Starting large project processing', {
+      operation,
+      totalFiles: files.length,
+      enableBatchProcessing: this.options.enableBatchProcessing,
+      batchSize: this.currentBatchSize
+    });
+
+    // Initialize tracking
+    const initialMemory = this.getCurrentMemoryUsage();
+    this.memoryTracker.initial = initialMemory;
+    this.memoryTracker.peak = initialMemory;
+    this.memoryTracker.samples = [initialMemory];
+    
+    let batchesProcessed = 0;
+    let totalBatchSize = 0;
+    const optimizationDetails: string[] = [];
+
+    try {
+      let result: BatchOperationResult<any>;
+      
+      if (operation === 'checksum') {
+        result = await this.processBatchWithOptimization(
+          files,
+          'Large Project Checksum Calculation',
+          async (filePath: string) => this.calculateChecksum(filePath),
+          options
+        );
+      } else if (operation === 'validate') {
+        if (!options.expectedChecksums) {
+          throw new ValidationError('Expected checksums required for validation operation');
+        }
+        
+        const validationFiles = files.map(filePath => ({
+          path: filePath,
+          expectedChecksum: options.expectedChecksums![filePath]
+        })).filter(file => file.expectedChecksum !== undefined);
+
+        result = await this.processBatchWithOptimization(
+          validationFiles.map(f => f.path),
+          'Large Project Validation',
+          async (filePath: string) => {
+            const expectedChecksum = options.expectedChecksums![filePath];
+            return this.validateFile(filePath, expectedChecksum);
+          },
+          options
+        );
+      } else if (operation === 'backup') {
+        result = await this.processBatchWithOptimization(
+          files,
+          'Large Project Backup',
+          async (filePath: string) => this.createBackup(filePath),
+          options
+        );
+      } else {
+        throw new IntegrityError(`Unsupported operation: ${operation}`, 'UNSUPPORTED_OPERATION');
+      }
+
+      // Calculate statistics
+      const finalMemory = this.getCurrentMemoryUsage();
+      const totalTime = Date.now() - startTime;
+      batchesProcessed = Math.ceil(files.length / this.currentBatchSize);
+      totalBatchSize = this.currentBatchSize * batchesProcessed;
+      
+      const averageMemory = this.memoryTracker.samples.length > 0 
+        ? this.memoryTracker.samples.reduce((a, b) => a + b, 0) / this.memoryTracker.samples.length
+        : initialMemory;
+
+      const averageEventLoopLag = this.performanceTracker.eventLoopLagSamples.length > 0
+        ? this.performanceTracker.eventLoopLagSamples.reduce((a, b) => a + b, 0) / this.performanceTracker.eventLoopLagSamples.length
+        : 0;
+
+      // Add optimization details
+      if (this.options.enableBatchProcessing) {
+        optimizationDetails.push(`Batch processing enabled with adaptive sizing (initial: ${this.options.batchSize}, final: ${this.currentBatchSize})`);
+      }
+      
+      if (this.performanceTracker.batchSizeAdjustments > 0) {
+        optimizationDetails.push(`Dynamic batch size adjustments: ${this.performanceTracker.batchSizeAdjustments}`);
+      }
+      
+      if (this.options.enableProgressTracking) {
+        optimizationDetails.push('Progress tracking enabled for user feedback');
+      }
+      
+      optimizationDetails.push(`Memory tracking: ${initialMemory}MB → ${this.memoryTracker.peak}MB (peak) → ${finalMemory}MB`);
+      optimizationDetails.push(`System metrics monitoring: CPU load, memory pressure, event loop lag`);
+
+      const largeProjectResult: LargeProjectResult = {
+        totalFiles: files.length,
+        totalProcessingTime: totalTime,
+        batchesProcessed,
+        averageBatchSize: totalBatchSize / batchesProcessed,
+        memoryStats: {
+          initial: initialMemory,
+          peak: this.memoryTracker.peak,
+          final: finalMemory,
+          average: averageMemory
+        },
+        performanceStats: {
+          filesPerSecond: (files.length / totalTime) * 1000,
+          averageFileProcessingTime: totalTime / files.length,
+          eventLoopLagAverage: averageEventLoopLag,
+          batchSizeAdjustments: this.performanceTracker.batchSizeAdjustments
+        },
+        optimizationApplied: this.options.enableBatchProcessing || this.options.enableProgressTracking,
+        optimizationDetails
+      };
+
+      this.logger.info('Large project processing completed', {
+        operation,
+        ...largeProjectResult
+      });
+
+      return largeProjectResult;
+
+    } catch (error) {
+      this.logger.error('Large project processing failed', {
+        operation,
+        error: error instanceof Error ? error.message : String(error),
+        filesProcessed: this.performanceTracker.filesProcessed,
+        batchesProcessed
+      });
+
+      throw new IntegrityError(
+        `Large project processing failed: ${error instanceof Error ? error.message : String(error)}`,
+        'LARGE_PROJECT_ERROR',
+        undefined,
+        operation,
+        error as Error
+      );
+    }
+  }
+
+  /**
+   * Get comprehensive statistics for large project optimization
+   */
+  async getLargeProjectStats(): Promise<{
+    batchProcessing: {
+      enabled: boolean;
+      currentBatchSize: number;
+      strategy: string;
+      dynamicSizing: boolean;
+      adjustments: number;
+    };
+    memoryTracking: {
+      current: number;
+      peak: number;
+      samples: number;
+      average: number;
+    };
+    performance: {
+      filesProcessed: number;
+      totalProcessingTime: number;
+      averageFileProcessingTime: number;
+      eventLoopLagSamples: number;
+      averageEventLoopLag: number;
+    };
+    systemMetrics: SystemMetrics;
+    progressTracking: {
+      enabled: boolean;
+      updateInterval: number;
+    };
+  }> {
+    const currentMetrics = await this.getCurrentSystemMetrics();
+    const averageMemory = this.memoryTracker.samples.length > 0
+      ? this.memoryTracker.samples.reduce((a, b) => a + b, 0) / this.memoryTracker.samples.length
+      : this.memoryTracker.current;
+    
+    const averageEventLoopLag = this.performanceTracker.eventLoopLagSamples.length > 0
+      ? this.performanceTracker.eventLoopLagSamples.reduce((a, b) => a + b, 0) / this.performanceTracker.eventLoopLagSamples.length
+      : 0;
+
+    const averageFileProcessingTime = this.performanceTracker.filesProcessed > 0
+      ? this.performanceTracker.totalProcessingTime / this.performanceTracker.filesProcessed
+      : 0;
+
+    return {
+      batchProcessing: {
+        enabled: this.options.enableBatchProcessing,
+        currentBatchSize: this.currentBatchSize,
+        strategy: this.batchProcessingConfig.strategy,
+        dynamicSizing: this.batchProcessingConfig.dynamicSizing,
+        adjustments: this.performanceTracker.batchSizeAdjustments
+      },
+      memoryTracking: {
+        current: this.memoryTracker.current,
+        peak: this.memoryTracker.peak,
+        samples: this.memoryTracker.samples.length,
+        average: averageMemory
+      },
+      performance: {
+        filesProcessed: this.performanceTracker.filesProcessed,
+        totalProcessingTime: this.performanceTracker.totalProcessingTime,
+        averageFileProcessingTime,
+        eventLoopLagSamples: this.performanceTracker.eventLoopLagSamples.length,
+        averageEventLoopLag
+      },
+      systemMetrics: currentMetrics,
+      progressTracking: {
+        enabled: this.options.enableProgressTracking,
+        updateInterval: this.options.progressUpdateInterval
+      }
+    };
+  }
+
+  /**
+   * Reset performance tracking statistics
+   */
+  resetPerformanceTracking(): void {
+    this.performanceTracker = {
+      filesProcessed: 0,
+      totalProcessingTime: 0,
+      batchSizeAdjustments: 0,
+      eventLoopLagSamples: []
+    };
+    
+    const currentMemory = this.getCurrentMemoryUsage();
+    this.memoryTracker = {
+      initial: currentMemory,
+      peak: currentMemory,
+      current: currentMemory,
+      samples: [currentMemory]
+    };
+    
+    this.logger.debug('Performance tracking statistics reset');
+  }
+
+  /**
+   * Add progress event listener for long-running operations
+   */
+  onProgress(callback: (progress: ProgressInfo) => void): void {
+    this.progressEmitter.on('progress', callback);
+  }
+
+  /**
+   * Remove progress event listener
+   */
+  offProgress(callback: (progress: ProgressInfo) => void): void {
+    this.progressEmitter.removeListener('progress', callback);
+  }
+
+  /**
+   * Remove all progress event listeners
+   */
+  removeAllProgressListeners(): void {
+    this.progressEmitter.removeAllListeners('progress');
   }
 }
 
