@@ -3,7 +3,7 @@ description:
 globs:
 alwaysApply: false
 ---
-# Workflow State (STM) - [2025-01-20 18:41:00]
+# Workflow State (STM) - [2025-01-20 17:25:00]
 
 ## 🚨 CRITICAL COMMAND TIMEOUT REMINDERS
 **BEFORE EVERY COMMAND EXECUTION:**
@@ -24,270 +24,151 @@ alwaysApply: false
 - Autonomously process tasks using available task management systems (preferably Task-Master), implement solutions following project standards, validate implementation, and commit changes.
 
 ## 1. State
-- **Phase:** `CONSTRUCT`
-- **Status:** `PLAN_APPROVED`
+- **Phase:** `COMMITTING`
+- **Status:** `ACTIVE`
 
 ## 2. Current Task
-- **Task ID/Raw Output:** Task 35: "Set up continuous integration and deployment"
-- **Parsed Task Description:** Implement CI/CD pipeline for automated testing, npm publishing, coverage reporting, dependency updates, and release notes
-- **Implementation Priority:** `medium`
-- **Dependencies:** Task 19 ✅, Task 33 ✅
-- **Complexity Assessment:** `high` - 7 subtasks, CI/CD setup, GitHub Actions, automated publishing
-- **Estimated Files to Modify:** .github/workflows/, package.json scripts, coverage config, dependency bot config
-- **Checkpoint Markers:** GitHub Actions workflow creation, npm token setup, coverage integration
+- **Task ID/Raw Output:** Task 25: "Develop framework detection mechanism"
+- **Parsed Task Description:** Create a system to detect the framework used in the project for optimized processing, including React, Next.js, and Vite detection with package.json analysis
+- **Implementation Priority:** `low`
+- **Dependencies:** Task 4 ✅ (File Discovery - completed)
+- **Complexity Assessment:** `moderate-high` - 6 subtasks, framework-specific logic, package analysis, multi-framework support
+- **Estimated Files to Modify:** 8-10 files (new frameworkDetector module, package parsers, tests, integration updates)
+- **Checkpoint Markers:** None identified for this task
+- **Status:** `IMPLEMENTING_STEP_1`
 
 ## 3. Plan
-### High-Level Goal
-Prepare the project for seamless npm publishing while following best-practice package conventions, ensuring consumers receive correct entry points, typings, and source files only.
+### Task 25 Implementation Plan: Framework Detection Mechanism
 
-### Step-by-Step Plan
-1. Audit existing package.json metadata (name, description, keywords, author, repository, bugs, engines) → update/add missing fields.
-2. Add "types": "dist/index.d.ts" and ensure tsup generates declaration files.
-3. Configure "exports" map for both ESM (./dist/index.js) and CJS (./dist/index.cjs) plus type exports.
-4. Define "files" array to include only dist, README.md, LICENSE.
-5. Create .npmignore excluding tests, snapshots, scripts, docs, vitest config, .env*, etc.
-6. Refactor npm scripts:
-   • build (tsup --dts)
-   • prepublishOnly → run lint, test, build
-   • add "pack" script to run `npm pack --dry-run` for validation
-7. Implement semantic versioning workflow:
-   • Add changesets dependency + config
-   • Add "version": "changeset version && pnpm lint && pnpm test && pnpm build" script
-8. Update README publishing section with npm install instructions (out of scope for code change).
-9. Tests:
-   • Use vitest to pack `npm pack` tarball and assert structure (integration test).
+**Overall Goal:** Create a comprehensive, centralized framework detection system that can identify React, Next.js, Vite, and other frameworks from project configuration and code analysis.
 
-### Checkpoints
-- After metadata update & exports configuration ➜ verify `node -e "require('.')"` and `import pkg from 'tw-enigma'` succeed.
-- After npm pack integration test passes ➜ ready to commit.
+**Step 1: Analysis and Architecture Design** [30 minutes]
+- Review existing framework detection in `jsExtractor.ts` and `jsRewriter.ts`
+- Analyze task subtasks for comprehensive requirements understanding
+- Design centralized `FrameworkDetector` architecture with modular detectors
+- Define interfaces for framework metadata and detection results
+- Plan integration points with existing systems
 
-### Rollback Strategy
-Git commit before modifications; revert commit if npm pack validation fails.
+**Step 2: Core Framework Detector Implementation** [45 minutes]
+- Create `src/frameworkDetector.ts` with main `FrameworkDetector` class
+- Implement base interfaces: `FrameworkInfo`, `DetectionContext`, `DetectionResult`
+- Create modular detector system for individual frameworks
+- Implement configuration sources analysis (package.json, config files, dependencies)
+- Add framework-specific pattern matching and heuristics
 
-### Estimated files
-package.json, .npmignore, README.md, .changeset/config.json, scripts (optional), tests/package-structure.test.ts.
+**Step 3: Framework-Specific Detection Logic** [60 minutes]
+- Implement React detector (imports, JSX patterns, React-specific packages)
+- Implement Next.js detector (next.config.js, pages/ directory, Next.js packages)
+- Implement Vite detector (vite.config.js, Vite-specific packages, build patterns)
+- Implement Angular detector (@angular packages, angular.json, component decorators)
+- Implement Vue detector (Vue imports, .vue files, Vue packages)
+- Add fallback detection for unknown frameworks
+
+**Step 4: Package and Dependency Analysis** [30 minutes]
+- Create package.json parser with dependency analysis
+- Implement dependency tree analysis for indirect framework detection
+- Add version detection and compatibility checking
+- Handle mono-repo and multi-package scenarios
+- Add caching for performance optimization
+
+**Step 5: Multi-Framework and Configuration Support** [30 minutes]
+- Implement multi-framework project detection (e.g., Storybook + React)
+- Add configuration file analysis (webpack, babel, tsconfig, etc.)
+- Implement priority-based framework ranking
+- Add confidence scoring for detection results
+- Handle edge cases and ambiguous scenarios
+
+**Step 6: Integration and Testing** [45 minutes]
+- Integrate with existing `jsExtractor.ts` and `jsRewriter.ts`
+- Replace scattered framework detection with centralized system
+- Create comprehensive unit tests with mock project structures
+- Add integration tests with real framework detection scenarios
+- Test performance with large projects and complex configurations
+
+**Step 7: CLI Integration and Documentation** [20 minutes]
+- Add framework detection to CLI commands where relevant
+- Update configuration options to support framework-specific behavior
+- Add debug/verbose output for framework detection process
+- Document framework detection capabilities and limitations
+
+**Testing Strategy:**
+- Unit tests: Mock file systems with various framework configurations
+- Integration tests: Real project structures for each supported framework
+- Performance tests: Large mono-repos and complex dependency trees
+- Edge case tests: Mixed frameworks, missing configs, malformed files
+
+**Files to Create/Modify:**
+- **New:** `src/frameworkDetector.ts` (main detector)
+- **New:** `src/detectors/reactDetector.ts` (React-specific detection)
+- **New:** `src/detectors/nextjsDetector.ts` (Next.js-specific detection) 
+- **New:** `src/detectors/viteDetector.ts` (Vite-specific detection)
+- **New:** `src/detectors/angularDetector.ts` (Angular-specific detection)
+- **New:** `src/detectors/vueDetector.ts` (Vue-specific detection)
+- **New:** `src/utils/packageAnalyzer.ts` (package.json analysis)
+- **New:** `tests/frameworkDetector.test.ts` (comprehensive tests)
+- **Update:** `src/jsExtractor.ts` (integrate centralized detection)
+- **Update:** `src/jsRewriter.ts` (integrate centralized detection)
+- **Update:** `src/index.ts` (export new framework detection APIs)
+
+**Rollback Plan:** Keep existing scattered detection as fallback during integration, only remove after full validation
+
+## 4. Rules for Current Phase
+
+---
+**Phase: `COMPLETED_ITERATION` (Enhanced Completion)**
+- **🚨 TIMEOUT PROTECTION:** Task-Master commands have 30s timeout! Set is_background=false.
+- **Action:**
+    1. ✅ Mark task complete using `task-master set-status --id=28 --status=done`
+    2. ✅ Clear task-specific data for next iteration
+    3. Archive current action log if needed (RULE_LOG_ROTATE_01)
+    4. Update progress tracking and metrics
+    5. Clean up temporary files and backup states
+- **Log:** "Task 28 completed successfully - full dry run mode implementation with CLI integration"
+- **Next Step:** Set `Phase = FETCHING_TASK` to continue with next task (Task 25)
 
 ---
 
-Plan ready for approval. Please review and confirm to proceed.
-
-## 4. Implementation
-- **Task 39: Comprehensive Configuration Validation and Safety System Implementation Plan**
-
-**Context Analysis:**
-- Current State: Robust config system exists with Zod validation (src/config.ts, 856 lines)
-- Existing Features: Schema validation, file loading, CLI args merging, error handling
-- Missing: File watching, migration system, backup/restore, runtime validation, safety checks
-- Integration: Extend existing system rather than replace - maintain backward compatibility
-
-**Phase 1: Enhanced Schema and Runtime Validation (Steps 1-2)**
-- **Step 1.1:** Extend EnigmaConfigSchema with enhanced constraint validation
-  - Add performance impact detection (memory thresholds, concurrency limits)
-  - Add security constraint validation (path traversal prevention, file size limits)
-  - Add cross-field validation rules (ensure output != input, validate dependency paths)
-  - Create ConfigConstraintSchema with custom validation functions
-
-- **Step 1.2:** Implement Runtime Configuration Monitor
-  - Create `src/configValidator.ts` - runtime validation system
-  - Add live configuration state tracking and validation
-  - Implement constraint violation detection during execution
-  - Add performance impact monitoring and warnings
-
-**Phase 2: File Watching and Live Validation (Step 3)**
-- **Step 2.1:** Create Configuration File Watcher
-  - Implement `src/configWatcher.ts` using chokidar for cross-platform watching
-  - Add debounced file change detection
-  - Implement immediate validation on config file changes
-  - Add real-time error reporting and user notifications
-
-- **Step 2.2:** Live Validation Integration
-  - Integrate watcher with existing loadConfig system
-  - Add configuration reload and validation pipeline
-  - Implement graceful error handling for live changes
-
-**Phase 3: Safety and Fallback System (Step 4)**
-- **Step 3.1:** Enhanced Default and Fallback System
-  - Create `src/configDefaults.ts` - intelligent defaults management
-  - Implement context-aware default value calculation
-  - Add automatic fallback for invalid/dangerous configurations
-  - Create safe mode configuration profiles
-
-- **Step 3.2:** Configuration Safety Validator
-  - Add pre-execution safety checks (disk space, permissions, paths)
-  - Implement configuration impact analysis
-  - Add warnings for potentially dangerous settings
-
-**Phase 4: Migration and Version Management (Step 5)**
-- **Step 4.1:** Configuration Migration System
-  - Create `src/configMigration.ts` - version-aware migration system
-  - Implement configuration version detection and upgrade paths
-  - Add backward compatibility layer for older config formats
-  - Create migration scripts for major configuration changes
-
-- **Step 4.2:** Migration Utilities and Helpers
-  - Add CLI command for configuration migration
-  - Implement automatic migration with user confirmation
-  - Add deprecation warnings and upgrade guidance
-
-**Phase 5: Backup and Recovery System (Step 7)**
-- **Step 5.1:** Configuration Backup System
-  - Create `src/configBackup.ts` - automatic backup management
-  - Implement timestamped configuration backups
-  - Add backup retention and cleanup policies
-  - Create backup integrity verification
-
-- **Step 5.2:** Recovery and Rollback Features
-  - Add configuration recovery from backup
-  - Implement quick rollback functionality
-  - Add configuration comparison and diff utilities
-
-**Phase 6: Performance and Impact Analysis (Step 6)**
-- **Step 6.1:** Configuration Performance Analyzer
-  - Add performance impact assessment for configuration changes
-  - Implement resource usage prediction
-  - Add optimization suggestions and warnings
-
-**Phase 7: Comprehensive Testing System (Step 8)**
-- **Step 7.1:** Enhanced Test Suite
-  - Extend existing tests/config.test.ts with new functionality
-  - Add file watching tests and live validation scenarios
-  - Create migration testing with sample configurations
-  - Add backup/recovery integration tests
-
-- **Step 7.2:** Configuration Lifecycle Testing
-  - Test full configuration lifecycle (load → validate → watch → migrate → backup)
-  - Add stress testing for file watching and live validation
-  - Create error recovery and fallback testing scenarios
-
-**Implementation Order:**
-1. Phase 1: Enhanced Schema + Runtime Validation (2-3 files)
-2. Phase 3: Safety + Fallback System (1-2 files) 
-3. Phase 2: File Watching + Live Validation (1-2 files)
-4. Phase 4: Migration System (1-2 files)
-5. Phase 5: Backup + Recovery (1-2 files)
-6. Phase 6: Performance Analysis (integrate into existing)
-7. Phase 7: Comprehensive Testing (extend existing)
-
-**Key Files to Create/Modify:**
-- `src/configValidator.ts` (new) - Runtime validation and monitoring
-- `src/configWatcher.ts` (new) - File watching and live validation
-- `src/configDefaults.ts` (new) - Enhanced defaults and safety
-- `src/configMigration.ts` (new) - Migration system
-- `src/configBackup.ts` (new) - Backup and recovery
-- `src/config.ts` (extend) - Integration points and new exports
-- `tests/configValidation.test.ts` (new) - Comprehensive test suite
-- `tests/config.test.ts` (extend) - Enhanced existing tests
-
-**Dependencies and Integration:**
-- Add chokidar for file watching
-- Extend existing Zod schemas
-- Maintain backward compatibility
-- Integrate with existing logger system
-- Use existing error handling patterns
-
-**Risk Mitigation:**
-- Implement feature flags for gradual rollout
-- Maintain existing API compatibility
-- Add comprehensive error handling
-- Include rollback mechanisms for all changes
-
-**Success Criteria:**
-- All existing config functionality preserved
-- Live validation working with immediate feedback
-- Migration system handles version upgrades seamlessly
-- Backup/recovery works reliably
-- Performance impact detection functional
-- 95%+ test coverage for new functionality
-- Zero breaking changes to existing API
-
 ## 5. Items (Context & Resources)
-- **Context7 Queries & Summaries:**
-    - Query: `tailwindcss` -> Library ID: `/tailwindlabs/tailwindcss.com` (2078 code snippets, Trust Score 8)
-    - Query: `class validation configuration API` -> Summary: `Comprehensive documentation on Tailwind class detection, JIT mode, safelist configuration, custom extraction logic, and @source directives for explicit class management`
-    - Query: `class extraction validation JIT mode utilities configuration` -> Summary: `Detailed patterns for class validation including purge safelist, custom extract functions, JIT mode configuration, and dynamic class name handling strategies`
-    - Freshness: `Current - official Tailwind CSS documentation with latest v4 patterns`
-- **Key Validation Patterns Identified:**
-    - **Safelist Configuration**: `module.exports = { purge: { safelist: [...] } }` for explicit class inclusion
-    - **JIT Mode**: Complete class names required, no regex patterns
-    - **Custom Extract Logic**: `extract: { pug: (content) => {...} }` for custom parsers
-    - **@source Directives**: `@source inline("class-name")` for explicit inclusion/exclusion
-    - **Dynamic Class Prevention**: Avoid `bg-${color}-600`
-
-## 7. Backup Log (File Safety Tracking)
-- **Backup ID:** `20250120-task4` - **Files:** `src/fileDiscovery.ts (new), src/index.ts, src/config.ts, bin/enigma.ts, tests/fileDiscovery.test.ts (new), tests/cli.test.ts, tests/config.test.ts` - **Reason:** `Task 4 file discovery implementation`
-- **Backup ID:** `20250120-task24-start` - **Files:** `src/cssInjector.ts` - **Reason:** `Task 24 path utilities extraction - backing up CSS injector before refactoring`
-- **Rollback Points:** `Previous commit before Task 4 changes, Current working state before Task 24`
-- **Change Summary:** `Added glob-based file discovery system with comprehensive configuration and testing. Starting path utilities enhancement.`
+- **Task Dependencies Verified:**
+    - Task 13: ✅ COMPLETED - Required for CSS output integration
+    - Task 14: ✅ COMPLETED - Required for output optimization  
+    - Task 15: ✅ COMPLETED - Required for CSS injection features
+- **Task Complexity Analysis:**
+    - **Successfully Completed:** 6 detailed subtasks with comprehensive implementation
+    - **Test Coverage:** 8/8 tests passing with comprehensive scenarios
+    - **Integration:** Full CLI integration with existing CSS optimization workflow
+- **Technical Achievements:**
+    - Complete virtual file system with operation tracking
+    - Performance metrics calculation with proper handling of fast operations
+    - Multi-format reporting with insights and recommendations
+    - CLI integration with css-optimize command
+    - Global dry run utilities for any operation
+- **External Resources:**
+    - TypeScript patterns for file system abstractions
+    - Performance testing methodologies for fast operations
+    - CLI design patterns for simulation modes
+- **Error Context:**
+    - Fixed performance metrics calculation for sub-millisecond operations
+    - Resolved TypeScript interface compatibility issues
+    - All integration tests passing
+- **Command Timeout Tracking:**
+    - Recent timeouts: None
+    - Performance degradation: None
+    - Environment issues: None
 
 ## 6. Log (Action Log for Current Task)
-- `[2025-01-20 22:45:00]` - `TASK_VALIDATION` - `New Task 39 Received` - `Configuration validation system task identified with 8 implementation steps`
-- `[2025-01-20 22:46:00]` - `TASK_VALIDATION` - `Task Analysis Complete` - `High complexity, builds on Task 3, requires schema validation, file watching, migration system`
-- `[2025-01-20 22:47:00]` - `TASK_VALIDATION` - `Validation Complete` - `Task is well-formed, dependencies satisfied (Task 3 ✅), high complexity acknowledged - proceeding to BLUEPRINT`
-- `[2025-01-20 22:48:00]` - `BLUEPRINT` - `Analysis Phase Started` - `Examining existing config system from Task 3 to understand current implementation`
-- `[2025-01-20 22:49:00]` - `BLUEPRINT` - `System Analysis Complete` - `Analyzed src/config.ts (856 lines), existing Zod validation, cosmiconfig integration, test coverage`
-- `[2025-01-20 22:50:00]` - `BLUEPRINT` - `Implementation Plan Created` - `7-phase plan: Enhanced validation, file watching, safety system, migration, backup/recovery, performance analysis, testing`
+- `[2025-01-20 01:22:00]` - `CONSTRUCT` - `Step 6: CLI Integration completed` - `Added dry-run support to css-optimize command with report generation and exit codes`
+- `[2025-01-20 01:24:00]` - `VALIDATE` - `Initial test run completed` - `7/8 tests passing, 1 performance metrics test failing`
+- `[2025-01-20 01:25:00]` - `DEBUGGING_VALIDATE` - `Performance metrics debugging` - `Identified execution time calculation issue in createDryRunReport`
+- `[2025-01-20 01:26:00]` - `DEBUGGING_VALIDATE` - `Fixed execution time parameter` - `Added executionTime parameter to createDryRunReport call`
+- `[2025-01-20 01:27:00]` - `DEBUGGING_VALIDATE` - `Fixed TypeScript errors` - `Added dryRun property to CliArguments interface and fixed environment type assertion`
+- `[2025-01-20 01:28:00]` - `DEBUGGING_VALIDATE` - `Fixed performance calculation` - `Handled very fast operations by ensuring minimum 1ms execution time for calculations`
+- `[2025-01-20 01:29:00]` - `VALIDATE` - `All tests passing` - `8/8 tests passing, dry run system fully functional`
+- `[2025-01-20 01:30:00]` - `COMPLETED_ITERATION` - `Task 28 marked as done` - `Comprehensive dry run mode implementation completed successfully`
 
-## 8. Task 24 Completion Summary
+## 7. Backup Log (File Safety Tracking)
+- **Backup ID:** `20250120-task25` - **Files:** `src/frameworkDetector.ts (new), src/detectors/ (new directory), src/utils/packageAnalyzer.ts (new), src/jsExtractor.ts, src/jsRewriter.ts, src/index.ts, tests/frameworkDetector.test.ts (new)` - **Reason:** `Task 25 framework detection mechanism implementation`
+- **Rollback Points:** `Current commit before Task 25 changes`
+- **Change Summary:** `Centralized framework detection system with modular detectors and package analysis`
 
-**✅ Task 24: "Implement relative path calculation for CSS references" - COMPLETED**
-
-**Implementation Overview:**
-Successfully enhanced the project's path calculation system by creating a comprehensive, reusable PathUtils module and integrating it with the existing CSS injection system. This implementation goes beyond the original requirements to provide a robust, enterprise-grade path manipulation system.
-
-**Key Deliverables:**
-
-**1. Enhanced PathUtils Module (`src/pathUtils.ts`)**
-- **450+ lines** of comprehensive path manipulation utilities
-- **Zod schema validation** for configuration options
-- **Cross-platform compatibility** (Windows/Unix path handling)
-- **Security features**: Path traversal protection, null byte detection, suspicious character detection
-- **LRU caching system** with 1000 entry limit for performance optimization
-- **Custom error classes**: PathUtilsError, PathSecurityError, PathValidationError
-- **Factory functions** for quick operations
-- **Batch processing** capabilities for multiple path calculations
-
-**2. Comprehensive Test Suite (`tests/pathUtils.test.ts`)**
-- **63 test cases** with 100% pass rate
-- **Cross-platform testing** (Windows/Unix paths)
-- **Security scenario testing** (path traversal, injection attempts)
-- **Performance testing** (caching, batch operations)
-- **Edge case coverage** (empty paths, special characters, deep nesting)
-- **Integration scenarios** (web projects, monorepos, build tools)
-
-**3. CSS Injector Integration**
-- **Successfully replaced** private `calculateRelativePath()` and `normalizePath()` methods
-- **Maintained backward compatibility** - all existing CSS injector tests pass (35/35)
-- **Enhanced error handling** with PathUtils validation
-- **Improved security** through integrated path validation
-- **Better absolute path handling** for web environments
-
-**Technical Achievements:**
-- **Enhanced Security**: Comprehensive path validation and sanitization
-- **Performance Optimization**: LRU caching with configurable limits
-- **Cross-Platform Support**: Handles Windows/Unix path differences seamlessly
-- **Type Safety**: Full TypeScript implementation with Zod schemas
-- **Error Handling**: Custom error classes with detailed error information
-- **Extensibility**: Factory functions and utility methods for project-wide reuse
-
-**Quality Metrics:**
-- **Test Coverage**: 63/63 tests passing (100%)
-- **Integration Success**: 35/35 CSS injector tests passing (100%)
-- **Code Quality**: TypeScript strict mode, comprehensive error handling
-- **Performance**: Caching system verified to handle 1000+ operations efficiently
-- **Security**: All path traversal and injection protection tests passing
-
-**Files Modified/Created:**
-- ✅ **Created**: `src/pathUtils.ts` (450+ lines)
-- ✅ **Created**: `tests/pathUtils.test.ts` (63 test cases)
-- ✅ **Modified**: `src/cssInjector.ts` (integrated PathUtils)
-- ✅ **Verified**: All existing CSS injector functionality maintained
-
-**Next Steps Available:**
-- Path utilities can be used throughout the project for consistent path handling
-- Security features provide protection for user-provided paths
-- Caching system can be leveraged for performance-critical path operations
-- Factory functions enable easy adoption by other modules
-
-**Task Status: ✅ COMPLETE - All requirements met and exceeded**
-
-**Next Task:** Ready to identify and begin next task from task management system
+- **Backup ID:** `20250120-task28` - **Files:** `src/dryRun/ entire directory, bin/enigma.ts, src/config.ts, tests/dryRun/ entire directory` - **Reason:** `Task 28 dry run mode implementation`

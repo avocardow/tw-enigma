@@ -180,4 +180,24 @@ export {
   CacheError,
 } from './nameGeneration.js';
 
+// Framework Detection
+export {
+  FrameworkDetector,
+  createFrameworkDetector,
+  detectFramework,
+  FrameworkDetectionError,
+  type FrameworkType,
+  type FrameworkInfo,
+  type DetectionResult,
+  type DetectionContext,
+  type DetectionSource,
+  type IFrameworkDetector,
+  type FrameworkDetectorOptions,
+} from './frameworkDetector.js';
+
+// Framework-specific detectors
+export { ReactDetector } from './detectors/reactDetector.js';
+export { NextjsDetector } from './detectors/nextjsDetector.js';
+export { ViteDetector } from './detectors/viteDetector.js';
+
 // #endregion 

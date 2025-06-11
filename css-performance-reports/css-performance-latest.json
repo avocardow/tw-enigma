@@ -1,0 +1,60 @@
+{
+  "metadata": {
+    "timestamp": "2025-01-20T12:00:00.000Z",
+    "version": "1.0.0",
+    "environment": "production",
+    "configHash": "abc123"
+  },
+  "metrics": {
+    "totalOriginalSize": 100000,
+    "totalOptimizedSize": 70000,
+    "totalCompressedSize": 30000,
+    "bundleCount": 2,
+    "totalChunkCount": 5,
+    "overallCompressionRatio": 0.7,
+    "totalCriticalCssSize": 10000,
+    "averageLoadTime": 1500,
+    "totalOptimizationTime": 200,
+    "performanceScore": 85,
+    "bundles": []
+  },
+  "budgetAnalysis": {
+    "passed": false,
+    "violations": [
+      {
+        "type": "bundle_size",
+        "actual": 60000,
+        "limit": 50000,
+        "severity": "error",
+        "message": "Bundle exceeds size limit",
+        "recommendations": [
+          "Optimize CSS"
+        ]
+      }
+    ],
+    "score": 100
+  },
+  "recommendations": [],
+  "configuration": {
+    "strategy": "chunked",
+    "chunking": {
+      "strategy": "route",
+      "minSize": 10240,
+      "maxSize": 102400,
+      "targetCount": 5
+    },
+    "optimization": {
+      "minify": true,
+      "removeUnused": true,
+      "enableSourceMaps": false
+    },
+    "compression": {
+      "gzip": true,
+      "brotli": true,
+      "level": 9
+    },
+    "environment": "production"
+  },
+  "assets": [],
+  "chunkAnalysis": []
+}

@@ -2221,7 +2221,7 @@
         14,
         15
       ],
-      "status": "pending",
+      "status": "done",
       "subtasks": [
         {
           "id": 1,
@@ -2229,7 +2229,7 @@
           "description": "Add dry run mode flag to the command line interface",
           "dependencies": [],
           "details": "Implement a '--dry-run' flag with alias '-d' that enables simulation mode. Follow CLI design best practices by adding proper documentation, help text, and ensuring the flag works consistently with other existing flags. Update the command parsing logic to detect and process this flag.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 2,
@@ -2239,7 +2239,7 @@
             1
           ],
           "details": "Develop an abstraction layer that intercepts all file system operations (read, write, delete, etc.) and simulates them in memory when dry run mode is active. Implement proper state tracking to maintain consistency throughout the simulation. Ensure the mock system accurately reflects what would happen in a real execution.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 3,
@@ -2249,7 +2249,7 @@
             2
           ],
           "details": "Implement the simulation engine that processes all operations through the mock file system. Create hooks for all state-changing operations to route them through the simulation layer when dry run is enabled. Ensure all potential side effects are captured and simulated, including error conditions and edge cases.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 4,
@@ -2259,7 +2259,7 @@
             3
           ],
           "details": "Create a statistics module that tracks and aggregates metrics during simulation, including counts of files modified, created, or deleted, execution time estimates, and resource usage projections. Implement categorization of changes by type and severity to provide meaningful insights in the preview report.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 5,
@@ -2270,7 +2270,7 @@
             4
           ],
           "details": "Implement a diff generation system that produces human-readable comparisons between the initial and simulated final states. Include formatting for different types of changes (text files, binary files, directory structures) and highlight critical changes. Ensure the diff output is clear and actionable for users reviewing the simulation results.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 6,
@@ -2281,7 +2281,7 @@
             5
           ],
           "details": "Develop a report generator that combines statistics, diffs, and execution details into a cohesive preview of what would happen during actual execution. Include summary sections, detailed change listings, potential warnings or errors, and recommendations. Ensure the report is formatted appropriately for both terminal output and potential file export.",
-          "status": "pending"
+          "status": "done"
         }
       ]
     },
@@ -2735,7 +2735,7 @@
         19,
         33
       ],
-      "status": "pending",
+      "status": "done",
       "subtasks": [
         {
           "id": 1,
@@ -2743,7 +2743,7 @@
           "description": "Establish the foundational CI environment by selecting and configuring the CI/CD platform (e.g., GitHub Actions, GitLab CI, Jenkins). Ensure runners/agents are available and integrate with the project repository.",
           "dependencies": [],
           "details": "Install and configure the chosen CI/CD tool. Set up runners or agents as required. Connect the project repository and verify webhook triggers for code pushes and pull requests.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 2,
@@ -2753,7 +2753,7 @@
             1
           ],
           "details": "Define test scripts and ensure all test dependencies are installed. Configure pipeline steps to run tests on each commit or pull request. Fail the pipeline on test failures and generate test reports.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 3,
@@ -2763,7 +2763,7 @@
             2
           ],
           "details": "Set up npm authentication using secure tokens. Add pipeline steps to build and publish the package on successful test completion, ensuring versioning and tagging are handled according to semantic release practices.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 4,
@@ -2773,7 +2773,7 @@
             2
           ],
           "details": "Install and configure a coverage tool (e.g., Istanbul, nyc, Coveralls). Add steps to generate coverage reports and upload them to a coverage service or as pipeline artifacts. Enforce minimum coverage thresholds if required.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 5,
@@ -2783,7 +2783,7 @@
             1
           ],
           "details": "Configure tools like Dependabot or Renovate to scan for outdated dependencies. Set up scheduled jobs to create pull requests for dependency updates and ensure these are tested by the CI pipeline.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 6,
@@ -2793,7 +2793,7 @@
             3
           ],
           "details": "Integrate tools (e.g., conventional-changelog, release-please) to parse commit messages and generate structured release notes. Add steps to publish release notes to the repository or documentation site as part of the release process.",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": 7,
@@ -2807,7 +2807,7 @@
             6
           ],
           "details": "Run end-to-end tests of the pipeline, including simulated failures. Verify all stages (test, publish, coverage, dependency updates, release notes) execute as expected. Set up notifications for failed builds and monitor pipeline health over time.",
-          "status": "pending"
+          "status": "done"
         }
       ]
     },
@@ -2817,7 +2817,7 @@
       "description": "Develop a comprehensive CSS output management system to optimize CSS assets for production, including chunking, minification, hash generation, delivery optimization, and reporting.",
       "details": "1. Design a flexible CSS output strategy configuration (e.g., via enigma.config.js) allowing users to select output formats (single file, chunked, modular), enable/disable features (minification, source maps, critical CSS extraction), and set thresholds for chunking/splitting.\n2. Implement logic for CSS file chunking and splitting based on size, usage patterns, or route/page association. Ensure modular output supports dynamic imports where applicable.\n3. Integrate asset hash generation and fingerprinting for all CSS outputs to enable cache-busting and asset versioning. Maintain a manifest mapping original filenames to hashed outputs.\n4. Apply CSS minification using tools like cssnano and compression (e.g., Brotli or gzip) for all production builds, ensuring compatibility with PostCSS plugins and Tailwind workflows[2][5].\n5. Extract and inline critical CSS for above-the-fold content, supporting preloading and async loading for non-critical CSS. Provide configuration for critical CSS extraction per route or template[5].\n6. Generate source maps for all CSS outputs to aid debugging, with options to enable/disable in production builds.\n7. Analyze CSS file sizes post-build, generate detailed reports (including per-chunk/module breakdown), and surface warnings for large or inefficient outputs. Optionally, integrate with CI for automated performance checks.\n8. Ensure all optimizations are compatible with the existing CSS generation (Task 11) and PostCSS integration (Task 12), and provide extensibility for future enhancements.",
       "testStrategy": "- Configure various output strategies and verify correct CSS file generation (single, chunked, modular) with expected content and structure.\n- Confirm that asset hashes and fingerprints are unique per content change and that the manifest accurately maps original to hashed filenames.\n- Validate that minified and compressed CSS files are significantly smaller than unoptimized outputs, and that minification does not break CSS functionality.\n- Test critical CSS extraction by measuring render performance and ensuring above-the-fold styles are inlined or preloaded as configured.\n- Check that source maps are generated and correctly map minified code to original sources.\n- Review generated CSS size reports for accuracy and ensure warnings are triggered for large files.\n- Run integration tests to ensure compatibility with CSS generation and PostCSS workflows.\n- Perform manual and automated browser tests to verify optimized CSS delivery and cache-busting in production environments.",
-      "status": "pending",
+      "status": "done",
       "dependencies": [
         11,
         12
@@ -2830,7 +2830,7 @@
           "description": "Develop a flexible configuration system (e.g., enigma.config.js) that allows users to select CSS output formats, enable or disable optimization features, and set thresholds for chunking and splitting.",
           "dependencies": [],
           "details": "The configuration should support options for single file, chunked, or modular outputs, toggles for minification, source maps, and critical CSS extraction, and allow custom thresholds for splitting CSS assets.",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Verify that configuration changes are correctly reflected in the build output and that all options are respected during the build process."
         },
         {
@@ -2841,7 +2841,7 @@
             1
           ],
           "details": "Implement algorithms to analyze CSS usage and split files accordingly, supporting both static and dynamic import scenarios for optimal delivery.",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Test with various project structures to ensure correct chunking and splitting, and validate that dynamic imports load the correct CSS modules."
         },
         {
@@ -2852,7 +2852,7 @@
             2
           ],
           "details": "Generate unique hashes for each CSS output, maintain a manifest mapping originals to hashed files, and ensure all outputs are minified and compressed for production.",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Check that all CSS files are hashed, minified, and compressed in the production build, and that the manifest accurately maps original to output files."
         },
         {
@@ -2863,7 +2863,7 @@
             3
           ],
           "details": "Analyze rendered output to determine critical CSS, inline it in HTML, and configure preloading or async loading for remaining CSS assets.",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Use performance audits to confirm that critical CSS is inlined and non-critical CSS is loaded asynchronously, and verify configuration works per route/template."
         },
         {
@@ -2874,7 +2874,7 @@
             4
           ],
           "details": "Provide options to enable/disable source maps, generate comprehensive reports on CSS asset sizes and efficiency, and integrate with CI for automated performance checks.",
-          "status": "pending",
+          "status": "done",
           "testStrategy": "Validate that source maps are generated as configured, reports accurately reflect output sizes and chunk breakdowns, and CI integration surfaces relevant warnings."
         }
       ]

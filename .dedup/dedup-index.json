@@ -1,15 +1,15 @@
 {
   "version": "1.0.0",
   "totalEntries": 1,
-  "spaceSaved": 27500,
-  "lastUpdated": "2025-06-11T12:39:08.656Z",
+  "spaceSaved": 33500,
+  "lastUpdated": "2025-06-11T15:45:13.912Z",
   "entries": {
     "c38c2bf3055c516a98ac5d97f30e7c364e827bc0199e1c3415b794afbe55dcad": {
       "hash": "c38c2bf3055c516a98ac5d97f30e7c364e827bc0199e1c3415b794afbe55dcad",
       "algorithm": "sha256",
       "size": 500,
       "storagePath": "/Users/rowan/github/tw-enigma/core/.dedup/c38c2bf3055c516a98ac5d97f30e7c364e827bc0199e1c3415b794afbe55dcad.txt",
-      "referenceCount": 56,
+      "referenceCount": 68,
       "referencePaths": [
         "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749608875467/test1.txt",
         "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749608875467/test2.txt",
@@ -66,17 +66,29 @@
         "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749640261775/test1.txt",
         "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749640261775/test2.txt",
         "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749645548649/test1.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749645548649/test2.txt"
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749645548649/test2.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749649749168/test1.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749649749168/test2.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749650332091/test1.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749650332091/test2.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749650513471/test1.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749650513471/test2.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749652042852/test1.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749652042852/test2.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749654198922/test1.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749654198922/test2.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749656713904/test1.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749656713904/test2.txt"
       ],
       "firstSeen": "2025-06-11T02:27:55.469Z",
-      "lastAccessed": "2025-06-11T12:39:08.656Z",
+      "lastAccessed": "2025-06-11T15:45:13.911Z",
       "compressed": false
     }
   },
   "stats": {
-    "totalOriginalSize": 28000,
+    "totalOriginalSize": 34000,
     "totalDeduplicatedSize": 500,
-    "duplicatesFound": 55,
-    "averageReferenceCount": 56
+    "duplicatesFound": 67,
+    "averageReferenceCount": 68
   }
 }

@@ -213,6 +213,8 @@ export interface CliArguments {
   patternValidatorSkipInvalid?: boolean;
   patternValidatorWarnOnInvalid?: boolean;
   patternValidatorCustomClasses?: string[];
+  // Dry run mode option
+  dryRun?: boolean;
 }
 
 /**
