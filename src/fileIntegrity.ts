@@ -669,6 +669,8 @@ export interface BatchOperationResult<T> {
  * Large project optimization result
  */
 export interface LargeProjectResult {
+  /** Whether the overall operation was successful */
+  success: boolean;
   /** Total files processed */
   totalFiles: number;
   /** Total processing time */
@@ -3822,6 +3824,7 @@ export class FileIntegrityValidator {
       optimizationDetails.push(`System metrics monitoring: CPU load, memory pressure, event loop lag`);
 
       const largeProjectResult: LargeProjectResult = {
+        success: result.success,
         totalFiles: files.length,
         totalProcessingTime: totalTime,
         batchesProcessed,
