@@ -1,0 +1,57 @@
+{
+  "version": "1.0.0",
+  "currentFullBackup": {
+    "id": "backup_1749610799216_0vccjf",
+    "createdAt": "2025-06-11T02:59:59.216Z",
+    "filePath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749610799215/.backups/diff-corruption.2025-06-11T02-59-59-216Z.txt.backup",
+    "size": 35
+  },
+  "differentialChain": [
+    {
+      "id": "backup_1749610799217_uraf1t",
+      "type": "differential",
+      "baseFullBackupId": "backup_1749610799216_0vccjf",
+      "backupPath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749610799215/.backups/diff-corruption2.2025-06-11T02-59-59-217Z.txt.backup",
+      "originalPath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749610799215/diff-corruption2.txt",
+      "createdAt": "2025-06-11T02:59:59.217Z",
+      "cumulativeFiles": [
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749610799215/diff-corruption2.txt"
+      ],
+      "cumulativeSize": 31,
+      "currentFiles": [
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749610799215/diff-corruption2.txt"
+      ],
+      "currentSize": 31,
+      "changeDetectionMethod": "mtime",
+      "compressed": false,
+      "deduplicated": false,
+      "timeSinceFullBackup": 2.7777777777777776e-7
+    }
+  ],
+  "cumulativeFileStates": {
+    "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749610799215/diff-corruption.txt": {
+      "filePath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749610799215/diff-corruption.txt",
+      "size": 35,
+      "mtime": "2025-06-11T02:59:59.216Z",
+      "lastBackup": "2025-06-11T02:59:59.216Z",
+      "hasChanged": false
+    },
+    "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749610799215/diff-corruption2.txt": {
+      "filePath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749610799215/diff-corruption2.txt",
+      "size": 31,
+      "mtime": "2025-06-11T02:59:59.217Z",
+      "lastBackup": "2025-06-11T02:59:59.217Z",
+      "hasChanged": false
+    }
+  },
+  "stats": {
+    "totalDifferentials": 1,
+    "currentChainLength": 1,
+    "cumulativeSize": 31,
+    "cumulativeSizeRatio": 0.8857142857142857,
+    "totalSpaceSaved": 0,
+    "lastBackupAt": "2025-06-11T02:59:59.217Z",
+    "timeSinceFullBackup": 2.7777777777777776e-7
+  },
+  "lastUpdated": "2025-06-11T02:59:59.217Z"
+}

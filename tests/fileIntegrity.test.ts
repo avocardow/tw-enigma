@@ -1,10 +1,11 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { readFile, writeFile, mkdir, stat } from 'node:fs/promises';
+import { readFile, writeFile, mkdir, stat, unlink, access } from 'node:fs/promises';
 import { createReadStream } from 'node:fs';
 import { pipeline } from 'node:stream/promises';
 import { createGunzip, createInflate, createBrotliDecompress } from 'node:zlib';
 import { resolve, join } from 'node:path';
 import { tmpdir } from 'node:os';
+import { createHash } from 'node:crypto';
 import {
   FileIntegrityValidator,
   createFileIntegrityValidator,
@@ -1688,6 +1689,392 @@ describe('Compression Feature Tests', () => {
         
         expect(result1.success).toBe(true);
         expect(result2.success).toBe(true);
+      });
+    });
+  });
+
+  describe('Differential Backup Strategy', () => {
+    let differentialValidator: FileIntegrityValidator;
+    let testFile1: string;
+    let testFile2: string;
+    let unchangedFile: string;
+
+    beforeEach(async () => {
+      differentialValidator = new FileIntegrityValidator({
+        backupDirectory: join(testDir, '.backups'),
+        enableDifferentialBackup: true,
+        differentialStrategy: 'auto',
+        changeDetectionMethod: 'mtime',
+        differentialFullBackupThreshold: 10, // 10MB for testing
+        differentialFullBackupInterval: 168, // 1 week
+        differentialSizeMultiplier: 3,
+        differentialDirectory: '.differential'
+      });
+
+      testFile1 = join(testDir, 'diff-test1.txt');
+      testFile2 = join(testDir, 'diff-test2.txt');
+      unchangedFile = join(testDir, 'unchanged.txt');
+      
+      await writeFile(testFile1, 'Initial content for differential backup test');
+      await writeFile(testFile2, 'Second file for differential backup test');
+      await writeFile(unchangedFile, 'This file will not change');
+    });
+
+    describe('Configuration Schema', () => {
+      it('should validate differential backup configuration', () => {
+        const config = FileIntegrityOptionsSchema.parse({
+          enableDifferentialBackup: true,
+          differentialStrategy: 'auto',
+          differentialFullBackupThreshold: 100,
+          differentialFullBackupInterval: 168,
+          differentialSizeMultiplier: 5
+        });
+
+        expect(config.enableDifferentialBackup).toBe(true);
+        expect(config.differentialStrategy).toBe('auto');
+        expect(config.differentialFullBackupThreshold).toBe(100);
+        expect(config.differentialFullBackupInterval).toBe(168);
+        expect(config.differentialSizeMultiplier).toBe(5);
+      });
+
+      it('should use default values for differential backup', () => {
+        const config = FileIntegrityOptionsSchema.parse({});
+        
+        expect(config.enableDifferentialBackup).toBe(false);
+        expect(config.differentialStrategy).toBe('auto');
+        expect(config.differentialFullBackupThreshold).toBe(1000);
+        expect(config.differentialFullBackupInterval).toBe(168);
+        expect(config.differentialSizeMultiplier).toBe(5);
+        expect(config.differentialDirectory).toBe('.differential');
+      });
+
+      it('should reject invalid differential strategy', () => {
+        expect(() => {
+          FileIntegrityOptionsSchema.parse({
+            differentialStrategy: 'invalid'
+          });
+        }).toThrow();
+      });
+
+      it('should reject negative size multiplier', () => {
+        expect(() => {
+          FileIntegrityOptionsSchema.parse({
+            differentialSizeMultiplier: -1
+          });
+        }).toThrow();
+      });
+    });
+
+    describe('Cumulative Change Detection', () => {
+      it('should detect first file as changed (no full backup)', async () => {
+        const result = await differentialValidator.createDifferentialBackup(testFile1);
+        
+        expect(result.success).toBe(true);
+        expect(result.backupType).toBe('full'); // First backup is always full
+        expect(result.backupId).toBeDefined();
+        expect(result.filesBackedUp).toBe(1);
+        expect(result.cumulativeFilesChanged).toBe(1);
+        expect(result.backedUpFiles).toContain(testFile1);
+        expect(result.cumulativeChangedFiles).toContain(testFile1);
+      });
+
+      it('should detect cumulative changes across multiple files', async () => {
+        // Create full backup for first file
+        await differentialValidator.createDifferentialBackup(testFile1);
+        
+        // Wait a moment then modify second file
+        await new Promise(resolve => setTimeout(resolve, 10));
+        await writeFile(testFile2, 'Modified content for cumulative test');
+        
+        const result = await differentialValidator.createDifferentialBackup(testFile2);
+        
+        expect(result.success).toBe(true);
+        expect(result.backupType).toBe('differential');
+        expect(result.cumulativeFilesChanged).toBe(1); // Only testFile2 changed since full backup
+        expect(result.cumulativeChangedFiles).toContain(testFile2);
+      });
+
+      it('should accumulate changes across multiple differential backups', async () => {
+        // Use a higher size multiplier to prevent forcing full backup
+        const testValidator = new FileIntegrityValidator({
+          backupDirectory: join(testDir, '.backups'),
+          enableDifferentialBackup: true,
+          differentialStrategy: 'auto',
+          changeDetectionMethod: 'mtime',
+          differentialSizeMultiplier: 10, // Higher threshold to prevent full backup
+          differentialDirectory: '.differential-test'
+        });
+
+        const testFile1Local = join(testDir, 'diff-test1-local.txt');
+        const testFile2Local = join(testDir, 'diff-test2-local.txt');
+        
+        await writeFile(testFile1Local, 'Initial content for differential backup test');
+        await writeFile(testFile2Local, 'Second file for differential backup test');
+
+        // Create full backup
+        await testValidator.createDifferentialBackup(testFile1Local);
+        
+        // Create first differential
+        await new Promise(resolve => setTimeout(resolve, 10));
+        await writeFile(testFile2Local, 'First differential change');
+        const diff1 = await testValidator.createDifferentialBackup(testFile2Local);
+        
+        // Create second differential  
+        await new Promise(resolve => setTimeout(resolve, 10));
+        await writeFile(testFile1Local, 'Second differential change to file1');
+        const diff2 = await testValidator.createDifferentialBackup(testFile1Local);
+        
+        expect(diff1.backupType).toBe('differential');
+        expect(diff2.backupType).toBe('differential');
+        expect(diff2.cumulativeFilesChanged).toBe(2); // Both files changed since full backup
+        expect(diff2.cumulativeChangedFiles).toHaveLength(2);
+        expect(diff2.cumulativeSize).toBeGreaterThan(diff1.currentBackupSize);
+      });
+    });
+
+    describe('Strategy Selection', () => {
+      it('should force full backup when no full backup exists', async () => {
+        // Use a dedicated validator for this test with high thresholds
+        const testValidator = new FileIntegrityValidator({
+          backupDirectory: join(testDir, '.backups'),
+          enableDifferentialBackup: true,
+          differentialStrategy: 'auto',
+          differentialSizeMultiplier: 100, // Very high threshold
+          differentialFullBackupThreshold: 10000, // 10GB threshold
+          differentialDirectory: '.differential-test2'
+        });
+
+        const testFileLocal = join(testDir, 'diff-force-full.txt');
+        await writeFile(testFileLocal, 'Initial content for force full test');
+
+        const result = await testValidator.createDifferentialBackup(testFileLocal);
+        
+        expect(result.backupType).toBe('full');
+        expect(result.baseFullBackupId).toBeUndefined();
+      });
+
+      it('should create differential backup when full backup exists', async () => {
+        // Create full backup
+        await differentialValidator.createDifferentialBackup(testFile1);
+        
+        // Modify file and create differential
+        await new Promise(resolve => setTimeout(resolve, 10));
+        await writeFile(testFile1, 'Modified for differential');
+        const result = await differentialValidator.createDifferentialBackup(testFile1);
+        
+        expect(result.backupType).toBe('differential');
+        expect(result.baseFullBackupId).toBeDefined();
+      });
+
+      it('should skip backup when file unchanged', async () => {
+        // Create full backup
+        await differentialValidator.createDifferentialBackup(testFile1);
+        
+        // Try to backup again without changes
+        const result = await differentialValidator.createDifferentialBackup(testFile1);
+        
+        expect(result.backupType).toBe('skipped');
+        expect(result.filesSkipped).toBe(1);
+      });
+
+      it('should recommend full backup when size ratio threshold exceeded', async () => {
+        // Create a differential validator with low size multiplier for testing
+        const testValidator = new FileIntegrityValidator({
+          backupDirectory: join(testDir, '.backups'),
+          enableDifferentialBackup: true,
+          differentialStrategy: 'auto',
+          differentialSizeMultiplier: 1.1, // Very low threshold for testing
+          differentialDirectory: '.differential-test'
+        });
+
+        // Create full backup
+        await testValidator.createDifferentialBackup(testFile1);
+        
+        // Create large differential to exceed ratio
+        const largeContent = 'x'.repeat(1000);
+        await writeFile(testFile2, largeContent);
+        const result = await testValidator.createDifferentialBackup(testFile2);
+        
+        expect(result.success).toBe(true);
+        expect(result.recommendFullBackup).toBe(true);
+        expect(result.recommendationReason).toContain('size ratio');
+      });
+    });
+
+    describe('Statistics', () => {
+      it('should provide accurate differential backup statistics', async () => {
+        // Use a dedicated validator for this test with high thresholds
+        const testValidator = new FileIntegrityValidator({
+          backupDirectory: join(testDir, '.backups'),
+          enableDifferentialBackup: true,
+          differentialStrategy: 'auto',
+          changeDetectionMethod: 'mtime',
+          differentialSizeMultiplier: 100, // Very high threshold to prevent forced full backup
+          differentialDirectory: '.differential-stats'
+        });
+
+        const testFile1Local = join(testDir, 'diff-stats1.txt');
+        const testFile2Local = join(testDir, 'diff-stats2.txt');
+        
+        await writeFile(testFile1Local, 'Initial content for stats test');
+        await writeFile(testFile2Local, 'Second file for stats test');
+
+        // Create full backup
+        await testValidator.createDifferentialBackup(testFile1Local);
+        
+        // Create differential backup
+        await new Promise(resolve => setTimeout(resolve, 10));
+        await writeFile(testFile2Local, 'Differential content');
+        await testValidator.createDifferentialBackup(testFile2Local);
+        
+        const stats = await testValidator.getDifferentialStats();
+        
+        expect(stats.enabled).toBe(true);
+        expect(stats.totalDifferentials).toBe(1);
+        expect(stats.currentChainLength).toBe(1);
+        expect(stats.cumulativeSize).toBeGreaterThan(0);
+        expect(stats.cumulativeSizeRatio).toBeGreaterThan(0);
+        expect(stats.currentFullBackup).toBeDefined();
+        expect(stats.currentFullBackup!.id).toBeDefined();
+        expect(stats.strategy).toBe('auto');
+        expect(stats.changeDetectionMethod).toBe('mtime');
+      });
+
+      it('should handle disabled differential backup in stats', async () => {
+        const disabledValidator = new FileIntegrityValidator({
+          enableDifferentialBackup: false
+        });
+        
+        const stats = await disabledValidator.getDifferentialStats();
+        
+        expect(stats.enabled).toBe(false);
+        expect(stats.totalDifferentials).toBe(0);
+        expect(stats.currentChainLength).toBe(0);
+        expect(stats.currentFullBackup).toBeNull();
+      });
+    });
+
+    describe('Error Handling', () => {
+      it('should handle missing file gracefully', async () => {
+        const nonExistentFile = join(testDir, 'does-not-exist.txt');
+        const result = await differentialValidator.createDifferentialBackup(nonExistentFile);
+        
+        expect(result.success).toBe(false);
+        expect(result.backupType).toBe('skipped');
+        expect(result.error).toContain('File does not exist');
+        expect(result.filesSkipped).toBe(1);
+      });
+
+      it('should handle index corruption gracefully', async () => {
+        // Use a dedicated validator for this test
+        const testValidator = new FileIntegrityValidator({
+          backupDirectory: join(testDir, '.backups'),
+          enableDifferentialBackup: true,
+          differentialDirectory: '.differential-corruption'
+        });
+
+        const testFileLocal = join(testDir, 'diff-corruption.txt');
+        await writeFile(testFileLocal, 'Initial content for corruption test');
+
+        // Create full backup first
+        await testValidator.createDifferentialBackup(testFileLocal);
+        
+        // Manually corrupt the differential index
+        const corruptData = '{ invalid json }';
+        const indexDir = join(testDir, '.differential-corruption');
+        const indexPath = join(indexDir, 'differential-index.json');
+        
+        // Ensure directory exists before writing corrupt data
+        await mkdir(indexDir, { recursive: true });
+        await writeFile(indexPath, corruptData);
+        
+        // Should still work by creating new index
+        const testFile2Local = join(testDir, 'diff-corruption2.txt');
+        await writeFile(testFile2Local, 'Second file for corruption test');
+        const result = await testValidator.createDifferentialBackup(testFile2Local);
+        
+        expect(result.success).toBe(true);
+        expect(result.backupType).toBe('full'); // Treats as new backup
+      });
+    });
+
+    describe('Integration with Compression and Deduplication', () => {
+      it('should integrate differential backup with compression', async () => {
+        const compressedDifferentialValidator = new FileIntegrityValidator({
+          backupDirectory: join(testDir, '.backups'),
+          enableDifferentialBackup: true,
+          enableCompression: true,
+          compressionAlgorithm: 'gzip',
+          differentialDirectory: '.differential-compressed'
+        });
+
+        const testFileLocal = join(testDir, 'diff-compression.txt');
+        await writeFile(testFileLocal, 'Content for differential compression test');
+
+        const result = await compressedDifferentialValidator.createDifferentialBackup(testFileLocal);
+        
+        expect(result.success).toBe(true);
+        expect(result.backupType).toBe('full');
+        expect(result.backupPath).toBeDefined();
+      });
+
+      it('should integrate differential backup with deduplication', async () => {
+        const dedupDifferentialValidator = new FileIntegrityValidator({
+          backupDirectory: join(testDir, '.backups'),
+          enableDifferentialBackup: true,
+          enableDeduplication: true,
+          differentialDirectory: '.differential-dedup'
+        });
+
+        const testFileLocal = join(testDir, 'diff-deduplication.txt');
+        await writeFile(testFileLocal, 'Content for differential deduplication test');
+
+        const result = await dedupDifferentialValidator.createDifferentialBackup(testFileLocal);
+        
+        expect(result.success).toBe(true);
+        expect(result.backupType).toBe('full');
+        expect(result.backupPath).toBeDefined();
+      });
+    });
+
+    describe('Performance Benchmarks', () => {
+      it('should complete differential backup within reasonable time', async () => {
+        const startTime = Date.now();
+        const result = await differentialValidator.createDifferentialBackup(testFile1);
+        const endTime = Date.now();
+        
+        expect(result.success).toBe(true);
+        expect(endTime - startTime).toBeLessThan(5000); // 5 seconds max
+        expect(result.processingTime).toBeLessThan(5000);
+      });
+
+      it('should have faster restore potential than incremental (conceptual)', async () => {
+        // Use a dedicated validator for this test
+        const testValidator = new FileIntegrityValidator({
+          backupDirectory: join(testDir, '.backups'),
+          enableDifferentialBackup: true,
+          differentialDirectory: '.differential-perf'
+        });
+
+        const testFileLocal = join(testDir, 'diff-performance.txt');
+        await writeFile(testFileLocal, 'Initial content for performance test');
+
+        // Create full backup
+        const fullResult = await testValidator.createDifferentialBackup(testFileLocal);
+        
+        // Create multiple differential backups
+        for (let i = 0; i < 3; i++) {
+          await new Promise(resolve => setTimeout(resolve, 10));
+          await writeFile(testFileLocal, `Content ${i}`);
+          await testValidator.createDifferentialBackup(testFileLocal);
+        }
+        
+        const stats = await testValidator.getDifferentialStats();
+        
+        // Restore would only need full backup + latest differential (vs all incrementals)
+        expect(stats.currentChainLength).toBe(3);
+        expect(stats.totalDifferentials).toBe(3);
+        // Conceptually faster: only need 2 files (full + latest differential) vs 4 files (full + 3 incrementals)
       });
     });
   });

@@ -177,6 +177,13 @@ export interface CliArguments {
   integrityMaxIncrementalChain?: number;
   integrityFullBackupInterval?: number;
   integrityIncrementalDirectory?: string;
+  // File integrity differential backup options
+  integrityEnableDifferentialBackup?: boolean;
+  integrityDifferentialStrategy?: "auto" | "manual" | "threshold-based";
+  integrityDifferentialFullBackupThreshold?: number;
+  integrityDifferentialFullBackupInterval?: number;
+  integrityDifferentialDirectory?: string;
+  integrityDifferentialSizeMultiplier?: number;
 }
 
 /**
@@ -393,6 +400,20 @@ function normalizeCliArguments(args: CliArguments): Partial<EnigmaConfig> {
     fileIntegrityConfig.fullBackupInterval = args.integrityFullBackupInterval;
   if (args.integrityIncrementalDirectory !== undefined)
     fileIntegrityConfig.incrementalDirectory = args.integrityIncrementalDirectory;
+  
+  // Differential backup options
+  if (args.integrityEnableDifferentialBackup !== undefined)
+    fileIntegrityConfig.enableDifferentialBackup = args.integrityEnableDifferentialBackup;
+  if (args.integrityDifferentialStrategy !== undefined)
+    fileIntegrityConfig.differentialStrategy = args.integrityDifferentialStrategy;
+  if (args.integrityDifferentialFullBackupThreshold !== undefined)
+    fileIntegrityConfig.differentialFullBackupThreshold = args.integrityDifferentialFullBackupThreshold;
+  if (args.integrityDifferentialFullBackupInterval !== undefined)
+    fileIntegrityConfig.differentialFullBackupInterval = args.integrityDifferentialFullBackupInterval;
+  if (args.integrityDifferentialDirectory !== undefined)
+    fileIntegrityConfig.differentialDirectory = args.integrityDifferentialDirectory;
+  if (args.integrityDifferentialSizeMultiplier !== undefined)
+    fileIntegrityConfig.differentialSizeMultiplier = args.integrityDifferentialSizeMultiplier;
 
   if (Object.keys(fileIntegrityConfig).length > 0) {
     // Apply defaults using the schema to ensure all fields have proper values

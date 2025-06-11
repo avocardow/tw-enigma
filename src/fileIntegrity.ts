@@ -90,6 +90,25 @@ export const FileIntegrityOptionsSchema = z.object({
   
   /** Incremental backup metadata directory (default: '.incremental') */
   incrementalDirectory: z.string().default('.incremental'),
+  
+  // === DIFFERENTIAL BACKUP OPTIONS ===
+  /** Whether to enable differential backup strategy (default: false) */
+  enableDifferentialBackup: z.boolean().default(false),
+  
+  /** Differential backup strategy selection (default: 'auto') */
+  differentialStrategy: z.enum(['auto', 'manual', 'threshold-based']).default('auto'),
+  
+  /** Size threshold in MB for triggering new full backup in differential strategy (default: 1000) */
+  differentialFullBackupThreshold: z.number().min(10).default(1000),
+  
+  /** Time threshold in hours for forcing full backup in differential strategy (default: 168 = 1 week) */
+  differentialFullBackupInterval: z.number().min(1).default(168),
+  
+  /** Differential backup metadata directory (default: '.differential') */
+  differentialDirectory: z.string().default('.differential'),
+  
+  /** Maximum cumulative size multiplier before forcing full backup (default: 5x original) */
+  differentialSizeMultiplier: z.number().min(1).default(5),
 });
 
 /**
@@ -417,6 +436,117 @@ export interface IncrementalBackupResult {
 }
 
 /**
+ * Differential backup entry - stores all changes since last full backup
+ */
+export interface DifferentialBackupEntry {
+  /** Backup ID (unique identifier) */
+  id: string;
+  /** Backup type */
+  type: 'full' | 'differential';
+  /** Base full backup ID that this differential is based on */
+  baseFullBackupId: string | null;
+  /** Backup file path */
+  backupPath: string;
+  /** Original file path */
+  originalPath: string;
+  /** Backup creation timestamp */
+  createdAt: Date;
+  /** All files that have changed since base full backup */
+  cumulativeFiles: string[];
+  /** Cumulative size of all changes since base full backup */
+  cumulativeSize: number;
+  /** Files included in this specific differential backup */
+  currentFiles: string[];
+  /** Current differential backup size */
+  currentSize: number;
+  /** Change detection method used */
+  changeDetectionMethod: 'mtime' | 'checksum' | 'hybrid';
+  /** Whether compression was used */
+  compressed: boolean;
+  /** Whether deduplication was used */
+  deduplicated: boolean;
+  /** Time since last full backup in hours */
+  timeSinceFullBackup: number;
+}
+
+/**
+ * Differential backup index structure
+ */
+export interface DifferentialIndex {
+  /** Index format version */
+  version: string;
+  /** Current full backup information */
+  currentFullBackup: {
+    id: string;
+    createdAt: Date;
+    filePath: string;
+    size: number;
+  } | null;
+  /** Differential backup entries since current full backup */
+  differentialChain: DifferentialBackupEntry[];
+  /** Cumulative file state tracking since last full backup */
+  cumulativeFileStates: Record<string, FileChangeState>;
+  /** Chain statistics */
+  stats: {
+    totalDifferentials: number;
+    currentChainLength: number;
+    cumulativeSize: number;
+    cumulativeSizeRatio: number; // Current cumulative size / original full backup size
+    totalSpaceSaved: number;
+    lastBackupAt: Date;
+    timeSinceFullBackup: number; // Hours since last full backup
+  };
+  /** Last index update */
+  lastUpdated: Date;
+}
+
+/**
+ * Differential backup operation result
+ */
+export interface DifferentialBackupResult {
+  /** Backup operation type performed */
+  backupType: 'full' | 'differential' | 'skipped';
+  /** Backup ID */
+  backupId: string;
+  /** Base full backup ID (for differential) */
+  baseFullBackupId?: string;
+  /** Number of files in current differential backup */
+  filesBackedUp: number;
+  /** Total cumulative files changed since last full backup */
+  cumulativeFilesChanged: number;
+  /** Number of files skipped (unchanged since last backup) */
+  filesSkipped: number;
+  /** Current differential backup path */
+  backupPath: string;
+  /** Current differential backup size */
+  currentBackupSize: number;
+  /** Total cumulative size of all changes since last full backup */
+  cumulativeSize: number;
+  /** Size ratio compared to original full backup */
+  cumulativeSizeRatio: number;
+  /** Space efficiency compared to storing separate full backups */
+  spaceSaved: number;
+  /** Files included in this differential backup */
+  backedUpFiles: string[];
+  /** All files changed cumulatively since last full backup */
+  cumulativeChangedFiles: string[];
+  /** Change detection method used */
+  changeDetectionMethod: 'mtime' | 'checksum' | 'hybrid';
+  /** Whether a new full backup should be triggered next time */
+  recommendFullBackup: boolean;
+  /** Reason for recommending full backup */
+  recommendationReason?: string;
+  /** Processing time in milliseconds */
+  processingTime: number;
+  /** Whether backup was successful */
+  success: boolean;
+  /** Error message if backup failed */
+  error?: string;
+  /** Backup timestamp */
+  createdAt: Date;
+}
+
+/**
  * Custom error class for file integrity validation errors
  */
 export class IntegrityError extends Error {
@@ -492,6 +622,8 @@ export class FileIntegrityValidator {
   private deduplicationIndexPath: string;
   private incrementalIndex: IncrementalIndex | null = null;
   private incrementalIndexPath: string;
+  private differentialIndex: DifferentialIndex | null = null;
+  private differentialIndexPath: string;
   
   constructor(options: Partial<FileIntegrityOptions> = {}) {
     // Validate and merge options with defaults
@@ -514,6 +646,9 @@ export class FileIntegrityValidator {
     // Initialize incremental backup index path
     this.incrementalIndexPath = join(this.options.incrementalDirectory, 'incremental-index.json');
     
+    // Initialize differential backup index path
+    this.differentialIndexPath = join(this.options.differentialDirectory, 'differential-index.json');
+    
     this.logger.debug('FileIntegrityValidator initialized', {
       algorithm: this.options.algorithm,
       createBackups: this.options.createBackups,
@@ -525,7 +660,10 @@ export class FileIntegrityValidator {
       deduplicationDirectory: this.options.deduplicationDirectory,
       enableIncrementalBackup: this.options.enableIncrementalBackup,
       backupStrategy: this.options.backupStrategy,
-      incrementalDirectory: this.options.incrementalDirectory
+      incrementalDirectory: this.options.incrementalDirectory,
+      enableDifferentialBackup: this.options.enableDifferentialBackup,
+      differentialStrategy: this.options.differentialStrategy,
+      differentialDirectory: this.options.differentialDirectory
     });
   }
 
@@ -1993,6 +2131,529 @@ export class FileIntegrityValidator {
       strategy: this.options.backupStrategy,
       changeDetectionMethod: this.options.changeDetectionMethod,
       indexPath: this.incrementalIndexPath
+    };
+  }
+
+  // === DIFFERENTIAL BACKUP METHODS ===
+
+  /**
+   * Load differential backup index from storage
+   */
+  private async loadDifferentialIndex(): Promise<DifferentialIndex> {
+    if (this.differentialIndex) {
+      return this.differentialIndex;
+    }
+
+    try {
+      // Ensure differential directory exists
+      const differentialDir = dirname(this.differentialIndexPath);
+      try {
+        await access(differentialDir);
+      } catch {
+        await mkdir(differentialDir, { recursive: true });
+        this.logger.debug('Created differential backup directory', { differentialDir });
+      }
+
+      // Try to load existing index
+      try {
+        await access(this.differentialIndexPath);
+        const indexData = await readFile(this.differentialIndexPath, 'utf-8');
+        const parsedIndex = JSON.parse(indexData) as DifferentialIndex;
+        
+        // Convert date strings back to Date objects
+        if (parsedIndex.currentFullBackup) {
+          parsedIndex.currentFullBackup.createdAt = new Date(parsedIndex.currentFullBackup.createdAt);
+        }
+        parsedIndex.differentialChain.forEach(entry => {
+          entry.createdAt = new Date(entry.createdAt);
+        });
+        Object.values(parsedIndex.cumulativeFileStates).forEach(state => {
+          state.mtime = new Date(state.mtime);
+          state.lastBackup = new Date(state.lastBackup);
+        });
+        parsedIndex.stats.lastBackupAt = new Date(parsedIndex.stats.lastBackupAt);
+        parsedIndex.lastUpdated = new Date(parsedIndex.lastUpdated);
+
+        this.differentialIndex = parsedIndex;
+        this.logger.debug('Loaded differential index', { 
+          totalDifferentials: parsedIndex.stats.totalDifferentials,
+          currentChainLength: parsedIndex.stats.currentChainLength
+        });
+        return parsedIndex;
+      } catch {
+        // Create new index if file doesn't exist
+        this.differentialIndex = {
+          version: '1.0.0',
+          currentFullBackup: null,
+          differentialChain: [],
+          cumulativeFileStates: {},
+          stats: {
+            totalDifferentials: 0,
+            currentChainLength: 0,
+            cumulativeSize: 0,
+            cumulativeSizeRatio: 0,
+            totalSpaceSaved: 0,
+            lastBackupAt: new Date(),
+            timeSinceFullBackup: 0
+          },
+          lastUpdated: new Date()
+        };
+
+        await this.saveDifferentialIndex();
+        this.logger.debug('Created new differential index');
+        return this.differentialIndex;
+      }
+    } catch (error) {
+      this.logger.error('Failed to load differential index', {
+        error: error instanceof Error ? error.message : String(error)
+      });
+      throw new IntegrityError(
+        `Failed to load differential backup index: ${error instanceof Error ? error.message : String(error)}`,
+        'DIFFERENTIAL_INDEX_LOAD_ERROR'
+      );
+    }
+  }
+
+  /**
+   * Save differential backup index to storage
+   */
+  private async saveDifferentialIndex(): Promise<void> {
+    if (!this.differentialIndex) {
+      return;
+    }
+
+    try {
+      this.differentialIndex.lastUpdated = new Date();
+      const indexData = JSON.stringify(this.differentialIndex, null, 2);
+      await writeFile(this.differentialIndexPath, indexData, 'utf-8');
+      
+      this.logger.debug('Saved differential index', {
+        totalDifferentials: this.differentialIndex.stats.totalDifferentials,
+        cumulativeSize: this.differentialIndex.stats.cumulativeSize
+      });
+    } catch (error) {
+      this.logger.error('Failed to save differential index', {
+        error: error instanceof Error ? error.message : String(error)
+      });
+      throw new IntegrityError(
+        `Failed to save differential backup index: ${error instanceof Error ? error.message : String(error)}`,
+        'DIFFERENTIAL_INDEX_SAVE_ERROR'
+      );
+    }
+  }
+
+  /**
+   * Detect all file changes since last full backup (cumulative)
+   */
+  private async detectCumulativeFileChanges(filePath: string): Promise<{
+    hasChanged: boolean;
+    cumulativeChanges: string[];
+    timeSinceFullBackup: number;
+  }> {
+    const index = await this.loadDifferentialIndex();
+    
+    if (!index.currentFullBackup) {
+      // No full backup exists, everything is a change
+      return {
+        hasChanged: true,
+        cumulativeChanges: [filePath],
+        timeSinceFullBackup: 0
+      };
+    }
+
+    const timeSinceFullBackup = (Date.now() - index.currentFullBackup.createdAt.getTime()) / (1000 * 60 * 60);
+    const fileStats = await stat(filePath);
+    
+    // Check if this specific file has changed since last full backup
+    const existingState = index.cumulativeFileStates[filePath];
+    let hasChanged = false;
+
+    if (!existingState || existingState.lastBackup < index.currentFullBackup.createdAt) {
+      // File not tracked or last backup was before current full backup
+      hasChanged = true;
+    } else {
+      // Use selected change detection method
+      switch (this.options.changeDetectionMethod) {
+        case 'mtime':
+          hasChanged = fileStats.mtime > existingState.mtime;
+          break;
+        case 'checksum':
+          const currentHash = await this.createContentHash(filePath);
+          hasChanged = !existingState.contentHash || currentHash !== existingState.contentHash;
+          break;
+        case 'hybrid':
+          if (fileStats.mtime > existingState.mtime) {
+            const currentHash = await this.createContentHash(filePath);
+            hasChanged = !existingState.contentHash || currentHash !== existingState.contentHash;
+          } else {
+            hasChanged = false;
+          }
+          break;
+      }
+    }
+
+    // Get all cumulative changes since last full backup
+    const cumulativeChanges = Object.keys(index.cumulativeFileStates).filter(path => {
+      const state = index.cumulativeFileStates[path];
+      return state.hasChanged && state.lastBackup >= index.currentFullBackup.createdAt;
+    });
+
+    // Add current file if it has changed
+    if (hasChanged && !cumulativeChanges.includes(filePath)) {
+      cumulativeChanges.push(filePath);
+    }
+
+    return {
+      hasChanged,
+      cumulativeChanges,
+      timeSinceFullBackup
+    };
+  }
+
+  /**
+   * Determine differential backup strategy
+   */
+  private async determineDifferentialStrategy(filePath: string): Promise<'full' | 'differential' | 'skip'> {
+    if (!this.options.enableDifferentialBackup) {
+      return 'skip';
+    }
+
+    const index = await this.loadDifferentialIndex();
+    const changeInfo = await this.detectCumulativeFileChanges(filePath);
+
+    // Skip if no changes
+    if (!changeInfo.hasChanged) {
+      return 'skip';
+    }
+
+    // Force full backup if no current full backup exists
+    if (!index.currentFullBackup) {
+      this.logger.debug('No full backup exists, forcing full backup');
+      return 'full';
+    }
+
+    // Check time-based threshold for full backup
+    if (changeInfo.timeSinceFullBackup >= this.options.differentialFullBackupInterval) {
+      this.logger.debug('Time threshold exceeded, forcing full backup', {
+        timeSinceFullBackup: changeInfo.timeSinceFullBackup,
+        threshold: this.options.differentialFullBackupInterval
+      });
+      return 'full';
+    }
+
+    // Check size-based threshold for full backup
+    const cumulativeSizeMB = index.stats.cumulativeSize / (1024 * 1024);
+    if (cumulativeSizeMB >= this.options.differentialFullBackupThreshold) {
+      this.logger.debug('Size threshold exceeded, forcing full backup', {
+        cumulativeSize: cumulativeSizeMB,
+        threshold: this.options.differentialFullBackupThreshold
+      });
+      return 'full';
+    }
+
+    // Check size multiplier threshold only if cumulative size > 0
+    if (index.stats.cumulativeSize > 0 && index.stats.cumulativeSizeRatio >= this.options.differentialSizeMultiplier) {
+      this.logger.debug('Size multiplier exceeded, forcing full backup', {
+        sizeRatio: index.stats.cumulativeSizeRatio,
+        threshold: this.options.differentialSizeMultiplier
+      });
+      return 'full';
+    }
+
+    // Use differential strategy
+    switch (this.options.differentialStrategy) {
+      case 'auto':
+        return 'differential';
+      case 'manual':
+        return 'differential';
+      case 'threshold-based':
+        // Additional threshold checks could be added here
+        return 'differential';
+      default:
+        return 'differential';
+    }
+  }
+
+  /**
+   * Create differential backup
+   */
+  async createDifferentialBackup(filePath: string): Promise<DifferentialBackupResult> {
+    const startTime = Date.now();
+    const resolvedPath = resolve(filePath);
+
+    this.logger.debug('Creating differential backup', {
+      filePath: resolvedPath,
+      strategy: this.options.differentialStrategy
+    });
+
+    try {
+      // Verify source file exists
+      try {
+        await access(resolvedPath);
+      } catch {
+        return {
+          backupType: 'skipped',
+          backupId: '',
+          filesBackedUp: 0,
+          cumulativeFilesChanged: 0,
+          filesSkipped: 1,
+          backupPath: '',
+          currentBackupSize: 0,
+          cumulativeSize: 0,
+          cumulativeSizeRatio: 0,
+          spaceSaved: 0,
+          backedUpFiles: [],
+          cumulativeChangedFiles: [],
+          changeDetectionMethod: this.options.changeDetectionMethod,
+          recommendFullBackup: false,
+          processingTime: Date.now() - startTime,
+          success: false,
+          error: 'File does not exist',
+          createdAt: new Date()
+        };
+      }
+
+      const strategy = await this.determineDifferentialStrategy(resolvedPath);
+      
+      if (strategy === 'skip') {
+        const changeInfo = await this.detectCumulativeFileChanges(resolvedPath);
+        return {
+          backupType: 'skipped',
+          backupId: '',
+          filesBackedUp: 0,
+          cumulativeFilesChanged: changeInfo.cumulativeChanges.length,
+          filesSkipped: 1,
+          backupPath: '',
+          currentBackupSize: 0,
+          cumulativeSize: 0,
+          cumulativeSizeRatio: 0,
+          spaceSaved: 0,
+          backedUpFiles: [],
+          cumulativeChangedFiles: changeInfo.cumulativeChanges,
+          changeDetectionMethod: this.options.changeDetectionMethod,
+          recommendFullBackup: false,
+          processingTime: Date.now() - startTime,
+          success: true,
+          createdAt: new Date()
+        };
+      }
+
+      const index = await this.loadDifferentialIndex();
+      const changeInfo = await this.detectCumulativeFileChanges(resolvedPath);
+      
+      // Create backup using existing backup mechanism
+      const backupResult = await this.createBackup(resolvedPath);
+      
+      if (!backupResult.success) {
+        throw new RollbackError(backupResult.error || 'Backup creation failed', resolvedPath);
+      }
+
+      const backupId = this.generateBackupId();
+      const currentTime = new Date();
+      const fileStats = await stat(resolvedPath);
+
+      if (strategy === 'full') {
+        // Reset differential chain with new full backup
+        index.currentFullBackup = {
+          id: backupId,
+          createdAt: currentTime,
+          filePath: backupResult.backupPath,
+          size: backupResult.backupSize || fileStats.size
+        };
+        index.differentialChain = [];
+        index.cumulativeFileStates = {};
+        index.stats = {
+          totalDifferentials: 0,
+          currentChainLength: 0,
+          cumulativeSize: 0,
+          cumulativeSizeRatio: 0,
+          totalSpaceSaved: 0,
+          lastBackupAt: currentTime,
+          timeSinceFullBackup: 0
+        };
+
+        this.logger.info('Created new full backup for differential chain', {
+          backupId,
+          filePath: resolvedPath,
+          backupPath: backupResult.backupPath
+        });
+      } else {
+        // Add differential backup to chain
+        const differentialEntry: DifferentialBackupEntry = {
+          id: backupId,
+          type: 'differential',
+          baseFullBackupId: index.currentFullBackup!.id,
+          backupPath: backupResult.backupPath,
+          originalPath: resolvedPath,
+          createdAt: currentTime,
+          cumulativeFiles: changeInfo.cumulativeChanges,
+          cumulativeSize: index.stats.cumulativeSize + (backupResult.backupSize || 0),
+          currentFiles: [resolvedPath],
+          currentSize: backupResult.backupSize || 0,
+          changeDetectionMethod: this.options.changeDetectionMethod,
+          compressed: backupResult.compressed || false,
+          deduplicated: backupResult.deduplicated || false,
+          timeSinceFullBackup: changeInfo.timeSinceFullBackup
+        };
+
+        index.differentialChain.push(differentialEntry);
+        index.stats.totalDifferentials++;
+        index.stats.currentChainLength++;
+        index.stats.cumulativeSize += differentialEntry.currentSize;
+        index.stats.cumulativeSizeRatio = index.currentFullBackup ? 
+          index.stats.cumulativeSize / index.currentFullBackup.size : 0;
+        index.stats.lastBackupAt = currentTime;
+        index.stats.timeSinceFullBackup = changeInfo.timeSinceFullBackup;
+
+        this.logger.info('Created differential backup', {
+          backupId,
+          filePath: resolvedPath,
+          cumulativeSize: index.stats.cumulativeSize,
+          cumulativeSizeRatio: index.stats.cumulativeSizeRatio
+        });
+      }
+
+      // Update file state
+      const contentHash = this.options.changeDetectionMethod !== 'mtime' ? 
+        await this.createContentHash(resolvedPath) : undefined;
+      
+      index.cumulativeFileStates[resolvedPath] = {
+        filePath: resolvedPath,
+        size: fileStats.size,
+        mtime: fileStats.mtime,
+        contentHash,
+        lastBackup: currentTime,
+        hasChanged: false // Reset after backup
+      };
+
+      await this.saveDifferentialIndex();
+
+      // Determine if next backup should be full
+      const recommendFullBackup = 
+        index.stats.cumulativeSizeRatio >= this.options.differentialSizeMultiplier ||
+        changeInfo.timeSinceFullBackup >= this.options.differentialFullBackupInterval * 0.8; // 80% threshold
+
+      let recommendationReason: string | undefined;
+      if (recommendFullBackup) {
+        if (index.stats.cumulativeSizeRatio >= this.options.differentialSizeMultiplier) {
+          recommendationReason = `Cumulative size ratio (${index.stats.cumulativeSizeRatio.toFixed(2)}) approaching threshold (${this.options.differentialSizeMultiplier})`;
+        } else {
+          recommendationReason = `Time since full backup (${changeInfo.timeSinceFullBackup.toFixed(1)}h) approaching threshold (${this.options.differentialFullBackupInterval}h)`;
+        }
+      }
+
+      const processingTime = Date.now() - startTime;
+
+      return {
+        backupType: strategy,
+        backupId,
+        baseFullBackupId: strategy === 'differential' ? index.currentFullBackup?.id : undefined,
+        filesBackedUp: 1,
+        cumulativeFilesChanged: changeInfo.cumulativeChanges.length,
+        filesSkipped: 0,
+        backupPath: backupResult.backupPath,
+        currentBackupSize: backupResult.backupSize || 0,
+        cumulativeSize: index.stats.cumulativeSize,
+        cumulativeSizeRatio: index.stats.cumulativeSizeRatio,
+        spaceSaved: index.stats.totalSpaceSaved,
+        backedUpFiles: [resolvedPath],
+        cumulativeChangedFiles: changeInfo.cumulativeChanges,
+        changeDetectionMethod: this.options.changeDetectionMethod,
+        recommendFullBackup,
+        recommendationReason,
+        processingTime,
+        success: true,
+        createdAt: currentTime
+      };
+
+    } catch (error) {
+      const processingTime = Date.now() - startTime;
+      this.logger.error('Differential backup failed', {
+        filePath: resolvedPath,
+        error: error instanceof Error ? error.message : String(error),
+        processingTime
+      });
+
+      return {
+        backupType: 'skipped',
+        backupId: '',
+        filesBackedUp: 0,
+        cumulativeFilesChanged: 0,
+        filesSkipped: 1,
+        backupPath: '',
+        currentBackupSize: 0,
+        cumulativeSize: 0,
+        cumulativeSizeRatio: 0,
+        spaceSaved: 0,
+        backedUpFiles: [],
+        cumulativeChangedFiles: [],
+        changeDetectionMethod: this.options.changeDetectionMethod,
+        recommendFullBackup: false,
+        processingTime,
+        success: false,
+        error: error instanceof Error ? error.message : String(error),
+        createdAt: new Date()
+      };
+    }
+  }
+
+  /**
+   * Get differential backup statistics
+   */
+  async getDifferentialStats(): Promise<{
+    enabled: boolean;
+    totalDifferentials: number;
+    currentChainLength: number;
+    cumulativeSize: number;
+    cumulativeSizeRatio: number;
+    spaceSaved: number;
+    lastBackupAt: Date;
+    timeSinceFullBackup: number;
+    strategy: string;
+    changeDetectionMethod: string;
+    indexPath: string;
+    currentFullBackup: {
+      id: string;
+      createdAt: Date;
+      size: number;
+    } | null;
+  }> {
+    if (!this.options.enableDifferentialBackup) {
+      return {
+        enabled: false,
+        totalDifferentials: 0,
+        currentChainLength: 0,
+        cumulativeSize: 0,
+        cumulativeSizeRatio: 0,
+        spaceSaved: 0,
+        lastBackupAt: new Date(),
+        timeSinceFullBackup: 0,
+        strategy: this.options.differentialStrategy,
+        changeDetectionMethod: this.options.changeDetectionMethod,
+        indexPath: this.differentialIndexPath,
+        currentFullBackup: null
+      };
+    }
+
+    const index = await this.loadDifferentialIndex();
+    
+    return {
+      enabled: true,
+      totalDifferentials: index.stats.totalDifferentials,
+      currentChainLength: index.stats.currentChainLength,
+      cumulativeSize: index.stats.cumulativeSize,
+      cumulativeSizeRatio: index.stats.cumulativeSizeRatio,
+      spaceSaved: index.stats.totalSpaceSaved,
+      lastBackupAt: index.stats.lastBackupAt,
+      timeSinceFullBackup: index.stats.timeSinceFullBackup,
+      strategy: this.options.differentialStrategy,
+      changeDetectionMethod: this.options.changeDetectionMethod,
+      indexPath: this.differentialIndexPath,
+      currentFullBackup: index.currentFullBackup ? {
+        id: index.currentFullBackup.id,
+        createdAt: index.currentFullBackup.createdAt,
+        size: index.currentFullBackup.size
+      } : null
     };
   }
 
