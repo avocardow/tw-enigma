@@ -2,6 +2,12 @@ import * as cheerio from 'cheerio';
 import * as path from 'path';
 import { z } from 'zod';
 import { createLogger } from './logger.js';
+import { 
+  PathUtils,
+  type PathCalculationOptions,
+  type RelativePathResult,
+  PathUtilsError 
+} from './pathUtils.js';
 import type { AnyNode } from 'domhandler';
 
 /**
@@ -172,10 +178,21 @@ export class HtmlStructureError extends CssInjectionError {
 export class CssInjector {
   private readonly logger = createLogger('CssInjector');
   private readonly options: CssInjectionOptions;
+  private readonly pathUtils: PathUtils;
 
   constructor(options: Partial<CssInjectionOptions>) {
     try {
       this.options = CssInjectionOptionsSchema.parse(options);
+      
+      // Initialize PathUtils with configuration matching CSS injection options
+      this.pathUtils = new PathUtils({
+        basePath: this.options.basePath,
+        caseSensitive: false, // Web paths are typically case-insensitive
+        enableSecurity: true, // Enable security checks for path validation
+        forceWebNormalization: true, // Always use forward slashes for web compatibility
+        enableCaching: true, // Enable caching for performance
+      });
+      
       this.logger.debug('CssInjector initialized', {
         cssPath: this.options.cssPath,
         htmlPath: this.options.htmlPath,
@@ -540,55 +557,75 @@ export class CssInjector {
       useRelativePaths: this.options.useRelativePaths
     });
 
-    // If not using relative paths, normalize and return CSS path
+    // If not using relative paths, normalize and return CSS path as absolute
     if (!this.options.useRelativePaths) {
       this.logger.debug('Using absolute path as configured');
-      // Normalize path separators for web use
-      return this.options.cssPath.replace(/\\/g, '/');
+      try {
+        // For absolute paths, we want to preserve leading slashes and just normalize separators
+        const normalizedPath = this.options.cssPath.replace(/\\/g, '/');
+        
+        // Use PathUtils validation to ensure it's safe, but don't use its normalization
+        // which might remove leading slashes that are important for absolute web paths
+        const validationResult = this.pathUtils.validatePath(normalizedPath);
+        if (!validationResult.isValid) {
+          this.logger.warn('CSS path validation failed, using as-is', {
+            cssPath: this.options.cssPath,
+            validationDetails: validationResult.details
+          });
+        }
+        
+        return normalizedPath;
+      } catch (error) {
+        this.logger.warn('Failed to process absolute CSS path, using as-is', {
+          cssPath: this.options.cssPath,
+          error: error instanceof Error ? error.message : String(error)
+        });
+        return this.options.cssPath.replace(/\\/g, '/');
+      }
     }
 
     try {
-      // Use Node.js path module for cross-platform path calculation
-      
-      // Normalize input paths to use platform-appropriate separators first
-      let fromPath = this.options.htmlPath.replace(/\\/g, path.sep);
-      let toPath = this.options.cssPath.replace(/\\/g, path.sep);
+      // Use PathUtils for enhanced relative path calculation
+      const result: RelativePathResult = this.pathUtils.calculateRelativePath(
+        this.options.htmlPath,
+        this.options.cssPath
+      );
 
-      // Apply base path if provided
-      if (this.options.basePath) {
-        // Make paths relative to base path if they're not already absolute
-        if (!path.isAbsolute(fromPath)) {
-          fromPath = path.resolve(this.options.basePath, fromPath);
-        }
-        if (!path.isAbsolute(toPath)) {
-          toPath = path.resolve(this.options.basePath, toPath);
-        }
-      }
-
-      // Calculate relative path from HTML file directory to CSS file
-      const htmlDir = path.dirname(fromPath);
-      const relativePath = path.relative(htmlDir, toPath);
-
-      // Normalize path separators for web use (always forward slashes)
-      const webPath = relativePath.replace(/\\/g, '/');
-
-      this.logger.debug('Relative path calculated', {
-        fromPath,
-        toPath,
-        htmlDir,
-        relativePath,
-        webPath
+      this.logger.debug('Relative path calculated using PathUtils', {
+        fromPath: result.fromPath,
+        toPath: result.toPath,
+        relativePath: result.relativePath,
+        isValid: result.isValid,
+        security: result.security
       });
 
-      return webPath;
+      if (!result.isValid) {
+        throw new PathCalculationError(
+          `Invalid path calculation result: ${result.security?.details || 'Unknown validation error'}`,
+          this.options.htmlPath,
+          this.options.cssPath
+        );
+      }
+
+      return result.relativePath;
 
     } catch (error) {
-      this.logger.error('Failed to calculate relative path', {
+      this.logger.error('Failed to calculate relative path using PathUtils', {
         cssPath: this.options.cssPath,
         htmlPath: this.options.htmlPath,
         basePath: this.options.basePath,
         error: error instanceof Error ? error.message : String(error)
       });
+
+      // If it's already a PathUtilsError, wrap it in PathCalculationError
+      if (error instanceof PathUtilsError) {
+        throw new PathCalculationError(
+          `PathUtils calculation failed: ${error.message}`,
+          this.options.htmlPath,
+          this.options.cssPath,
+          error
+        );
+      }
 
       throw new PathCalculationError(
         `Failed to calculate relative path from HTML to CSS: ${error instanceof Error ? error.message : String(error)}`,
@@ -705,25 +742,26 @@ export class CssInjector {
   }
 
   /**
-   * Normalize path for comparison
+   * Normalize path for comparison using PathUtils
    */
   private normalizePath(inputPath: string): string {
-    // Convert to lowercase for case-insensitive comparison
-    let normalized = inputPath.toLowerCase();
-    
-    // Normalize path separators to forward slashes
-    normalized = normalized.replace(/\\/g, '/');
-    
-    // Remove leading ./ if present
-    normalized = normalized.replace(/^\.\//, '');
-    
-    // Normalize multiple slashes to single slash
-    normalized = normalized.replace(/\/+/g, '/');
-    
-    // Remove trailing slash if present
-    normalized = normalized.replace(/\/$/, '');
-    
-    return normalized;
+    try {
+      // Use PathUtils for consistent normalization
+      return this.pathUtils.normalizePath(inputPath);
+    } catch (error) {
+      this.logger.warn('PathUtils normalization failed, using fallback', {
+        inputPath,
+        error: error instanceof Error ? error.message : String(error)
+      });
+      
+      // Fallback to basic normalization if PathUtils fails
+      let normalized = inputPath.toLowerCase();
+      normalized = normalized.replace(/\\/g, '/');
+      normalized = normalized.replace(/^\.\//, '');
+      normalized = normalized.replace(/\/+/g, '/');
+      normalized = normalized.replace(/\/$/, '');
+      return normalized;
+    }
   }
 
   /**
