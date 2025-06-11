@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import type { HtmlClassExtractionResult, ClassData } from './htmlExtractor.js';
 import type { JsClassExtractionResult, JsClassData, SupportedFramework } from './jsExtractor.js';
+import type { ValidationResult, SimplePatternValidator, SimpleValidatorConfig } from './patternValidator.js';
 
 /**
  * Configuration options for pattern analysis
@@ -15,6 +16,8 @@ export const PatternAnalysisOptionsSchema = z.object({
   sortBy: z.enum(['frequency', 'alphabetical', 'source']).default('frequency'),
   sortDirection: z.enum(['asc', 'desc']).default('desc'),
   outputFormat: z.enum(['map', 'array', 'json']).default('map'),
+  enableValidation: z.boolean().default(false),
+  validationOptions: z.object({}).passthrough().optional(),
 });
 
 export type PatternAnalysisOptions = z.infer<typeof PatternAnalysisOptionsSchema>;
@@ -54,6 +57,7 @@ export interface AggregatedClassData {
     }>;
   };
   coOccurrences: Map<string, number>; // Classes that appear with this one
+  validation?: ValidationResult; // Optional validation metadata
 }
 
 /**
@@ -1061,10 +1065,10 @@ export function exportToJson(
 /**
  * Main pattern analysis function that combines all functionality
  */
-export function analyzePatterns(
+export async function analyzePatterns(
   input: PatternAnalysisInput,
   options: Partial<PatternAnalysisOptions> = {}
-): FrequencyAnalysisResult {
+): Promise<FrequencyAnalysisResult> {
   const startTime = Date.now();
   const defaultOptions: PatternAnalysisOptions = {
     caseSensitive: false,
@@ -1075,7 +1079,9 @@ export function analyzePatterns(
     maxCoOccurrenceDistance: 5,
     includeFrameworkAnalysis: false,
     sortBy: 'frequency',
-    sortDirection: 'desc'
+    sortDirection: 'desc',
+    enableValidation: false,
+    validationOptions: undefined
   };
   const validatedOptions = PatternAnalysisOptionsSchema.parse({ ...defaultOptions, ...options });
   const errors: string[] = [];
@@ -1083,6 +1089,11 @@ export function analyzePatterns(
   try {
     // Generate frequency map
     const frequencyMap = generateFrequencyMap(input, validatedOptions);
+    
+    // Add validation if enabled
+    if (validatedOptions.enableValidation) {
+      await addValidationToFrequencyMap(frequencyMap, validatedOptions.validationOptions);
+    }
     
     // Generate pattern groups
     const patternGroups = generatePatternGroups(frequencyMap, validatedOptions);
@@ -1133,6 +1144,35 @@ export function analyzePatterns(
 }
 
 /**
+ * Add validation metadata to frequency map
+ */
+async function addValidationToFrequencyMap(
+  frequencyMap: PatternFrequencyMap,
+  validationOptions?: Record<string, any>
+): Promise<void> {
+  try {
+    // Import SimplePatternValidator dynamically to avoid circular dependencies
+    const { SimplePatternValidator } = await import('./patternValidator.js');
+    
+    // Create validator instance
+    const validator = new SimplePatternValidator(validationOptions);
+    
+    // Validate each class in the frequency map
+    for (const [className, data] of frequencyMap) {
+      try {
+        const validationResult = validator.validateClass(className);
+        data.validation = validationResult;
+      } catch (error) {
+        // If validation fails for a specific class, log but continue
+        console.warn(`Failed to validate class "${className}":`, error);
+      }
+    }
+  } catch (error) {
+    console.warn('Failed to initialize simple pattern validator:', error);
+  }
+}
+
+/**
  * Convenience function for quick frequency analysis
  */
 export function quickFrequencyAnalysis(
@@ -1148,7 +1188,9 @@ export function quickFrequencyAnalysis(
     maxCoOccurrenceDistance: 5,
     includeFrameworkAnalysis: false,
     sortBy: 'frequency',
-    sortDirection: 'desc'
+    sortDirection: 'desc',
+    enableValidation: false,
+    validationOptions: undefined
   };
   
   const frequencyMap = generateFrequencyMap(input, options);

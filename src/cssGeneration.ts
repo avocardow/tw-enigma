@@ -9,6 +9,7 @@ import type { EnigmaConfig } from './config.js';
 import type { FrequencyAnalyzer } from './frequencyAnalyzer.js';
 import type { GeneratedCSS } from './generatedCss.js';
 import type { CSSGenerationOptions } from './cssGeneration.js';
+import type { ValidationResult } from './patternValidator.js';
 
 // ===== ZOD SCHEMAS =====
 
@@ -25,6 +26,9 @@ export const CssGenerationOptionsSchema = z.object({
   enableOptimizations: z.boolean().default(true),
   customSortFunction: z.function().args(z.any(), z.any()).returns(z.number()).optional(),
   customNamingFunction: z.function().args(z.any()).returns(z.string()).optional(),
+  enableValidation: z.boolean().default(false),
+  skipInvalidClasses: z.boolean().default(false),
+  warnOnInvalidClasses: z.boolean().default(true),
 });
 
 export const PatternTypeSchema = z.enum(['atomic', 'utility', 'component']);
@@ -55,6 +59,9 @@ export interface CssGenerationOptions {
   enableOptimizations: boolean;
   customSortFunction?: (a: CssRule, b: CssRule) => number;
   customNamingFunction?: (pattern: AggregatedClassData) => string;
+  enableValidation: boolean;
+  skipInvalidClasses: boolean;
+  warnOnInvalidClasses: boolean;
 }
 
 export interface CssRule {
@@ -87,6 +94,13 @@ export interface CssGenerationResult {
     strategy: string;
     totalInputClasses: number;
     compressionAchieved: boolean;
+    validationMetadata?: {
+      totalClassesValidated: number;
+      validClasses: number;
+      invalidClasses: number;
+      warningsGenerated: number;
+      skippedClasses: number;
+    };
   };
   warnings: string[];
   errors: string[];
@@ -199,11 +213,14 @@ export const DEFAULT_CSS_GENERATION_OPTIONS: CssGenerationOptions = {
   sortingStrategy: 'specificity',
   commentLevel: 'detailed',
   selectorNaming: 'pretty',
-  minimumFrequency: 0,
+  minimumFrequency: 2,
   includeSourceMaps: false,
   formatOutput: true,
   maxRulesPerFile: 1000,
   enableOptimizations: true,
+  enableValidation: false,
+  skipInvalidClasses: false,
+  warnOnInvalidClasses: true,
 };
 
 // ===== VALIDATION FUNCTIONS =====
@@ -483,10 +500,26 @@ export function generateCssRules(
       // Extract source classes
       const sourceClasses = extractSourceClasses(pattern);
       
-      // Validate Tailwind classes
-      const validClasses = sourceClasses.filter(className => 
-        validateTailwindClass(className)
-      );
+      // Validate Tailwind classes using pattern validator if enabled, otherwise use basic validation
+      let validClasses: string[];
+      if (actualOptions.enableValidation && pattern.validation) {
+        // Use existing validation result from pattern analysis
+        if (pattern.validation.isValid) {
+          validClasses = [pattern.validation.className];
+        } else {
+          // Handle invalid classes based on options
+          if (actualOptions.skipInvalidClasses) {
+            continue; // Skip invalid classes
+          } else {
+            validClasses = sourceClasses; // Include invalid classes but will add warnings
+          }
+        }
+      } else {
+        // Fallback to basic validation
+        validClasses = sourceClasses.filter(className => 
+          validateTailwindClass(className)
+        );
+      }
       
       if (validClasses.length === 0) {
         continue; // Skip patterns with no valid Tailwind classes
