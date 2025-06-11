@@ -3,6 +3,7 @@ import { z } from "zod";
 import { HtmlExtractionOptionsSchema, type HtmlExtractionOptions } from "./htmlExtractor.js";
 import { JsExtractionOptionsSchema, type JsExtractionOptions } from "./jsExtractor.js";
 import { CssInjectionOptionsSchema, type CssInjectionOptions } from "./cssInjector.js";
+import { FileIntegrityOptionsSchema, type FileIntegrityOptions } from "./fileIntegrity.js";
 import { ConfigError } from "./errors.js";
 import { createLogger } from "./logger.js";
 
@@ -91,6 +92,11 @@ export const EnigmaConfigSchema = z.object({
   cssInjector: CssInjectionOptionsSchema
     .optional()
     .describe("CSS injection configuration options"),
+
+  // File Integrity Validation Configuration
+  fileIntegrity: FileIntegrityOptionsSchema
+    .optional()
+    .describe("File integrity validation configuration options"),
 });
 
 /**
@@ -142,6 +148,17 @@ export interface CliArguments {
   cssCreateBackup?: boolean;
   cssMaxFileSize?: number;
   cssTimeout?: number;
+  // File integrity CLI options
+  integrityAlgorithm?: "md5" | "sha1" | "sha256" | "sha512";
+  integrityCreateBackups?: boolean;
+  integrityBackupDirectory?: string;
+  integrityBackupRetentionDays?: number;
+  integrityMaxFileSize?: number;
+  integrityTimeout?: number;
+  integrityVerifyAfterRollback?: boolean;
+  integrityBatchSize?: number;
+  integrityEnableCaching?: boolean;
+  integrityCacheSize?: number;
 }
 
 /**
@@ -301,6 +318,34 @@ function normalizeCliArguments(args: CliArguments): Partial<EnigmaConfig> {
   if (Object.keys(cssInjectorConfig).length > 0) {
     // Apply defaults using the schema to ensure all fields have proper values
     config.cssInjector = CssInjectionOptionsSchema.parse(cssInjectorConfig);
+  }
+
+  // File integrity options
+  const fileIntegrityConfig: Partial<FileIntegrityOptions> = {};
+  if (args.integrityAlgorithm !== undefined)
+    fileIntegrityConfig.algorithm = args.integrityAlgorithm;
+  if (args.integrityCreateBackups !== undefined)
+    fileIntegrityConfig.createBackups = args.integrityCreateBackups;
+  if (args.integrityBackupDirectory !== undefined)
+    fileIntegrityConfig.backupDirectory = args.integrityBackupDirectory;
+  if (args.integrityBackupRetentionDays !== undefined)
+    fileIntegrityConfig.backupRetentionDays = args.integrityBackupRetentionDays;
+  if (args.integrityMaxFileSize !== undefined)
+    fileIntegrityConfig.maxFileSize = args.integrityMaxFileSize;
+  if (args.integrityTimeout !== undefined)
+    fileIntegrityConfig.timeout = args.integrityTimeout;
+  if (args.integrityVerifyAfterRollback !== undefined)
+    fileIntegrityConfig.verifyAfterRollback = args.integrityVerifyAfterRollback;
+  if (args.integrityBatchSize !== undefined)
+    fileIntegrityConfig.batchSize = args.integrityBatchSize;
+  if (args.integrityEnableCaching !== undefined)
+    fileIntegrityConfig.enableCaching = args.integrityEnableCaching;
+  if (args.integrityCacheSize !== undefined)
+    fileIntegrityConfig.cacheSize = args.integrityCacheSize;
+
+  if (Object.keys(fileIntegrityConfig).length > 0) {
+    // Apply defaults using the schema to ensure all fields have proper values
+    config.fileIntegrity = FileIntegrityOptionsSchema.parse(fileIntegrityConfig);
   }
 
   return config;

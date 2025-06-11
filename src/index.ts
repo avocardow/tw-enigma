@@ -13,6 +13,9 @@ export * from "./jsExtractor.js";
 // CSS injection module
 export * from "./cssInjector.js";
 
+// File integrity validation module
+export * from "./fileIntegrity.js";
+
 // Main entry point for the library
 export { version } from "../package.json";
 
@@ -23,6 +26,7 @@ export * from './htmlExtractor.js';
 export * from './jsExtractor.js';
 export * from './patternAnalysis.js';
 export * from './cssInjector.js';
+export * from './fileIntegrity.js';
 
 // Core components
 export { logger } from './logger.js';
