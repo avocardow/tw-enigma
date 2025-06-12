@@ -213,7 +213,7 @@ export class CssOutputOrchestrator {
     this.criticalCssExtractor = createCriticalCssExtractor(
       this.config.critical,
     );
-    this.analyzer = createCssAnalyzer();
+    this.analyzer = createCssAnalyzer(this.config);
   }
 
   /**
@@ -640,8 +640,25 @@ export class CssOutputOrchestrator {
     let optimizedSize = 0;
     let compressedSize = 0;
 
-    for (const optimization of optimizations.values()) {
-      optimizedSize += optimization.stats.optimizedSize;
+    // For chunked strategies, we need to avoid double-counting duplicated content
+    if (this.config.strategy === "single") {
+      // For single strategy, just sum up all optimizations (should be 1)
+      for (const optimization of optimizations.values()) {
+        optimizedSize += optimization.stats.optimizedSize;
+      }
+    } else {
+      // For chunked strategies, calculate the total size of unique optimized chunks
+      // This avoids double-counting when chunks contain duplicated content
+      const uniqueOptimizedContent = new Set<string>();
+      
+      for (const optimization of optimizations.values()) {
+        uniqueOptimizedContent.add(optimization.optimized);
+      }
+      
+      // Calculate total size of unique optimized content
+      for (const content of uniqueOptimizedContent) {
+        optimizedSize += Buffer.byteLength(content, "utf8");
+      }
     }
 
     for (const compressionGroup of compressions.values()) {

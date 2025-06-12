@@ -632,49 +632,65 @@ export class CssAnalyzer {
       low: [],
     };
 
-    // Large file warnings
+    // Check for large chunks
     for (const chunk of chunkAnalyses) {
-      if (chunk.size > this.config.reporting.maxAssetSize) {
-        suggestions.critical.push({
+      const maxAssetSize = this.config.reporting?.maxAssetSize || 250000; // 250KB default
+      if (chunk.size > maxAssetSize) {
+        suggestions.high.push({
           type: "chunking",
-          message: `Chunk ${chunk.name} is ${Math.round(chunk.size / 1024)}KB, consider splitting`,
-          impact: "critical",
+          message: `Chunk "${chunk.name}" is large (${Math.round(chunk.size / 1024)}KB). Consider splitting it.`,
+          impact: "high",
           estimatedSavings: chunk.size * 0.3,
           effort: "medium",
-          implementation: "Enable chunking or reduce chunk size",
+          implementation: "Split large chunks using code splitting or dynamic imports",
         });
       }
     }
 
-    // Compression suggestions
+    // Check for duplicate selectors
+    for (const chunk of chunkAnalyses) {
+      const duplicates = chunk.duplicateRules.filter((rule) => rule.count > 1);
+      if (duplicates.length > 0) {
+        const totalWasted = duplicates.reduce(
+          (sum, rule) => sum + rule.wastedBytes,
+          0,
+        );
+        suggestions.medium.push({
+          type: "duplicates",
+          message: `Found ${duplicates.length} duplicate rules wasting ${Math.round(totalWasted / 1024)}KB`,
+          impact: "medium",
+          estimatedSavings: totalWasted,
+          effort: "low",
+          implementation: "Remove duplicate CSS rules and consolidate selectors",
+        });
+      }
+    }
+
+    // Check for unused custom properties
+    for (const chunk of chunkAnalyses) {
+      const unused = chunk.customProperties.filter((prop) => prop.isUnused);
+      if (unused.length > 0) {
+        suggestions.low.push({
+          type: "unused-css",
+          message: `Found ${unused.length} unused CSS custom properties`,
+          impact: "low",
+          estimatedSavings: unused.length * 50, // Estimate 50 bytes per unused property
+          effort: "low",
+          implementation: "Remove unused CSS custom properties",
+        });
+      }
+    }
+
+    // Check for compression opportunities
     for (const asset of assetAnalyses) {
-      if (asset.optimization.canCompress && !asset.compressedSize) {
+      if (asset.optimization.canCompress && !asset.compressionType) {
         suggestions.high.push({
           type: "compression",
-          message: `Asset ${asset.originalPath} can be compressed`,
+          message: `Asset "${asset.originalPath}" can be compressed`,
           impact: "high",
           estimatedSavings: asset.optimization.estimatedSavings,
           effort: "low",
-          implementation: "Enable compression in build configuration",
-        });
-      }
-    }
-
-    // Duplicate rule suggestions
-    for (const chunk of chunkAnalyses) {
-      const duplicateWaste = chunk.duplicateRules.reduce(
-        (sum, rule) => sum + rule.wastedBytes,
-        0,
-      );
-      if (duplicateWaste > 1024) {
-        // More than 1KB of duplicates
-        suggestions.medium.push({
-          type: "duplicates",
-          message: `Chunk ${chunk.name} has ${Math.round(duplicateWaste / 1024)}KB of duplicate rules`,
-          impact: "medium",
-          estimatedSavings: duplicateWaste,
-          effort: "medium",
-          implementation: "Enable rule merging and deduplication",
+          implementation: "Enable gzip or brotli compression",
         });
       }
     }
@@ -683,7 +699,7 @@ export class CssAnalyzer {
   }
 
   /**
-   * Generate warnings based on analysis
+   * Generate warnings for potential issues
    */
   private generateWarnings(
     chunkAnalyses: ChunkAnalysis[],
@@ -692,37 +708,44 @@ export class CssAnalyzer {
   ): Warning[] {
     const warnings: Warning[] = [];
 
-    // Size warnings
-    if (summary.totalSize > this.config.reporting.maxEntrypointSize) {
+    // Check total bundle size
+    const maxEntrypointSize = this.config.reporting?.maxEntrypointSize || 500000; // 500KB default
+    if (summary.totalSize > maxEntrypointSize) {
       warnings.push({
         type: "size",
         severity: "warning",
-        message: `Total CSS size (${Math.round(summary.totalSize / 1024)}KB) exceeds recommended limit`,
+        message: `Total bundle size (${Math.round(summary.totalSize / 1024)}KB) exceeds recommended limit (${Math.round(maxEntrypointSize / 1024)}KB)`,
         suggestion: "Consider code splitting or removing unused CSS",
       });
     }
 
-    // Performance warnings
-    for (const chunk of chunkAnalyses) {
-      if (chunk.loadingPriority === "critical" && chunk.size > 14 * 1024) {
-        warnings.push({
-          type: "performance",
-          severity: "warning",
-          message: `Critical chunk ${chunk.name} is larger than 14KB`,
-          file: chunk.name,
-          suggestion: "Extract non-critical CSS or reduce critical path",
-        });
-      }
+    // Check for performance issues
+    if (summary.compressionRatio < 0.3) {
+      warnings.push({
+        type: "performance",
+        severity: "warning",
+        message: "Low compression ratio indicates potential optimization opportunities",
+        suggestion: "Enable minification and compression",
+      });
     }
 
-    // Optimization warnings
-    const unminifiedAssets = assetAnalyses.filter((asset) => !asset.isMinified);
-    if (unminifiedAssets.length > 0) {
+    // Check for duplicate content
+    if (summary.duplicateBytes > summary.totalSize * 0.1) {
       warnings.push({
         type: "optimization",
         severity: "warning",
-        message: `${unminifiedAssets.length} assets are not minified`,
-        suggestion: "Enable minification for production builds",
+        message: `High amount of duplicate content (${Math.round(summary.duplicateBytes / 1024)}KB)`,
+        suggestion: "Remove duplicate CSS rules and consolidate styles",
+      });
+    }
+
+    // Check for unused content
+    if (summary.unusedBytes > summary.totalSize * 0.2) {
+      warnings.push({
+        type: "optimization",
+        severity: "info",
+        message: `Significant unused CSS detected (${Math.round(summary.unusedBytes / 1024)}KB)`,
+        suggestion: "Consider using CSS purging tools to remove unused styles",
       });
     }
 
@@ -915,33 +938,31 @@ ${report.optimization.critical.map((s) => `- ${s.message} (${Math.round(s.estima
   }
 
   /**
-   * Save report to file
+   * Save analysis report to file
    */
   async saveReport(
     report: CssAnalysisReport,
     format: "html" | "json" | "markdown" = "json",
     outputPath?: string,
   ): Promise<string> {
-    const path = outputPath || this.config.reporting.outputPath;
-    let content: string;
-    let finalPath: string;
+    const path = outputPath || this.config.reporting?.outputPath || "./css-analysis-report";
+    const extension = format === "html" ? ".html" : format === "markdown" ? ".md" : ".json";
+    const fullPath = `${path}${extension}`;
 
+    let content: string;
     switch (format) {
       case "html":
         content = this.generateHtmlReport(report);
-        finalPath = path.replace(/\.json$/, ".html");
         break;
       case "markdown":
         content = this.generateMarkdownReport(report);
-        finalPath = path.replace(/\.json$/, ".md");
         break;
       default:
         content = this.generateJsonReport(report);
-        finalPath = path;
     }
 
-    await writeFile(finalPath, content, "utf8");
-    return finalPath;
+    await writeFile(fullPath, content, "utf8");
+    return fullPath;
   }
 
   private generateWarningsSection(warnings: Warning[]): string {
@@ -1051,15 +1072,25 @@ export class CiIntegration {
    * Check if analysis should fail CI
    */
   shouldFailCi(report: CssAnalysisReport): boolean {
-    // Fail on critical warnings
-    if (report.warnings.some((w) => w.severity === "error")) return true;
-
-    // Fail on size thresholds
-    if (report.summary.totalSize > this.config.reporting.maxEntrypointSize)
+    const maxEntrypointSize = this.config.reporting?.maxEntrypointSize || 500000; // 500KB default
+    
+    // Fail if bundle size exceeds limit
+    if (report.summary.totalSize > maxEntrypointSize) {
       return true;
+    }
 
-    // Fail on performance thresholds
-    if (report.performance.estimatedLoadTime.fast3g > 3000) return true; // 3 seconds
+    // Fail if there are critical warnings
+    const criticalWarnings = report.warnings.filter(
+      (w) => w.severity === "error",
+    );
+    if (criticalWarnings.length > 0) {
+      return true;
+    }
+
+    // Fail if compression ratio is too low (indicates poor optimization)
+    if (report.summary.compressionRatio < 0.2) {
+      return true;
+    }
 
     return false;
   }
@@ -1095,6 +1126,6 @@ ${shouldFail ? "**Build should be reviewed before merging.**" : "**Build looks g
 /**
  * Factory function to create a CSS analyzer instance
  */
-export function createCssAnalyzer(): CssAnalyzer {
-  return new CssAnalyzer();
+export function createCssAnalyzer(config: CssOutputConfig): CssAnalyzer {
+  return new CssAnalyzer(config);
 }

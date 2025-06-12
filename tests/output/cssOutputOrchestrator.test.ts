@@ -220,7 +220,7 @@ describe("CssOutputOrchestrator", () => {
       // Test chunked strategy
       const chunkedConfig = createProductionConfig({
         strategy: "chunked",
-        chunking: { strategy: "size", maxSize: 500 }, // Small chunks to force splitting
+        chunking: { strategy: "size", maxSize: 1024 }, // Use minimum valid size
       });
       const chunkedOrchestrator = createCssOutputOrchestrator(chunkedConfig);
 
