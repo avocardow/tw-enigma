@@ -1,5 +1,5 @@
 import { createLogger } from "../logger";
-import { normalizePath, resolveConfigPath } from "../pathUtils";
+import { normalizePath } from "../pathUtils";
 
 /**
  * Utility interface for plugin developers
@@ -15,7 +15,6 @@ export interface PluginUtils {
    */
   path: {
     normalize: typeof normalizePath;
-    resolve: typeof resolveConfigPath;
   };
 
   /**
@@ -32,7 +31,6 @@ export const pluginUtils: PluginUtils = {
   createLogger,
   path: {
     normalize: normalizePath,
-    resolve: resolveConfigPath,
   },
   validation: {
     isValidClassName: (className: string) =>

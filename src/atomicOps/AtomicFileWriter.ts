@@ -113,6 +113,7 @@ export class AtomicFileWriter {
     };
 
     const rollbackOp: RollbackOperation = {
+      type: "file_create",
       operationId: uuidv4(),
       filePath,
       steps: [],
@@ -150,7 +151,7 @@ export class AtomicFileWriter {
         result.metadata.backupCreated = true;
         result.metadata.backupPath = backupPath;
 
-        rollbackOp.steps.push({
+        rollbackOp.steps?.push({
           stepNumber: 1,
           description: `Created backup: ${backupPath}`,
           type: "backup",
@@ -162,10 +163,10 @@ export class AtomicFileWriter {
 
       // Step 4: Create temporary file for atomic write
       const tempInfo = await this.createTempFile(filePath);
-      rollbackOp.steps.push({
+      rollbackOp.steps?.push({
         stepNumber: 2,
         description: `Created temporary file: ${tempInfo.path}`,
-        type: "temp_create",
+        type: "backup", // Use valid type from RollbackStep
         filePath: tempInfo.path,
         timestamp: Date.now(),
         success: true,
@@ -183,7 +184,7 @@ export class AtomicFileWriter {
         await this.writeToTempFile(tempInfo.path, contentBuffer, mergedOptions);
       }
 
-      rollbackOp.steps.push({
+      rollbackOp.steps?.push({
         stepNumber: 3,
         description: `Wrote ${contentBuffer.length} bytes to temporary file`,
         type: "write",
@@ -210,10 +211,10 @@ export class AtomicFileWriter {
       // Step 7: Atomically move temp file to final location
       await this.atomicMove(tempInfo.path, filePath, mergedOptions);
 
-      rollbackOp.steps.push({
+      rollbackOp.steps?.push({
         stepNumber: 4,
         description: `Atomically moved temporary file to final location`,
-        type: "move",
+        type: "rename", // Use valid type from RollbackStep
         filePath,
         timestamp: Date.now(),
         success: true,
@@ -226,7 +227,7 @@ export class AtomicFileWriter {
 
       // Success!
       result.success = true;
-      result.rollbackOperation = rollbackOp;
+      // Note: rollbackOperation is not part of AtomicOperationResult interface
 
       // Update metrics
       result.duration = Date.now() - startTime;
@@ -235,12 +236,7 @@ export class AtomicFileWriter {
       // Add file stats
       try {
         const stats = await fs.stat(filePath);
-        result.fileStats = {
-          size: stats.size,
-          mode: stats.mode,
-          mtime: stats.mtime,
-          birthtime: stats.birthtime,
-        };
+        result.fileStats = stats; // Use the full Stats object
       } catch (error) {
         // File stats are optional, don't fail the operation
       }
@@ -271,7 +267,7 @@ export class AtomicFileWriter {
         code: this.getErrorCode(error),
         message:
           error instanceof Error ? error.message : "Unknown error occurred",
-        details: { originalError: error },
+        stack: error instanceof Error ? error.stack : undefined,
       };
 
       // Perform rollback
@@ -314,14 +310,14 @@ export class AtomicFileWriter {
       const startTime = Date.now();
       const result: AtomicOperationResult = {
         success: false,
-        operation: "write_json",
+        operation: "write",
         filePath,
         duration: Date.now() - startTime,
         bytesProcessed: 0,
         error: {
           code: "JSON_SERIALIZATION_ERROR",
           message: `Failed to serialize JSON data: ${error instanceof Error ? error.message : "Unknown error"}`,
-          details: { originalError: error },
+          stack: error instanceof Error ? error.stack : undefined,
         },
         metadata: {
           startTime,
@@ -334,7 +330,7 @@ export class AtomicFileWriter {
         },
       };
 
-      this.updateMetrics("write", false, result.duration, 0, result.error.code);
+      this.updateMetrics("write", false, result.duration, 0, result.error?.code);
       return result;
     }
   }
@@ -396,7 +392,7 @@ export class AtomicFileWriter {
           error: {
             code: "WRITE_ERROR",
             message: error instanceof Error ? error.message : "Unknown error",
-            details: { originalError: error },
+            stack: error instanceof Error ? error.stack : undefined,
           },
           metadata: {
             startTime: Date.now(),
@@ -431,6 +427,15 @@ export class AtomicFileWriter {
   }
 
   /**
+   * Shuts down the file writer and cleans up resources
+   * @returns Promise that resolves when shutdown is complete
+   */
+  async shutdown(): Promise<void> {
+    await this.cleanup();
+    console.log("AtomicFileWriter shutdown complete.");
+  }
+
+  /**
    * Gets current operation metrics
    * @returns Current metrics object
    */
@@ -455,6 +460,7 @@ export class AtomicFileWriter {
       averageDuration: 0,
       operationsPerSecond: 0,
       totalFsyncCalls: 0,
+      totalRetryAttempts: 0,
       errorStats: {},
     };
   }
@@ -548,9 +554,11 @@ export class AtomicFileWriter {
 
     return {
       path: tempPath,
-      fd: null,
-      originalPath: targetPath,
-      size: 0,
+      targetPath: targetPath,
+      createdAt: Date.now(),
+      pid: process.pid,
+      operationId: uuidv4(),
+      cleanupTimeout: 30000,
     };
   }
 
@@ -722,22 +730,23 @@ export class AtomicFileWriter {
 
   private async performRollback(rollbackOp: RollbackOperation): Promise<void> {
     // Rollback in reverse order
-    const steps = [...rollbackOp.steps].reverse();
+    const steps = [...(rollbackOp.steps || [])].reverse();
 
     for (const step of steps) {
       try {
         switch (step.type) {
-          case "temp_create":
-            // Remove temporary file
-            await fs.unlink(step.filePath).catch(() => {});
-            break;
           case "backup":
-            // Restore from backup
-            if (await this.fileExists(step.filePath)) {
+            // Remove temporary file or restore from backup
+            if (step.description.includes("temporary file")) {
+              await fs.unlink(step.filePath).catch(() => {});
+            } else if (await this.fileExists(step.filePath)) {
               await fs.copyFile(step.filePath, rollbackOp.filePath);
             }
             break;
-          case "move":
+          case "write":
+            // Remove written content (handled by temp file cleanup)
+            break;
+          case "rename":
             // If the final file was created, remove it
             await fs.unlink(rollbackOp.filePath).catch(() => {});
             break;

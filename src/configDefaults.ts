@@ -147,6 +147,40 @@ export const ENVIRONMENT_DEFAULTS: Record<Environment, Partial<Config>> = {
     dev: {
       enabled: false,
       watch: false,
+      server: {
+        enabled: false,
+        port: 3000,
+        host: 'localhost',
+        open: false,
+      },
+      diagnostics: {
+        enabled: true,
+        performance: true,
+        memory: true,
+        fileWatcher: true,
+        classAnalysis: true,
+        thresholds: {
+          memoryWarning: 512,
+          memoryError: 1024,
+          cpuWarning: 80,
+          cpuError: 95,
+        },
+      },
+      preview: {
+        enabled: false,
+        autoRefresh: true,
+        showDiff: true,
+        highlightChanges: true,
+      },
+      dashboard: {
+        enabled: false,
+        port: 3001,
+        host: 'localhost',
+        updateInterval: 1000,
+        showMetrics: true,
+        showLogs: true,
+        maxLogEntries: 100,
+      },
     }
   },
   
@@ -160,6 +194,40 @@ export const ENVIRONMENT_DEFAULTS: Record<Environment, Partial<Config>> = {
     dev: {
       enabled: false,
       watch: false,
+      server: {
+        enabled: false,
+        port: 3000,
+        host: 'localhost',
+        open: false,
+      },
+      diagnostics: {
+        enabled: true,
+        performance: true,
+        memory: true,
+        fileWatcher: true,
+        classAnalysis: true,
+        thresholds: {
+          memoryWarning: 512,
+          memoryError: 1024,
+          cpuWarning: 80,
+          cpuError: 95,
+        },
+      },
+      preview: {
+        enabled: false,
+        autoRefresh: true,
+        showDiff: true,
+        highlightChanges: true,
+      },
+      dashboard: {
+        enabled: false,
+        port: 3001,
+        host: 'localhost',
+        updateInterval: 1000,
+        showMetrics: true,
+        showLogs: true,
+        maxLogEntries: 100,
+      },
     }
   }
 };
@@ -374,7 +442,7 @@ export class ConfigDefaults {
           logger.debug(`Loaded global defaults from: ${configPath}`);
           return globalConfig;
         } catch (error) {
-          logger.warn(`Failed to load global config from ${configPath}:`, error);
+          logger.warn(`Failed to load global config from ${configPath}`, { error: error instanceof Error ? error.message : String(error) });
         }
       }
     }
@@ -392,7 +460,7 @@ export class ConfigDefaults {
           logger.debug(`Loaded project defaults from: ${configPath}`);
           return projectConfig;
         } catch (error) {
-          logger.warn(`Failed to load project config from ${configPath}:`, error);
+          logger.warn(`Failed to load project config from ${configPath}`, { error: error instanceof Error ? error.message : String(error) });
         }
       }
     }
@@ -443,7 +511,7 @@ export class ConfigDefaults {
     try {
       return EnigmaConfigSchema.parse(config);
     } catch (error) {
-      logger.error('Default configuration validation failed:', error);
+      logger.error('Default configuration validation failed', { error: error instanceof Error ? error.message : String(error) });
       
       // Return system defaults as ultimate fallback
       logger.warn('Falling back to system defaults due to validation failure');
@@ -467,7 +535,7 @@ export class ConfigDefaults {
    * Log fallback chain for debugging
    */
   private logFallbackChain(): void {
-    if (logger.level === 'debug') {
+    if (process.env.LOG_LEVEL === 'debug' || process.env.DEBUG === 'true') {
       logger.debug('Configuration fallback chain:');
       this.fallbackChain.forEach((source, index) => {
         logger.debug(`  ${index + 1}. ${source.source} (priority: ${source.priority}, valid: ${source.validated})`);
@@ -559,9 +627,7 @@ export class ConfigDefaults {
     // Environment-specific validation rules
     switch (targetEnv) {
       case 'production':
-        if (config.dryRun) {
-          warnings.push('Dry run mode enabled in production environment');
-        }
+        // Note: dryRun is a CLI-only option, not part of main config
         if (config.verbose) {
           warnings.push('Verbose logging enabled in production environment');
         }
@@ -580,21 +646,17 @@ export class ConfigDefaults {
         break;
         
       case 'test':
-        if (!config.dryRun) {
-          warnings.push('Dry run mode disabled in test environment');
-        }
-        if (config.concurrency > 1) {
+        // Note: dryRun is a CLI-only option, not part of main config
+        if (config.maxConcurrency > 1) {
           warnings.push('High concurrency in test environment may cause race conditions');
         }
         break;
         
       case 'ci':
-        if (config.watch) {
+        if (config.dev?.watch) {
           errors.push('Watch mode should not be enabled in CI environment');
         }
-        if (config.dryRun) {
-          warnings.push('Dry run mode enabled in CI environment');
-        }
+        // Note: dryRun is a CLI-only option, not part of main config
         break;
     }
     

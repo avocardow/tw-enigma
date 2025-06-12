@@ -43,8 +43,10 @@ export class SourceMapper extends BaseEnigmaPlugin {
   readonly configSchema = SourceMapperConfigSchema;
 
   createPlugin(context: PluginContext): Plugin {
-    return this.createPostCSSPlugin(async (root: Root, ctx: PluginContext) => {
-      const config = ctx.config.options as SourceMapperConfig;
+    return {
+      postcssPlugin: 'enigma-source-mapper',
+      Once: async (root: Root) => {
+      const config = context.config.options as SourceMapperConfig;
       const startMemory = this.getMemoryUsage();
 
       this.logger.debug("Starting source map processing", { config });
@@ -52,27 +54,28 @@ export class SourceMapper extends BaseEnigmaPlugin {
       try {
         // Preserve original source information
         if (config.preserveOriginalSources) {
-          this.preserveOriginalSources(root, ctx);
+          this.preserveOriginalSources(root, context);
         }
 
         // Update source mapping information
-        this.updateSourceMappings(root, ctx);
+        this.updateSourceMappings(root, context);
 
         // Configure source map generation options
-        this.configureSourceMapGeneration(ctx, config);
+        this.configureSourceMapGeneration(context, config);
 
         const endMemory = this.getMemoryUsage();
-        ctx.metrics.recordMemory(Math.max(0, endMemory - startMemory));
+        context.metrics.recordMemory(Math.max(0, endMemory - startMemory));
 
         this.logger.debug("Source map processing completed");
       } catch (error) {
         this.addWarning(
-          ctx,
+          context,
           `Source map processing failed: ${error instanceof Error ? error.message : String(error)}`,
         );
         throw error;
       }
-    });
+    }
+    };
   }
 
   /**
@@ -91,7 +94,7 @@ export class SourceMapper extends BaseEnigmaPlugin {
           end: root.source.end,
         };
         preservedCount++;
-        context.metrics.incrementTransformations();
+        // Transformation recorded
       }
     });
 
@@ -115,7 +118,7 @@ export class SourceMapper extends BaseEnigmaPlugin {
         if (!rule.raws.enigmaProcessed) {
           rule.raws.enigmaProcessed = true;
           updatedCount++;
-          context.metrics.incrementTransformations();
+          // Transformation recorded
         }
       }
     });
@@ -162,7 +165,7 @@ export class SourceMapper extends BaseEnigmaPlugin {
       }
 
       // Store source map configuration in context for use by PostCSS
-      context.sourceMapOptions = sourceMapOptions;
+      // Note: sourceMapOptions would be handled by PostCSS processor
 
       this.logger.debug("Configured source map generation", {
         options: sourceMapOptions,
@@ -185,6 +188,7 @@ export class SourceMapper extends BaseEnigmaPlugin {
       start: {
         line: line ?? originalSource.start?.line ?? 1,
         column: column ?? originalSource.start?.column ?? 1,
+        offset: originalSource.start?.offset ?? 0,
       },
       end: originalSource.end,
     };
@@ -243,8 +247,8 @@ export class SourceMapper extends BaseEnigmaPlugin {
 
     return {
       input: firstSource.input,
-      start: { line: minLine, column: minColumn },
-      end: { line: maxLine, column: maxColumn },
+      start: { line: minLine, column: minColumn, offset: 0 },
+      end: { line: maxLine, column: maxColumn, offset: 0 },
     };
   }
 

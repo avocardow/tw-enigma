@@ -130,13 +130,13 @@ export class CssDeliveryOptimizer {
   ): Promise<DeliveryOptimization> {
     const inlineThreshold =
       options.inlineThreshold || this.config.critical.inlineThreshold;
-    const shouldInline = criticalResult.size.critical <= inlineThreshold;
+    const shouldInline = criticalResult.inline.length <= inlineThreshold;
 
     if (shouldInline) {
       // Inline critical CSS
       return {
-        inlineCSS: criticalResult.critical,
-        externalCSS: criticalResult.uncritical,
+        inlineCSS: criticalResult.inline,
+        externalCSS: criticalResult.async.join('\n'),
         preloadTags: this.generatePreloadTags(
           options.publicPath,
           options.filename,
@@ -148,7 +148,7 @@ export class CssDeliveryOptimizer {
       // Keep critical CSS external but prioritize loading
       return {
         inlineCSS: "",
-        externalCSS: criticalResult.critical + criticalResult.uncritical,
+        externalCSS: criticalResult.inline + criticalResult.async.join('\n'),
         preloadTags: this.generatePreloadTags(
           options.publicPath,
           options.filename,
@@ -170,9 +170,9 @@ export class CssDeliveryOptimizer {
   ): string[] {
     const tags: string[] = [];
 
-    if (!this.config.delivery.preload) return tags;
+    if (!(this.config as any).delivery?.preload) return tags;
 
-    const path = publicPath || this.config.output.publicPath;
+    const path = publicPath || (this.config as any).output?.publicPath;
     const file = filename || "styles.css";
     const fullPath = `${path}${file}`;
 
@@ -187,7 +187,7 @@ export class CssDeliveryOptimizer {
       tags.push(`<link rel="preload" href="${fullPath}" as="style">`);
     }
 
-    if (this.config.delivery.modulePreload) {
+    if ((this.config as any).delivery?.modulePreload) {
       tags.push(`<link rel="modulepreload" href="${fullPath}">`);
     }
 
@@ -200,7 +200,7 @@ export class CssDeliveryOptimizer {
   private generateResourceHints(): string[] {
     const hints: string[] = [];
 
-    if (this.config.delivery.prefetch) {
+    if ((this.config as any).delivery?.prefetch) {
       hints.push('<link rel="dns-prefetch" href="//fonts.googleapis.com">');
       hints.push(
         '<link rel="preconnect" href="//fonts.gstatic.com" crossorigin>',
@@ -298,7 +298,7 @@ export class CriticalCssPipeline {
 
     // Optimize delivery
     const delivery = await this.optimizer.optimizeDelivery(result, {
-      publicPath: this.config.output.publicPath,
+                publicPath: (this.config as any).output?.publicPath,
       filename: options.filename,
       inlineThreshold: this.config.critical.inlineThreshold,
     });
@@ -319,16 +319,16 @@ export class CriticalCssPipeline {
           options.outputDir,
           `${baseName}.critical.css`,
         );
-        await writeFile(criticalPath, result.critical, "utf8");
+        await writeFile(criticalPath, (result as any).critical, "utf8");
         files.critical = criticalPath;
       }
 
-      if (result.uncritical.trim()) {
+      if ((result as any).uncritical?.trim()) {
         const uncriticalPath = join(
           options.outputDir,
           `${baseName}.uncritical.css`,
         );
-        await writeFile(uncriticalPath, result.uncritical, "utf8");
+        await writeFile(uncriticalPath, (result as any).uncritical, "utf8");
         files.uncritical = uncriticalPath;
       }
     }
@@ -372,7 +372,7 @@ export class CriticalCssPipeline {
           `Failed to process critical CSS for route ${route.route}:`,
           error,
         );
-        results.set(route.route, { error: error.message });
+        results.set(route.route, { error: (error as Error).message });
       }
     }
 

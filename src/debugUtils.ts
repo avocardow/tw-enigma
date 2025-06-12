@@ -509,20 +509,22 @@ export class DebugUtils {
     }
 
     lines.forEach((line, lineIndex) => {
-      let match;
+      let match: RegExpExecArray | null;
       while ((match = classRegex.exec(line)) !== null) {
-        const classString = match[1] || match[2];
-        if (classString) {
+        const classString = match?.[1] || match?.[2];
+        if (classString && match) {
           // Split multiple classes
           const individualClasses = classString.split(/\s+/).filter(cls => cls.trim());
           
+          // Store match[0] for use in forEach to avoid null reference
+          const matchUsage = match[0];
           individualClasses.forEach(className => {
             if (className && this.isValidClassName(className)) {
               classes.push({
                 className: className.trim(),
                 line: lineIndex + 1,
                 context: line.trim(),
-                usage: match[0],
+                usage: matchUsage,
               });
             }
           });

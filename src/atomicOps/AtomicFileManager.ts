@@ -306,7 +306,7 @@ export class AtomicFileManager {
           }
         } catch (error) {
           // Skip files that can't be accessed or are already deleted
-          if (error.code !== "ENOENT") {
+          if ((error as any).code !== "ENOENT") {
             console.warn(`Failed to clean stale temp file ${filePath}:`, error);
           }
         }

@@ -399,7 +399,7 @@ export class PerformanceProfiler extends EventEmitter {
       outputDir,
     });
 
-    this.externalProfiler = spawn(command, commandArgs, {
+    (this as any).externalProfiler = spawn(command, commandArgs, {
       stdio: "pipe",
       env: { ...process.env, NODE_ENV: "development" },
     });
@@ -414,7 +414,7 @@ export class PerformanceProfiler extends EventEmitter {
 
     this.externalProfiler.on("close", (code) => {
       logger.info("External profiler finished", { tool, code, outputDir });
-      this.externalProfiler = undefined;
+      (this as any).externalProfiler = undefined;
       this.emit("externalProfilerFinished", { tool, code, outputDir });
     });
 
@@ -427,7 +427,7 @@ export class PerformanceProfiler extends EventEmitter {
   stopExternalProfiler(): void {
     if (this.externalProfiler) {
       this.externalProfiler.kill("SIGTERM");
-      this.externalProfiler = undefined;
+      (this as any).externalProfiler = undefined;
       logger.info("External profiler stopped");
     }
   }

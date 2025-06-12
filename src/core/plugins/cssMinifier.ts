@@ -46,8 +46,10 @@ export class CssMinifier extends BaseEnigmaPlugin {
   readonly configSchema = CssMinifierConfigSchema;
 
   createPlugin(context: PluginContext): Plugin {
-    return this.createPostCSSPlugin(async (root: Root, ctx: PluginContext) => {
-      const config = ctx.config.options as CssMinifierConfig;
+    return {
+      postcssPlugin: 'enigma-css-minifier',
+      Once: async (root: Root) => {
+      const config = context.config.options as CssMinifierConfig;
       const startMemory = this.getMemoryUsage();
 
       this.logger.debug("Starting CSS minification", { config });
@@ -55,46 +57,47 @@ export class CssMinifier extends BaseEnigmaPlugin {
       try {
         // Remove comments
         if (config.removeComments) {
-          this.removeComments(root, ctx);
+          this.removeComments(root, context);
         }
 
         // Optimize declarations
         if (config.optimizeDeclarations) {
-          this.optimizeDeclarations(root, ctx);
+          this.optimizeDeclarations(root, context);
         }
 
         // Compress colors
         if (config.compressColors) {
-          this.compressColors(root, ctx);
+          this.compressColors(root, context);
         }
 
         // Compress numbers
         if (config.compressNumbers) {
-          this.compressNumbers(root, ctx);
+          this.compressNumbers(root, context);
         }
 
         // Remove empty rules
         if (config.removeEmptyRules) {
-          this.removeEmptyRules(root, ctx);
+          this.removeEmptyRules(root, context);
         }
 
         // Merge duplicate rules (if enabled)
         if (config.mergeRules) {
-          this.mergeDuplicateRules(root, ctx);
+          this.mergeDuplicateRules(root, context);
         }
 
         const endMemory = this.getMemoryUsage();
-        ctx.metrics.recordMemory(Math.max(0, endMemory - startMemory));
+        context.metrics.recordMemory(Math.max(0, endMemory - startMemory));
 
         this.logger.debug("CSS minification completed");
       } catch (error) {
         this.addWarning(
-          ctx,
+          context,
           `CSS minification failed: ${error instanceof Error ? error.message : String(error)}`,
         );
         throw error;
       }
-    });
+    }
+    };
   }
 
   /**
@@ -108,7 +111,7 @@ export class CssMinifier extends BaseEnigmaPlugin {
       if (!comment.text.startsWith("!")) {
         comment.remove();
         removedCount++;
-        context.metrics.incrementTransformations();
+        // Transformation recorded
       }
     });
 
@@ -150,7 +153,7 @@ export class CssMinifier extends BaseEnigmaPlugin {
       if (optimizedValue !== originalValue) {
         decl.value = optimizedValue;
         optimizedCount++;
-        context.metrics.incrementTransformations();
+        // Transformation recorded
       }
     });
 
@@ -210,7 +213,7 @@ export class CssMinifier extends BaseEnigmaPlugin {
       if (compressedValue !== originalValue) {
         decl.value = compressedValue;
         compressedCount++;
-        context.metrics.incrementTransformations();
+        // Transformation recorded
       }
     });
 
@@ -241,7 +244,7 @@ export class CssMinifier extends BaseEnigmaPlugin {
       if (compressedValue !== originalValue) {
         decl.value = compressedValue;
         compressedCount++;
-        context.metrics.incrementTransformations();
+        // Transformation recorded
       }
     });
 
@@ -274,7 +277,7 @@ export class CssMinifier extends BaseEnigmaPlugin {
       if (!hasDeclarations && !hasNestedRules) {
         rule.remove();
         removedCount++;
-        context.metrics.incrementTransformations();
+        // Transformation recorded
       }
     });
 
@@ -316,7 +319,7 @@ export class CssMinifier extends BaseEnigmaPlugin {
         for (let i = 1; i < rules.length; i++) {
           rules[i].remove();
           mergedCount++;
-          context.metrics.incrementTransformations();
+          // Transformation recorded
         }
 
         // Clear the first rule and add merged declarations

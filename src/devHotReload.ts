@@ -60,6 +60,7 @@ export interface FileChangeEvent {
   isHTML: boolean;
   isJS: boolean;
   requiresOptimization: boolean;
+  [key: string]: unknown; // Add index signature for compatibility with ErrorContext
 }
 
 /**
@@ -818,7 +819,4 @@ export function createDevHotReload(
 /**
  * Type-safe event emitter interface
  */
-declare interface DevHotReload {
-  on<K extends keyof HotReloadEvents>(event: K, listener: HotReloadEvents[K]): this;
-  emit<K extends keyof HotReloadEvents>(event: K, ...args: Parameters<HotReloadEvents[K]>): boolean;
-} 
+// Interface declaration moved to class definition 

@@ -153,7 +153,7 @@ export class ConfigBackup extends EventEmitter {
         
         logger.debug(`Loaded ${this.backups.size} backup entries from metadata`);
       } catch (error) {
-        logger.warn('Failed to load backup metadata:', error);
+        logger.warn('Failed to load backup metadata', { error: error instanceof Error ? error.message : String(error) });
       }
     }
   }
@@ -176,7 +176,7 @@ export class ConfigBackup extends EventEmitter {
       writeFileSync(this.metadataFile, JSON.stringify(metadata, null, 2), 'utf-8');
       logger.debug('Backup metadata saved');
     } catch (error) {
-      logger.error('Failed to save backup metadata:', error);
+      logger.error('Failed to save backup metadata', { error: error instanceof Error ? error.message : String(error) });
     }
   }
   
@@ -263,7 +263,7 @@ export class ConfigBackup extends EventEmitter {
       
     } catch (error) {
       this.emit('backup:error', error);
-      logger.error('Failed to create backup:', error);
+      logger.error('Failed to create backup', { error: error instanceof Error ? error.message : String(error) });
       throw error;
     }
   }
@@ -343,7 +343,7 @@ export class ConfigBackup extends EventEmitter {
     } catch (error) {
       result.errors.push(`Restore failed: ${error}`);
       this.emit('restore:error', error);
-      logger.error('Failed to restore from backup:', error);
+      logger.error('Failed to restore from backup', { error: error instanceof Error ? error.message : String(error) });
     }
     
     return result;
@@ -482,7 +482,7 @@ export class ConfigBackup extends EventEmitter {
       return true;
       
     } catch (error) {
-      logger.error(`Failed to delete backup ${backupId}:`, error);
+              logger.error(`Failed to delete backup ${backupId}`, { error: error instanceof Error ? error.message : String(error) });
       return false;
     }
   }
@@ -546,7 +546,7 @@ export class ConfigBackup extends EventEmitter {
       
     } catch (error) {
       result.errors.push(`Retention policy failed: ${error}`);
-      logger.error('Failed to apply retention policy:', error);
+      logger.error('Failed to apply retention policy', { error: error instanceof Error ? error.message : String(error) });
     }
     
     return result;

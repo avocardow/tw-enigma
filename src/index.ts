@@ -276,7 +276,7 @@ export {
   createCompressionEngine,
   createManifestGenerator,
   type AssetHash,
-  type OptimizationResult,
+  type OptimizationResult as AssetOptimizationResult,
   type CompressionResult,
   type ManifestGenerator,
 } from "./output/assetHasher.js";

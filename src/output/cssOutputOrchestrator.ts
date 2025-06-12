@@ -179,13 +179,13 @@ export interface CssProcessingOptions {
  */
 export class CssOutputOrchestrator {
   private config: CssOutputConfig;
-  private chunker: CssChunker;
-  private hasher: AssetHasher;
-  private optimizer: CssOptimizer;
-  private compressor: CompressionEngine;
-  private manifestGenerator: ManifestGenerator;
-  private criticalCssExtractor: CriticalCssExtractor;
-  private analyzer: CssAnalyzer;
+  private chunker!: CssChunker;
+  private hasher!: AssetHasher;
+  private optimizer!: CssOptimizer;
+  private compressor!: CompressionEngine;
+  private manifestGenerator!: ManifestGenerator;
+  private criticalCssExtractor!: CriticalCssExtractor;
+  private analyzer!: CssAnalyzer;
 
   constructor(config: CssOutputConfig) {
     this.config = config;
@@ -317,7 +317,7 @@ export class CssOutputOrchestrator {
         analyzeDuplicates: true,
       });
     } catch (error) {
-      console.warn('CSS analysis failed:', error.message);
+      console.warn('CSS analysis failed:', error instanceof Error ? error.message : String(error));
       // Continue without analysis - it's not critical for processing
     }
 
@@ -530,7 +530,7 @@ export class CssOutputOrchestrator {
     const extraction = await this.criticalCssExtractor.extractCritical(allCss, {
       routes,
       viewport: this.config.critical.viewport,
-      maxSize: this.config.critical.maxSize,
+      // maxSize: this.config.critical.maxSize, // Remove this property as it doesn't exist in the interface
     });
 
     const strategy = this.config.critical.strategy;
@@ -538,23 +538,23 @@ export class CssOutputOrchestrator {
     switch (strategy) {
       case "inline":
         return {
-          inline: extraction.critical,
+          inline: extraction.inline,
           preload: [],
-          async: [extraction.remaining],
+          async: extraction.async,
         };
 
       case "preload":
         return {
           inline: "",
-          preload: [extraction.critical],
-          async: [extraction.remaining],
+          preload: extraction.preload,
+          async: extraction.async,
         };
 
       case "async":
         return {
           inline: "",
           preload: [],
-          async: [extraction.critical, extraction.remaining],
+          async: [...extraction.async, extraction.inline],
         };
 
       default:
@@ -964,7 +964,7 @@ export function createProductionOrchestrator(
       algorithm: "xxhash",
       length: 8,
       includeContent: true,
-      includeTimestamp: false,
+      // includeTimestamp: false, // Remove this property as it doesn't exist in the interface
       includePath: false,
       excludeSourceMaps: true,
     },
@@ -978,11 +978,15 @@ export function createProductionOrchestrator(
       generatePreloadHints: true,
       generatePrefetchHints: false,
       http2Push: false,
-      resourceHints: true,
+      resourceHints: {
+        preload: true,
+        prefetch: false,
+        preconnect: false,
+      },
     },
-    paths: {
-      input: "src/css",
-      output: "dist/css",
+          paths: {
+        // input: "src/css", // Remove this property as it doesn't exist in the interface
+        base: "dist/css",
       assets: "dist/assets",
       manifest: "dist/css-manifest.json",
       reports: "dist/reports",
@@ -990,7 +994,7 @@ export function createProductionOrchestrator(
     },
     reporting: {
       enabled: true,
-      verbose: false,
+      // verbose: false, // Remove this property as it doesn't exist in the interface
       format: "json",
       includeChunkAnalysis: true,
       includePerformanceMetrics: true,
@@ -1064,7 +1068,7 @@ export function createDevelopmentOrchestrator(
       algorithm: "md5",
       length: 4,
       includeContent: false,
-      includeTimestamp: true,
+      // includeTimestamp: true, // Remove this property as it doesn't exist in the interface
       includePath: true,
       excludeSourceMaps: false,
     },
@@ -1078,11 +1082,15 @@ export function createDevelopmentOrchestrator(
       generatePreloadHints: false,
       generatePrefetchHints: false,
       http2Push: false,
-      resourceHints: false,
+      resourceHints: {
+        preload: false,
+        prefetch: false,
+        preconnect: false,
+      },
     },
     paths: {
-      input: "src/css",
-      output: "dev/css",
+      // input: "src/css", // Remove this property as it doesn't exist in the interface
+      base: "dev/css",
       assets: "dev/assets",
       manifest: "dev/css-manifest.json",
       reports: "dev/reports",
@@ -1090,7 +1098,7 @@ export function createDevelopmentOrchestrator(
     },
     reporting: {
       enabled: true,
-      verbose: true,
+      // verbose: true, // Remove this property as it doesn't exist in the interface
       format: "json",
       includeChunkAnalysis: false,
       includePerformanceMetrics: false,

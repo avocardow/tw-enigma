@@ -556,7 +556,9 @@ export class EnigmaPluginManager implements PluginManager {
         await this.executePlugin(
           pluginName,
           async () => {
-            await plugin.initialize(validatedConfig);
+            if (plugin.initialize) {
+              await plugin.initialize(validatedConfig);
+            }
             return { success: true };
           },
           {
@@ -761,34 +763,7 @@ export class EnigmaPluginManager implements PluginManager {
     }
   }
 
-  /**
-   * Get resource usage statistics (enhanced)
-   */
-  getResourceStats(): Record<string, any> {
-    const stats: Record<string, any> = {};
 
-    for (const [name, monitor] of this.resourceMonitor) {
-      const health = this.securityEnabled
-        ? this.errorHandler.getPluginHealth(name)
-        : null;
-
-      stats[name] = {
-        memoryUsage: monitor.memoryUsage,
-        executionTime: monitor.executionTime,
-        lastAccess: monitor.lastAccess,
-        // Enhanced stats
-        ...(health && {
-          isHealthy: health.isHealthy,
-          circuitState: health.circuitState,
-          errorCount: health.errorCount,
-          successRate: health.successRate,
-          isDisabled: health.isDisabled,
-        }),
-      };
-    }
-
-    return stats;
-  }
 
   /**
    * Private: Set up event listeners for security systems

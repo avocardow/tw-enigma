@@ -27,8 +27,11 @@ import {
   SimpleValidatorConfigSchema,
   type SimpleValidatorConfig,
 } from "./patternValidator.js";
-import { ConfigError } from "./errors.js";
+import { ConfigError, ValidationError } from "./errors.js";
 import { createLogger } from "./logger.js";
+
+// Create a logger instance for this module
+const logger = createLogger('config');
 import { validateConfig as enhancedValidateConfig } from "./configValidator.js";
 import { createRuntimeValidator } from "./runtimeValidator.js";
 import { createConfigWatcher } from "./configWatcher.js";
@@ -39,7 +42,7 @@ import type { ConfigWatcher } from "./configWatcher.js";
 import type { ConfigSafeUpdater } from "./configSafeUpdater.js";
 import { join, resolve, isAbsolute } from 'path';
 import { existsSync } from 'fs';
-import { createConfigValidator, type ConfigValidationResult } from './configValidator.js';
+import { createConfigValidator } from './configValidator.js';
 import { createConfigMigration, type ConfigMigration } from './configMigration.js';
 import { createPerformanceValidator, type PerformanceMetrics } from './performanceValidator.js';
 import { createConfigBackup, type ConfigBackup } from './configBackup.js';
@@ -465,6 +468,95 @@ const DEFAULT_CONFIG: EnigmaConfig = {
   excludeExtensions: [],
   preserveComments: false,
   sourceMaps: false,
+  // Add missing required properties with defaults
+  validation: {
+    enabled: true,
+    validateOnLoad: true,
+    validateOnChange: true,
+    strictMode: false,
+    warnOnDeprecated: true,
+    failOnInvalid: true,
+    crossFieldValidation: true,
+    securityValidation: true,
+    performanceValidation: true,
+    customRules: [],
+  },
+  dev: {
+    enabled: false,
+    watch: false,
+    server: {
+      enabled: false,
+      port: 3000,
+      host: "localhost",
+      open: false,
+    },
+    diagnostics: {
+      enabled: true,
+      performance: true,
+      memory: true,
+      fileWatcher: true,
+      classAnalysis: true,
+      thresholds: {
+        memoryWarning: 512,
+        memoryError: 1024,
+        cpuWarning: 80,
+        cpuError: 95,
+      },
+    },
+    preview: {
+      enabled: false,
+      autoRefresh: true,
+      showDiff: true,
+      highlightChanges: true,
+    },
+    dashboard: {
+      enabled: false,
+      port: 3001,
+      host: "localhost",
+      updateInterval: 1000,
+      showMetrics: true,
+      showLogs: true,
+      maxLogEntries: 100,
+    },
+  },
+  runtime: {
+    enabled: true,
+    checkInterval: 5000,
+    resourceThresholds: {
+      memory: 1024 * 1024 * 1024,
+      cpu: 80,
+      fileHandles: 1000,
+      diskSpace: 100 * 1024 * 1024,
+    },
+    autoCorrection: {
+      enabled: true,
+      maxAttempts: 3,
+      fallbackToDefaults: true,
+    },
+  },
+  watcher: {
+    enabled: false,
+    followSymlinks: false,
+    validateOnChange: true,
+    debounceMs: 300,
+    ignoreInitial: false,
+    backupOnChange: true,
+    maxBackups: 10,
+    watchPatterns: [],
+    ignorePatterns: [],
+  },
+  safeUpdates: {
+    enabled: true,
+    createBackup: true,
+    backupDirectory: '.config-backups',
+    maxBackups: 10,
+    validateBeforeWrite: true,
+    rollbackOnFailure: true,
+    atomicWrite: true,
+    verifyAfterWrite: true,
+    retryAttempts: 3,
+    retryDelay: 1000,
+  },
 };
 
 /**
@@ -997,8 +1089,8 @@ export class EnhancedConfigManager {
    */
   async loadConfig(searchFrom?: string): Promise<{
     config: EnigmaConfig;
-    validation: ConfigValidationResult;
-    runtimeValidation: RuntimeValidationResult;
+    validation: ValidationResult;
+    runtimeValidation: ValidationResult;
     performanceMetrics?: PerformanceMetrics;
     migrationResult?: any;
     backupId?: string;
@@ -1037,15 +1129,15 @@ export class EnhancedConfigManager {
       const validation = await this.validateSchema(configWithDefaults);
 
       if (!validation.isValid) {
-        throw new Error(`Configuration validation failed: ${validation.errors.join(', ')}`);
+        throw new Error(`Configuration validation failed: ${validation.errors.map(e => e.message || e).join(', ')}`);
       }
 
-      this.config = validation.config!;
+      this.config = configWithDefaults;
 
       // 5. Runtime validation
       const runtimeValidation = await this.validateRuntime(this.config);
       if (!runtimeValidation.isValid) {
-        logger.warn('Runtime validation warnings:', runtimeValidation.warnings);
+        logger.warn('Runtime validation warnings', { warnings: runtimeValidation.warnings });
       }
 
       // 6. Performance analysis
@@ -1060,8 +1152,7 @@ export class EnhancedConfigManager {
       if (this.options.enableBackup && this.options.createBackupOnLoad && this.backup) {
         const backup = await this.backup.createBackup({
           description: 'Configuration loaded',
-          tags: ['auto', 'load'],
-          isAutomatic: true
+          tags: ['auto', 'load']
         });
         backupId = backup.id;
         logger.info(`Configuration backup created: ${backupId}`);
@@ -1084,7 +1175,7 @@ export class EnhancedConfigManager {
       };
 
     } catch (error) {
-      logger.error('Failed to load configuration:', error);
+      logger.error('Failed to load configuration', { error: error instanceof Error ? error.message : String(error) });
       throw error;
     }
   }
@@ -1102,7 +1193,7 @@ export class EnhancedConfigManager {
   ): Promise<{
     success: boolean;
     backupId?: string;
-    validation?: ConfigValidationResult;
+          validation?: ValidationResult;
     error?: string;
   }> {
     try {
@@ -1121,8 +1212,7 @@ export class EnhancedConfigManager {
       if (createBackup && this.backup) {
         const backup = await this.backup.createBackup({
           description,
-          tags: ['manual', 'update'],
-          isAutomatic: false
+          tags: ['manual', 'update']
         });
         backupId = backup.id;
       }
@@ -1137,7 +1227,7 @@ export class EnhancedConfigManager {
         if (!validation.isValid) {
           return {
             success: false,
-            error: `Validation failed: ${validation.errors.join(', ')}`,
+            error: `Validation failed: ${validation.errors.map(e => e.message || e).join(', ')}`,
             validation
           };
         }
@@ -1145,7 +1235,7 @@ export class EnhancedConfigManager {
         // Runtime validation
         const runtimeValidation = await this.validateRuntime(updatedConfig);
         if (!runtimeValidation.isValid) {
-          logger.warn('Runtime validation warnings for update:', runtimeValidation.warnings);
+          logger.warn('Runtime validation warnings for update', { warnings: runtimeValidation.warnings });
         }
       }
 
@@ -1161,7 +1251,7 @@ export class EnhancedConfigManager {
       };
 
     } catch (error) {
-      logger.error('Failed to update configuration:', error);
+      logger.error('Failed to update configuration', { error: error instanceof Error ? error.message : String(error) });
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
@@ -1223,7 +1313,7 @@ export class EnhancedConfigManager {
       return result;
 
     } catch (error) {
-      logger.error('Failed to restore from backup:', error);
+      logger.error('Failed to restore from backup', { error: error instanceof Error ? error.message : String(error) });
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
@@ -1242,7 +1332,7 @@ export class EnhancedConfigManager {
 
       logger.info('Configuration manager cleaned up');
     } catch (error) {
-      logger.error('Error during cleanup:', error);
+      logger.error('Error during cleanup', { error: error instanceof Error ? error.message : String(error) });
     }
   }
 
@@ -1297,12 +1387,12 @@ export class EnhancedConfigManager {
         logger.info(`Configuration migrated successfully: ${result.migrationsApplied.join(', ')}`);
         return { migrated: true, result };
       } else {
-        logger.error('Configuration migration failed:', result.errors);
+        logger.error('Configuration migration failed', { errors: result.errors });
         return { migrated: false, result };
       }
 
     } catch (error) {
-      logger.error('Error during migration:', error);
+      logger.error('Error during migration', { error: error instanceof Error ? error.message : String(error) });
       return { migrated: false };
     }
   }
@@ -1321,23 +1411,32 @@ export class EnhancedConfigManager {
   /**
    * Validate configuration schema
    */
-  private async validateSchema(config: EnigmaConfig): Promise<ConfigValidationResult> {
+  private async validateSchema(config: EnigmaConfig): Promise<ValidationResult> {
     if (!this.validator) {
       throw new Error('Schema validator not initialized');
     }
 
-    return await this.validator.validate(config);
+    return await this.validator.validateConfiguration(config);
   }
 
   /**
    * Validate runtime constraints
    */
-  private async validateRuntime(config: EnigmaConfig): Promise<RuntimeValidationResult> {
+  private async validateRuntime(config: EnigmaConfig): Promise<ValidationResult> {
     if (!this.runtimeValidator) {
       this.runtimeValidator = createRuntimeValidator(config);
     }
 
-    return await this.runtimeValidator.validateComplete();
+    const pathResult = await this.runtimeValidator.validatePaths();
+    const constraintResult = await this.runtimeValidator.validateConstraints();
+    
+    return {
+      isValid: pathResult.isValid && constraintResult.isValid,
+      errors: [...pathResult.errors, ...constraintResult.errors].map(e => new ValidationError(e, 'runtime')),
+      warnings: [...pathResult.warnings, ...constraintResult.warnings],
+      suggestions: [],
+      performance: { validationTime: 0, rulesApplied: 2 }
+    };
   }
 
   /**
@@ -1346,9 +1445,9 @@ export class EnhancedConfigManager {
   private async startWatching(): Promise<void> {
     if (!this.configPath) return;
 
-    this.watcher = createConfigWatcher(this.configPath, {
-      validateOnChange: true,
-      createBackupOnChange: this.options.enableBackup
+    this.watcher = createConfigWatcher({
+      watchPatterns: [this.configPath],
+      validateOnChange: true
     });
 
     this.watcher.on('change', async (event) => {
@@ -1359,7 +1458,7 @@ export class EnhancedConfigManager {
         await this.loadConfig();
         logger.info('Configuration reloaded successfully');
       } catch (error) {
-        logger.error('Failed to reload configuration after change:', error);
+        logger.error('Failed to reload configuration after change', { error: error instanceof Error ? error.message : String(error) });
       }
     });
 
@@ -1382,17 +1481,25 @@ export class EnhancedConfigManager {
    */
   private async createDefaultConfig(): Promise<{
     config: EnigmaConfig;
-    validation: ConfigValidationResult;
-    runtimeValidation: RuntimeValidationResult;
+    validation: ValidationResult;
+    runtimeValidation: ValidationResult;
   }> {
     this.defaultsManager = createConfigDefaults(this.environment);
     const config = this.defaultsManager.createConfigWithDefaults({});
 
     this.validator = createConfigValidator();
-    const validation = await this.validator.validate(config);
+    const validation = await this.validator.validateConfiguration(config);
 
     this.runtimeValidator = createRuntimeValidator(config);
-    const runtimeValidation = await this.runtimeValidator.validateComplete();
+    const pathResult = await this.runtimeValidator.validatePaths();
+    const constraintResult = await this.runtimeValidator.validateConstraints();
+    const runtimeValidation = {
+      isValid: pathResult.isValid && constraintResult.isValid,
+      errors: [...pathResult.errors, ...constraintResult.errors].map(e => new ValidationError(e, 'runtime')),
+      warnings: [...pathResult.warnings, ...constraintResult.warnings],
+      suggestions: [],
+      performance: { validationTime: 0, rulesApplied: 2 }
+    };
 
     this.config = config;
 
@@ -1410,15 +1517,15 @@ export class EnhancedConfigManager {
     logger.info(`Configuration performance score: ${metrics.score}/100`);
 
     if (metrics.warnings.length > 0) {
-      logger.warn('Performance warnings:', metrics.warnings);
+      logger.warn('Performance warnings', { warnings: metrics.warnings });
     }
 
     if (metrics.bottlenecks.length > 0) {
-      logger.warn('Performance bottlenecks detected:', metrics.bottlenecks);
+      logger.warn('Performance bottlenecks detected', { bottlenecks: metrics.bottlenecks });
     }
 
     if (metrics.recommendations.length > 0) {
-      logger.info('Performance recommendations:', metrics.recommendations.map(r => r.title));
+      logger.info('Performance recommendations', { recommendations: metrics.recommendations.map(r => r.title) });
     }
   }
 }

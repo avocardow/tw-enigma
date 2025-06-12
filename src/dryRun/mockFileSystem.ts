@@ -231,12 +231,13 @@ export class MockFileSystem implements IMockFileSystem {
     content: string | Buffer,
     encoding?: BufferEncoding,
   ): Promise<void> {
+    const normalized = this.normalizePath(path);
+    const existing = this.files.get(normalized);
+    
     return this.performOperation(
       "write",
       path,
       async () => {
-        const normalized = this.normalizePath(path);
-        const existing = this.files.get(normalized);
 
         // Ensure parent directory exists
         const parentDir = this.getParentDirectory(normalized);

@@ -2046,7 +2046,7 @@ export function validateProductionConfig(config: CssOutputConfig): {
 
   if (
     config.delivery?.preload === false &&
-    config.criticalCss?.strategy === "preload"
+    config.critical?.strategy === "preload"
   ) {
     errors.push(
       "Critical CSS preload strategy requires delivery.preload to be enabled",
@@ -2102,12 +2102,12 @@ export function generateConfigDocs(config: CssOutputConfig): string {
     `- Threshold: ${Math.round(config.compression.threshold / 1024)}KB`,
     "",
     "## Critical CSS",
-    `- Enabled: ${config.criticalCss?.enabled ? "Yes" : "No"}`,
-    config.criticalCss?.enabled
-      ? `- Strategy: ${config.criticalCss.strategy}`
+    `- Enabled: ${config.critical?.enabled ? "Yes" : "No"}`,
+    config.critical?.enabled
+      ? `- Strategy: ${config.critical.strategy}`
       : "",
-    config.criticalCss?.enabled
-      ? `- Max Size: ${Math.round(config.criticalCss.maxSize / 1024)}KB`
+    config.critical?.enabled
+      ? `- Max Size: ${Math.round(config.critical.maxSize / 1024)}KB`
       : "",
     "",
     "## Asset Hashing",
@@ -2116,9 +2116,9 @@ export function generateConfigDocs(config: CssOutputConfig): string {
     `- Content-based: ${config.hashing.includeContent ? "Yes" : "No"}`,
     "",
     "## Output Paths",
-    `- Input: ${config.paths.input}`,
-    `- Output: ${config.paths.output}`,
-    `- Assets: ${config.paths.assets}`,
+    `- Base: ${config.paths.base}`,
+    `- Manifest: ${config.paths.manifest}`,
+    `- Chunks: ${config.paths.chunks}`,
     `- Manifest: ${config.paths.manifest}`,
     "",
     "## CLI Arguments",

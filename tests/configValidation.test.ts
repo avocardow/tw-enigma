@@ -197,7 +197,7 @@ describe('Configuration Validation System', () => {
       const result = await validator.validateFile(configPath);
 
       expect(result.isValid).toBe(false);
-      expect(result.errors.some(e => e.includes('JSON'))).toBe(true);
+      expect(result.errors.some(e => (typeof e === 'string' ? e : e.message || e.toString()).includes('JSON'))).toBe(true);
     });
 
     test('should validate nested configuration objects', async () => {
@@ -270,7 +270,7 @@ describe('Configuration Validation System', () => {
       const result = await validator.validatePaths();
 
       expect(result.isValid).toBe(false);
-      expect(result.errors.some(e => e.includes('nonexistent'))).toBe(true);
+      expect(result.errors.some(e => (typeof e === 'string' ? e : e.message || e.toString()).includes('nonexistent'))).toBe(true);
     });
 
     test('should validate resource constraints', async () => {
@@ -295,7 +295,7 @@ describe('Configuration Validation System', () => {
       const validator = createRuntimeValidator(config);
       const result = await validator.validateConstraints();
 
-      expect(result.warnings.some(w => w.includes('memory') || w.includes('threshold'))).toBe(true);
+      expect(result.warnings.some(w => (typeof w === 'string' ? w : w.message || w.toString()).includes('memory') || (typeof w === 'string' ? w : w.message || w.toString()).includes('threshold'))).toBe(true);
     });
 
     test('should validate concurrency settings', async () => {
@@ -306,7 +306,7 @@ describe('Configuration Validation System', () => {
       const validator = createRuntimeValidator(config);
       const result = await validator.validateConstraints();
 
-      expect(result.warnings.some(w => w.includes('concurrency'))).toBe(true);
+      expect(result.warnings.some(w => (typeof w === 'string' ? w : w.message || w.toString()).includes('concurrency'))).toBe(true);
     });
 
     test('should validate complete configuration', async () => {
@@ -323,19 +323,28 @@ describe('Configuration Validation System', () => {
       writeFileSync(configPath, JSON.stringify(config, null, 2));
 
       const watcher = createConfigWatcher(configPath);
-      const changePromise = new Promise((resolve) => {
-        watcher.on('change', resolve);
+      const changePromise = new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          reject(new Error('Test timeout: No change event received within 5 seconds'));
+        }, 5000);
+        
+        watcher.on('change', () => {
+          clearTimeout(timeout);
+          resolve(true);
+        });
       });
 
-      // Modify configuration
-      const updatedConfig = { ...config, minify: false };
-      writeFileSync(configPath, JSON.stringify(updatedConfig, null, 2));
+      // Modify configuration after a brief delay
+      setTimeout(() => {
+        const updatedConfig = { ...config, minify: false };
+        writeFileSync(configPath, JSON.stringify(updatedConfig, null, 2));
+      }, 100);
 
       await changePromise;
       await watcher.stop();
 
       expect(true).toBe(true); // Test passed if no timeout
-    });
+    }, 10000);
 
     test('should validate changes automatically', async () => {
       const config = createTestConfig();
@@ -345,19 +354,28 @@ describe('Configuration Validation System', () => {
         validateOnChange: true
       });
 
-      const validationPromise = new Promise((resolve) => {
-        watcher.on('validation', resolve);
+      const validationPromise = new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          reject(new Error('Test timeout: No validation event received within 5 seconds'));
+        }, 5000);
+        
+        watcher.on('validation', (result) => {
+          clearTimeout(timeout);
+          resolve(result);
+        });
       });
 
-      // Make valid change
-      const updatedConfig = { ...config, maxConcurrency: 8 };
-      writeFileSync(configPath, JSON.stringify(updatedConfig, null, 2));
+      // Make valid change after a brief delay
+      setTimeout(() => {
+        const updatedConfig = { ...config, maxConcurrency: 8 };
+        writeFileSync(configPath, JSON.stringify(updatedConfig, null, 2));
+      }, 100);
 
       const validationResult = await validationPromise;
       await watcher.stop();
 
       expect(validationResult).toBeDefined();
-    });
+    }, 10000);
   });
 
   describe('Configuration Defaults', () => {

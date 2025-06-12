@@ -10,7 +10,8 @@
  * @module atomicOps/AtomicFileReader
  */
 
-import * as fs from "fs/promises";
+import { promises as fs } from "fs";
+import type { Stats } from "fs";
 import { createReadStream } from "fs";
 import * as path from "path";
 import { createHash } from "crypto";
@@ -54,7 +55,7 @@ const DEFAULT_READ_OPTIONS: Required<FileReadOptions> = {
   maxFileSize: 100 * 1024 * 1024, // 100MB
   abortOnFirstError: true,
   readTimeout: 30000,
-  validateSchema: undefined,
+  validateSchema: () => true, // Default validation function that always passes
 };
 
 /** Cache entry for file content */
@@ -107,8 +108,10 @@ export class AtomicFileReader {
         fsyncUsed: false, // Reads don't need fsync
         retryAttempts: 0,
         walUsed: false,
-        fromCache: false,
+        backupCreated: false,
         checksumVerified: false,
+        fromCache: false,
+        checksum: undefined,
       },
     };
 
@@ -302,6 +305,10 @@ export class AtomicFileReader {
                   fsyncUsed: false,
                   retryAttempts: 0,
                   walUsed: false,
+                  backupCreated: false,
+                  checksumVerified: false,
+                  fromCache: false,
+                  checksum: undefined,
                 },
               },
         ),
@@ -343,6 +350,15 @@ export class AtomicFileReader {
     this.cache.clear();
   }
 
+  /**
+   * Shuts down the file reader and cleans up resources
+   * @returns Promise that resolves when shutdown is complete
+   */
+  async shutdown(): Promise<void> {
+    await this.cleanup();
+    console.log("AtomicFileReader shutdown complete.");
+  }
+
   // Private methods
 
   private initializeMetrics(): AtomicOperationMetrics {
@@ -360,6 +376,7 @@ export class AtomicFileReader {
       averageDuration: 0,
       operationsPerSecond: 0,
       totalFsyncCalls: 0,
+      totalRetryAttempts: 0,
       errorStats: {},
     };
   }
@@ -379,7 +396,7 @@ export class AtomicFileReader {
     }
   }
 
-  private async getFileStats(filePath: string): Promise<fs.Stats> {
+  private async getFileStats(filePath: string): Promise<Stats> {
     try {
       return await fs.stat(filePath);
     } catch (error: any) {
@@ -392,7 +409,7 @@ export class AtomicFileReader {
 
   private getCachedContent(
     filePath: string,
-    stats: fs.Stats,
+    stats: Stats,
   ): FileCacheEntry | null {
     const entry = this.cache.get(filePath);
     if (!entry) {
@@ -464,7 +481,7 @@ export class AtomicFileReader {
   private cacheContent(
     filePath: string,
     content: string | Buffer,
-    stats: fs.Stats,
+    stats: Stats,
     options: Required<FileReadOptions>,
   ): void {
     const checksum = this.calculateChecksum(content, options.checksumAlgorithm);

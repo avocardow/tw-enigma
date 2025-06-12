@@ -448,7 +448,7 @@ export class PathUtils {
     if (this.pathCache.size >= this.maxCacheSize) {
       // Simple LRU: delete oldest entry
       const firstKey = this.pathCache.keys().next().value;
-      this.pathCache.delete(firstKey);
+      if (firstKey) this.pathCache.delete(firstKey);
     }
     this.pathCache.set(key, result);
   }
@@ -460,7 +460,7 @@ export class PathUtils {
     if (this.validationCache.size >= this.maxCacheSize) {
       // Simple LRU: delete oldest entry
       const firstKey = this.validationCache.keys().next().value;
-      this.validationCache.delete(firstKey);
+      if (firstKey) this.validationCache.delete(firstKey);
     }
     this.validationCache.set(key, result);
   }

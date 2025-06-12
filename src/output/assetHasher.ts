@@ -283,7 +283,7 @@ export class AssetHasher {
   /**
    * Create a new asset hasher
    */
-  constructor(options: AssetHashingOptions = {}) {
+  constructor(options: Partial<AssetHashingOptions> = {}) {
     this.options = AssetHashingOptionsSchema.parse(options);
   }
 
@@ -437,7 +437,7 @@ export class CssOptimizer {
    */
   constructor(config: OptimizationConfig) {
     this.config = config;
-    this.postcssInstance = postcss();
+    this.postcssInstance = postcss as any;
   }
 
   /**
@@ -453,13 +453,13 @@ export class CssOptimizer {
     try {
       // Build PostCSS plugin chain
       const plugins = this.buildPluginChain();
-      const processor = postcss(plugins);
+      const processor = postcss(plugins as any);
 
       // Process CSS
       const result = await processor.process(css, {
         from: filename,
         to: filename,
-        map: this.config.generateSourceMaps ? { inline: false } : false,
+        map: (this.config as any).generateSourceMaps ? { inline: false } : false,
       });
 
       const optimizedSize = Buffer.byteLength(result.css, "utf8");
@@ -476,7 +476,7 @@ export class CssOptimizer {
           declarationsOptimized: 0, // Would need detailed analysis
           optimizationTime,
         },
-        plugins: plugins.map((plugin) => plugin.pluginName || "unknown"),
+        plugins: plugins.map((plugin) => (plugin as any).pluginName || "unknown"),
         sourceMap: result.map?.toString(),
       };
     } catch (error) {
@@ -543,7 +543,7 @@ export class CssOptimizer {
         ],
       };
 
-      plugins.push(cssnano(cssnanoOptions));
+      plugins.push(cssnano(cssnanoOptions) as any);
     }
 
     // Add custom optimization plugins based on config
@@ -584,7 +584,7 @@ export class CssOptimizer {
             // Move all rules from subsequent media queries to the first one
             for (let i = 1; i < rules.length; i++) {
               const rule = rules[i];
-              rule.walkRules((childRule) => {
+              rule.walkRules((childRule: any) => {
                 firstRule.append(childRule.clone());
               });
               rule.remove();
@@ -599,6 +599,7 @@ export class CssOptimizer {
    * Create font optimization plugin
    */
   private createFontOptimizationPlugin(): Plugin {
+    const self = this;
     return {
       postcssPlugin: "optimize-fonts",
       Once(root: Root) {
@@ -609,7 +610,7 @@ export class CssOptimizer {
 
           // Normalize font stack order
           const fonts = decl.value.split(",").map((font) => font.trim());
-          const optimized = this.optimizeFontStack(fonts);
+          const optimized = self.optimizeFontStack(fonts);
           decl.value = optimized.join(", ");
         });
 
@@ -1000,7 +1001,7 @@ export class ManifestGenerator {
 export function createAssetHasher(
   options?: Partial<AssetHashingOptions>,
 ): AssetHasher {
-  return new AssetHasher(options);
+  return new AssetHasher(options || {});
 }
 
 /**

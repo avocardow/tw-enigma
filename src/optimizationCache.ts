@@ -135,7 +135,7 @@ export interface CacheAnalytics {
 export class OptimizationCache extends EventEmitter {
   private readonly config: OptimizationCacheConfig;
   private readonly cache: CacheManager<CachedOptimizationResult>;
-  private readonly fileWatcher?: chokidar.FSWatcher;
+  private readonly fileWatcher?: any;
   private readonly watchedFiles = new Set<string>();
   private readonly analytics: CacheAnalytics;
   private readonly configHashes = new Map<string, string>();
@@ -470,24 +470,19 @@ export class OptimizationCache extends EventEmitter {
    * Extract configuration properties that affect optimization results
    */
   private extractRelevantConfig(config: Partial<EnigmaConfig>): Partial<EnigmaConfig> {
-    return {
-      // Core configuration
-      input: config.input,
-      output: config.output,
+    const configAny = config as any;
+          const result: any = {};
       
-      // Optimization settings
-      optimization: config.optimization,
-      nameGeneration: config.nameGeneration,
+      // Add only existing properties to avoid type issues
+      if (config.input !== undefined) result.input = config.input;
+      if (config.output !== undefined) result.output = config.output;
+      if (configAny.optimization !== undefined) result.optimization = configAny.optimization;
+      if (configAny.nameGeneration !== undefined) result.nameGeneration = configAny.nameGeneration;
+      if (configAny.framework !== undefined) result.framework = configAny.framework;
+      if (configAny.processing !== undefined) result.processing = configAny.processing;
+      if (configAny.performance !== undefined) result.performance = configAny.performance;
       
-      // Framework settings that affect optimization
-      framework: config.framework,
-      
-      // Processing options
-      processing: config.processing,
-      
-      // Performance settings that might affect results
-      performance: config.performance,
-    };
+      return result;
   }
 
   /**
@@ -529,11 +524,11 @@ export class OptimizationCache extends EventEmitter {
           persistent: false,
         });
 
-        this.fileWatcher!.on('change', (filePath) => {
+        this.fileWatcher!.on('change', (filePath: string) => {
           this.handleFileChange(filePath);
         });
 
-        this.fileWatcher!.on('unlink', (filePath) => {
+        this.fileWatcher!.on('unlink', (filePath: string) => {
           this.handleFileChange(filePath);
         });
       }

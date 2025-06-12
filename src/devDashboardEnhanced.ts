@@ -513,7 +513,7 @@ export class DevDashboardEnhanced {
           {
             label: 'Files',
             data: Object.values(recent.files.typesDistribution),
-            backgroundColor: ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6'],
+            backgroundColor: '#3b82f6',
           },
         ],
       },
@@ -554,7 +554,7 @@ export class DevDashboardEnhanced {
               recent.classes.unused,
               recent.classes.duplicates,
             ],
-            backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444'],
+            backgroundColor: '#3b82f6',
           },
         ],
       },

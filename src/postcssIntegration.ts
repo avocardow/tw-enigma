@@ -25,7 +25,7 @@ import type {
 import type { EnigmaConfig } from "./config.js";
 import type {
   FrequencyAnalysisResult,
-  PatternAnalysisResult,
+
 } from "./patternAnalysis.js";
 
 const logger = createLogger("postcss-integration");
@@ -49,7 +49,7 @@ export class EnigmaPostCSSProcessor {
     css: string,
     options: ProcessorConfig,
     frequencyData?: FrequencyAnalysisResult,
-    patternData?: PatternAnalysisResult,
+    patternData?: any,
   ): Promise<ProcessingResult> {
     const startTime = Date.now();
     const pluginResults: ProcessingResult["pluginResults"] = [];
@@ -253,7 +253,7 @@ export class EnigmaPostCSSProcessor {
     outputPath: string,
     options: Omit<ProcessorConfig, "from" | "to">,
     frequencyData?: FrequencyAnalysisResult,
-    patternData?: PatternAnalysisResult,
+    patternData?: any,
   ): Promise<ProcessingResult> {
     try {
       logger.debug("Processing CSS file", { inputPath, outputPath });

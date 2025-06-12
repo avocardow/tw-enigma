@@ -769,17 +769,17 @@ export class JSRewriter {
       "dynamicImport",
       "nullishCoalescingOperator",
       "optionalChaining",
-    ];
+    ] as const;
 
     switch (fileType) {
       case "jsx":
-        return [...basePlugins, "jsx"];
+        return [...basePlugins, "jsx"] as ParserOptions["plugins"];
       case "ts":
-        return [...basePlugins, "typescript"];
+        return [...basePlugins, "typescript"] as ParserOptions["plugins"];
       case "tsx":
-        return [...basePlugins, "jsx", "typescript"];
-      default:
-        return basePlugins;
+        return [...basePlugins, "jsx", "typescript"] as ParserOptions["plugins"];
+              default:
+          return [...basePlugins] as ParserOptions["plugins"];
     }
   }
 
@@ -2024,7 +2024,11 @@ export class JSRewriter {
             }
           }
         } else {
-          replacement = rule.replacement;
+          // Handle capture group replacements for string patterns
+          replacement = rule.replacement.replace(/\$(\d+)/g, (_, groupNum) => {
+            const groupIndex = parseInt(groupNum, 10);
+            return match[groupIndex] || '';
+          });
         }
 
         matches.push({

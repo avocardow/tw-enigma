@@ -26,13 +26,11 @@ import type {
   PluginConfig,
   ProcessorConfig,
   ProcessingResult,
-  PluginHooks,
   ValidationResult,
 } from "./types/plugins.js";
 import type { EnigmaConfig } from "./config.js";
 import type {
   FrequencyAnalysisResult,
-  PatternAnalysisResult,
 } from "./patternAnalysis.js";
 
 const logger = createLogger("plugin-api");
@@ -73,7 +71,7 @@ type PluginApiConfig = z.infer<typeof PluginApiConfigSchema>;
 /**
  * Plugin API hooks for lifecycle events
  */
-export interface ApiHooks extends PluginHooks {
+export interface ApiHooks {
   onPluginRegistered?: (plugin: EnigmaPlugin) => void;
   onPluginUnregistered?: (pluginName: string) => void;
   onProcessingStart?: (inputCss: string, config: ProcessorConfig) => void;
@@ -202,7 +200,7 @@ export class EnigmaPluginApi {
     options: {
       filename?: string;
       frequencyData?: FrequencyAnalysisResult;
-      patternData?: PatternAnalysisResult;
+      patternData?: any;
       sourceMap?: boolean;
     } = {},
   ): Promise<ProcessingResult> {

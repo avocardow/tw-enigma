@@ -42,6 +42,7 @@ const DEFAULT_OPTIONS: Required<AtomicFileOptions> = {
   enableWAL: false,
   walDirectory: ".wal",
   maxRetries: 3,
+  maxRetryAttempts: 3, // Alias for maxRetries
   retryDelay: 100,
 };
 
@@ -99,6 +100,8 @@ export class AtomicFileCreator {
         fsyncUsed: false, // Will be set correctly later
         retryAttempts: 0,
         walUsed: mergedOptions.enableWAL,
+        backupCreated: false,
+        checksumVerified: false,
       },
     };
 
@@ -137,7 +140,9 @@ export class AtomicFileCreator {
           await this.cleanupTempFile(tempInfo.path);
         },
       };
-      rollbackOp.steps.push(step1);
+      if (rollbackOp.steps) {
+        rollbackOp.steps.push(step1);
+      }
 
       // Step 5: Write content to temporary file
       const contentBuffer = Buffer.isBuffer(content)
@@ -162,7 +167,9 @@ export class AtomicFileCreator {
         timestamp: Date.now(),
         success: true,
       };
-      rollbackOp.steps.push(step2);
+      if (rollbackOp.steps) {
+        rollbackOp.steps.push(step2);
+      }
 
       // Step 6: Set file permissions
       if (mergedOptions.preservePermissions) {
@@ -176,7 +183,9 @@ export class AtomicFileCreator {
           timestamp: Date.now(),
           success: true,
         };
-        rollbackOp.steps.push(step3);
+        if (rollbackOp.steps) {
+          rollbackOp.steps.push(step3);
+        }
       }
 
       // Step 7: Create backup if file exists (for overwrite case)
@@ -198,7 +207,9 @@ export class AtomicFileCreator {
             }
           },
         };
-        rollbackOp.steps.push(step4);
+        if (rollbackOp.steps) {
+          rollbackOp.steps.push(step4);
+        }
       }
 
       // Step 8: Atomically move temp file to final location
@@ -219,7 +230,9 @@ export class AtomicFileCreator {
           }
         },
       };
-      rollbackOp.steps.push(step5);
+      if (rollbackOp.steps) {
+        rollbackOp.steps.push(step5);
+      }
 
       // Step 9: Clean up temporary file tracking
       this.activeTempFiles.delete(tempInfo.operationId);
@@ -317,6 +330,8 @@ export class AtomicFileCreator {
           fsyncUsed: false,
           retryAttempts: 0,
           walUsed: false,
+          backupCreated: false,
+          checksumVerified: false,
         },
       };
       return result;
@@ -396,6 +411,15 @@ export class AtomicFileCreator {
   }
 
   /**
+   * Shuts down the file creator and cleans up resources
+   * @returns Promise that resolves when shutdown is complete
+   */
+  async shutdown(): Promise<void> {
+    await this.cleanup();
+    console.log("AtomicFileCreator shutdown complete.");
+  }
+
+  /**
    * Private Methods
    */
 
@@ -439,7 +463,8 @@ export class AtomicFileCreator {
 
     // Clean up stale operations
     for (const [operationId, operation] of this.activeOperations.entries()) {
-      if (!operation.completed && now - operation.startTime > staleThreshold) {
+      const age = Date.now() - (operation.startTime || operation.timestamp);
+      if (!operation.completed && age > this.options.operationTimeout) {
         await this.executeRollback(operation);
         this.activeOperations.delete(operationId);
       }
@@ -493,18 +518,28 @@ export class AtomicFileCreator {
   ): Promise<void> {
     if (options.enableFsync) {
       // Use write-file-atomic for fsync support
-      await writeFileAtomic(tempPath, content, {
+      const atomicOptions: any = {
         encoding: options.encoding === "utf8" ? "utf8" : undefined,
         mode: options.mode,
-        chown: options.preserveOwnership ? undefined : false,
-      });
+      };
+      
+      // Only set chown if we want to preserve ownership
+      if (options.preserveOwnership) {
+        // Let write-file-atomic handle ownership automatically
+        // Don't set chown option to let it preserve existing ownership
+      }
+      
+      await writeFileAtomic(tempPath, content, atomicOptions);
       this.metrics.totalFsyncCalls++;
     } else {
       // Use regular write without fsync
-      await fs.writeFile(tempPath, content, {
-        encoding: options.encoding,
+      const writeOptions: Parameters<typeof fs.writeFile>[2] = {
         mode: options.mode,
-      });
+      };
+      if (options.encoding) {
+        (writeOptions as any).encoding = options.encoding;
+      }
+      await fs.writeFile(tempPath, content, writeOptions);
     }
   }
 
@@ -573,12 +608,14 @@ export class AtomicFileCreator {
     filePath: string,
   ): RollbackOperation {
     return {
-      operationId,
-      operation,
+      type: operation === "create" ? "file_create" : operation === "write" ? "file_overwrite" : "file_delete",
       filePath,
+      timestamp: Date.now(),
+      operationId,
       steps: [],
-      startTime: Date.now(),
       completed: false,
+      startTime: Date.now(),
+      operation,
     };
   }
 
@@ -586,8 +623,9 @@ export class AtomicFileCreator {
     console.warn(`Executing rollback for operation ${operation.operationId}`);
 
     // Execute rollback steps in reverse order
-    for (let i = operation.steps.length - 1; i >= 0; i--) {
-      const step = operation.steps[i];
+    if (operation.steps) {
+      for (let i = operation.steps.length - 1; i >= 0; i--) {
+        const step = operation.steps[i];
       if (step.rollbackAction) {
         try {
           await step.rollbackAction();
@@ -596,6 +634,7 @@ export class AtomicFileCreator {
         }
       }
     }
+  }
   }
 
   private async rollbackMultipleFiles(filePaths: string[]): Promise<void> {

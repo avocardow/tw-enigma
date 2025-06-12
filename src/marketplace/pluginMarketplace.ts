@@ -35,6 +35,7 @@ interface MarketplaceSearchOptions {
   sortOrder?: "asc" | "desc";
   limit?: number;
   offset?: number;
+  [key: string]: unknown; // Add index signature for compatibility with ErrorContext
 }
 
 interface MarketplaceConfig {
@@ -226,6 +227,7 @@ export class PluginMarketplace {
 
       // Create plugin config
       const config: PluginConfig = {
+        name: plugin.meta.name,
         enabled: true,
         priority: 100,
         options: {},

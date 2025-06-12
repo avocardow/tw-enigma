@@ -2650,6 +2650,12 @@ export class FileIntegrityValidator {
       this.logger.debug("No full backup exists, forcing full backup");
       return "full";
     }
+    
+    // Force full backup for very first backup in a fresh system
+    if (index.differentialChain.length === 0 && index.stats.totalDifferentials === 0) {
+      this.logger.debug("First backup in system, forcing full backup");
+      return "full";
+    }
 
     // Check time-based threshold for full backup
     if (

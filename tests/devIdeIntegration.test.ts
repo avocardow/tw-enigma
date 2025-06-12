@@ -324,6 +324,8 @@ describe('DevIdeIntegration', () => {
   describe('Language Server Protocol (LSP)', () => {
     beforeEach(async () => {
       await ideIntegration.start();
+      // Reset language server state
+      ideIntegration.resetLanguageServer();
     });
 
     it('should start LSP server', async () => {
@@ -438,9 +440,11 @@ describe('DevIdeIntegration', () => {
     });
   });
 
-  describe('performance monitoring', () => {
+      describe('performance monitoring', () => {
     beforeEach(async () => {
       await ideIntegration.start();
+      // Reset language server state
+      ideIntegration.resetLanguageServer();
     });
 
     it('should track setup time for IDEs', async () => {

@@ -5,8 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { writeFile, readFile, copyFile, unlink, existsSync, mkdirSync } from "fs/promises";
-import { existsSync as existsSyncSync, readFileSync } from "fs";
+import { writeFile, readFile, copyFile, unlink } from "fs/promises";
+import { existsSync, mkdirSync, readFileSync } from "fs";
 import { resolve, dirname, basename, join } from "path";
 import { randomUUID } from "crypto";
 import { logger } from "./logger.js";
@@ -336,7 +336,7 @@ export class ConfigSafeUpdater {
     logger.info("Restoring configuration from backup", { backupPath, targetPath });
 
     try {
-      if (!existsSyncSync(backupPath)) {
+      if (!existsSync(backupPath)) {
         throw new ConfigError(`Backup file not found: ${backupPath}`, backupPath);
       }
 
@@ -403,8 +403,8 @@ export class ConfigSafeUpdater {
 
     // Create backup directory if needed
     const backupDir = this.options.backupDirectory || join(dirname(resolvedPath), ".enigma-backups");
-    if (!existsSyncSync(backupDir)) {
-      await mkdirSync(backupDir, { recursive: true });
+    if (!existsSync(backupDir)) {
+      mkdirSync(backupDir, { recursive: true });
     }
 
     // Generate paths
@@ -413,7 +413,7 @@ export class ConfigSafeUpdater {
 
     // Read original content
     let originalContent = "";
-    if (existsSyncSync(resolvedPath)) {
+    if (existsSync(resolvedPath)) {
       originalContent = await readFile(resolvedPath, this.options.encoding);
     }
 
@@ -438,7 +438,7 @@ export class ConfigSafeUpdater {
    * Load current configuration
    */
   private async loadCurrentConfig(filepath: string): Promise<EnigmaConfig> {
-    if (!existsSyncSync(filepath)) {
+    if (!existsSync(filepath)) {
       // Return default configuration if file doesn't exist
       return {} as EnigmaConfig;
     }
@@ -592,13 +592,13 @@ export class ConfigSafeUpdater {
         await writeFile(transaction.filepath, transaction.originalContent, this.options.encoding);
       } else {
         // If no original content, remove the file
-        if (existsSyncSync(transaction.filepath)) {
+        if (existsSync(transaction.filepath)) {
           await unlink(transaction.filepath);
         }
       }
 
       // Clean up temporary file if it exists
-      if (existsSyncSync(transaction.tempPath)) {
+      if (existsSync(transaction.tempPath)) {
         await unlink(transaction.tempPath);
       }
 
@@ -649,7 +649,7 @@ export class ConfigSafeUpdater {
 
     for (const backup of toRemove) {
       try {
-        if (existsSyncSync(backup.backupPath)) {
+        if (existsSync(backup.backupPath)) {
           await unlink(backup.backupPath);
         }
         this.backupHistory = this.backupHistory.filter(b => b !== backup);

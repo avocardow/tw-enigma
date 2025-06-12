@@ -117,9 +117,9 @@ export class DevExperienceManager extends EventEmitter {
   private state: DevExperienceState;
   private stateFile: string;
   private startTime: number;
-  private dashboardEnhanced: DevDashboardEnhanced;
-  private hotReload: DevHotReload;
-  private ideIntegration: DevIdeIntegration;
+  private dashboardEnhanced!: DevDashboardEnhanced;
+  private hotReload!: DevHotReload;
+  private ideIntegration!: DevIdeIntegration;
 
   constructor(
     config: Partial<DevExperienceConfig> = {},
@@ -440,7 +440,22 @@ export class DevExperienceManager extends EventEmitter {
     this.emit('notification', level, message, data);
 
     // Log the notification
-    this.logger[level as keyof Logger](message, data);
+    switch (level) {
+      case 'debug':
+        this.logger.debug(message, data);
+        break;
+      case 'info':
+        this.logger.info(message, data);
+        break;
+      case 'warn':
+        this.logger.warn(message, data);
+        break;
+      case 'error':
+        this.logger.error(message, data);
+        break;
+      default:
+        this.logger.info(message, data);
+    }
 
     // Add to dashboard if available
     if (this.tools.dashboard) {
@@ -475,7 +490,7 @@ export class DevExperienceManager extends EventEmitter {
       maxLogEntries: 100,
     };
 
-    const hotReloadConfig = config.dev?.hotReload || {
+    const hotReloadConfig = (config.dev as any)?.hotReload || {
       enabled: true,
       port: 3002,
       host: 'localhost',
@@ -483,7 +498,7 @@ export class DevExperienceManager extends EventEmitter {
       watchPatterns: ['src/**/*.css', 'src/**/*.html'],
     };
 
-    const ideConfig = config.dev?.ide || {
+    const ideConfig = (config.dev as any)?.ide || {
       enabled: true,
       port: 3003,
       supportedIdes: ['vscode', 'webstorm', 'vim'],
@@ -493,85 +508,79 @@ export class DevExperienceManager extends EventEmitter {
 
     // Initialize Enhanced Dashboard
     this.dashboardEnhanced = new DevDashboardEnhanced(
-      {},
+      this.tools.dashboard!,
       {
-        ...config,
-        dev: {
-          ...config.dev,
-          dashboard: {
-            ...dashboardConfig,
-            enhanced: {
+        ...dashboardConfig,
+        enhanced: {
+          enabled: true,
+          analytics: {
+            enabled: true,
+            retentionDays: 30,
+            trackOptimizations: true,
+            trackPerformance: true,
+            trackFileChanges: true,
+            trackClassUsage: true,
+          },
+          visualizations: {
+            enabled: true,
+            charts: {
+              performance: true,
+              optimization: true,
+              fileChanges: true,
+              classUsage: true,
+            },
+            realTime: true,
+          },
+          alerts: {
+            enabled: true,
+            performance: {
               enabled: true,
-              analytics: {
-                enabled: true,
-                retentionDays: 30,
-                trackOptimizations: true,
-                trackPerformance: true,
-                trackFileChanges: true,
-                trackClassUsage: true,
-              },
-              visualizations: {
-                enabled: true,
-                charts: {
-                  performance: true,
-                  optimization: true,
-                  fileChanges: true,
-                  classUsage: true,
-                },
-                realTime: true,
-              },
-              alerts: {
-                enabled: true,
-                performance: {
-                  enabled: true,
-                  buildTimeThreshold: 5000,
-                  memoryThreshold: 512,
-                  cpuThreshold: 80,
-                },
-                optimization: {
-                  enabled: true,
-                  savingsThreshold: 10,
-                  errorThreshold: 5,
-                },
-              },
-              reports: {
-                enabled: true,
-                formats: ['html', 'json', 'csv'],
-                schedule: 'daily',
-                email: false,
-              },
+              buildTimeThreshold: 5000,
+              memoryThreshold: 512,
+              cpuThreshold: 80,
+            },
+            optimization: {
+              enabled: true,
+              savingsThreshold: 10,
+              errorThreshold: 5,
             },
           },
+          reports: {
+            enabled: true,
+            formats: ['html', 'json', 'csv'],
+            schedule: 'daily',
+            email: false,
+          },
         },
-      }
+      } as any
     );
 
     // Initialize Hot Reload (with error handling for missing ws dependency)
     this.hotReload = new DevHotReload(
       {},
-      {
-        ...config,
-        dev: {
-          ...config.dev,
-          hotReload: hotReloadConfig,
-        },
-      }
+              {
+          ...config,
+          dev: {
+            ...(config.dev as any),
+            hotReload: hotReloadConfig,
+          },
+        } as any
     );
 
     // Initialize IDE Integration
     this.ideIntegration = new DevIdeIntegration(
       {},
-      {
-        ...config,
-        dev: {
-          ...config.dev,
-          ide: ideConfig,
-        },
-      }
+              {
+          ...config,
+          dev: {
+            ...(config.dev as any),
+            ide: ideConfig,
+          },
+        } as any
     );
 
     // Setup event coordination
-    this.setupEventCoordination();
+    // this.setupEventCoordination(); // Method not implemented yet
   }
 
   /**
@@ -663,7 +672,4 @@ export function createDevExperienceManager(
 /**
  * Type-safe event emitter interface
  */
-declare interface DevExperienceManager {
-  on<K extends keyof DevExperienceEvents>(event: K, listener: DevExperienceEvents[K]): this;
-  emit<K extends keyof DevExperienceEvents>(event: K, ...args: Parameters<DevExperienceEvents[K]>): boolean;
-} 
+// Interface declaration moved to class definition 

@@ -233,6 +233,36 @@ export class DryRunSimulator {
     const mockFs = this.mockFs;
     const skipOps = this.options.skipOperations || [];
 
+    // Helper function for creating mock results
+    const createMockResultForOperation = (operation: string, args: any[]): any => {
+      // Return appropriate mock results for skipped operations
+      switch (operation) {
+        case "readFile":
+        case "readFileSync":
+          return "";
+        case "writeFile":
+        case "writeFileSync":
+          return undefined;
+        case "mkdir":
+        case "mkdirSync":
+          return undefined;
+        case "exists":
+        case "existsSync":
+          return false;
+        case "stat":
+        case "statSync":
+          return {
+            isFile: () => true,
+            isDirectory: () => false,
+            size: 0,
+            mtime: new Date(),
+            birthtime: new Date(),
+          };
+        default:
+          return undefined;
+      }
+    };
+
     return {
       intercept<T>(
         operation: string,
@@ -241,30 +271,35 @@ export class DryRunSimulator {
       ): T {
         if (skipOps.includes(operation)) {
           // Skip this operation, return a mock result
-          return this.createMockResult(operation, args) as T;
+          return createMockResultForOperation(operation, args) as T;
         }
 
         // Route to mock file system
         switch (operation) {
           case "readFile":
+            return (mockFs as any).readFile(args[0], args[1]) as T;
           case "readFileSync":
-            return mockFs[operation as keyof IMockFileSystem](...args) as T;
+            return (mockFs as any).readFileSync(args[0], args[1]) as T;
 
           case "writeFile":
+            return (mockFs as any).writeFile(args[0], args[1], args[2]) as T;
           case "writeFileSync":
-            return mockFs[operation as keyof IMockFileSystem](...args) as T;
+            return (mockFs as any).writeFileSync(args[0], args[1], args[2]) as T;
 
           case "mkdir":
+            return (mockFs as any).mkdir(args[0], args[1]) as T;
           case "mkdirSync":
-            return mockFs[operation as keyof IMockFileSystem](...args) as T;
+            return (mockFs as any).mkdirSync(args[0], args[1]) as T;
 
           case "exists":
+            return (mockFs as any).exists(args[0]) as T;
           case "existsSync":
-            return mockFs[operation as keyof IMockFileSystem](...args) as T;
+            return (mockFs as any).existsSync(args[0]) as T;
 
           case "stat":
+            return (mockFs as any).stat(args[0]) as T;
           case "statSync":
-            return mockFs[operation as keyof IMockFileSystem](...args) as T;
+            return (mockFs as any).statSync(args[0]) as T;
 
           default:
             // For unknown operations, call original function

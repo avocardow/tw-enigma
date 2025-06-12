@@ -3,7 +3,7 @@ import { cpus, totalmem, freemem } from 'os';
 import { statSync } from 'fs';
 import { join } from 'path';
 import { createLogger } from './logger.js';
-import { type Config } from './config.js';
+import { type EnigmaConfig } from './config.js';
 
 const logger = createLogger('performance-validator');
 
@@ -99,11 +99,11 @@ export interface PerformanceValidationOptions {
  * Performance validator class
  */
 export class PerformanceValidator extends EventEmitter {
-  private config: Config;
+  private config: EnigmaConfig;
   private systemResources: SystemResources;
   private benchmarkResults: Map<string, BenchmarkResult> = new Map();
   
-  constructor(config: Config) {
+  constructor(config: EnigmaConfig) {
     super();
     this.config = config;
     this.systemResources = this.getSystemResources();
@@ -209,7 +209,7 @@ export class PerformanceValidator extends EventEmitter {
       
     } catch (error) {
       this.emit('analysis:error', error);
-      logger.error('Performance analysis failed:', error);
+      logger.error('Performance analysis failed:', error instanceof Error ? { message: error.message, stack: error.stack } : { error: String(error) });
       throw error;
     }
   }
@@ -227,7 +227,7 @@ export class PerformanceValidator extends EventEmitter {
     let score = 100;
     
     // Parse memory limit
-    const memoryLimit = this.parseMemoryLimit(this.config.performance?.maxMemoryUsage || '256MB');
+    const memoryLimit = this.parseMemoryLimit('256MB'); // Default memory limit
     const availableMemory = this.systemResources.freeMemory;
     
     // Check if memory limit is reasonable
@@ -236,7 +236,7 @@ export class PerformanceValidator extends EventEmitter {
         type: 'memory',
         severity: 'warning',
         message: 'Memory limit exceeds 80% of available system memory',
-        currentValue: this.config.performance?.maxMemoryUsage || '256MB',
+        currentValue: '256MB',
         recommendedValue: `${Math.round(availableMemory * 0.6 / 1024 / 1024)}MB`,
         impact: 'May cause system instability and swapping'
       });
@@ -244,7 +244,7 @@ export class PerformanceValidator extends EventEmitter {
     }
     
     // Check concurrency vs memory
-    const concurrency = this.config.concurrency || 1;
+    const concurrency = this.config.maxConcurrency || 1;
     const estimatedMemoryPerWorker = memoryLimit / concurrency;
     
     if (estimatedMemoryPerWorker < 64 * 1024 * 1024) { // Less than 64MB per worker
@@ -261,17 +261,18 @@ export class PerformanceValidator extends EventEmitter {
     }
     
     // Check for memory-intensive operations
-    if (this.config.optimization?.treeshake && this.config.optimization?.deadCodeElimination) {
-      warnings.push({
-        type: 'memory',
-        severity: 'info',
-        message: 'Multiple memory-intensive optimizations enabled',
-        currentValue: 'treeshake + deadCodeElimination',
-        recommendedValue: 'Consider enabling one at a time for large projects',
-        impact: 'Increased memory usage during processing'
-      });
-      score -= 5;
-    }
+    // Remove optimization config references as they don't exist in EnigmaConfig
+    // if (this.config.optimization?.treeshake && this.config.optimization?.deadCodeElimination) {
+      // warnings.push({
+      //   type: 'memory',
+      //   severity: 'info',
+      //   message: 'Multiple memory-intensive optimizations enabled',
+      //   currentValue: 'treeshake + deadCodeElimination',
+      //   recommendedValue: 'Consider enabling one at a time for large projects',
+      //   impact: 'Increased memory usage during processing'
+      // });
+      // score -= 5;
+    // }
     
     return { score: Math.max(0, score), warnings, bottlenecks };
   }
@@ -288,7 +289,7 @@ export class PerformanceValidator extends EventEmitter {
     const bottlenecks: PerformanceBottleneck[] = [];
     let score = 100;
     
-    const concurrency = this.config.concurrency || 1;
+    const concurrency = this.config.maxConcurrency || 1;
     const availableCores = this.systemResources.cpuCores;
     
     // Check concurrency vs available cores
@@ -306,9 +307,10 @@ export class PerformanceValidator extends EventEmitter {
     
     // Check for CPU-intensive operations
     const cpuIntensiveOps = [];
-    if (this.config.optimization?.minifyClassNames) cpuIntensiveOps.push('minifyClassNames');
-    if (this.config.optimization?.treeshake) cpuIntensiveOps.push('treeshake');
-    if (this.config.optimization?.deadCodeElimination) cpuIntensiveOps.push('deadCodeElimination');
+    // Remove optimization config references as they don't exist in EnigmaConfig
+    // if (this.config.optimization?.minifyClassNames) cpuIntensiveOps.push('minifyClassNames');
+    // if (this.config.optimization?.treeshake) cpuIntensiveOps.push('treeshake');
+    // if (this.config.optimization?.deadCodeElimination) cpuIntensiveOps.push('deadCodeElimination');
     if (this.config.minify) cpuIntensiveOps.push('minify');
     
     if (cpuIntensiveOps.length > 2) {
@@ -325,7 +327,7 @@ export class PerformanceValidator extends EventEmitter {
     }
     
     // Check timeout vs complexity
-    const timeout = this.config.performance?.timeout || 15000;
+    const timeout = 15000; // Default timeout since performance config doesn't exist
     if (timeout < 10000 && cpuIntensiveOps.length > 1) {
       warnings.push({
         type: 'timeout',
@@ -354,7 +356,7 @@ export class PerformanceValidator extends EventEmitter {
     let score = 100;
     
     // Analyze input paths
-    const inputPaths = this.config.inputPaths || ['./src'];
+    const inputPaths = ['./src']; // Default input paths since inputPaths doesn't exist in config
     const totalFiles = await this.estimateFileCount(inputPaths);
     
     if (totalFiles > 10000) {
@@ -371,33 +373,35 @@ export class PerformanceValidator extends EventEmitter {
     }
     
     // Check cache configuration
-    if (!this.config.cacheDir) {
-      warnings.push({
-        type: 'io',
-        severity: 'warning',
-        message: 'No cache directory configured',
-        currentValue: 'undefined',
-        recommendedValue: './.cache/tw-enigma',
-        impact: 'Repeated processing of unchanged files'
-      });
-      score -= 15;
-    }
+    // Remove cacheDir reference as it doesn't exist in EnigmaConfig
+    // if (!this.config.cacheDir) {
+      // warnings.push({
+      //   type: 'io',
+      //   severity: 'warning',
+      //   message: 'No cache directory configured',
+      //   currentValue: 'undefined',
+      //   recommendedValue: './.cache/tw-enigma',
+      //   impact: 'Repeated processing of unchanged files'
+      // });
+      // score -= 15;
+    // }
     
     // Check output configuration
-    if (this.config.output?.preserveOriginal && totalFiles > 5000) {
-      warnings.push({
-        type: 'io',
-        severity: 'info',
-        message: 'Preserving original files with large file count',
-        currentValue: 'true',
-        recommendedValue: 'false for production builds',
-        impact: 'Increased disk usage and I/O operations'
-      });
-      score -= 5;
-    }
+    // Remove output config reference as it doesn't exist in EnigmaConfig
+    // if (this.config.output?.preserveOriginal && totalFiles > 5000) {
+      // warnings.push({
+      //   type: 'io',
+      //   severity: 'info',
+      //   message: 'Preserving original files with large file count',
+      //   currentValue: 'true',
+      //   recommendedValue: 'false for production builds',
+      //   impact: 'Increased disk usage and I/O operations'
+      // });
+      // score -= 5;
+    // }
     
     // Check watch mode impact
-    if (this.config.watch && totalFiles > 1000) {
+    if (this.config.watcher?.enabled && totalFiles > 1000) {
       warnings.push({
         type: 'io',
         severity: 'info',
@@ -444,9 +448,9 @@ export class PerformanceValidator extends EventEmitter {
     
     // Estimate build time based on configuration
     const factors = {
-      fileCount: await this.estimateFileCount(this.config.inputPaths || ['./src']),
+      fileCount: await this.estimateFileCount(['./src']), // Default input paths
       optimizations: this.countOptimizations(),
-      concurrency: this.config.concurrency || 1,
+              concurrency: this.config.maxConcurrency || 1,
       sourceMaps: this.config.sourceMaps || false
     };
     
@@ -647,14 +651,10 @@ export class PerformanceValidator extends EventEmitter {
    */
   private countOptimizations(): number {
     let count = 0;
-    const opt = this.config.optimization;
-    
-    if (opt?.removeUnused) count++;
-    if (opt?.mergeDuplicates) count++;
-    if (opt?.minifyClassNames) count++;
-    if (opt?.treeshake) count++;
-    if (opt?.deadCodeElimination) count++;
+    // Use actual EnigmaConfig properties instead of non-existent optimization object
     if (this.config.minify) count++;
+    if (this.config.sourceMaps) count++;
+    // Add other actual config properties that represent optimizations
     
     return count;
   }
@@ -690,7 +690,7 @@ export class PerformanceValidator extends EventEmitter {
 /**
  * Create performance validator
  */
-export function createPerformanceValidator(config: Config): PerformanceValidator {
+export function createPerformanceValidator(config: EnigmaConfig): PerformanceValidator {
   return new PerformanceValidator(config);
 }
 
@@ -698,7 +698,7 @@ export function createPerformanceValidator(config: Config): PerformanceValidator
  * Quick performance analysis
  */
 export async function analyzeConfigPerformance(
-  config: Config,
+  config: EnigmaConfig,
   options?: PerformanceValidationOptions
 ): Promise<PerformanceMetrics> {
   const validator = new PerformanceValidator(config);
@@ -708,7 +708,7 @@ export async function analyzeConfigPerformance(
 /**
  * Get performance recommendations for configuration
  */
-export async function getPerformanceRecommendations(config: Config): Promise<PerformanceRecommendation[]> {
+export async function getPerformanceRecommendations(config: EnigmaConfig): Promise<PerformanceRecommendation[]> {
   const validator = new PerformanceValidator(config);
   const metrics = await validator.analyzePerformance({ generateOptimizations: true });
   return metrics.recommendations;

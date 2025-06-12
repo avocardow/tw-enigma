@@ -201,9 +201,9 @@ export class AtomicRollbackManager {
     const startTime = Date.now();
     const result: AtomicOperationResult = {
       success: false,
-      operation: "rollback",
+      operation: "delete", // Use valid operation type
       filePath: "",
-      rollbackOperation: null,
+      // rollbackOperation property doesn't exist in AtomicOperationResult
       bytesProcessed: 0,
       duration: 0,
       metadata: {
@@ -266,7 +266,11 @@ export class AtomicRollbackManager {
       result.metadata.endTime = Date.now();
 
       if (errors.length > 0) {
-        result.error = `Rollback completed with ${errors.length} errors: ${errors.map((e) => e.message).join(", ")}`;
+        result.error = {
+          code: "ROLLBACK_PARTIAL_FAILURE",
+          message: `Rollback completed with ${errors.length} errors: ${errors.map((e) => e.message).join(", ")}`,
+          stack: undefined,
+        };
       }
 
       // Clean up transaction
@@ -283,8 +287,11 @@ export class AtomicRollbackManager {
       return result;
     } catch (error) {
       transaction.status = "failed";
-      result.error =
-        error instanceof Error ? error.message : "Unknown rollback error";
+      result.error = {
+        code: "ROLLBACK_ERROR",
+        message: error instanceof Error ? error.message : "Unknown rollback error",
+        stack: error instanceof Error ? error.stack : undefined,
+      };
       result.duration = Date.now() - startTime;
       result.metadata.endTime = Date.now();
 

@@ -111,6 +111,7 @@ export interface EnigmaPlugin {
     description: string;
     author?: string;
     tags?: string[];
+    repository?: string;
   };
 
   /** Plugin configuration schema (Zod) - optional for enhanced plugins */
@@ -171,6 +172,30 @@ export interface PluginManager {
 
   /** Cleanup all plugins */
   cleanup(): Promise<void>;
+
+  /** Execute a plugin with given parameters */
+  executePlugin<T = PluginResult>(
+    pluginName: string,
+    ...args: any[]
+  ): Promise<T | null>;
+
+  /** Get plugin health status */
+  getPluginHealth(pluginName: string): any;
+
+  /** Get all plugin health statuses */
+  getAllPluginHealth(): any[];
+
+  /** Enable a plugin */
+  enablePlugin(pluginName: string): void;
+
+  /** Disable a plugin */
+  disablePlugin(pluginName: string, reason?: string): void;
+
+  /** Discover plugins from various sources */
+  discoverPlugins(options: PluginDiscoveryOptions): Promise<EnigmaPlugin[]>;
+
+  /** Get resource usage statistics */
+  getResourceStats(): Record<string, any>;
 }
 
 /**
@@ -284,6 +309,7 @@ export abstract class BaseEnigmaPlugin implements EnigmaPlugin {
     description: string;
     author?: string;
     tags?: string[];
+    repository?: string;
   };
 
   protected config: PluginConfig;

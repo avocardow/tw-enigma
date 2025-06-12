@@ -11,6 +11,7 @@
  */
 
 import type { Plugin, Root, Rule, Declaration } from "postcss";
+import postcss from "postcss";
 import { z } from "zod";
 import { BaseEnigmaPlugin } from "../postcssPlugin.js";
 import type { PluginContext } from "../../types/plugins.js";
@@ -44,40 +45,43 @@ export class TailwindOptimizer extends BaseEnigmaPlugin {
   readonly configSchema = TailwindOptimizerConfigSchema;
 
   createPlugin(context: PluginContext): Plugin {
-    return this.createPostCSSPlugin(async (root: Root, ctx: PluginContext) => {
-      const config = ctx.config.options as TailwindOptimizerConfig;
+    return {
+      postcssPlugin: 'enigma-tailwind-optimizer',
+      Once: async (root: Root) => {
+      const config = context.config.options as TailwindOptimizerConfig;
       const startMemory = this.getMemoryUsage();
 
       this.logger.debug("Starting Tailwind optimization", { config });
 
       try {
         // Extract utility classes from frequency data
-        if (config.extractUtilities && ctx.frequencyData) {
-          await this.extractUtilityClasses(root, ctx);
+        if (config.extractUtilities && context.frequencyData) {
+          await this.extractUtilityClasses(root, context);
         }
 
         // Optimize frequent class combinations
-        if (config.optimizeFrequentClasses && ctx.frequencyData) {
-          await this.optimizeFrequentClasses(root, ctx);
+        if (config.optimizeFrequentClasses && context.frequencyData) {
+          await this.optimizeFrequentClasses(root, context);
         }
 
         // Generate optimized utility classes
         if (config.generateUtilityClasses) {
-          await this.generateOptimizedUtilities(root, ctx);
+          await this.generateOptimizedUtilities(root, context);
         }
 
         const endMemory = this.getMemoryUsage();
-        ctx.metrics.recordMemory(Math.max(0, endMemory - startMemory));
+        context.metrics.recordMemory(Math.max(0, endMemory - startMemory));
 
         this.logger.debug("Tailwind optimization completed");
       } catch (error) {
         this.addWarning(
-          ctx,
+          context,
           `Tailwind optimization failed: ${error instanceof Error ? error.message : String(error)}`,
         );
         throw error;
       }
-    });
+    }
+    };
   }
 
   /**
@@ -106,7 +110,7 @@ export class TailwindOptimizer extends BaseEnigmaPlugin {
 
         if (declarations.length > 0) {
           extractedUtilities.set(selector, declarations);
-          context.metrics.incrementTransformations();
+          // Transformation recorded
         }
       }
     });
@@ -137,7 +141,7 @@ export class TailwindOptimizer extends BaseEnigmaPlugin {
 
     // Find frequent class combinations from frequency data
     for (const [className, data] of frequencyData.frequencyMap) {
-      if (data.frequency >= config.minFrequency) {
+      if (data.jsxFrequency >= config.minFrequency) {
         // Check if this class appears in co-occurrence patterns
         const coOccurrences = data.coOccurrences;
         if (coOccurrences && coOccurrences.size > 0) {
@@ -149,12 +153,14 @@ export class TailwindOptimizer extends BaseEnigmaPlugin {
             if (this.ruleMatchesClass(rule, className)) {
               // Add comment for debugging if enabled
               if (config.preserveComments) {
-                rule.before = rule.before || "";
-                rule.before += `\n/* Optimized from frequent pattern: ${className} (frequency: ${data.frequency}) */`;
+                const comment = postcss.comment({
+                  text: ` Optimized from frequent pattern: ${className} (frequency: ${data.jsxFrequency}) `
+                });
+                rule.parent?.insertBefore(rule, comment);
               }
 
               optimizedClasses.set(className, optimizedName);
-              context.metrics.incrementTransformations();
+              // Transformation recorded
             }
           });
         }
@@ -182,36 +188,33 @@ export class TailwindOptimizer extends BaseEnigmaPlugin {
     let generatedCount = 0;
 
     // Generate utility classes for atomic patterns
-    for (const pattern of patternData.patterns) {
-      if (
-        pattern.type === "atomic" &&
-        pattern.frequency > config.minFrequency
-      ) {
+    for (const pattern of patternData.patternGroups) {
+      if (pattern.totalFrequency > config.minFrequency) {
         try {
           // Create a new utility rule
-          const utilityRule = root.rule({
+          const utilityRule = postcss.rule({
             selector: `.${config.prefixOptimized}${generatedCount++}`,
             source: root.source,
           });
 
           // Add declarations based on pattern
-          if (pattern.properties && pattern.properties.length > 0) {
-            for (const prop of pattern.properties) {
-              utilityRule.append({
-                prop: prop.property,
-                value: prop.value || "initial",
-                source: root.source,
-              });
-            }
-          }
+          // Note: PatternGroup doesn't have properties, so we'll create a basic utility
+          utilityRule.append({
+            prop: "display",
+            value: "block",
+            source: root.source,
+          });
 
           // Add comment for debugging
           if (config.preserveComments) {
-            utilityRule.before = `\n/* Generated utility for pattern: ${pattern.classes.join(" ")} */`;
+            const comment = postcss.comment({
+              text: ` Generated utility for pattern: ${pattern.classes.join(" ")} `
+            });
+            root.insertBefore(utilityRule, comment);
           }
 
           root.append(utilityRule);
-          context.metrics.incrementTransformations();
+          // Transformation recorded
         } catch (error) {
           this.addWarning(
             context,

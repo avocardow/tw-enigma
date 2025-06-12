@@ -410,26 +410,26 @@ export class ConfigWatcher extends EventEmitter {
 
       // Load and validate the configuration
       if (this.options.validateOnChange) {
-        const config = await this.loadConfigFile(filepath);
-        const validation = await validateConfig(config, filepath);
+        const configData = await this.loadConfigFile(filepath);
+        const validation = await validateConfig(configData, filepath);
 
-        result.config = config;
+        result.config = configData as EnigmaConfig;
         result.validation = validation;
         result.isValid = validation.isValid;
 
         if (validation.isValid) {
-          this.currentConfig = config;
-          this.addToHistory(config, filepath);
+          this.currentConfig = configData as EnigmaConfig;
+          this.addToHistory(configData as EnigmaConfig, filepath);
         }
 
         this.emit("config-validated", validation);
       } else {
         // Just load without validation
-        const config = await this.loadConfigFile(filepath);
-        result.config = config;
+        const configData = await this.loadConfigFile(filepath);
+        result.config = configData as EnigmaConfig;
         result.isValid = true;
-        this.currentConfig = config;
-        this.addToHistory(config, filepath);
+        this.currentConfig = configData as EnigmaConfig;
+        this.addToHistory(configData as EnigmaConfig, filepath);
       }
 
       this.emit("config-changed", result);

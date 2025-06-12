@@ -42,7 +42,7 @@ interface PluginRegistryConfig {
 export class PluginRegistry extends EventEmitter {
   private logger = createLogger("plugin-registry");
   private plugins = new Map<string, Map<string, PluginRegistryEntry>>();
-  private watchers = new Map<string, fs.FSWatcher>();
+  private watchers = new Map<string, ReturnType<typeof watch>>();
   private config: Required<PluginRegistryConfig>;
   private dependencyGraph = new Map<string, Set<string>>();
 

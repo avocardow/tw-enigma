@@ -1451,8 +1451,8 @@ interface TestGraphEdge {
  * and Tarjan/Kahn algorithms for SCC + topological ordering).
  */
 export class DependencyGraph {
-  private nodes: Map<string, TestGraphNode> = new Map();
-  private edges: Map<string, TestGraphEdge> = new Map();
+  private graphNodes: Map<string, TestGraphNode> = new Map();
+  private graphEdges: Map<string, TestGraphEdge> = new Map();
 
   // ---------------------------------------------------------------------------
   // Basic getters
@@ -1460,12 +1460,12 @@ export class DependencyGraph {
 
   /** Return immutable reference to internal node map. */
   getNodes(): Map<string, TestGraphNode> {
-    return this.nodes;
+    return this.graphNodes;
   }
 
   /** Return immutable reference to internal edge map. */
   getEdges(): Map<string, TestGraphEdge> {
-    return this.edges;
+    return this.graphEdges;
   }
 
   // ---------------------------------------------------------------------------
@@ -1476,9 +1476,9 @@ export class DependencyGraph {
    * Add a node to the graph – duplicate IDs are ignored (first write wins).
    */
   addNode(id: string, type: string, content: string): void {
-    if (this.nodes.has(id)) return; // Ignore duplicates (test expectation)
+    if (this.graphNodes.has(id)) return; // Ignore duplicates (test expectation)
 
-    this.nodes.set(id, {
+    this.graphNodes.set(id, {
       id,
       type: type as any,
       content,

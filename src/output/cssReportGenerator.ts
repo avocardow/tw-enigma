@@ -5,10 +5,10 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import type { CssBundle, CssChunk } from "./cssTypes.js";
+import type { CssChunk } from "./cssChunker.js";
 import type { CssOutputConfig, PerformanceBudget } from "./cssOutputConfig.js";
-import type { HashedAsset } from "./assetHasher.js";
-import type { ChunkingStats } from "./cssChunker.js";
+import type { AssetHash } from "./assetHasher.js";
+
 import type { CriticalCssResult } from "./criticalCssExtractor.js";
 
 /**
@@ -198,7 +198,7 @@ export interface CssPerformanceReport {
   };
 
   /** Asset manifest */
-  assets: HashedAsset[];
+  assets: AssetHash[];
 
   /** Detailed chunk analysis */
   chunkAnalysis: ChunkAnalysisResult[];
@@ -249,10 +249,10 @@ export class CssReportGenerator {
    * Generate comprehensive performance report
    */
   async generateReport(results: {
-    bundles: CssBundle[];
+    bundles: any[]; // CssBundle type doesn't exist
     chunks: CssChunk[];
-    assets: HashedAsset[];
-    chunkingStats: ChunkingStats;
+    assets: AssetHash[];
+    chunkingStats: any; // ChunkingStats type doesn't exist
     criticalCss?: CriticalCssResult[];
     optimizationTime: number;
   }): Promise<CssPerformanceReport> {
@@ -290,9 +290,9 @@ export class CssReportGenerator {
    * Calculate performance metrics for individual bundles
    */
   private calculateBundleMetrics(results: {
-    bundles: CssBundle[];
+    bundles: any[]; // CssBundle type doesn't exist
     chunks: CssChunk[];
-    chunkingStats: ChunkingStats;
+    chunkingStats: any; // ChunkingStats type doesn't exist
     optimizationTime: number;
   }): BundlePerformanceMetrics[] {
     return results.bundles.map((bundle) => {
@@ -435,13 +435,13 @@ export class CssReportGenerator {
 
     // Check bundle size violations
     metrics.bundles.forEach((bundle) => {
-      if (bundle.compressedSize > budget.maxBundleSize) {
+      if (bundle.compressedSize > budget.maxTotalSize) {
         violations.push({
           type: "bundle_size",
           actual: bundle.compressedSize,
-          limit: budget.maxBundleSize,
+          limit: budget.maxTotalSize,
           severity:
-            bundle.compressedSize > budget.maxBundleSize * 1.5
+            bundle.compressedSize > budget.maxTotalSize * 1.5
               ? "error"
               : "warning",
           message: `Bundle ${bundle.bundleId} exceeds size limit`,
@@ -455,13 +455,13 @@ export class CssReportGenerator {
     });
 
     // Check critical CSS violations
-    if (metrics.totalCriticalCssSize > budget.maxCriticalCssSize) {
+    if (metrics.totalCriticalCssSize > budget.maxCriticalSize) {
       violations.push({
         type: "critical_css",
         actual: metrics.totalCriticalCssSize,
-        limit: budget.maxCriticalCssSize,
+        limit: budget.maxCriticalSize,
         severity:
-          metrics.totalCriticalCssSize > budget.maxCriticalCssSize * 1.3
+          metrics.totalCriticalCssSize > budget.maxCriticalSize * 1.3
             ? "error"
             : "warning",
         message: "Critical CSS size exceeds limit",
@@ -490,11 +490,11 @@ export class CssReportGenerator {
     }
 
     // Check load time violations
-    if (metrics.averageLoadTime > budget.estimatedLoadTime) {
+    if (metrics.averageLoadTime > budget.maxLoadTime) {
       violations.push({
         type: "load_time",
         actual: metrics.averageLoadTime,
-        limit: budget.estimatedLoadTime,
+        limit: budget.maxLoadTime,
         severity: "error",
         message: "Estimated load time exceeds target",
         recommendations: [
@@ -508,12 +508,12 @@ export class CssReportGenerator {
     // Check total size violations
     if (
       metrics.totalCompressedSize >
-      (budget.maxTotalSize || budget.maxBundleSize * 5)
+      budget.maxTotalSize
     ) {
       violations.push({
         type: "total_size",
         actual: metrics.totalCompressedSize,
-        limit: budget.maxTotalSize || budget.maxBundleSize * 5,
+        limit: budget.maxTotalSize,
         severity: "error",
         message: "Total CSS size exceeds limit",
         recommendations: [

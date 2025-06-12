@@ -102,10 +102,13 @@ export abstract class BaseEnigmaPlugin implements EnigmaPlugin {
 
   abstract readonly configSchema: z.ZodSchema;
 
-  protected logger = createLogger(`plugin:${this.meta?.name || "unknown"}`);
+  protected logger = createLogger(`plugin:unknown`);
   protected config?: PluginConfig;
 
   async initialize(config: PluginConfig): Promise<void> {
+    // Update logger with actual plugin name
+    this.logger = createLogger(`plugin:${this.meta.name}`);
+    
     // Validate configuration
     const validationResult = this.configSchema.safeParse(config);
     if (!validationResult.success) {
@@ -130,13 +133,20 @@ export abstract class BaseEnigmaPlugin implements EnigmaPlugin {
   protected createPostCSSPlugin(
     handler: (root: Root, context: PluginContext) => void | Promise<void>,
   ): PluginCreator<any> {
-    return (opts = {}) => {
+    const plugin = (opts: any = {}) => {
+      // Pass meta and logger through opts
+      opts.pluginMeta = this.meta;
+      opts.pluginLogger = this.logger;
+      
       return {
         postcssPlugin: this.meta.name,
-        async Once(root: Root, helpers) {
-          const context = opts.context as PluginContext;
+        async Once(root: Root, helpers: any) {
+          const context = (opts as any).context as PluginContext;
+          const pluginMeta = (opts as any).pluginMeta || { name: 'unknown' };
+          const pluginLogger = (opts as any).pluginLogger;
+          
           if (!context) {
-            throw new Error(`Plugin ${this.meta.name} requires context`);
+            throw new Error(`Plugin ${pluginMeta.name} requires context`);
           }
 
           try {
@@ -144,10 +154,12 @@ export abstract class BaseEnigmaPlugin implements EnigmaPlugin {
             await handler(root, context);
             const duration = context.metrics.endTimer("plugin-execution");
 
-            this.logger.debug("Plugin execution completed", {
-              duration,
-              transformations: context.metrics.getMetrics().transformations,
-            });
+            if (pluginLogger) {
+              pluginLogger.debug("Plugin execution completed", {
+                duration,
+                transformations: context.metrics.getMetrics().transformations,
+              });
+            }
           } catch (error) {
             context.metrics.addWarning(
               `Plugin error: ${error instanceof Error ? error.message : String(error)}`,
@@ -157,6 +169,7 @@ export abstract class BaseEnigmaPlugin implements EnigmaPlugin {
         },
       };
     };
+    return Object.assign(plugin, { postcss: true as const });
   }
 
   /**

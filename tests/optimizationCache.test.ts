@@ -29,13 +29,18 @@ vi.mock('fs', () => ({
 }));
 
 // Mock chokidar
+const mockFileWatcher = {
+  on: vi.fn().mockReturnThis(),
+  add: vi.fn(),
+  close: vi.fn().mockResolvedValue(undefined),
+  unwatch: vi.fn(),
+};
+
 vi.mock('chokidar', () => ({
-  watch: vi.fn().mockReturnValue({
-    on: vi.fn(),
-    add: vi.fn(),
-    close: vi.fn(),
-    unwatch: vi.fn(),
-  }),
+  default: {
+    watch: vi.fn().mockReturnValue(mockFileWatcher),
+  },
+  watch: vi.fn().mockReturnValue(mockFileWatcher),
 }));
 
 // Mock crypto with proper chaining
@@ -187,7 +192,8 @@ describe('OptimizationCache', () => {
       
       // Mock different hashes for different inputs using a sequence
       let callCount = 0;
-      vi.mocked(require('crypto').createHash).mockImplementation(() => ({
+      const crypto = await import('crypto');
+      vi.mocked(crypto.createHash).mockImplementation(() => ({
         update: vi.fn().mockReturnThis(),
         digest: vi.fn().mockReturnValue(callCount++ === 0 ? 'hash-1' : 'hash-2'),
       }));
@@ -205,7 +211,8 @@ describe('OptimizationCache', () => {
       
       // Mock different hashes for different configs
       let callCount = 0;
-      vi.mocked(require('crypto').createHash).mockImplementation(() => ({
+      const crypto = await import('crypto');
+      vi.mocked(crypto.createHash).mockImplementation(() => ({
         update: vi.fn().mockReturnThis(),
         digest: vi.fn().mockReturnValue(callCount++ === 0 ? 'config-hash-1' : 'config-hash-2'),
       }));
@@ -244,8 +251,9 @@ describe('OptimizationCache', () => {
         optimization: { enabled: false } 
       };
       
-      // Mock different hash for new config
-      vi.mocked(require('crypto').createHash).mockReturnValue({
+      // Mock different hash for new config  
+      const crypto = await import('crypto');
+      vi.mocked(crypto.createHash).mockReturnValue({
         update: vi.fn().mockReturnThis(),
         digest: vi.fn().mockReturnValue('new-config-hash'),
       });

@@ -383,7 +383,7 @@ export class CiIntegration {
 
     // Send webhook notification
     if (this.options.webhookUrl) {
-      await this.sendWebhookNotification(report, comparison, success);
+      await this.sendWebhookNotification(report, success, comparison);
     }
 
     const summary = messages.join("\n");
@@ -768,8 +768,8 @@ export class CiIntegration {
    */
   private async sendWebhookNotification(
     report: CssPerformanceReport,
-    comparison?: PerformanceComparison,
     success: boolean,
+    comparison?: PerformanceComparison,
   ): Promise<void> {
     if (!this.options.webhookUrl) return;
 

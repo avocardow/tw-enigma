@@ -296,16 +296,21 @@ export class DevDiagnostics extends EventEmitter {
       persistent: true,
     });
 
-    this.fileWatcher
-      .on('add', (path) => this.handleFileChange(path, 'add'))
-      .on('change', (path) => this.handleFileChange(path, 'change'))
-      .on('unlink', (path) => this.handleFileChange(path, 'unlink'))
-      .on('error', (error) => {
-        this.logger.error("File watcher error", { error });
-        this.emit('error', error);
-      });
+    // Safety check to ensure fileWatcher is defined before chaining
+    if (this.fileWatcher) {
+      this.fileWatcher
+        .on('add', (path) => this.handleFileChange(path, 'add'))
+        .on('change', (path) => this.handleFileChange(path, 'change'))
+        .on('unlink', (path) => this.handleFileChange(path, 'unlink'))
+        .on('error', (error) => {
+          this.logger.error("File watcher error", { error });
+          this.emit('error', error);
+        });
 
-    this.logger.debug("File watching started", { patterns });
+      this.logger.debug("File watching started", { patterns });
+    } else {
+      this.logger.warn("File watcher could not be initialized");
+    }
   }
 
   /**

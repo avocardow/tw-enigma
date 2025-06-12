@@ -88,7 +88,7 @@ export class ConfigValidator {
   /**
    * Validate configuration from a file (expected by tests)
    */
-  public async validateFile(filepath: string): Promise<ValidationResult & { config?: EnigmaConfig; errors: string[] }> {
+  public async validateFile(filepath: string): Promise<ValidationResult & { config?: EnigmaConfig }> {
     try {
       const fileContent = require('fs').readFileSync(filepath, 'utf-8');
       const config = JSON.parse(fileContent);
@@ -96,7 +96,7 @@ export class ConfigValidator {
       
       return {
         isValid: result.isValid,
-        errors: result.errors.map(e => e.message), // Convert ValidationError objects to strings
+        errors: result.errors,
         warnings: result.warnings,
         suggestions: result.suggestions,
         performance: result.performance,
@@ -105,7 +105,13 @@ export class ConfigValidator {
     } catch (error) {
       return {
         isValid: false,
-        errors: [`Failed to read or parse configuration file: ${error instanceof Error ? error.message : String(error)}`], // Return string array
+        errors: [new ValidationError(
+          `Failed to read or parse configuration file: ${error instanceof Error ? error.message : String(error)}`,
+          filepath,
+          undefined,
+          error as Error,
+          { operation: "validateFile" }
+        )],
         warnings: [],
         suggestions: ["Check file exists and contains valid JSON"],
         performance: { validationTime: 0, rulesApplied: 0 }
@@ -224,7 +230,7 @@ export class ConfigValidator {
           return new ValidationError(
             `Invalid configuration field '${field}': ${issue.message}`,
             field,
-            issue.input,
+            undefined,
             error,
             { 
               operation: "basicSchemaValidation", 

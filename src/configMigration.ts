@@ -400,7 +400,7 @@ export class ConfigMigration {
       
     } catch (error) {
       result.errors.push(`Migration failed: ${error}`);
-      logger.error('Configuration migration failed:', error);
+      logger.error('Configuration migration failed', { error: error instanceof Error ? error.message : String(error) });
     }
     
     return result;
@@ -453,7 +453,7 @@ export class ConfigMigration {
       return true;
       
     } catch (error) {
-      logger.error(`Failed to restore configuration from backup: ${error}`);
+      logger.error('Failed to restore configuration from backup', { error: error instanceof Error ? error.message : String(error) });
       return false;
     }
   }
@@ -496,7 +496,7 @@ export class ConfigMigration {
             size: stats.size
           });
         } catch (error) {
-          logger.warn(`Failed to read backup file ${file}:`, error);
+          logger.warn(`Failed to read backup file ${file}`, { error: error instanceof Error ? error.message : String(error) });
         }
       }
     }

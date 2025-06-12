@@ -3,19 +3,25 @@
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import chalk from "chalk";
-import { readFileSync } from "fs";
+import { readFileSync, writeFileSync, mkdirSync } from "fs";
 import { fileURLToPath } from "url";
-import { dirname, join } from "path";
+import { dirname, join, resolve, basename, extname } from "path";
 import {
   getConfigSync,
-  ConfigError,
   createSampleConfig,
+  type CliArguments,
+  ConfigError,
 } from "../src/config.js";
 import {
   discoverFilesFromConfig,
+  type FileDiscoveryOptions,
   FileDiscoveryError,
 } from "../src/fileDiscovery.js";
-import { createLogger, LogLevel } from "../src/logger.js";
+import {
+  Logger,
+  LogLevel,
+  type FileOutputOptions,
+} from "../src/logger.js";
 import {
   createCssOutputOrchestrator,
   createProductionOrchestrator,
@@ -32,9 +38,6 @@ import {
   type CliArgs,
   type PerformanceBudget,
 } from "../src/output/cssOutputConfig.js";
-import { readFileSync as readFile, writeFileSync, mkdirSync } from "fs";
-import { resolve, extname, basename } from "path";
-import type { CliArguments } from "../src/config.js";
 
 // Get package.json for version information
 const __filename = fileURLToPath(import.meta.url);
@@ -44,18 +47,22 @@ const packageJsonPath = join(__dirname, "..", "package.json");
 const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf8"));
 
 // Initialize CLI logger (will be reconfigured after argument parsing)
-let cliLogger = createLogger("CLI");
+let cliLogger = new Logger({
+  level: LogLevel.INFO,
+  verbose: false,
+  veryVerbose: false,
+  quiet: false,
+  colorize: process.stdout.isTTY,
+  timestamp: true,
+  component: "CLI",
+  fileOutput: undefined,
+  enableProgressTracking: true,
+});
 
 /**
  * Update logger configuration based on CLI arguments
  */
 function updateLoggerFromArgv(argv: any): void {
-  const {
-    LogLevel,
-    parseLogLevel,
-    FileOutputOptions,
-  } = require("../src/logger");
-
   // Parse log level
   let level = LogLevel.INFO;
   if (argv.logLevel) {
@@ -100,7 +107,6 @@ function updateLoggerFromArgv(argv: any): void {
   }
 
   // Create new logger with updated options
-  const { Logger } = require("../src/logger");
   cliLogger = new Logger({
     level,
     verbose: argv.verbose || false,
@@ -372,7 +378,7 @@ const argv = await yargs(hideBin(process.argv))
         const bundles: CssBundle[] = [];
 
         try {
-          const cssContent = readFile(inputPath, "utf8");
+          const cssContent = readFileSync(inputPath, "utf8");
           bundles.push({
             id: basename(inputPath, extname(inputPath)),
             content: cssContent,
@@ -561,14 +567,21 @@ const argv = await yargs(hideBin(process.argv))
 
         // Display results
         cliLogger.info("✨ CSS Optimization Complete", {
-          duration: `${duration}ms`,
+          duration: duration,
           totalBundles: result.globalStats.totalBundles,
           totalChunks: result.globalStats.totalChunks,
-          originalSize: `${Math.round(result.globalStats.totalSize / 1024)}KB`,
-          optimizedSize: `${Math.round(result.globalStats.totalOptimizedSize / 1024)}KB`,
-          compressedSize: `${Math.round(result.globalStats.totalCompressedSize / 1024)}KB`,
-          compressionRatio: `${Math.round(result.globalStats.overallCompressionRatio * 100)}%`,
-          estimatedLoadTime: `${result.performanceMetrics.estimatedLoadTime}ms`,
+          originalSizeKB: Math.round(result.globalStats.totalSize / 1024),
+          optimizedSizeKB: Math.round(result.globalStats.totalOptimizedSize / 1024),
+          compressedSizeKB: Math.round(result.globalStats.totalCompressedSize / 1024),
+          compressionRatio: result.globalStats.overallCompressionRatio,
+          estimatedLoadTime: result.performanceMetrics.estimatedLoadTime,
+          // Display formatted versions
+          durationDisplay: `${duration}ms`,
+          originalSizeDisplay: `${Math.round(result.globalStats.totalSize / 1024)}KB`,
+          optimizedSizeDisplay: `${Math.round(result.globalStats.totalOptimizedSize / 1024)}KB`,
+          compressedSizeDisplay: `${Math.round(result.globalStats.totalCompressedSize / 1024)}KB`,
+          compressionRatioDisplay: `${Math.round(result.globalStats.overallCompressionRatio * 100)}%`,
+          estimatedLoadTimeDisplay: `${result.performanceMetrics.estimatedLoadTime}ms`,
         });
 
         if (result.warnings.length > 0) {
@@ -628,7 +641,7 @@ const argv = await yargs(hideBin(process.argv))
         if (argv.validate) {
           // Validate existing configuration
           const configPath = resolve(argv.validate);
-          const configData = JSON.parse(readFile(configPath, "utf8"));
+          const configData = JSON.parse(readFileSync(configPath, "utf8"));
           const validation = validateProductionConfig(configData);
 
           if (validation.valid) {
@@ -738,13 +751,13 @@ const argv = await yargs(hideBin(process.argv))
         cliLogger.info("🔍 Analyzing CSS file for optimization opportunities");
 
         const inputPath = resolve(argv.input);
-        const cssContent = readFile(inputPath, "utf8");
+        const cssContent = readFileSync(inputPath, "utf8");
         const originalSize = Buffer.byteLength(cssContent, "utf8");
 
         // Load budget if provided
         let budget: PerformanceBudget | undefined;
         if (argv.budget) {
-          const budgetData = JSON.parse(readFile(resolve(argv.budget), "utf8"));
+          const budgetData = JSON.parse(readFileSync(resolve(argv.budget), "utf8"));
           budget = createPerformanceBudget(budgetData);
         }
 
@@ -806,9 +819,13 @@ const argv = await yargs(hideBin(process.argv))
 
         // Display results
         cliLogger.info("📊 CSS Analysis Results", {
-          fileSize: `${analysis.file.sizeKB}KB`,
-          potentialSavings: `${Math.round(analysis.optimization.potentialSavings / 1024)}KB`,
-          estimatedLoadTime: `${analysis.optimization.estimatedLoadTime}ms`,
+          fileSize: analysis.file.sizeKB,
+          potentialSavingsKB: Math.round(analysis.optimization.potentialSavings / 1024),
+          estimatedLoadTime: analysis.optimization.estimatedLoadTime,
+          // Display formatted versions
+          fileSizeDisplay: `${analysis.file.sizeKB}KB`,
+          potentialSavingsDisplay: `${Math.round(analysis.optimization.potentialSavings / 1024)}KB`,
+          estimatedLoadTimeDisplay: `${analysis.optimization.estimatedLoadTime}ms`,
         });
 
         if (analysis.budget) {
@@ -991,7 +1008,7 @@ const argv = await yargs(hideBin(process.argv))
 
                 if (argv.verbose && health.recentErrors.length > 0) {
                   console.log(`   Recent Errors:`);
-                  health.recentErrors.slice(0, 3).forEach((error, i) => {
+                  health.recentErrors.slice(0, 3).forEach((error: any, i: number) => {
                     console.log(
                       `     ${i + 1}. ${error.message} (${error.category})`,
                     );
@@ -1394,8 +1411,8 @@ const argv = await yargs(hideBin(process.argv))
                 author: argv.author,
                 verified: argv.verified,
                 minRating: argv["min-rating"],
-                sortBy: argv.sort,
-                sortOrder: argv.order,
+                sortBy: argv.sort as "name" | "downloads" | "rating" | "updated",
+                sortOrder: argv.order as "asc" | "desc",
                 limit: argv.limit,
               });
 
@@ -1823,9 +1840,9 @@ const cliArgs: CliArguments = {
   veryVerbose: argv["very-verbose"],
   quiet: argv.quiet,
   debug: argv.debug,
-  logLevel: argv["log-level"],
+  logLevel: argv["log-level"] as "error" | "debug" | "trace" | "info" | "warn" | "fatal" | undefined,
   logFile: argv["log-file"],
-  logFormat: argv["log-format"],
+  logFormat: argv["log-format"] as "human" | "json" | "csv" | undefined,
   input: argv.input,
   output: argv.output,
   minify: argv.minify,

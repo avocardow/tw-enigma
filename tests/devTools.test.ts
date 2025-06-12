@@ -31,6 +31,12 @@ const mockFileWatcher = {
 
 // Mock chokidar with proper named export and parameter handling
 vi.mock('chokidar', () => ({
+  default: {
+    watch: vi.fn().mockImplementation((patterns, options) => {
+      // Always return the mock file watcher regardless of parameters
+      return mockFileWatcher;
+    }),
+  },
   watch: vi.fn().mockImplementation((patterns, options) => {
     // Always return the mock file watcher regardless of parameters
     return mockFileWatcher;

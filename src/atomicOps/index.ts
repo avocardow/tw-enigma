@@ -110,6 +110,7 @@ export class AtomicOperationsSystem {
 
     try {
       let result: import("../types/atomicOps").AtomicOperationResult;
+      let rollbackOperation: any = null;
 
       switch (operation.type) {
         case "create":
@@ -146,16 +147,18 @@ export class AtomicOperationsSystem {
           const tempInfo = await this.fileManager.createTempFile(
             operation.filePath,
           );
+          // Create rollback operation separately since it's not part of AtomicOperationResult
+          rollbackOperation = {
+            type: "file_delete" as const,
+            filePath: operation.filePath,
+            backupPath: tempInfo.path,
+            timestamp: Date.now(),
+          };
+          
           result = {
             success: true,
             operation: "delete",
             filePath: operation.filePath,
-            rollbackOperation: {
-              type: "file_delete",
-              filePath: operation.filePath,
-              backupPath: tempInfo.path,
-              timestamp: Date.now(),
-            },
             bytesProcessed: 0,
             duration: 0,
             metadata: {
@@ -175,11 +178,11 @@ export class AtomicOperationsSystem {
           throw new Error(`Unsupported operation type: ${operation.type}`);
       }
 
-      // Add rollback operation if successful
-      if (result.success && result.rollbackOperation) {
+      // Add rollback operation if successful (for delete operations)
+      if (result.success && operation.type === "delete") {
         this.rollbackManager.addRollbackOperation(
           transactionId,
-          result.rollbackOperation,
+          rollbackOperation,
         );
       }
 
@@ -189,12 +192,8 @@ export class AtomicOperationsSystem {
           operation.filePath,
           operation.permissions,
         );
-        if (permResult.rollbackOperation) {
-          this.rollbackManager.addRollbackOperation(
-            transactionId,
-            permResult.rollbackOperation,
-          );
-        }
+        // Note: permResult doesn't have rollbackOperation property
+        // Permission changes would need separate rollback tracking
       }
 
       // Commit transaction

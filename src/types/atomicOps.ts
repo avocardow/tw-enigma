@@ -47,6 +47,9 @@ export interface AtomicFileOptions {
   /** Maximum number of retry attempts (default: 3) */
   maxRetries?: number;
 
+  /** Maximum number of retry attempts (alias for maxRetries) */
+  maxRetryAttempts?: number;
+
   /** Retry delay in milliseconds (default: 100) */
   retryDelay?: number;
 }
@@ -82,22 +85,7 @@ export interface AtomicOperationResult {
   };
 
   /** Operation metadata */
-  metadata: {
-    /** Timestamp when operation started */
-    startTime: number;
-
-    /** Timestamp when operation completed */
-    endTime: number;
-
-    /** Whether fsync was used */
-    fsyncUsed: boolean;
-
-    /** Number of retry attempts made */
-    retryAttempts: number;
-
-    /** Whether WAL was used */
-    walUsed: boolean;
-  };
+  metadata: AtomicOperationResultMetadata;
 }
 
 /** File creation options */
@@ -143,6 +131,12 @@ export interface FileReadOptions {
 
   /** Whether to abort on first error in batch operations (default: true) */
   abortOnFirstError?: boolean;
+
+  /** Read timeout in milliseconds (default: 30000) */
+  readTimeout?: number;
+
+  /** Schema validation function */
+  validateSchema?: (data: any) => boolean;
 }
 
 /** Options for file write operations */
@@ -249,6 +243,14 @@ export interface RollbackOperation {
   operationId?: string;
   /** Operation index for checkpoint tracking */
   operationIndex?: number;
+  /** Individual rollback steps */
+  steps?: RollbackStep[];
+  /** Whether the operation is completed */
+  completed?: boolean;
+  /** Operation start time */
+  startTime?: number;
+  /** Operation name/description */
+  operation?: string;
 }
 
 /** Individual rollback step */
@@ -420,4 +422,6 @@ export interface AtomicOperationResultMetadata {
   backupPath?: string;
   /** Content checksum if verified */
   checksum?: string;
+  /** Whether content was loaded from cache */
+  fromCache?: boolean;
 }

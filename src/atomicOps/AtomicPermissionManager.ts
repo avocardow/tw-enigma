@@ -75,9 +75,9 @@ export class AtomicPermissionManager {
     const startTime = Date.now();
     const result: AtomicOperationResult = {
       success: false,
-      operation: "permission_change",
+      operation: "write", // Use valid operation type
       filePath,
-      rollbackOperation: null,
+      // rollbackOperation property doesn't exist in AtomicOperationResult
       bytesProcessed: 0,
       duration: 0,
       metadata: {
@@ -117,8 +117,8 @@ export class AtomicPermissionManager {
       // Apply permission change
       await fs.chmod(filePath, newPermissions);
 
-      // Create rollback operation
-      result.rollbackOperation = {
+      // Create rollback operation (note: not stored in result as property doesn't exist)
+      const rollbackOperation = {
         type: "permission_change",
         filePath,
         originalPermissions: oldPermissions,
@@ -137,8 +137,11 @@ export class AtomicPermissionManager {
 
       return result;
     } catch (error) {
-      result.error =
-        error instanceof Error ? error.message : "Permission change failed";
+      result.error = {
+        code: "PERMISSION_FAILED",
+        message: error instanceof Error ? error.message : "Permission change failed",
+        stack: error instanceof Error ? error.stack : undefined,
+      };
       result.duration = Date.now() - startTime;
       result.metadata.endTime = Date.now();
 
@@ -169,9 +172,9 @@ export class AtomicPermissionManager {
     const startTime = Date.now();
     const result: AtomicOperationResult = {
       success: false,
-      operation: "ownership_change",
+      operation: "write", // Use valid operation type
       filePath,
-      rollbackOperation: null,
+      // rollbackOperation property doesn't exist in AtomicOperationResult
       bytesProcessed: 0,
       duration: 0,
       metadata: {
@@ -196,8 +199,8 @@ export class AtomicPermissionManager {
       // Apply ownership change
       await fs.chown(filePath, uid, gid);
 
-      // Create rollback operation
-      result.rollbackOperation = {
+      // Create rollback operation (note: not stored in result as property doesn't exist)
+      const rollbackOperation = {
         type: "permission_change",
         filePath,
         originalPermissions: stats.mode,
@@ -213,8 +216,11 @@ export class AtomicPermissionManager {
 
       return result;
     } catch (error) {
-      result.error =
-        error instanceof Error ? error.message : "Ownership change failed";
+      result.error = {
+        code: "OWNERSHIP_FAILED",
+        message: error instanceof Error ? error.message : "Ownership change failed",
+        stack: error instanceof Error ? error.stack : undefined,
+      };
       result.duration = Date.now() - startTime;
       result.metadata.endTime = Date.now();
 
@@ -254,7 +260,11 @@ export class AtomicPermissionManager {
         );
         if (!ownershipResult.success) {
           // If ownership fails but permissions succeeded, still return partial success
-          result.error = `Permissions preserved but ownership failed: ${ownershipResult.error}`;
+          result.error = {
+            code: "PARTIAL_SUCCESS",
+            message: `Permissions preserved but ownership failed: ${ownershipResult.error?.message || 'Unknown error'}`,
+            stack: undefined,
+          };
         }
       }
 
@@ -262,15 +272,18 @@ export class AtomicPermissionManager {
     } catch (error) {
       return {
         success: false,
-        operation: "preserve_permissions",
+        operation: "write", // Use valid operation type
         filePath: targetPath,
-        rollbackOperation: null,
+        // rollbackOperation property doesn't exist in AtomicOperationResult
         bytesProcessed: 0,
         duration: 0,
-        error:
-          error instanceof Error
+        error: {
+          code: "PRESERVE_PERMISSIONS_FAILED",
+          message: error instanceof Error
             ? error.message
             : "Failed to preserve permissions",
+          stack: error instanceof Error ? error.stack : undefined,
+        },
         metadata: {
           startTime: Date.now(),
           endTime: Date.now(),

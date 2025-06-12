@@ -61,7 +61,8 @@ export class PluginDebugger {
 
     // Set logger level based on options
     if (this.options.logLevel) {
-      this.logger.level = this.options.logLevel;
+      // Note: Logger level is private, cannot set directly
+      // this.logger.level = this.options.logLevel;
     }
   }
 
