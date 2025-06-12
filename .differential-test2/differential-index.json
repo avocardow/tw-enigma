@@ -786,6 +786,26 @@
       "compressed": false,
       "deduplicated": false,
       "timeSinceFullBackup": 30.897989166666665
+    },
+    {
+      "id": "backup_1749721512132_yy715z",
+      "type": "differential",
+      "baseFullBackupId": "backup_1749609867631_gesput",
+      "backupPath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749721512131/.backups/diff-force-full.2025-06-12T09-45-12-132Z.txt.backup",
+      "originalPath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749721512131/diff-force-full.txt",
+      "createdAt": "2025-06-12T09:45:12.132Z",
+      "cumulativeFiles": [
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749721512131/diff-force-full.txt"
+      ],
+      "cumulativeSize": 1400,
+      "currentFiles": [
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749721512131/diff-force-full.txt"
+      ],
+      "currentSize": 35,
+      "changeDetectionMethod": "mtime",
+      "compressed": false,
+      "deduplicated": false,
+      "timeSinceFullBackup": 31.012361388888888
     }
   ],
   "cumulativeFileStates": {
@@ -1068,16 +1088,23 @@
       "mtime": "2025-06-12T09:38:20.392Z",
       "lastBackup": "2025-06-12T09:38:20.392Z",
       "hasChanged": false
+    },
+    "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749721512131/diff-force-full.txt": {
+      "filePath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749721512131/diff-force-full.txt",
+      "size": 35,
+      "mtime": "2025-06-12T09:45:12.132Z",
+      "lastBackup": "2025-06-12T09:45:12.132Z",
+      "hasChanged": false
     }
   },
   "stats": {
-    "totalDifferentials": 39,
-    "currentChainLength": 39,
-    "cumulativeSize": 1365,
-    "cumulativeSizeRatio": 39,
+    "totalDifferentials": 40,
+    "currentChainLength": 40,
+    "cumulativeSize": 1400,
+    "cumulativeSizeRatio": 40,
     "totalSpaceSaved": 0,
-    "lastBackupAt": "2025-06-12T09:38:20.392Z",
-    "timeSinceFullBackup": 30.897989166666665
+    "lastBackupAt": "2025-06-12T09:45:12.132Z",
+    "timeSinceFullBackup": 31.012361388888888
   },
-  "lastUpdated": "2025-06-12T09:38:20.392Z"
+  "lastUpdated": "2025-06-12T09:45:12.132Z"
 }

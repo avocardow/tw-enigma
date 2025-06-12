@@ -1461,11 +1461,11 @@ export async function loadEnhancedConfig(
 /**
  * Load configuration asynchronously with CLI args support
  */
-export async function loadConfig(cliArgs?: CliArguments): Promise<ConfigResult> {
+export async function loadConfig(cliArgs?: CliArguments, searchFrom?: string): Promise<ConfigResult> {
   try {
     // Load config from file
     const { config: fileConfig, filepath, isEmpty } = await loadConfigFromFile(
-      cliArgs?.config ? undefined : process.cwd(),
+      searchFrom || (cliArgs?.config ? undefined : process.cwd()),
       cliArgs?.config
     );
 
@@ -1498,11 +1498,11 @@ export async function loadConfig(cliArgs?: CliArguments): Promise<ConfigResult> 
 /**
  * Load configuration synchronously with CLI args support
  */
-export function loadConfigSync(cliArgs?: CliArguments): ConfigResult {
+export function loadConfigSync(cliArgs?: CliArguments, searchFrom?: string): ConfigResult {
   try {
     // Load config from file synchronously
     const { config: fileConfig, filepath, isEmpty } = loadConfigFromFileSync(
-      cliArgs?.config ? undefined : process.cwd(),
+      searchFrom || (cliArgs?.config ? undefined : process.cwd()),
       cliArgs?.config
     );
 
