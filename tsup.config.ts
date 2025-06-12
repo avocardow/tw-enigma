@@ -9,6 +9,13 @@ export default defineConfig([
     splitting: false,
     sourcemap: false,
     clean: true,
+    external: ["postcss", "os", "path", "fs", "fs/promises", "memfs"],
+    banner: {
+      js: `
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+      `.trim()
+    },
   },
   // CLI build (ESM with externals)
   {

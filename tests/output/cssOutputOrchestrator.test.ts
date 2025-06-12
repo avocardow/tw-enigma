@@ -124,7 +124,7 @@ describe("CssOutputOrchestrator", () => {
       expect(config.strategy).toBe("chunked");
       expect(config.optimization.minify).toBe(true);
       expect(config.compression.type).toBe("auto");
-      expect(config.criticalCss.enabled).toBe(true);
+      expect(config.critical.enabled).toBe(true);
     });
 
     it("should create development orchestrator with debug-friendly defaults", () => {
@@ -301,7 +301,7 @@ describe("CssOutputOrchestrator", () => {
 
     it("should extract critical CSS when enabled", async () => {
       const criticalConfig = createProductionConfig({
-        criticalCss: {
+        critical: {
           enabled: true,
           strategy: "inline",
           maxSize: 14 * 1024,
@@ -582,7 +582,7 @@ describe("CssOutputOrchestrator", () => {
 
     it("should validate critical CSS size limits", async () => {
       const restrictiveCriticalConfig = createProductionConfig({
-        criticalCss: {
+        critical: {
           enabled: true,
           maxSize: 1024, // Very small limit
           strategy: "inline",

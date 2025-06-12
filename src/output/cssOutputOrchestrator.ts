@@ -211,7 +211,7 @@ export class CssOutputOrchestrator {
     this.compressor = createCompressionEngine(this.config.compression);
     this.manifestGenerator = createManifestGenerator(this.config.paths);
     this.criticalCssExtractor = createCriticalCssExtractor(
-      this.config.criticalCss,
+      this.config.critical,
     );
     this.analyzer = createCssAnalyzer();
   }
@@ -304,15 +304,22 @@ export class CssOutputOrchestrator {
   ): Promise<CssOutputResult> {
     const startTime = Date.now();
 
-    // Step 1: Analyze CSS content
-    const analysis = await this.analyzer.analyzeCss(bundle.content, {
-      includeSizeMetrics: true,
-      includeComplexityMetrics: true,
-      includePerformanceMetrics: true,
-    });
-
-    // Step 2: Generate chunks based on strategy
+    // Step 1: Generate chunks based on strategy (move this before analysis)
     const chunks = await this.generateChunks(bundle, options);
+
+    // Step 2: Analyze chunks if needed (after chunks are created)
+    // Note: CSS analysis is optional and primarily for reporting
+    let analysis: any = null;
+    try {
+      analysis = await this.analyzer.analyzeCss(chunks, [], {
+        analyzeSelectors: true,
+        analyzeMediaQueries: true,
+        analyzeDuplicates: true,
+      });
+    } catch (error) {
+      console.warn('CSS analysis failed:', error.message);
+      // Continue without analysis - it's not critical for processing
+    }
 
     // Step 3: Optimize each chunk
     const optimizations = new Map<string, OptimizationResult>();
@@ -377,6 +384,26 @@ export class CssOutputOrchestrator {
     bundle: CssBundle,
     options: CssProcessingOptions,
   ): Promise<CssChunk[]> {
+    // If output strategy is "single", just return a single chunk regardless of chunking strategy
+    if (this.config.strategy === "single") {
+      return [
+        {
+          id: bundle.id,
+          name: bundle.id,
+          content: bundle.content,
+          size: Buffer.byteLength(bundle.content, "utf8"),
+          rules: [],
+          dependencies: new Set(),
+          routes: new Set(bundle.routes || []),
+          components: new Set(bundle.components || []),
+          type: "main",
+          priority: 1,
+          async: false,
+          loadingStrategy: "inline",
+        } as CssChunk,
+      ];
+    }
+
     const strategy = this.config.chunking.strategy;
 
     // Prepare usage data if needed for route/component strategies
@@ -393,25 +420,54 @@ export class CssOutputOrchestrator {
       }))
     };
 
-    switch (strategy) {
-      case "size":
-        return this.chunker.chunkBySize(bundle.content);
+    let chunks: CssChunk[] = [];
 
-      case "usage":
-        return this.chunker.chunkByUsage(bundle.content, usageData);
+    try {
+      switch (strategy) {
+        case "size":
+          chunks = this.chunker.chunkBySize(bundle.content);
+          break;
 
-      case "route":
-        return this.chunker.chunkByRoute(bundle.content, usageData);
+        case "usage":
+          chunks = this.chunker.chunkByUsage(bundle.content, usageData);
+          break;
 
-      case "component":
-        return this.chunker.chunkByComponent(bundle.content, usageData);
+        case "route":
+          chunks = this.chunker.chunkByRoute(bundle.content, usageData);
+          break;
 
-      case "hybrid":
-        return this.chunker.chunkHybrid(bundle.content, usageData);
+        case "component":
+          chunks = this.chunker.chunkByComponent(bundle.content, usageData);
+          break;
 
-      default:
-        // Single file output - create a basic chunk that matches CssChunk interface
-        return [
+        case "hybrid":
+          chunks = this.chunker.chunkHybrid(bundle.content, usageData);
+          break;
+
+        default:
+          // Fallback to single chunk
+          chunks = [
+            {
+              id: bundle.id,
+              name: bundle.id,
+              content: bundle.content,
+              size: Buffer.byteLength(bundle.content, "utf8"),
+              rules: [],
+              dependencies: new Set(),
+              routes: new Set(bundle.routes || []),
+              components: new Set(bundle.components || []),
+              type: "main",
+              priority: 1,
+              async: false,
+              loadingStrategy: "inline",
+            } as CssChunk,
+          ];
+      }
+
+      // Ensure chunks is always an array
+      if (!Array.isArray(chunks)) {
+        console.warn(`Chunker returned non-array result for strategy ${strategy}:`, chunks);
+        chunks = [
           {
             id: bundle.id,
             name: bundle.id,
@@ -427,6 +483,28 @@ export class CssOutputOrchestrator {
             loadingStrategy: "inline",
           } as CssChunk,
         ];
+      }
+
+      return chunks;
+    } catch (error) {
+      console.warn(`Chunking failed for strategy ${strategy}:`, error);
+      // Fallback to single chunk on error
+      return [
+        {
+          id: bundle.id,
+          name: bundle.id,
+          content: bundle.content,
+          size: Buffer.byteLength(bundle.content, "utf8"),
+          rules: [],
+          dependencies: new Set(),
+          routes: new Set(bundle.routes || []),
+          components: new Set(bundle.components || []),
+          type: "main",
+          priority: 1,
+          async: false,
+          loadingStrategy: "inline",
+        } as CssChunk,
+      ];
     }
   }
 
@@ -438,7 +516,7 @@ export class CssOutputOrchestrator {
     chunks: CssChunk[],
     options: CssProcessingOptions,
   ): Promise<CssOutputResult["criticalCss"]> {
-    if (!this.config.criticalCss.enabled) {
+    if (!this.config.critical.enabled) {
       return undefined;
     }
 
@@ -451,11 +529,11 @@ export class CssOutputOrchestrator {
 
     const extraction = await this.criticalCssExtractor.extractCritical(allCss, {
       routes,
-      viewport: this.config.criticalCss.viewport,
-      maxSize: this.config.criticalCss.maxSize,
+      viewport: this.config.critical.viewport,
+      maxSize: this.config.critical.maxSize,
     });
 
-    const strategy = this.config.criticalCss.strategy;
+    const strategy = this.config.critical.strategy;
 
     switch (strategy) {
       case "inline":
@@ -615,7 +693,7 @@ export class CssOutputOrchestrator {
   }
 
   /**
-   * Calculate performance metrics
+   * Calculate performance metrics across all bundles
    */
   private calculatePerformanceMetrics(
     results: Map<string, CssOutputResult>,
@@ -626,37 +704,42 @@ export class CssOutputOrchestrator {
 
     for (const result of results.values()) {
       if (result.criticalCss) {
-        criticalCssSize += Buffer.byteLength(result.criticalCss.inline, "utf8");
-        for (const preload of result.criticalCss.preload) {
-          criticalCssSize += Buffer.byteLength(preload, "utf8");
+        // Add inline critical CSS size
+        if (result.criticalCss.inline) {
+          criticalCssSize += Buffer.byteLength(result.criticalCss.inline, "utf8");
         }
-        for (const async of result.criticalCss.async) {
-          nonCriticalCssSize += Buffer.byteLength(async, "utf8");
+        
+        // Add preload CSS sizes with null check
+        if (result.criticalCss.preload && Array.isArray(result.criticalCss.preload)) {
+          for (const preload of result.criticalCss.preload) {
+            if (preload) {
+              criticalCssSize += Buffer.byteLength(preload, "utf8");
+            }
+          }
+        }
+        
+        // Add async CSS sizes with null check  
+        if (result.criticalCss.async && Array.isArray(result.criticalCss.async)) {
+          for (const async of result.criticalCss.async) {
+            if (async) {
+              nonCriticalCssSize += Buffer.byteLength(async, "utf8");
+            }
+          }
         }
       } else {
+        // If no critical CSS, all CSS is non-critical
         nonCriticalCssSize += result.stats.optimizedSize;
       }
     }
 
-    const strategy = this.config.strategy;
-    const loadingStrategy: "single" | "chunked" | "modular" =
-      strategy === "single"
-        ? "single"
-        : strategy === "chunked"
-          ? "chunked"
-          : "modular";
-
-    // Estimate load time based on file sizes and typical network conditions
-    const estimatedLoadTime = this.estimateLoadTime(
-      criticalCssSize + nonCriticalCssSize,
-      loadingStrategy,
-    );
+    const totalCssSize = criticalCssSize + nonCriticalCssSize;
+    const strategy = this.determineLoadingStrategy(results);
 
     return {
       criticalCssSize,
       nonCriticalCssSize,
-      loadingStrategy,
-      estimatedLoadTime,
+      loadingStrategy: strategy,
+      estimatedLoadTime: this.estimateLoadTime(totalCssSize, strategy),
     };
   }
 
@@ -713,7 +796,7 @@ export class CssOutputOrchestrator {
     // Check critical CSS size
     if (result.criticalCss) {
       const criticalSize = Buffer.byteLength(result.criticalCss.inline, "utf8");
-      if (criticalSize > this.config.criticalCss.maxSize) {
+      if (criticalSize > this.config.critical.maxSize) {
         warnings.push(
           `Critical CSS for ${result.bundle.id} exceeds recommended size (${Math.round(criticalSize / 1024)}KB).`,
         );
@@ -764,6 +847,31 @@ export class CssOutputOrchestrator {
       criticalCssExtractor: this.criticalCssExtractor,
       analyzer: this.analyzer,
     };
+  }
+
+  /**
+   * Determine loading strategy based on results
+   */
+  private determineLoadingStrategy(
+    results: Map<string, CssOutputResult>,
+  ): "single" | "chunked" | "modular" {
+    const strategy = this.config.strategy;
+    
+    if (strategy === "single") {
+      return "single";
+    }
+    
+    // Check if bundles are chunked
+    const totalChunks = Array.from(results.values()).reduce(
+      (total, result) => total + result.chunks.length,
+      0,
+    );
+    
+    if (totalChunks > results.size) {
+      return "chunked";
+    }
+    
+    return "modular";
   }
 }
 
@@ -818,7 +926,7 @@ export function createProductionOrchestrator(
       includeOriginal: false,
       generateReports: true,
     },
-    criticalCss: {
+    critical: {
       strategy: "preload",
       enabled: true,
       maxSize: 14 * 1024,
@@ -918,7 +1026,7 @@ export function createDevelopmentOrchestrator(
       includeOriginal: true,
       generateReports: false,
     },
-    criticalCss: {
+    critical: {
       strategy: "none",
       enabled: false,
       maxSize: 1024 * 1024,
