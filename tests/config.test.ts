@@ -124,19 +124,19 @@ describe("Configuration System", () => {
     it("should reject invalid HTML extractor options", () => {
       expect(() => {
         EnigmaConfigSchema.parse({
-          htmlExtractor: { maxFileSize: -1 }
+          htmlExtractor: { maxFileSize: -1 },
         });
       }).toThrow();
 
       expect(() => {
         EnigmaConfigSchema.parse({
-          htmlExtractor: { timeout: -1 }
+          htmlExtractor: { timeout: -1 },
         });
       }).toThrow();
 
       expect(() => {
         EnigmaConfigSchema.parse({
-          htmlExtractor: { caseSensitive: "true" }
+          htmlExtractor: { caseSensitive: "true" },
         });
       }).toThrow();
     });
@@ -160,7 +160,7 @@ describe("Configuration System", () => {
           caseSensitive: false,
           maxFileSize: 8000000,
           timeout: 5000,
-          supportedFrameworks: ['react', 'vue'],
+          supportedFrameworks: ["react", "vue"],
         },
       };
 
@@ -172,26 +172,26 @@ describe("Configuration System", () => {
         ignoreEmpty: true, // default
         maxFileSize: 8000000,
         timeout: 5000,
-        supportedFrameworks: ['react', 'vue'],
+        supportedFrameworks: ["react", "vue"],
       });
     });
 
     it("should reject invalid JavaScript extractor options", () => {
       expect(() => {
         EnigmaConfigSchema.parse({
-          jsExtractor: { maxFileSize: -1 }
+          jsExtractor: { maxFileSize: -1 },
         });
       }).toThrow();
 
       expect(() => {
         EnigmaConfigSchema.parse({
-          jsExtractor: { timeout: -1 }
+          jsExtractor: { timeout: -1 },
         });
       }).toThrow();
 
       expect(() => {
         EnigmaConfigSchema.parse({
-          jsExtractor: { enableFrameworkDetection: "true" }
+          jsExtractor: { enableFrameworkDetection: "true" },
         });
       }).toThrow();
     });
@@ -388,7 +388,7 @@ describe("Configuration System", () => {
         jsCaseSensitive: false,
         jsMaxFileSize: 8000000,
         jsTimeout: 5000,
-        jsSupportedFrameworks: ['react', 'vue'],
+        jsSupportedFrameworks: ["react", "vue"],
       };
 
       const result = await loadConfig(cliArgs, TEST_DIR);
@@ -399,7 +399,7 @@ describe("Configuration System", () => {
         ignoreEmpty: true, // default value
         maxFileSize: 8000000,
         timeout: 5000,
-        supportedFrameworks: ['react', 'vue'],
+        supportedFrameworks: ["react", "vue"],
       });
     });
 
@@ -420,7 +420,7 @@ describe("Configuration System", () => {
       };
 
       const result = await loadConfig(cliArgs, TEST_DIR);
-      
+
       // CLI should override caseSensitive, add maxFileSize
       // File config should provide timeout and preserveWhitespace
       expect(result.config.htmlExtractor?.caseSensitive).toBe(false);

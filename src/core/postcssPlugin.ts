@@ -1,6 +1,6 @@
 /**
  * Copyright (c) 2025 Rowan Cardow
- * 
+ *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
@@ -10,26 +10,26 @@
  * Provides the main plugin factory function and base plugin class
  */
 
-import type { Plugin, PluginCreator, Root, Result } from 'postcss';
-import { z } from 'zod';
-import { createLogger } from '../logger.js';
-import type { 
-  EnigmaPlugin, 
-  PluginConfig, 
-  PluginContext, 
+import type { Plugin, PluginCreator, Root, Result } from "postcss";
+import { z } from "zod";
+import { createLogger } from "../logger.js";
+import type {
+  EnigmaPlugin,
+  PluginConfig,
+  PluginContext,
   PluginMetrics,
-  PluginResult 
-} from '../types/plugins.js';
+  PluginResult,
+} from "../types/plugins.js";
 
 /**
  * Plugin configuration schema
  */
 export const PluginConfigSchema = z.object({
-  name: z.string().min(1, 'Plugin name is required'),
+  name: z.string().min(1, "Plugin name is required"),
   version: z.string().optional(),
   options: z.record(z.unknown()).optional().default({}),
   enabled: z.boolean().optional().default(true),
-  priority: z.number().int().min(0).max(100).optional().default(50)
+  priority: z.number().int().min(0).max(100).optional().default(50),
 });
 
 /**
@@ -84,7 +84,7 @@ export class PluginMetricsImpl implements PluginMetrics {
       memoryUsage: this.memoryUsage,
       warnings: [...this.warnings],
       dependencies: [...this.dependencies],
-      success: true
+      success: true,
     };
   }
 }
@@ -102,7 +102,7 @@ export abstract class BaseEnigmaPlugin implements EnigmaPlugin {
 
   abstract readonly configSchema: z.ZodSchema;
 
-  protected logger = createLogger(`plugin:${this.meta?.name || 'unknown'}`);
+  protected logger = createLogger(`plugin:${this.meta?.name || "unknown"}`);
   protected config?: PluginConfig;
 
   async initialize(config: PluginConfig): Promise<void> {
@@ -110,25 +110,25 @@ export abstract class BaseEnigmaPlugin implements EnigmaPlugin {
     const validationResult = this.configSchema.safeParse(config);
     if (!validationResult.success) {
       throw new Error(
-        `Invalid configuration for plugin ${config.name}: ${validationResult.error.message}`
+        `Invalid configuration for plugin ${config.name}: ${validationResult.error.message}`,
       );
     }
 
     this.config = validationResult.data;
-    this.logger.debug('Plugin initialized', { config: this.config });
+    this.logger.debug("Plugin initialized", { config: this.config });
   }
 
   abstract createPlugin(context: PluginContext): Plugin;
 
   async cleanup(): Promise<void> {
-    this.logger.debug('Plugin cleanup completed');
+    this.logger.debug("Plugin cleanup completed");
   }
 
   /**
    * Helper method to create a PostCSS plugin with standard wrapper
    */
   protected createPostCSSPlugin(
-    handler: (root: Root, context: PluginContext) => void | Promise<void>
+    handler: (root: Root, context: PluginContext) => void | Promise<void>,
   ): PluginCreator<any> {
     return (opts = {}) => {
       return {
@@ -140,19 +140,21 @@ export abstract class BaseEnigmaPlugin implements EnigmaPlugin {
           }
 
           try {
-            context.metrics.startTimer('plugin-execution');
+            context.metrics.startTimer("plugin-execution");
             await handler(root, context);
-            const duration = context.metrics.endTimer('plugin-execution');
-            
-            this.logger.debug('Plugin execution completed', {
+            const duration = context.metrics.endTimer("plugin-execution");
+
+            this.logger.debug("Plugin execution completed", {
               duration,
-              transformations: context.metrics.getMetrics().transformations
+              transformations: context.metrics.getMetrics().transformations,
             });
           } catch (error) {
-            context.metrics.addWarning(`Plugin error: ${error instanceof Error ? error.message : String(error)}`);
+            context.metrics.addWarning(
+              `Plugin error: ${error instanceof Error ? error.message : String(error)}`,
+            );
             throw error;
           }
-        }
+        },
       };
     };
   }
@@ -160,12 +162,16 @@ export abstract class BaseEnigmaPlugin implements EnigmaPlugin {
   /**
    * Helper method to report dependencies to PostCSS
    */
-  protected reportDependency(context: PluginContext, filePath: string, type: 'file' | 'dir' = 'file'): void {
+  protected reportDependency(
+    context: PluginContext,
+    filePath: string,
+    type: "file" | "dir" = "file",
+  ): void {
     context.result.messages.push({
-      type: type === 'dir' ? 'dir-dependency' : 'dependency',
+      type: type === "dir" ? "dir-dependency" : "dependency",
       plugin: this.meta.name,
       file: filePath,
-      parent: context.result.opts.from || ''
+      parent: context.result.opts.from || "",
     });
     context.metrics.addDependency(filePath);
   }
@@ -173,7 +179,11 @@ export abstract class BaseEnigmaPlugin implements EnigmaPlugin {
   /**
    * Helper method to add warnings
    */
-  protected addWarning(context: PluginContext, message: string, node?: any): void {
+  protected addWarning(
+    context: PluginContext,
+    message: string,
+    node?: any,
+  ): void {
     if (node && node.warn) {
       node.warn(context.result, message);
     } else {
@@ -188,10 +198,11 @@ export abstract class BaseEnigmaPlugin implements EnigmaPlugin {
   protected isValidCssSelector(selector: string): boolean {
     try {
       // Basic CSS selector validation
-      if (!selector || typeof selector !== 'string') return false;
-      
+      if (!selector || typeof selector !== "string") return false;
+
       // Check for basic CSS selector patterns
-      const selectorPattern = /^[.#]?[a-zA-Z_-][a-zA-Z0-9_-]*([:.][a-zA-Z0-9_-]+)*$/;
+      const selectorPattern =
+        /^[.#]?[a-zA-Z_-][a-zA-Z0-9_-]*([:.][a-zA-Z0-9_-]+)*$/;
       return selectorPattern.test(selector.trim());
     } catch {
       return false;
@@ -202,7 +213,7 @@ export abstract class BaseEnigmaPlugin implements EnigmaPlugin {
    * Helper method to get memory usage
    */
   protected getMemoryUsage(): number {
-    if (typeof process !== 'undefined' && process.memoryUsage) {
+    if (typeof process !== "undefined" && process.memoryUsage) {
       return process.memoryUsage().heapUsed;
     }
     return 0;
@@ -212,7 +223,9 @@ export abstract class BaseEnigmaPlugin implements EnigmaPlugin {
 /**
  * Plugin factory function for creating Enigma plugins
  */
-export function createEnigmaPlugin<T extends Record<string, unknown> = Record<string, unknown>>(
+export function createEnigmaPlugin<
+  T extends Record<string, unknown> = Record<string, unknown>,
+>(
   meta: {
     name: string;
     version: string;
@@ -220,24 +233,24 @@ export function createEnigmaPlugin<T extends Record<string, unknown> = Record<st
     author?: string;
   },
   configSchema: z.ZodSchema<T>,
-  pluginHandler: (context: PluginContext) => Plugin
+  pluginHandler: (context: PluginContext) => Plugin,
 ): EnigmaPlugin {
   return {
     meta,
     configSchema,
-    
+
     async initialize(config: PluginConfig): Promise<void> {
       const validationResult = configSchema.safeParse(config.options);
       if (!validationResult.success) {
         throw new Error(
-          `Invalid configuration for plugin ${config.name}: ${validationResult.error.message}`
+          `Invalid configuration for plugin ${config.name}: ${validationResult.error.message}`,
         );
       }
     },
 
     createPlugin(context: PluginContext): Plugin {
       return pluginHandler(context);
-    }
+    },
   };
 }
 
@@ -264,11 +277,11 @@ export function validatePluginConfig(config: unknown): PluginConfig {
  */
 export function isEnigmaPlugin(value: unknown): value is EnigmaPlugin {
   return (
-    typeof value === 'object' &&
+    typeof value === "object" &&
     value !== null &&
-    'meta' in value &&
-    'configSchema' in value &&
-    'createPlugin' in value &&
-    typeof (value as any).createPlugin === 'function'
+    "meta" in value &&
+    "configSchema" in value &&
+    "createPlugin" in value &&
+    typeof (value as any).createPlugin === "function"
   );
-} 
+}

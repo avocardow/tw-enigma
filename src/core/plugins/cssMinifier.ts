@@ -1,6 +1,6 @@
 /**
  * Copyright (c) 2025 Rowan Cardow
- * 
+ *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
@@ -10,10 +10,10 @@
  * Minifies CSS output by removing whitespace, comments, and optimizing declarations
  */
 
-import type { Plugin, Root, Rule, Declaration, Comment } from 'postcss';
-import { z } from 'zod';
-import { BaseEnigmaPlugin } from '../postcssPlugin.js';
-import type { PluginContext } from '../../types/plugins.js';
+import type { Plugin, Root, Rule, Declaration, Comment } from "postcss";
+import { z } from "zod";
+import { BaseEnigmaPlugin } from "../postcssPlugin.js";
+import type { PluginContext } from "../../types/plugins.js";
 
 /**
  * Configuration schema for CSS Minifier
@@ -26,7 +26,7 @@ const CssMinifierConfigSchema = z.object({
   mergeRules: z.boolean().optional().default(true),
   removeEmptyRules: z.boolean().optional().default(true),
   preserveImportant: z.boolean().optional().default(true),
-  compressNumbers: z.boolean().optional().default(true)
+  compressNumbers: z.boolean().optional().default(true),
 });
 
 type CssMinifierConfig = z.infer<typeof CssMinifierConfigSchema>;
@@ -36,10 +36,11 @@ type CssMinifierConfig = z.infer<typeof CssMinifierConfigSchema>;
  */
 export class CssMinifier extends BaseEnigmaPlugin {
   readonly meta = {
-    name: 'css-minifier',
-    version: '1.0.0',
-    description: 'Minifies CSS output by removing unnecessary whitespace and optimizing declarations',
-    author: 'Enigma Core Team'
+    name: "css-minifier",
+    version: "1.0.0",
+    description:
+      "Minifies CSS output by removing unnecessary whitespace and optimizing declarations",
+    author: "Enigma Core Team",
   };
 
   readonly configSchema = CssMinifierConfigSchema;
@@ -49,7 +50,7 @@ export class CssMinifier extends BaseEnigmaPlugin {
       const config = ctx.config.options as CssMinifierConfig;
       const startMemory = this.getMemoryUsage();
 
-      this.logger.debug('Starting CSS minification', { config });
+      this.logger.debug("Starting CSS minification", { config });
 
       try {
         // Remove comments
@@ -85,10 +86,12 @@ export class CssMinifier extends BaseEnigmaPlugin {
         const endMemory = this.getMemoryUsage();
         ctx.metrics.recordMemory(Math.max(0, endMemory - startMemory));
 
-        this.logger.debug('CSS minification completed');
-
+        this.logger.debug("CSS minification completed");
       } catch (error) {
-        this.addWarning(ctx, `CSS minification failed: ${error instanceof Error ? error.message : String(error)}`);
+        this.addWarning(
+          ctx,
+          `CSS minification failed: ${error instanceof Error ? error.message : String(error)}`,
+        );
         throw error;
       }
     });
@@ -102,7 +105,7 @@ export class CssMinifier extends BaseEnigmaPlugin {
 
     root.walkComments((comment: Comment) => {
       // Preserve important comments (those starting with !)
-      if (!comment.text.startsWith('!')) {
+      if (!comment.text.startsWith("!")) {
         comment.remove();
         removedCount++;
         context.metrics.incrementTransformations();
@@ -125,12 +128,16 @@ export class CssMinifier extends BaseEnigmaPlugin {
       let optimizedValue = originalValue;
 
       // Remove unnecessary quotes from font families
-      if (decl.prop === 'font-family' || decl.prop === 'font') {
+      if (decl.prop === "font-family" || decl.prop === "font") {
         optimizedValue = this.optimizeFontFamily(optimizedValue);
       }
 
       // Optimize margin/padding shorthand
-      if (['margin', 'padding', 'border-width', 'border-radius'].includes(decl.prop)) {
+      if (
+        ["margin", "padding", "border-width", "border-radius"].includes(
+          decl.prop,
+        )
+      ) {
         optimizedValue = this.optimizeShorthand(optimizedValue);
       }
 
@@ -138,7 +145,7 @@ export class CssMinifier extends BaseEnigmaPlugin {
       optimizedValue = this.removeZeroUnits(optimizedValue);
 
       // Compress whitespace
-      optimizedValue = optimizedValue.replace(/\s+/g, ' ').trim();
+      optimizedValue = optimizedValue.replace(/\s+/g, " ").trim();
 
       if (optimizedValue !== originalValue) {
         decl.value = optimizedValue;
@@ -163,28 +170,38 @@ export class CssMinifier extends BaseEnigmaPlugin {
       let compressedValue = originalValue;
 
       // Compress hex colors (#ffffff -> #fff)
-      compressedValue = compressedValue.replace(/#([a-fA-F0-9])\1([a-fA-F0-9])\2([a-fA-F0-9])\3/g, '#$1$2$3');
+      compressedValue = compressedValue.replace(
+        /#([a-fA-F0-9])\1([a-fA-F0-9])\2([a-fA-F0-9])\3/g,
+        "#$1$2$3",
+      );
 
       // Convert rgb() to hex when shorter
-      compressedValue = compressedValue.replace(/rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/g, (match, r, g, b) => {
-        const hex = '#' + [r, g, b].map(n => parseInt(n, 10).toString(16).padStart(2, '0')).join('');
-        return hex.length <= match.length ? hex : match;
-      });
+      compressedValue = compressedValue.replace(
+        /rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/g,
+        (match, r, g, b) => {
+          const hex =
+            "#" +
+            [r, g, b]
+              .map((n) => parseInt(n, 10).toString(16).padStart(2, "0"))
+              .join("");
+          return hex.length <= match.length ? hex : match;
+        },
+      );
 
       // Convert named colors to hex when shorter
       const namedColors: Record<string, string> = {
-        'white': '#fff',
-        'black': '#000',
-        'red': '#f00',
-        'green': '#008000',
-        'blue': '#00f',
-        'yellow': '#ff0',
-        'cyan': '#0ff',
-        'magenta': '#f0f'
+        white: "#fff",
+        black: "#000",
+        red: "#f00",
+        green: "#008000",
+        blue: "#00f",
+        yellow: "#ff0",
+        cyan: "#0ff",
+        magenta: "#f0f",
       };
 
       for (const [name, hex] of Object.entries(namedColors)) {
-        const regex = new RegExp(`\\b${name}\\b`, 'gi');
+        const regex = new RegExp(`\\b${name}\\b`, "gi");
         if (regex.test(compressedValue) && hex.length < name.length) {
           compressedValue = compressedValue.replace(regex, hex);
         }
@@ -213,13 +230,13 @@ export class CssMinifier extends BaseEnigmaPlugin {
       let compressedValue = originalValue;
 
       // Remove leading zeros (0.5 -> .5)
-      compressedValue = compressedValue.replace(/\b0+(\.\d+)/g, '$1');
+      compressedValue = compressedValue.replace(/\b0+(\.\d+)/g, "$1");
 
       // Remove trailing zeros (1.50 -> 1.5)
-      compressedValue = compressedValue.replace(/(\.\d*?)0+\b/g, '$1');
+      compressedValue = compressedValue.replace(/(\.\d*?)0+\b/g, "$1");
 
       // Remove unnecessary decimal point (1. -> 1)
-      compressedValue = compressedValue.replace(/(\d+)\.(?!\d)/g, '$1');
+      compressedValue = compressedValue.replace(/(\d+)\.(?!\d)/g, "$1");
 
       if (compressedValue !== originalValue) {
         decl.value = compressedValue;
@@ -322,7 +339,7 @@ export class CssMinifier extends BaseEnigmaPlugin {
     // Remove unnecessary quotes from single-word font names
     return value.replace(/"([a-zA-Z]+)"/g, (match, family) => {
       // Keep quotes for multi-word or special character font names
-      if (family.includes(' ') || !/^[a-zA-Z-]+$/.test(family)) {
+      if (family.includes(" ") || !/^[a-zA-Z-]+$/.test(family)) {
         return match;
       }
       return family;
@@ -334,11 +351,11 @@ export class CssMinifier extends BaseEnigmaPlugin {
    */
   private optimizeShorthand(value: string): string {
     const values = value.split(/\s+/);
-    
+
     if (values.length === 4) {
       // Check for optimizable patterns: top right bottom left
       const [top, right, bottom, left] = values;
-      
+
       if (top === right && right === bottom && bottom === left) {
         // All same: return single value
         return top;
@@ -350,7 +367,7 @@ export class CssMinifier extends BaseEnigmaPlugin {
         return `${top} ${right} ${bottom}`;
       }
     }
-    
+
     return value;
   }
 
@@ -359,7 +376,10 @@ export class CssMinifier extends BaseEnigmaPlugin {
    */
   private removeZeroUnits(value: string): string {
     // Remove units from zero values (0px -> 0, 0em -> 0, etc.)
-    return value.replace(/\b0+(px|em|rem|ex|ch|vw|vh|vmin|vmax|cm|mm|in|pt|pc|%)/g, '0');
+    return value.replace(
+      /\b0+(px|em|rem|ex|ch|vw|vh|vmin|vmax|cm|mm|in|pt|pc|%)/g,
+      "0",
+    );
   }
 }
 
@@ -371,4 +391,4 @@ export function createCssMinifier(): CssMinifier {
 }
 
 // Export default plugin instance
-export default createCssMinifier(); 
+export default createCssMinifier();

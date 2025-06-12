@@ -1,6 +1,6 @@
 /**
  * Copyright (c) 2025 Rowan Cardow
- * 
+ *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
@@ -10,10 +10,10 @@
  * Preserves and updates source maps during CSS transformations
  */
 
-import type { Plugin, Root, Source } from 'postcss';
-import { z } from 'zod';
-import { BaseEnigmaPlugin } from '../postcssPlugin.js';
-import type { PluginContext } from '../../types/plugins.js';
+import type { Plugin, Root, Source } from "postcss";
+import { z } from "zod";
+import { BaseEnigmaPlugin } from "../postcssPlugin.js";
+import type { PluginContext } from "../../types/plugins.js";
 
 /**
  * Configuration schema for Source Mapper
@@ -24,7 +24,7 @@ const SourceMapperConfigSchema = z.object({
   sourceMapURL: z.string().optional(),
   sourceRoot: z.string().optional(),
   preserveOriginalSources: z.boolean().optional().default(true),
-  inlineSourceMap: z.boolean().optional().default(false)
+  inlineSourceMap: z.boolean().optional().default(false),
 });
 
 type SourceMapperConfig = z.infer<typeof SourceMapperConfigSchema>;
@@ -34,10 +34,10 @@ type SourceMapperConfig = z.infer<typeof SourceMapperConfigSchema>;
  */
 export class SourceMapper extends BaseEnigmaPlugin {
   readonly meta = {
-    name: 'source-mapper',
-    version: '1.0.0',
-    description: 'Preserves and updates source maps during CSS transformations',
-    author: 'Enigma Core Team'
+    name: "source-mapper",
+    version: "1.0.0",
+    description: "Preserves and updates source maps during CSS transformations",
+    author: "Enigma Core Team",
   };
 
   readonly configSchema = SourceMapperConfigSchema;
@@ -47,7 +47,7 @@ export class SourceMapper extends BaseEnigmaPlugin {
       const config = ctx.config.options as SourceMapperConfig;
       const startMemory = this.getMemoryUsage();
 
-      this.logger.debug('Starting source map processing', { config });
+      this.logger.debug("Starting source map processing", { config });
 
       try {
         // Preserve original source information
@@ -64,10 +64,12 @@ export class SourceMapper extends BaseEnigmaPlugin {
         const endMemory = this.getMemoryUsage();
         ctx.metrics.recordMemory(Math.max(0, endMemory - startMemory));
 
-        this.logger.debug('Source map processing completed');
-
+        this.logger.debug("Source map processing completed");
       } catch (error) {
-        this.addWarning(ctx, `Source map processing failed: ${error instanceof Error ? error.message : String(error)}`);
+        this.addWarning(
+          ctx,
+          `Source map processing failed: ${error instanceof Error ? error.message : String(error)}`,
+        );
         throw error;
       }
     });
@@ -86,7 +88,7 @@ export class SourceMapper extends BaseEnigmaPlugin {
         node.source = {
           input: root.source.input,
           start: root.source.start,
-          end: root.source.end
+          end: root.source.end,
         };
         preservedCount++;
         context.metrics.incrementTransformations();
@@ -94,7 +96,9 @@ export class SourceMapper extends BaseEnigmaPlugin {
     });
 
     if (preservedCount > 0) {
-      this.logger.debug(`Preserved source information for ${preservedCount} nodes`);
+      this.logger.debug(
+        `Preserved source information for ${preservedCount} nodes`,
+      );
     }
   }
 
@@ -134,16 +138,19 @@ export class SourceMapper extends BaseEnigmaPlugin {
   /**
    * Configure source map generation options
    */
-  private configureSourceMapGeneration(context: PluginContext, config: SourceMapperConfig): void {
+  private configureSourceMapGeneration(
+    context: PluginContext,
+    config: SourceMapperConfig,
+  ): void {
     if (config.generateSourceMap) {
       // Configure source map options through the result object
       // This will be used by PostCSS when generating the final output
-      
+
       const sourceMapOptions: any = {
         map: {
           inline: config.inlineSourceMap,
           sourcesContent: config.includeContents,
-        }
+        },
       };
 
       if (config.sourceRoot) {
@@ -156,24 +163,30 @@ export class SourceMapper extends BaseEnigmaPlugin {
 
       // Store source map configuration in context for use by PostCSS
       context.sourceMapOptions = sourceMapOptions;
-      
-      this.logger.debug('Configured source map generation', { options: sourceMapOptions });
+
+      this.logger.debug("Configured source map generation", {
+        options: sourceMapOptions,
+      });
     }
   }
 
   /**
    * Create a source reference for new nodes
    */
-  createSourceReference(originalSource: Source | undefined, line?: number, column?: number): Source | undefined {
+  createSourceReference(
+    originalSource: Source | undefined,
+    line?: number,
+    column?: number,
+  ): Source | undefined {
     if (!originalSource) return undefined;
 
     return {
       input: originalSource.input,
       start: {
         line: line ?? originalSource.start?.line ?? 1,
-        column: column ?? originalSource.start?.column ?? 1
+        column: column ?? originalSource.start?.column ?? 1,
       },
-      end: originalSource.end
+      end: originalSource.end,
     };
   }
 
@@ -186,7 +199,7 @@ export class SourceMapper extends BaseEnigmaPlugin {
     return {
       input: source.input,
       start: source.start ? { ...source.start } : undefined,
-      end: source.end ? { ...source.end } : undefined
+      end: source.end ? { ...source.end } : undefined,
     };
   }
 
@@ -195,7 +208,7 @@ export class SourceMapper extends BaseEnigmaPlugin {
    */
   mergeSourceInfo(sources: (Source | undefined)[]): Source | undefined {
     const validSources = sources.filter((s): s is Source => s !== undefined);
-    
+
     if (validSources.length === 0) return undefined;
     if (validSources.length === 1) return this.cloneSource(validSources[0]);
 
@@ -209,13 +222,19 @@ export class SourceMapper extends BaseEnigmaPlugin {
     for (let i = 1; i < validSources.length; i++) {
       const source = validSources[i];
       if (source.start) {
-        if (source.start.line < minLine || (source.start.line === minLine && source.start.column < minColumn)) {
+        if (
+          source.start.line < minLine ||
+          (source.start.line === minLine && source.start.column < minColumn)
+        ) {
           minLine = source.start.line;
           minColumn = source.start.column;
         }
       }
       if (source.end) {
-        if (source.end.line > maxLine || (source.end.line === maxLine && source.end.column > maxColumn)) {
+        if (
+          source.end.line > maxLine ||
+          (source.end.line === maxLine && source.end.column > maxColumn)
+        ) {
           maxLine = source.end.line;
           maxColumn = source.end.column;
         }
@@ -225,7 +244,7 @@ export class SourceMapper extends BaseEnigmaPlugin {
     return {
       input: firstSource.input,
       start: { line: minLine, column: minColumn },
-      end: { line: maxLine, column: maxColumn }
+      end: { line: maxLine, column: maxColumn },
     };
   }
 
@@ -253,14 +272,14 @@ export class SourceMapper extends BaseEnigmaPlugin {
     });
 
     if (sourceFiles.size > 1) {
-      this.logger.warn('Multiple source files detected', { 
-        files: Array.from(sourceFiles) 
+      this.logger.warn("Multiple source files detected", {
+        files: Array.from(sourceFiles),
       });
     }
 
     if (!isValid) {
-      this.logger.warn('Source map validation failed', { 
-        issues: issues.slice(0, 10) // Limit to first 10 issues
+      this.logger.warn("Source map validation failed", {
+        issues: issues.slice(0, 10), // Limit to first 10 issues
       });
     }
 
@@ -276,4 +295,4 @@ export function createSourceMapper(): SourceMapper {
 }
 
 // Export default plugin instance
-export default createSourceMapper(); 
+export default createSourceMapper();

@@ -1,21 +1,26 @@
 /**
  * Copyright (c) 2025 Rowan Cardow
- * 
+ *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
 
-import { createHash } from 'crypto';
-import { gzip, brotliCompress } from 'zlib';
-import { promisify } from 'util';
-import { readFile, writeFile, stat } from 'fs/promises';
-import { join, dirname, basename, extname } from 'path';
-import cssnano from 'cssnano';
-import type { CssOutputConfig } from './cssOutputConfig.js';
-import { z } from 'zod';
-import postcss, { Root, Plugin } from 'postcss';
-import { CompressionConfig, OptimizationConfig, OutputPaths, HashAlgorithm } from './cssOutputConfig.js';
-import { CssChunk } from './cssChunker.js';
+import { createHash } from "crypto";
+import { gzip, brotliCompress } from "zlib";
+import { promisify } from "util";
+import { readFile, writeFile, stat } from "fs/promises";
+import { join, dirname, basename, extname } from "path";
+import cssnano from "cssnano";
+import type { CssOutputConfig } from "./cssOutputConfig.js";
+import { z } from "zod";
+import postcss, { Root, Plugin } from "postcss";
+import {
+  CompressionConfig,
+  OptimizationConfig,
+  OutputPaths,
+  HashAlgorithm,
+} from "./cssOutputConfig.js";
+import { CssChunk } from "./cssChunker.js";
 
 const gzipAsync = promisify(gzip);
 const brotliCompressAsync = promisify(brotliCompress);
@@ -30,25 +35,25 @@ const brotliCompressAsync = promisify(brotliCompress);
 export interface AssetHash {
   /** Original filename */
   original: string;
-  
+
   /** Hashed filename */
   hashed: string;
-  
+
   /** Hash value */
   hash: string;
-  
+
   /** Hash algorithm used */
   algorithm: HashAlgorithm;
-  
+
   /** File size in bytes */
   size: number;
-  
+
   /** Content MIME type */
   mimeType: string;
-  
+
   /** Last modified timestamp */
   lastModified: Date;
-  
+
   /** Integrity hash for SRI */
   integrity?: string;
 }
@@ -59,28 +64,28 @@ export interface AssetHash {
 export interface CompressedAsset {
   /** Original asset reference */
   originalPath: string;
-  
+
   /** Compressed asset path */
   compressedPath: string;
-  
+
   /** Original size in bytes */
   originalSize: number;
-  
+
   /** Compressed size in bytes */
   compressedSize: number;
-  
+
   /** Compression ratio (0-1) */
   compressionRatio: number;
-  
+
   /** Compression type used */
-  compressionType: 'gzip' | 'brotli';
-  
+  compressionType: "gzip" | "brotli";
+
   /** Compression level used */
   compressionLevel: number;
-  
+
   /** Whether asset is minified */
   isMinified: boolean;
-  
+
   /** Source map path if available */
   sourceMapPath?: string;
 }
@@ -91,25 +96,25 @@ export interface CompressedAsset {
 export interface CompressionResult {
   /** Original content */
   original: Buffer;
-  
+
   /** Compressed content */
   compressed: Buffer;
-  
+
   /** Compression type used */
-  type: 'gzip' | 'brotli';
-  
+  type: "gzip" | "brotli";
+
   /** Compression ratio (0-1) */
   ratio: number;
-  
+
   /** Original size in bytes */
   originalSize: number;
-  
+
   /** Compressed size in bytes */
   compressedSize: number;
-  
+
   /** Compression level used */
   level: number;
-  
+
   /** Compression time in milliseconds */
   compressionTime: number;
 }
@@ -120,34 +125,34 @@ export interface CompressionResult {
 export interface OptimizationResult {
   /** Original CSS content */
   original: string;
-  
+
   /** Optimized CSS content */
   optimized: string;
-  
+
   /** Optimization statistics */
   stats: {
     /** Original size in bytes */
     originalSize: number;
-    
+
     /** Optimized size in bytes */
     optimizedSize: number;
-    
+
     /** Size reduction percentage */
     reduction: number;
-    
+
     /** Rules removed count */
     rulesRemoved: number;
-    
+
     /** Declarations optimized count */
     declarationsOptimized: number;
-    
+
     /** Optimization time in milliseconds */
     optimizationTime: number;
   };
-  
+
   /** Optimization plugins used */
   plugins: string[];
-  
+
   /** Source map if generated */
   sourceMap?: string;
 }
@@ -158,28 +163,28 @@ export interface OptimizationResult {
 export interface AssetManifestEntry {
   /** Original filename */
   file: string;
-  
+
   /** Hashed filename */
   src: string;
-  
+
   /** File size in bytes */
   size: number;
-  
+
   /** File hash */
   hash: string;
-  
+
   /** Integrity hash for SRI */
   integrity: string;
-  
+
   /** Asset type */
-  type: 'css' | 'js' | 'asset';
-  
+  type: "css" | "js" | "asset";
+
   /** Loading priority */
   priority: number;
-  
+
   /** Loading strategy */
-  loading: 'eager' | 'lazy' | 'preload' | 'prefetch';
-  
+  loading: "eager" | "lazy" | "preload" | "prefetch";
+
   /** Compressed variants available */
   compressed?: {
     gzip?: {
@@ -191,10 +196,10 @@ export interface AssetManifestEntry {
       size: number;
     };
   };
-  
+
   /** Associated routes/pages */
   routes?: string[];
-  
+
   /** Associated components */
   components?: string[];
 }
@@ -205,10 +210,10 @@ export interface AssetManifestEntry {
 export interface AssetManifest {
   /** Manifest version */
   version: string;
-  
+
   /** Generation timestamp */
   generated: Date;
-  
+
   /** Build configuration used */
   buildConfig: {
     strategy: string;
@@ -216,13 +221,13 @@ export interface AssetManifest {
     compression: boolean;
     hashing: boolean;
   };
-  
+
   /** All assets in the manifest */
   assets: Record<string, AssetManifestEntry>;
-  
+
   /** Entry point files */
   entrypoints: Record<string, string[]>;
-  
+
   /** Total build statistics */
   stats: {
     totalFiles: number;
@@ -242,22 +247,22 @@ export interface AssetManifest {
  */
 export const AssetHashingOptionsSchema = z.object({
   /** Hash algorithm to use */
-  algorithm: z.enum(['md5', 'sha1', 'sha256', 'xxhash']).default('xxhash'),
-  
+  algorithm: z.enum(["md5", "sha1", "sha256", "xxhash"]).default("xxhash"),
+
   /** Hash length in characters */
   length: z.number().min(4).max(32).default(8),
-  
+
   /** Include file content in hash */
   includeContent: z.boolean().default(true),
-  
+
   /** Include file metadata in hash */
   includeMetadata: z.boolean().default(false),
-  
+
   /** Generate integrity hashes for SRI */
   generateIntegrity: z.boolean().default(true),
-  
+
   /** Integrity algorithm for SRI */
-  integrityAlgorithm: z.enum(['sha256', 'sha384', 'sha512']).default('sha384')
+  integrityAlgorithm: z.enum(["sha256", "sha384", "sha512"]).default("sha384"),
 });
 
 export type AssetHashingOptions = z.infer<typeof AssetHashingOptionsSchema>;
@@ -268,7 +273,7 @@ export type AssetHashingOptions = z.infer<typeof AssetHashingOptionsSchema>;
 
 /**
  * Asset Hasher
- * 
+ *
  * Handles content-based hashing and fingerprinting of CSS assets
  */
 export class AssetHasher {
@@ -287,12 +292,12 @@ export class AssetHasher {
    */
   hashContent(content: string, filename: string): AssetHash {
     const cacheKey = `${filename}:${content.length}`;
-    
+
     if (this.hashCache.has(cacheKey)) {
       return this.hashCache.get(cacheKey)!;
     }
 
-    const contentBuffer = Buffer.from(content, 'utf8');
+    const contentBuffer = Buffer.from(content, "utf8");
     const hash = this.generateHash(contentBuffer, filename);
     const hashedFilename = this.generateHashedFilename(filename, hash);
 
@@ -302,11 +307,11 @@ export class AssetHasher {
       hash,
       algorithm: this.options.algorithm,
       size: contentBuffer.length,
-      mimeType: 'text/css',
+      mimeType: "text/css",
       lastModified: new Date(),
-      integrity: this.options.generateIntegrity 
+      integrity: this.options.generateIntegrity
         ? this.generateIntegrityHash(contentBuffer)
-        : undefined
+        : undefined,
     };
 
     this.hashCache.set(cacheKey, assetHash);
@@ -342,34 +347,34 @@ export class AssetHasher {
     let hash: string;
 
     switch (this.options.algorithm) {
-      case 'md5':
-        hash = createHash('md5').update(content).digest('hex');
+      case "md5":
+        hash = createHash("md5").update(content).digest("hex");
         break;
-      case 'sha1':
-        hash = createHash('sha1').update(content).digest('hex');
+      case "sha1":
+        hash = createHash("sha1").update(content).digest("hex");
         break;
-      case 'sha256':
-        hash = createHash('sha256').update(content).digest('hex');
+      case "sha256":
+        hash = createHash("sha256").update(content).digest("hex");
         break;
-      case 'xxhash':
+      case "xxhash":
         // For now, use sha256 as fallback since xxhash requires native module
-        hash = createHash('sha256').update(content).digest('hex');
+        hash = createHash("sha256").update(content).digest("hex");
         break;
       default:
-        hash = createHash('sha256').update(content).digest('hex');
+        hash = createHash("sha256").update(content).digest("hex");
     }
 
     // Include metadata if requested
     if (this.options.includeMetadata && filename) {
-      const metadataHash = createHash('sha256')
+      const metadataHash = createHash("sha256")
         .update(filename)
         .update(new Date().toISOString())
-        .digest('hex');
-      
-      hash = createHash('sha256')
+        .digest("hex");
+
+      hash = createHash("sha256")
         .update(hash)
         .update(metadataHash)
-        .digest('hex');
+        .digest("hex");
     }
 
     return hash.substring(0, this.options.length);
@@ -381,8 +386,8 @@ export class AssetHasher {
   private generateIntegrityHash(content: Buffer): string {
     const hash = createHash(this.options.integrityAlgorithm)
       .update(content)
-      .digest('base64');
-    
+      .digest("base64");
+
     return `${this.options.integrityAlgorithm}-${hash}`;
   }
 
@@ -390,9 +395,9 @@ export class AssetHasher {
    * Generate hashed filename
    */
   private generateHashedFilename(filename: string, hash: string): string {
-    const extension = filename.split('.').pop();
-    const basename = filename.substring(0, filename.lastIndexOf('.'));
-    
+    const extension = filename.split(".").pop();
+    const basename = filename.substring(0, filename.lastIndexOf("."));
+
     return `${basename}.${hash}.${extension}`;
   }
 
@@ -409,7 +414,7 @@ export class AssetHasher {
   getCacheStats(): { size: number; hits: number } {
     return {
       size: this.hashCache.size,
-      hits: 0 // Would need to track hits in real implementation
+      hits: 0, // Would need to track hits in real implementation
     };
   }
 }
@@ -420,7 +425,7 @@ export class AssetHasher {
 
 /**
  * CSS Optimizer
- * 
+ *
  * Handles CSS minification and optimization using PostCSS and cssnano
  */
 export class CssOptimizer {
@@ -438,9 +443,12 @@ export class CssOptimizer {
   /**
    * Optimize CSS content
    */
-  async optimizeCss(css: string, filename?: string): Promise<OptimizationResult> {
+  async optimizeCss(
+    css: string,
+    filename?: string,
+  ): Promise<OptimizationResult> {
     const startTime = Date.now();
-    const originalSize = Buffer.byteLength(css, 'utf8');
+    const originalSize = Buffer.byteLength(css, "utf8");
 
     try {
       // Build PostCSS plugin chain
@@ -451,10 +459,10 @@ export class CssOptimizer {
       const result = await processor.process(css, {
         from: filename,
         to: filename,
-        map: this.config.generateSourceMaps ? { inline: false } : false
+        map: this.config.generateSourceMaps ? { inline: false } : false,
       });
 
-      const optimizedSize = Buffer.byteLength(result.css, 'utf8');
+      const optimizedSize = Buffer.byteLength(result.css, "utf8");
       const optimizationTime = Date.now() - startTime;
 
       return {
@@ -466,13 +474,15 @@ export class CssOptimizer {
           reduction: ((originalSize - optimizedSize) / originalSize) * 100,
           rulesRemoved: 0, // Would need detailed analysis
           declarationsOptimized: 0, // Would need detailed analysis
-          optimizationTime
+          optimizationTime,
         },
-        plugins: plugins.map(plugin => plugin.pluginName || 'unknown'),
-        sourceMap: result.map?.toString()
+        plugins: plugins.map((plugin) => plugin.pluginName || "unknown"),
+        sourceMap: result.map?.toString(),
       };
     } catch (error) {
-      throw new Error(`CSS optimization failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `CSS optimization failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     }
   }
 
@@ -486,11 +496,13 @@ export class CssOptimizer {
   /**
    * Optimize multiple chunks
    */
-  async optimizeChunks(chunks: CssChunk[]): Promise<Map<string, OptimizationResult>> {
+  async optimizeChunks(
+    chunks: CssChunk[],
+  ): Promise<Map<string, OptimizationResult>> {
     const results = new Map<string, OptimizationResult>();
-    
+
     // Process chunks in parallel for better performance
-    const promises = chunks.map(async chunk => {
+    const promises = chunks.map(async (chunk) => {
       const result = await this.optimizeChunk(chunk);
       return { chunkId: chunk.id, result };
     });
@@ -513,19 +525,22 @@ export class CssOptimizer {
     if (this.config.minify) {
       // Configure cssnano with options
       const cssnanoOptions = {
-        preset: ['default', {
-          discardComments: this.config.removeComments,
-          mergeRules: this.config.mergeDuplicates,
-          normalizeWhitespace: true,
-          colormin: this.config.normalizeColors,
-          calc: this.config.optimizeCalc,
-          autoprefixer: this.config.autoprefix,
-          cssDeclarationSorter: true,
-          discardEmpty: this.config.removeEmpty,
-          mergeIdents: true,
-          reduceIdents: false, // Preserve class names for debugging
-          zindex: false // Don't optimize z-index values
-        }]
+        preset: [
+          "default",
+          {
+            discardComments: this.config.removeComments,
+            mergeRules: this.config.mergeDuplicates,
+            normalizeWhitespace: true,
+            colormin: this.config.normalizeColors,
+            calc: this.config.optimizeCalc,
+            autoprefixer: this.config.autoprefix,
+            cssDeclarationSorter: true,
+            discardEmpty: this.config.removeEmpty,
+            mergeIdents: true,
+            reduceIdents: false, // Preserve class names for debugging
+            zindex: false, // Don't optimize z-index values
+          },
+        ],
       };
 
       plugins.push(cssnano(cssnanoOptions));
@@ -548,12 +563,12 @@ export class CssOptimizer {
    */
   private createMediaMergePlugin(): Plugin {
     return {
-      postcssPlugin: 'merge-media-queries',
+      postcssPlugin: "merge-media-queries",
       Once(root: Root) {
         const mediaQueries = new Map<string, any[]>();
 
         // Collect media queries
-        root.walkAtRules('media', (rule) => {
+        root.walkAtRules("media", (rule) => {
           const params = rule.params;
           if (!mediaQueries.has(params)) {
             mediaQueries.set(params, []);
@@ -565,7 +580,7 @@ export class CssOptimizer {
         for (const [params, rules] of mediaQueries) {
           if (rules.length > 1) {
             const firstRule = rules[0];
-            
+
             // Move all rules from subsequent media queries to the first one
             for (let i = 1; i < rules.length; i++) {
               const rule = rules[i];
@@ -576,7 +591,7 @@ export class CssOptimizer {
             }
           }
         }
-      }
+      },
     };
   }
 
@@ -585,25 +600,25 @@ export class CssOptimizer {
    */
   private createFontOptimizationPlugin(): Plugin {
     return {
-      postcssPlugin: 'optimize-fonts',
+      postcssPlugin: "optimize-fonts",
       Once(root: Root) {
         // Optimize font-family declarations
-        root.walkDecls('font-family', (decl) => {
+        root.walkDecls("font-family", (decl) => {
           // Remove quotes from single-word font names
-          decl.value = decl.value.replace(/"([^"\s]+)"/g, '$1');
-          
+          decl.value = decl.value.replace(/"([^"\s]+)"/g, "$1");
+
           // Normalize font stack order
-          const fonts = decl.value.split(',').map(font => font.trim());
+          const fonts = decl.value.split(",").map((font) => font.trim());
           const optimized = this.optimizeFontStack(fonts);
-          decl.value = optimized.join(', ');
+          decl.value = optimized.join(", ");
         });
 
         // Optimize font shorthand
-        root.walkDecls('font', (decl) => {
+        root.walkDecls("font", (decl) => {
           // Basic font shorthand optimization
-          decl.value = decl.value.replace(/\s+/g, ' ').trim();
+          decl.value = decl.value.replace(/\s+/g, " ").trim();
         });
-      }
+      },
     };
   }
 
@@ -612,10 +627,20 @@ export class CssOptimizer {
    */
   private optimizeFontStack(fonts: string[]): string[] {
     // Move generic families to the end
-    const genericFamilies = ['serif', 'sans-serif', 'monospace', 'cursive', 'fantasy'];
-    const specific = fonts.filter(font => !genericFamilies.includes(font.toLowerCase()));
-    const generic = fonts.filter(font => genericFamilies.includes(font.toLowerCase()));
-    
+    const genericFamilies = [
+      "serif",
+      "sans-serif",
+      "monospace",
+      "cursive",
+      "fantasy",
+    ];
+    const specific = fonts.filter(
+      (font) => !genericFamilies.includes(font.toLowerCase()),
+    );
+    const generic = fonts.filter((font) =>
+      genericFamilies.includes(font.toLowerCase()),
+    );
+
     return [...specific, ...generic];
   }
 }
@@ -626,7 +651,7 @@ export class CssOptimizer {
 
 /**
  * Compression Engine
- * 
+ *
  * Handles gzip and brotli compression of CSS assets
  */
 export class CompressionEngine {
@@ -645,7 +670,7 @@ export class CompressionEngine {
    * Compress CSS content
    */
   async compressContent(content: string): Promise<CompressionResult[]> {
-    const contentBuffer = Buffer.from(content, 'utf8');
+    const contentBuffer = Buffer.from(content, "utf8");
     const results: CompressionResult[] = [];
 
     if (contentBuffer.length < this.config.threshold) {
@@ -676,11 +701,13 @@ export class CompressionEngine {
   /**
    * Compress multiple chunks
    */
-  async compressChunks(chunks: CssChunk[]): Promise<Map<string, CompressionResult[]>> {
+  async compressChunks(
+    chunks: CssChunk[],
+  ): Promise<Map<string, CompressionResult[]>> {
     const results = new Map<string, CompressionResult[]>();
 
     // Process chunks in parallel
-    const promises = chunks.map(async chunk => {
+    const promises = chunks.map(async (chunk) => {
       const compressionResults = await this.compressChunk(chunk);
       return { chunkId: chunk.id, results: compressionResults };
     });
@@ -697,15 +724,15 @@ export class CompressionEngine {
   /**
    * Get compression types to use
    */
-  private getCompressionTypes(): ('gzip' | 'brotli')[] {
+  private getCompressionTypes(): ("gzip" | "brotli")[] {
     switch (this.config.type) {
-      case 'gzip':
-        return ['gzip'];
-      case 'brotli':
-        return ['brotli'];
-      case 'auto':
-        return ['brotli', 'gzip']; // Prefer brotli for better compression
-      case 'none':
+      case "gzip":
+        return ["gzip"];
+      case "brotli":
+        return ["brotli"];
+      case "auto":
+        return ["brotli", "gzip"]; // Prefer brotli for better compression
+      case "none":
       default:
         return [];
     }
@@ -714,23 +741,30 @@ export class CompressionEngine {
   /**
    * Compress content with specific type
    */
-  private async compressWithType(content: Buffer, type: 'gzip' | 'brotli'): Promise<CompressionResult> {
+  private async compressWithType(
+    content: Buffer,
+    type: "gzip" | "brotli",
+  ): Promise<CompressionResult> {
     const startTime = Date.now();
     let compressed: Buffer;
 
-    if (type === 'gzip') {
+    if (type === "gzip") {
       compressed = await this.gzipAsync(content, {
         level: Math.min(this.config.level, 9),
         chunkSize: 1024,
         windowBits: 15,
-        memLevel: 8
+        memLevel: 8,
       });
-    } else { // brotli
+    } else {
+      // brotli
       compressed = await this.brotliAsync(content, {
         params: {
-          [require('zlib').constants.BROTLI_PARAM_QUALITY]: Math.min(this.config.level, 11),
-          [require('zlib').constants.BROTLI_PARAM_SIZE_HINT]: content.length
-        }
+          [require("zlib").constants.BROTLI_PARAM_QUALITY]: Math.min(
+            this.config.level,
+            11,
+          ),
+          [require("zlib").constants.BROTLI_PARAM_SIZE_HINT]: content.length,
+        },
       });
     }
 
@@ -745,19 +779,21 @@ export class CompressionEngine {
       originalSize: content.length,
       compressedSize: compressed.length,
       level: this.config.level,
-      compressionTime
+      compressionTime,
     };
   }
 
   /**
    * Select best compression results
    */
-  private selectBestCompression(results: CompressionResult[]): CompressionResult[] {
+  private selectBestCompression(
+    results: CompressionResult[],
+  ): CompressionResult[] {
     if (results.length === 0) {
       return results;
     }
 
-    if (this.config.type !== 'auto') {
+    if (this.config.type !== "auto") {
       return results;
     }
 
@@ -775,7 +811,7 @@ export class CompressionEngine {
 
 /**
  * Manifest Generator
- * 
+ *
  * Generates asset manifests for build output
  */
 export class ManifestGenerator {
@@ -795,7 +831,7 @@ export class ManifestGenerator {
     chunks: CssChunk[],
     hashes: Map<string, AssetHash>,
     optimizations: Map<string, OptimizationResult>,
-    compressions: Map<string, CompressionResult[]>
+    compressions: Map<string, CompressionResult[]>,
   ): AssetManifest {
     const assets: Record<string, AssetManifestEntry> = {};
     const entrypoints: Record<string, string[]> = {};
@@ -815,26 +851,30 @@ export class ManifestGenerator {
         src: hash.hashed,
         size: optimization ? optimization.stats.optimizedSize : chunk.size,
         hash: hash.hash,
-        integrity: hash.integrity || '',
-        type: 'css',
+        integrity: hash.integrity || "",
+        type: "css",
         priority: chunk.priority,
         loading: this.getLoadingStrategy(chunk),
         routes: chunk.routes.size > 0 ? Array.from(chunk.routes) : undefined,
-        components: chunk.components.size > 0 ? Array.from(chunk.components) : undefined
+        components:
+          chunk.components.size > 0 ? Array.from(chunk.components) : undefined,
       };
 
       // Add compression information
       if (compression.length > 0) {
         entry.compressed = {};
-        
+
         for (const comp of compression) {
-          const compressedFilename = this.generateCompressedFilename(hash.hashed, comp.type);
-          
+          const compressedFilename = this.generateCompressedFilename(
+            hash.hashed,
+            comp.type,
+          );
+
           entry.compressed[comp.type] = {
             file: compressedFilename,
-            size: comp.compressedSize
+            size: comp.compressedSize,
           };
-          
+
           compressedSize += comp.compressedSize;
         }
       }
@@ -851,13 +891,13 @@ export class ManifestGenerator {
     }
 
     return {
-      version: '1.0.0',
+      version: "1.0.0",
       generated: new Date(),
       buildConfig: {
-        strategy: 'css-output-optimization',
+        strategy: "css-output-optimization",
         optimization: optimizations.size > 0,
         compression: compressions.size > 0,
-        hashing: hashes.size > 0
+        hashing: hashes.size > 0,
       },
       assets,
       entrypoints,
@@ -866,26 +906,26 @@ export class ManifestGenerator {
         totalSize,
         compressedSize: compressedSize || totalSize,
         compressionRatio: compressedSize ? totalSize / compressedSize : 1,
-        optimizationRatio: this.calculateOptimizationRatio(optimizations)
-      }
+        optimizationRatio: this.calculateOptimizationRatio(optimizations),
+      },
     };
   }
 
   /**
    * Get loading strategy for chunk
    */
-  private getLoadingStrategy(chunk: CssChunk): AssetManifestEntry['loading'] {
+  private getLoadingStrategy(chunk: CssChunk): AssetManifestEntry["loading"] {
     switch (chunk.loadingStrategy) {
-      case 'inline':
-        return 'eager';
-      case 'preload':
-        return 'preload';
-      case 'prefetch':
-        return 'prefetch';
-      case 'lazy':
-        return 'lazy';
+      case "inline":
+        return "eager";
+      case "preload":
+        return "preload";
+      case "prefetch":
+        return "prefetch";
+      case "lazy":
+        return "lazy";
       default:
-        return chunk.type === 'critical' ? 'eager' : 'lazy';
+        return chunk.type === "critical" ? "eager" : "lazy";
     }
   }
 
@@ -894,29 +934,34 @@ export class ManifestGenerator {
    */
   private getEntryType(chunk: CssChunk): string {
     switch (chunk.type) {
-      case 'critical':
-        return 'critical';
-      case 'vendor':
-        return 'vendor';
-      case 'main':
-        return 'main';
+      case "critical":
+        return "critical";
+      case "vendor":
+        return "vendor";
+      case "main":
+        return "main";
       default:
-        return 'secondary';
+        return "secondary";
     }
   }
 
   /**
    * Generate compressed filename
    */
-  private generateCompressedFilename(originalFilename: string, compressionType: 'gzip' | 'brotli'): string {
-    const extension = compressionType === 'gzip' ? 'gz' : 'br';
+  private generateCompressedFilename(
+    originalFilename: string,
+    compressionType: "gzip" | "brotli",
+  ): string {
+    const extension = compressionType === "gzip" ? "gz" : "br";
     return `${originalFilename}.${extension}`;
   }
 
   /**
    * Calculate optimization ratio
    */
-  private calculateOptimizationRatio(optimizations: Map<string, OptimizationResult>): number {
+  private calculateOptimizationRatio(
+    optimizations: Map<string, OptimizationResult>,
+  ): number {
     if (optimizations.size === 0) return 1;
 
     let totalOriginal = 0;
@@ -933,9 +978,12 @@ export class ManifestGenerator {
   /**
    * Save manifest to file
    */
-  async saveManifest(manifest: AssetManifest, outputPath: string): Promise<void> {
+  async saveManifest(
+    manifest: AssetManifest,
+    outputPath: string,
+  ): Promise<void> {
     const manifestJson = JSON.stringify(manifest, null, 2);
-    
+
     // In a real implementation, we'd write to the file system
     // For now, we'll just return the JSON string
     return Promise.resolve();
@@ -949,7 +997,9 @@ export class ManifestGenerator {
 /**
  * Create an asset hasher with default options
  */
-export function createAssetHasher(options?: Partial<AssetHashingOptions>): AssetHasher {
+export function createAssetHasher(
+  options?: Partial<AssetHashingOptions>,
+): AssetHasher {
   return new AssetHasher(options);
 }
 
@@ -963,7 +1013,9 @@ export function createCssOptimizer(config: OptimizationConfig): CssOptimizer {
 /**
  * Create a compression engine with configuration
  */
-export function createCompressionEngine(config: CompressionConfig): CompressionEngine {
+export function createCompressionEngine(
+  config: CompressionConfig,
+): CompressionEngine {
   return new CompressionEngine(config);
 }
 
@@ -977,7 +1029,9 @@ export function createManifestGenerator(paths: OutputPaths): ManifestGenerator {
 /**
  * Validate asset hashing options
  */
-export function validateAssetHashingOptions(options: unknown): AssetHashingOptions {
+export function validateAssetHashingOptions(
+  options: unknown,
+): AssetHashingOptions {
   return AssetHashingOptionsSchema.parse(options);
 }
 
@@ -991,14 +1045,16 @@ export function validateAssetHashingOptions(options: unknown): AssetHashingOptio
 export const CssMinifier = CssOptimizer;
 
 /**
- * Alias for CompressionEngine (expected by tests as CssCompressor)  
+ * Alias for CompressionEngine (expected by tests as CssCompressor)
  */
 export const CssCompressor = CompressionEngine;
 
 /**
  * Create CSS compressor instance (expected by tests)
  */
-export function createCssCompressor(config: CompressionConfig): CompressionEngine {
+export function createCssCompressor(
+  config: CompressionConfig,
+): CompressionEngine {
   return new CompressionEngine(config);
 }
 

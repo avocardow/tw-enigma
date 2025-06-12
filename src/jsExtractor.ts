@@ -1,12 +1,12 @@
 /**
  * Copyright (c) 2025 Rowan Cardow
- * 
+ *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
 
-import * as fs from 'fs/promises';
-import { z } from 'zod';
+import * as fs from "fs/promises";
+import { z } from "zod";
 
 /**
  * Configuration options for JavaScript/JSX class extraction
@@ -16,9 +16,14 @@ export const JsExtractionOptionsSchema = z.object({
   includeDynamicClasses: z.boolean().default(true),
   caseSensitive: z.boolean().default(true),
   ignoreEmpty: z.boolean().default(true),
-  maxFileSize: z.number().min(1).default(10 * 1024 * 1024), // 10MB
+  maxFileSize: z
+    .number()
+    .min(1)
+    .default(10 * 1024 * 1024), // 10MB
   timeout: z.number().min(1).default(10000), // 10 seconds
-  supportedFrameworks: z.array(z.string()).default(['react', 'preact', 'solid', 'vue', 'angular']),
+  supportedFrameworks: z
+    .array(z.string())
+    .default(["react", "preact", "solid", "vue", "angular"]),
 });
 
 export type JsExtractionOptions = z.infer<typeof JsExtractionOptionsSchema>;
@@ -26,7 +31,13 @@ export type JsExtractionOptions = z.infer<typeof JsExtractionOptionsSchema>;
 /**
  * Supported JavaScript/JSX frameworks
  */
-export type SupportedFramework = 'react' | 'preact' | 'solid' | 'vue' | 'angular' | 'unknown';
+export type SupportedFramework =
+  | "react"
+  | "preact"
+  | "solid"
+  | "vue"
+  | "angular"
+  | "unknown";
 
 /**
  * Data structure for individual class information (JavaScript-specific)
@@ -38,7 +49,7 @@ export interface JsClassData {
     pattern: string;
     lineNumber: number;
     framework?: SupportedFramework;
-    extractionType: 'static' | 'dynamic' | 'template' | 'utility';
+    extractionType: "static" | "dynamic" | "template" | "utility";
   }>;
 }
 
@@ -70,16 +81,24 @@ export interface JsClassExtractionResult {
  * Custom error classes for JavaScript parsing operations
  */
 export class JsParsingError extends Error {
-  constructor(message: string, public source?: string, public cause?: Error) {
+  constructor(
+    message: string,
+    public source?: string,
+    public cause?: Error,
+  ) {
     super(message);
-    this.name = 'JsParsingError';
+    this.name = "JsParsingError";
   }
 }
 
 export class JsFileReadError extends Error {
-  constructor(message: string, public filePath?: string, public cause?: Error) {
+  constructor(
+    message: string,
+    public filePath?: string,
+    public cause?: Error,
+  ) {
     super(message);
-    this.name = 'JsFileReadError';
+    this.name = "JsFileReadError";
   }
 }
 
@@ -88,32 +107,41 @@ export class JsFileReadError extends Error {
  */
 class RegexPatterns {
   // Static className/class patterns
-  static readonly STATIC_CLASSNAME = /(?:className|class)\s*=\s*["'`]([^"'`]*?)["'`]/g;
-  
+  static readonly STATIC_CLASSNAME =
+    /(?:className|class)\s*=\s*["'`]([^"'`]*?)["'`]/g;
+
   // Template literal patterns with simple content
   static readonly TEMPLATE_SIMPLE = /(?:className|class)\s*=\s*\{`([^`]*?)`\}/g;
-  
+
   // Dynamic expression patterns (basic)
-  static readonly DYNAMIC_EXPRESSION = /(?:className|class)\s*=\s*\{([^}]*?)\}/g;
-  
+  static readonly DYNAMIC_EXPRESSION =
+    /(?:className|class)\s*=\s*\{([^}]*?)\}/g;
+
   // Utility function patterns (clsx, classnames, cn)
   static readonly UTILITY_FUNCTIONS = /(?:clsx|classnames|cn)\s*\(([^)]*)\)/g;
-  
+
   // JavaScript variable assignments with quoted strings (for extracting class strings from variables)
-  static readonly JS_STRING_LITERALS = /(?:const|let|var)\s+\w+\s*=\s*["'`]([^"'`]*?)["'`]/g;
-  
+  static readonly JS_STRING_LITERALS =
+    /(?:const|let|var)\s+\w+\s*=\s*["'`]([^"'`]*?)["'`]/g;
+
   // Object property values with quoted strings (for extracting classes from object literals)
   static readonly OBJECT_PROPERTY_STRINGS = /\w+\s*:\s*["'`]([^"'`]*?)["'`]/g;
-  
+
   // Framework detection patterns
-  static readonly REACT_IMPORT = /(?:import.*?from\s+['"]react['"]|import\s+React|from\s+['"]react['"])/;
-  static readonly PREACT_IMPORT = /(?:import.*?from\s+['"]preact['"]|from\s+['"]preact['"])/;
-  static readonly SOLID_IMPORT = /(?:import.*?from\s+['"]solid-js['"]|from\s+['"]solid-js['"])/;
-  static readonly VUE_IMPORT = /(?:import.*?from\s+['"]vue['"]|from\s+['"]vue['"])/;
-  static readonly ANGULAR_IMPORT = /(?:import.*?from\s+['"]@angular|from\s+['"]@angular)/;
-  
+  static readonly REACT_IMPORT =
+    /(?:import.*?from\s+['"]react['"]|import\s+React|from\s+['"]react['"])/;
+  static readonly PREACT_IMPORT =
+    /(?:import.*?from\s+['"]preact['"]|from\s+['"]preact['"])/;
+  static readonly SOLID_IMPORT =
+    /(?:import.*?from\s+['"]solid-js['"]|from\s+['"]solid-js['"])/;
+  static readonly VUE_IMPORT =
+    /(?:import.*?from\s+['"]vue['"]|from\s+['"]vue['"])/;
+  static readonly ANGULAR_IMPORT =
+    /(?:import.*?from\s+['"]@angular|from\s+['"]@angular)/;
+
   // JSX syntax detection
-  static readonly JSX_SYNTAX = /<[A-Z][A-Za-z0-9]*|<[a-z][a-zA-Z0-9-]*(?:\s+[a-zA-Z][a-zA-Z0-9-]*(?:=(?:"[^"]*"|'[^']*'|{[^}]*}))?)*\s*\/?>/;
+  static readonly JSX_SYNTAX =
+    /<[A-Z][A-Za-z0-9]*|<[a-z][a-zA-Z0-9-]*(?:\s+[a-zA-Z][a-zA-Z0-9-]*(?:=(?:"[^"]*"|'[^']*'|{[^}]*}))?)*\s*\/?>/;
 }
 
 /**
@@ -131,7 +159,7 @@ export class JsExtractor {
    */
   async extractFromString(
     code: string,
-    source = 'string'
+    source = "string",
   ): Promise<JsClassExtractionResult> {
     const startTime = Date.now();
     const metadata = {
@@ -149,9 +177,9 @@ export class JsExtractor {
 
     try {
       // Detect framework if enabled
-      const framework = this.options.enableFrameworkDetection 
-        ? this.detectFramework(code) 
-        : 'unknown';
+      const framework = this.options.enableFrameworkDetection
+        ? this.detectFramework(code)
+        : "unknown";
 
       const classes = new Map<string, JsClassData>();
       let totalMatches = 0;
@@ -159,42 +187,45 @@ export class JsExtractor {
 
       // Extract static className/class attributes
       const staticMatches = this.extractStaticClasses(code);
-      this.processMatches(staticMatches, 'static', classes, framework);
-      
+      this.processMatches(staticMatches, "static", classes, framework);
+
       // Extract JavaScript string literals (variable assignments)
       const jsStringMatches = this.extractJsStringLiterals(code);
-      this.processMatches(jsStringMatches, 'static', classes, framework);
-      
+      this.processMatches(jsStringMatches, "static", classes, framework);
+
       // Extract object property strings
       const objectPropertyMatches = this.extractObjectPropertyStrings(code);
-      this.processMatches(objectPropertyMatches, 'static', classes, framework);
-      
-      const totalStaticMatches = staticMatches.length + jsStringMatches.length + objectPropertyMatches.length;
+      this.processMatches(objectPropertyMatches, "static", classes, framework);
+
+      const totalStaticMatches =
+        staticMatches.length +
+        jsStringMatches.length +
+        objectPropertyMatches.length;
       totalMatches += totalStaticMatches;
       metadata.extractionStats.staticMatches = totalStaticMatches;
 
       // Extract template literal classes
       const templateMatches = this.extractTemplateClasses(code);
-      this.processMatches(templateMatches, 'template', classes, framework);
+      this.processMatches(templateMatches, "template", classes, framework);
       totalMatches += templateMatches.length;
       metadata.extractionStats.templateMatches = templateMatches.length;
 
       // Extract utility function classes
       const utilityMatches = this.extractUtilityClasses(code);
-      this.processMatches(utilityMatches, 'utility', classes, framework);
+      this.processMatches(utilityMatches, "utility", classes, framework);
       totalMatches += utilityMatches.length;
       metadata.extractionStats.utilityMatches = utilityMatches.length;
 
       // Extract dynamic classes if enabled
       if (this.options.includeDynamicClasses) {
         const dynamicMatches = this.extractDynamicClasses(code);
-        this.processMatches(dynamicMatches, 'dynamic', classes, framework);
+        this.processMatches(dynamicMatches, "dynamic", classes, framework);
         totalMatches += dynamicMatches.length;
         metadata.extractionStats.dynamicMatches = dynamicMatches.length;
       }
 
       // Count total classes
-      classes.forEach(classData => {
+      classes.forEach((classData) => {
         totalClasses += classData.frequency;
       });
 
@@ -209,13 +240,15 @@ export class JsExtractor {
         metadata,
       };
     } catch (error) {
-      metadata.errors.push(error instanceof Error ? error.message : String(error));
+      metadata.errors.push(
+        error instanceof Error ? error.message : String(error),
+      );
       metadata.processingTime = Date.now() - startTime;
-      
+
       throw new JsParsingError(
         `Failed to parse JavaScript/JSX: ${error instanceof Error ? error.message : String(error)}`,
         source,
-        error instanceof Error ? error : undefined
+        error instanceof Error ? error : undefined,
       );
     }
   }
@@ -230,27 +263,30 @@ export class JsExtractor {
       if (stats.size > this.options.maxFileSize) {
         throw new JsFileReadError(
           `File size (${stats.size} bytes) exceeds maximum allowed size (${this.options.maxFileSize} bytes)`,
-          filePath
+          filePath,
         );
       }
 
       // Read file with timeout
-      const code = await this.readFileWithTimeout(filePath, this.options.timeout);
+      const code = await this.readFileWithTimeout(
+        filePath,
+        this.options.timeout,
+      );
       const result = await this.extractFromString(code, filePath);
-      
+
       // Add file metadata
       result.metadata.fileSize = stats.size;
-      
+
       return result;
     } catch (error) {
       if (error instanceof JsParsingError || error instanceof JsFileReadError) {
         throw error;
       }
-      
+
       throw new JsFileReadError(
         `Failed to read file: ${error instanceof Error ? error.message : String(error)}`,
         filePath,
-        error instanceof Error ? error : undefined
+        error instanceof Error ? error : undefined,
       );
     }
   }
@@ -258,9 +294,11 @@ export class JsExtractor {
   /**
    * Extract classes from multiple JavaScript/JSX files
    */
-  async extractFromFiles(filePaths: string[]): Promise<JsClassExtractionResult[]> {
+  async extractFromFiles(
+    filePaths: string[],
+  ): Promise<JsClassExtractionResult[]> {
     const results: JsClassExtractionResult[] = [];
-    
+
     for (const filePath of filePaths) {
       try {
         const result = await this.extractFromFile(filePath);
@@ -272,7 +310,7 @@ export class JsExtractor {
           totalMatches: 0,
           totalClasses: 0,
           uniqueClasses: 0,
-          framework: 'unknown',
+          framework: "unknown",
           metadata: {
             source: filePath,
             processedAt: new Date(),
@@ -288,7 +326,7 @@ export class JsExtractor {
         });
       }
     }
-    
+
     return results;
   }
 
@@ -297,29 +335,35 @@ export class JsExtractor {
    */
   private detectFramework(code: string): SupportedFramework {
     // Check for framework-specific imports and patterns
-    if (RegexPatterns.REACT_IMPORT.test(code)) return 'react';
-    if (RegexPatterns.PREACT_IMPORT.test(code)) return 'preact';
-    if (RegexPatterns.SOLID_IMPORT.test(code)) return 'solid';
-    if (RegexPatterns.VUE_IMPORT.test(code)) return 'vue';
-    if (RegexPatterns.ANGULAR_IMPORT.test(code)) return 'angular';
-    
+    if (RegexPatterns.REACT_IMPORT.test(code)) return "react";
+    if (RegexPatterns.PREACT_IMPORT.test(code)) return "preact";
+    if (RegexPatterns.SOLID_IMPORT.test(code)) return "solid";
+    if (RegexPatterns.VUE_IMPORT.test(code)) return "vue";
+    if (RegexPatterns.ANGULAR_IMPORT.test(code)) return "angular";
+
     // Check for JSX syntax as fallback
-    if (RegexPatterns.JSX_SYNTAX.test(code)) return 'react'; // Default JSX to React
-    
-    return 'unknown';
+    if (RegexPatterns.JSX_SYNTAX.test(code)) return "react"; // Default JSX to React
+
+    return "unknown";
   }
 
   /**
    * Extract static className/class attributes
    */
-  private extractStaticClasses(code: string): Array<{ classes: string[]; lineNumber: number; pattern: string }> {
-    const matches: Array<{ classes: string[]; lineNumber: number; pattern: string }> = [];
-    const lines = code.split('\n');
-    
+  private extractStaticClasses(
+    code: string,
+  ): Array<{ classes: string[]; lineNumber: number; pattern: string }> {
+    const matches: Array<{
+      classes: string[];
+      lineNumber: number;
+      pattern: string;
+    }> = [];
+    const lines = code.split("\n");
+
     lines.forEach((line, index) => {
-      const regex = new RegExp(RegexPatterns.STATIC_CLASSNAME.source, 'g');
+      const regex = new RegExp(RegexPatterns.STATIC_CLASSNAME.source, "g");
       let match;
-      
+
       while ((match = regex.exec(line)) !== null) {
         const classString = match[1];
         if (classString && (!this.options.ignoreEmpty || classString.trim())) {
@@ -334,24 +378,33 @@ export class JsExtractor {
         }
       }
     });
-    
+
     return matches;
   }
 
   /**
    * Extract template literal classes
    */
-  private extractTemplateClasses(code: string): Array<{ classes: string[]; lineNumber: number; pattern: string }> {
-    const matches: Array<{ classes: string[]; lineNumber: number; pattern: string }> = [];
-    const lines = code.split('\n');
-    
+  private extractTemplateClasses(
+    code: string,
+  ): Array<{ classes: string[]; lineNumber: number; pattern: string }> {
+    const matches: Array<{
+      classes: string[];
+      lineNumber: number;
+      pattern: string;
+    }> = [];
+    const lines = code.split("\n");
+
     lines.forEach((line, index) => {
-      const regex = new RegExp(RegexPatterns.TEMPLATE_SIMPLE.source, 'g');
+      const regex = new RegExp(RegexPatterns.TEMPLATE_SIMPLE.source, "g");
       let match;
-      
+
       while ((match = regex.exec(line)) !== null) {
         const templateContent = match[1];
-        if (templateContent && (!this.options.ignoreEmpty || templateContent.trim())) {
+        if (
+          templateContent &&
+          (!this.options.ignoreEmpty || templateContent.trim())
+        ) {
           const classes = this.parseTemplateString(templateContent);
           if (classes.length > 0) {
             matches.push({
@@ -363,24 +416,33 @@ export class JsExtractor {
         }
       }
     });
-    
+
     return matches;
   }
 
   /**
    * Extract JavaScript string literals from variable assignments
    */
-  private extractJsStringLiterals(code: string): Array<{ classes: string[]; lineNumber: number; pattern: string }> {
-    const matches: Array<{ classes: string[]; lineNumber: number; pattern: string }> = [];
-    const lines = code.split('\n');
-    
+  private extractJsStringLiterals(
+    code: string,
+  ): Array<{ classes: string[]; lineNumber: number; pattern: string }> {
+    const matches: Array<{
+      classes: string[];
+      lineNumber: number;
+      pattern: string;
+    }> = [];
+    const lines = code.split("\n");
+
     lines.forEach((line, index) => {
-      const regex = new RegExp(RegexPatterns.JS_STRING_LITERALS.source, 'g');
+      const regex = new RegExp(RegexPatterns.JS_STRING_LITERALS.source, "g");
       let match;
-      
+
       while ((match = regex.exec(line)) !== null) {
         const stringContent = match[1];
-        if (stringContent && (!this.options.ignoreEmpty || stringContent.trim())) {
+        if (
+          stringContent &&
+          (!this.options.ignoreEmpty || stringContent.trim())
+        ) {
           const classes = this.parseClassAttribute(stringContent);
           if (classes.length > 0) {
             matches.push({
@@ -392,24 +454,36 @@ export class JsExtractor {
         }
       }
     });
-    
+
     return matches;
   }
 
   /**
    * Extract object property strings (for class definitions in object literals)
    */
-  private extractObjectPropertyStrings(code: string): Array<{ classes: string[]; lineNumber: number; pattern: string }> {
-    const matches: Array<{ classes: string[]; lineNumber: number; pattern: string }> = [];
-    const lines = code.split('\n');
-    
+  private extractObjectPropertyStrings(
+    code: string,
+  ): Array<{ classes: string[]; lineNumber: number; pattern: string }> {
+    const matches: Array<{
+      classes: string[];
+      lineNumber: number;
+      pattern: string;
+    }> = [];
+    const lines = code.split("\n");
+
     lines.forEach((line, index) => {
-      const regex = new RegExp(RegexPatterns.OBJECT_PROPERTY_STRINGS.source, 'g');
+      const regex = new RegExp(
+        RegexPatterns.OBJECT_PROPERTY_STRINGS.source,
+        "g",
+      );
       let match;
-      
+
       while ((match = regex.exec(line)) !== null) {
         const stringContent = match[1];
-        if (stringContent && (!this.options.ignoreEmpty || stringContent.trim())) {
+        if (
+          stringContent &&
+          (!this.options.ignoreEmpty || stringContent.trim())
+        ) {
           const classes = this.parseClassAttribute(stringContent);
           if (classes.length > 0) {
             matches.push({
@@ -421,34 +495,43 @@ export class JsExtractor {
         }
       }
     });
-    
+
     return matches;
   }
 
   /**
    * Extract utility function classes (clsx, classnames, etc.)
    */
-  private extractUtilityClasses(code: string): Array<{ classes: string[]; lineNumber: number; pattern: string }> {
-    const matches: Array<{ classes: string[]; lineNumber: number; pattern: string }> = [];
-    
+  private extractUtilityClasses(
+    code: string,
+  ): Array<{ classes: string[]; lineNumber: number; pattern: string }> {
+    const matches: Array<{
+      classes: string[];
+      lineNumber: number;
+      pattern: string;
+    }> = [];
+
     // Process the entire code to handle multi-line function calls
-    const utilityRegex = new RegExp(RegexPatterns.UTILITY_FUNCTIONS.source, 'gs'); // Added 's' flag for multiline
+    const utilityRegex = new RegExp(
+      RegexPatterns.UTILITY_FUNCTIONS.source,
+      "gs",
+    ); // Added 's' flag for multiline
     let match: RegExpExecArray | null;
-    
+
     while ((match = utilityRegex.exec(code)) !== null) {
       const argsString = match[1];
       if (argsString && (!this.options.ignoreEmpty || argsString.trim())) {
         // Extract each quoted string as a separate match to count them individually
         const stringMatches = argsString.match(/["'`]([^"'`]*?)["'`]/g);
         if (stringMatches) {
-          stringMatches.forEach(stringMatch => {
+          stringMatches.forEach((stringMatch) => {
             const cleanMatch = stringMatch.slice(1, -1); // Remove quotes
             const classes = this.parseClassAttribute(cleanMatch);
             if (classes.length > 0) {
               // Find the line number for this match
               const beforeMatch = code.substring(0, match!.index);
               const lineNumber = (beforeMatch.match(/\n/g) || []).length + 1;
-              
+
               matches.push({
                 classes,
                 lineNumber,
@@ -459,22 +542,31 @@ export class JsExtractor {
         }
       }
     }
-    
+
     return matches;
   }
 
   /**
    * Extract dynamic expression classes (basic implementation)
    */
-  private extractDynamicClasses(code: string): Array<{ classes: string[]; lineNumber: number; pattern: string }> {
-    const matches: Array<{ classes: string[]; lineNumber: number; pattern: string }> = [];
-    const lines = code.split('\n');
-    
+  private extractDynamicClasses(
+    code: string,
+  ): Array<{ classes: string[]; lineNumber: number; pattern: string }> {
+    const matches: Array<{
+      classes: string[];
+      lineNumber: number;
+      pattern: string;
+    }> = [];
+    const lines = code.split("\n");
+
     lines.forEach((line, index) => {
       // Extract from className={...} patterns
-      const classNameRegex = new RegExp(RegexPatterns.DYNAMIC_EXPRESSION.source, 'g');
+      const classNameRegex = new RegExp(
+        RegexPatterns.DYNAMIC_EXPRESSION.source,
+        "g",
+      );
       let match;
-      
+
       while ((match = classNameRegex.exec(line)) !== null) {
         const expression = match[1];
         if (expression && (!this.options.ignoreEmpty || expression.trim())) {
@@ -488,11 +580,11 @@ export class JsExtractor {
           }
         }
       }
-      
+
       // Extract conditional expressions with && operators and quoted strings (anywhere in the line)
       const conditionalMatches = line.match(/\w+\s*&&\s*["'`]([^"'`]*?)["'`]/g);
       if (conditionalMatches) {
-        conditionalMatches.forEach(conditionalMatch => {
+        conditionalMatches.forEach((conditionalMatch) => {
           const quotedString = conditionalMatch.match(/["'`]([^"'`]*?)["'`]/);
           if (quotedString) {
             const classes = this.parseClassAttribute(quotedString[1]);
@@ -507,7 +599,7 @@ export class JsExtractor {
         });
       }
     });
-    
+
     return matches;
   }
 
@@ -516,12 +608,12 @@ export class JsExtractor {
    */
   private processMatches(
     matches: Array<{ classes: string[]; lineNumber: number; pattern: string }>,
-    extractionType: 'static' | 'dynamic' | 'template' | 'utility',
+    extractionType: "static" | "dynamic" | "template" | "utility",
     classes: Map<string, JsClassData>,
-    framework: SupportedFramework
+    framework: SupportedFramework,
   ): void {
-    matches.forEach(match => {
-      match.classes.forEach(className => {
+    matches.forEach((match) => {
+      match.classes.forEach((className) => {
         if (!this.options.caseSensitive) {
           className = className.toLowerCase();
         }
@@ -536,7 +628,7 @@ export class JsExtractor {
 
         const classData = classes.get(className)!;
         classData.frequency++;
-        
+
         // Add context (limit to avoid memory issues)
         if (classData.contexts.length < 10) {
           classData.contexts.push({
@@ -556,18 +648,18 @@ export class JsExtractor {
   private parseClassAttribute(classAttr: string): string[] {
     if (!classAttr) {
       // Return empty string if ignoreEmpty is false, otherwise empty array
-      return this.options.ignoreEmpty ? [] : [''];
+      return this.options.ignoreEmpty ? [] : [""];
     }
-    
+
     const parts = classAttr.split(/\s+/);
-    
+
     // If ignoreEmpty is false, keep all parts including empty ones
     if (!this.options.ignoreEmpty) {
       return parts;
     }
-    
+
     // If ignoreEmpty is true, filter out empty parts
-    return parts.filter(cls => cls.trim().length > 0);
+    return parts.filter((cls) => cls.trim().length > 0);
   }
 
   /**
@@ -575,17 +667,17 @@ export class JsExtractor {
    */
   private parseUtilityFunctionArgs(argsString: string): string[] {
     const classes: string[] = [];
-    
+
     // Extract all quoted strings from the arguments
     const stringMatches = argsString.match(/["'`]([^"'`]*?)["'`]/g);
     if (stringMatches) {
-      stringMatches.forEach(match => {
+      stringMatches.forEach((match) => {
         const cleanMatch = match.slice(1, -1); // Remove quotes
         const parsedClasses = this.parseClassAttribute(cleanMatch);
         classes.push(...parsedClasses);
       });
     }
-    
+
     return classes;
   }
 
@@ -595,7 +687,7 @@ export class JsExtractor {
   private parseTemplateString(templateContent: string): string[] {
     // Simple implementation: extract static parts of template literals
     // For now, just treat as regular class string (can be enhanced for ${} expressions)
-    const staticParts = templateContent.split('${')[0]; // Take only the static part
+    const staticParts = templateContent.split("${")[0]; // Take only the static part
     return this.parseClassAttribute(staticParts);
   }
 
@@ -604,35 +696,38 @@ export class JsExtractor {
    */
   private parseJsxExpression(expression: string): string[] {
     const classes: string[] = [];
-    
+
     // Extract quoted strings from expressions
     const stringMatches = expression.match(/["'`]([^"'`]*?)["'`]/g);
     if (stringMatches) {
-      stringMatches.forEach(match => {
+      stringMatches.forEach((match) => {
         const cleanMatch = match.slice(1, -1); // Remove quotes
         const parsedClasses = this.parseClassAttribute(cleanMatch);
         classes.push(...parsedClasses);
       });
     }
-    
+
     return classes;
   }
 
   /**
    * Read file with timeout protection
    */
-  private async readFileWithTimeout(filePath: string, timeout: number): Promise<string> {
+  private async readFileWithTimeout(
+    filePath: string,
+    timeout: number,
+  ): Promise<string> {
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
         reject(new Error(`File read timeout after ${timeout}ms`));
       }, timeout);
 
-      fs.readFile(filePath, 'utf8')
-        .then(content => {
+      fs.readFile(filePath, "utf8")
+        .then((content) => {
           clearTimeout(timer);
           resolve(content);
         })
-        .catch(error => {
+        .catch((error) => {
           clearTimeout(timer);
           reject(error);
         });
@@ -643,7 +738,9 @@ export class JsExtractor {
 /**
  * Factory function to create JS extractor instance
  */
-export function createJsExtractor(options: Partial<JsExtractionOptions> = {}): JsExtractor {
+export function createJsExtractor(
+  options: Partial<JsExtractionOptions> = {},
+): JsExtractor {
   return new JsExtractor(options);
 }
 
@@ -652,7 +749,7 @@ export function createJsExtractor(options: Partial<JsExtractionOptions> = {}): J
  */
 export async function extractClassesFromJs(
   code: string,
-  options: Partial<JsExtractionOptions> = {}
+  options: Partial<JsExtractionOptions> = {},
 ): Promise<JsClassExtractionResult> {
   const extractor = createJsExtractor(options);
   return extractor.extractFromString(code);
@@ -663,8 +760,8 @@ export async function extractClassesFromJs(
  */
 export async function extractClassesFromJsFile(
   filePath: string,
-  options: Partial<JsExtractionOptions> = {}
+  options: Partial<JsExtractionOptions> = {},
 ): Promise<JsClassExtractionResult> {
   const extractor = createJsExtractor(options);
   return extractor.extractFromFile(filePath);
-} 
+}

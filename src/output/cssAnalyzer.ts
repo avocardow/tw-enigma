@@ -1,18 +1,18 @@
 /**
  * Copyright (c) 2025 Rowan Cardow
- * 
+ *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
 
-import { createHash } from 'crypto';
-import { writeFile, readFile } from 'fs/promises';
-import { join, dirname, basename, extname } from 'path';
-import { createSourceMapGenerator, SourceMapGenerator } from 'source-map';
-import type { CssOutputConfig } from './cssOutputConfig.js';
-import type { CssChunk, ChunkingStats } from './cssChunker.js';
-import type { HashedAsset } from './assetHasher.js';
-import type { CssBundle, Rule, Selector, RuleType } from './cssTypes.js';
+import { createHash } from "crypto";
+import { writeFile, readFile } from "fs/promises";
+import { join, dirname, basename, extname } from "path";
+import { createSourceMapGenerator, SourceMapGenerator } from "source-map";
+import type { CssOutputConfig } from "./cssOutputConfig.js";
+import type { CssChunk, ChunkingStats } from "./cssChunker.js";
+import type { HashedAsset } from "./assetHasher.js";
+import type { CssBundle, Rule, Selector, RuleType } from "./cssTypes.js";
 
 // Analysis Types
 export interface CssAnalysisReport {
@@ -47,7 +47,7 @@ export interface ChunkAnalysis {
   isEntry: boolean;
   isVendor: boolean;
   isAsync: boolean;
-  loadingPriority: 'critical' | 'high' | 'medium' | 'low';
+  loadingPriority: "critical" | "high" | "medium" | "low";
   dependencies: string[];
   selectors: SelectorAnalysis[];
   mediaQueries: MediaQueryAnalysis[];
@@ -77,7 +77,7 @@ export interface SelectorAnalysis {
   specificity: number;
   count: number;
   isDuplicate: boolean;
-  complexity: 'simple' | 'moderate' | 'complex';
+  complexity: "simple" | "moderate" | "complex";
   size: number;
 }
 
@@ -94,7 +94,7 @@ export interface CustomPropertyAnalysis {
   value: string;
   usage: number;
   isUnused: boolean;
-  scope: 'global' | 'component' | 'local';
+  scope: "global" | "component" | "local";
 }
 
 export interface DuplicateRuleAnalysis {
@@ -127,17 +127,23 @@ export interface OptimizationSuggestions {
 }
 
 export interface Suggestion {
-  type: 'minification' | 'compression' | 'chunking' | 'critical-css' | 'duplicates' | 'unused-css';
+  type:
+    | "minification"
+    | "compression"
+    | "chunking"
+    | "critical-css"
+    | "duplicates"
+    | "unused-css";
   message: string;
-  impact: 'critical' | 'high' | 'medium' | 'low';
+  impact: "critical" | "high" | "medium" | "low";
   estimatedSavings: number;
-  effort: 'low' | 'medium' | 'high';
+  effort: "low" | "medium" | "high";
   implementation: string;
 }
 
 export interface Warning {
-  type: 'size' | 'performance' | 'compatibility' | 'optimization';
-  severity: 'error' | 'warning' | 'info';
+  type: "size" | "performance" | "compatibility" | "optimization";
+  severity: "error" | "warning" | "info";
   message: string;
   file?: string;
   line?: number;
@@ -173,31 +179,42 @@ export class CssAnalyzer {
       analyzeMediaQueries?: boolean;
       analyzeDuplicates?: boolean;
       generateSourceMap?: boolean;
-    } = {}
+    } = {},
   ): Promise<CssAnalysisReport> {
     const startTime = Date.now();
 
     // Analyze chunks
     const chunkAnalyses = await Promise.all(
-      chunks.map(chunk => this.analyzeChunk(chunk, options))
+      chunks.map((chunk) => this.analyzeChunk(chunk, options)),
     );
 
     // Analyze assets
     const assetAnalyses = await Promise.all(
-      assets.map(asset => this.analyzeAsset(asset))
+      assets.map((asset) => this.analyzeAsset(asset)),
     );
 
     // Calculate summary metrics
     const summary = this.calculateSummary(chunks, assets, chunkAnalyses);
 
     // Generate performance metrics
-    const performance = this.calculatePerformanceMetrics(summary, chunkAnalyses);
+    const performance = this.calculatePerformanceMetrics(
+      summary,
+      chunkAnalyses,
+    );
 
     // Generate optimization suggestions
-    const optimization = this.generateOptimizationSuggestions(chunkAnalyses, assetAnalyses, summary);
+    const optimization = this.generateOptimizationSuggestions(
+      chunkAnalyses,
+      assetAnalyses,
+      summary,
+    );
 
     // Generate warnings
-    const warnings = this.generateWarnings(chunkAnalyses, assetAnalyses, summary);
+    const warnings = this.generateWarnings(
+      chunkAnalyses,
+      assetAnalyses,
+      summary,
+    );
 
     // Generate source map if requested
     let sourceMap: SourceMapData | undefined;
@@ -214,7 +231,7 @@ export class CssAnalyzer {
       warnings,
       sourceMap,
       timestamp: Date.now(),
-      version: '1.0.0'
+      version: "1.0.0",
     };
 
     return report;
@@ -223,11 +240,20 @@ export class CssAnalyzer {
   /**
    * Analyze individual CSS chunk
    */
-  private async analyzeChunk(chunk: CssChunk, options: any): Promise<ChunkAnalysis> {
-    const selectors = options.analyzeSelectors ? this.analyzeSelectors(chunk.content) : [];
-    const mediaQueries = options.analyzeMediaQueries ? this.analyzeMediaQueries(chunk.content) : [];
+  private async analyzeChunk(
+    chunk: CssChunk,
+    options: any,
+  ): Promise<ChunkAnalysis> {
+    const selectors = options.analyzeSelectors
+      ? this.analyzeSelectors(chunk.content)
+      : [];
+    const mediaQueries = options.analyzeMediaQueries
+      ? this.analyzeMediaQueries(chunk.content)
+      : [];
     const customProperties = this.analyzeCustomProperties(chunk.content);
-    const duplicateRules = options.analyzeDuplicates ? this.analyzeDuplicateRules(chunk.content) : [];
+    const duplicateRules = options.analyzeDuplicates
+      ? this.analyzeDuplicateRules(chunk.content)
+      : [];
 
     return {
       id: chunk.id,
@@ -242,7 +268,7 @@ export class CssAnalyzer {
       selectors,
       mediaQueries,
       customProperties,
-      duplicateRules
+      duplicateRules,
     };
   }
 
@@ -260,8 +286,10 @@ export class CssAnalyzer {
       compressionType: asset.compressionType,
       compressionRatio: asset.compressionRatio,
       isMinified: asset.isMinified,
-      sourceMapSize: asset.sourceMapPath ? await this.getSourceMapSize(asset.sourceMapPath) : undefined,
-      optimization
+      sourceMapSize: asset.sourceMapPath
+        ? await this.getSourceMapSize(asset.sourceMapPath)
+        : undefined,
+      optimization,
     };
   }
 
@@ -277,8 +305,8 @@ export class CssAnalyzer {
     while ((match = selectorRegex.exec(css)) !== null) {
       const selector = match[1].trim();
       const rules = match[2].trim();
-      
-      if (selector && !selector.startsWith('@')) {
+
+      if (selector && !selector.startsWith("@")) {
         const count = selectorCounts.get(selector) || 0;
         selectorCounts.set(selector, count + 1);
 
@@ -288,7 +316,7 @@ export class CssAnalyzer {
           count: count + 1,
           isDuplicate: count > 0,
           complexity: this.classifyComplexity(selector),
-          size: Buffer.byteLength(match[0], 'utf8')
+          size: Buffer.byteLength(match[0], "utf8"),
         });
       }
     }
@@ -300,7 +328,8 @@ export class CssAnalyzer {
    * Analyze media queries
    */
   private analyzeMediaQueries(css: string): MediaQueryAnalysis[] {
-    const mediaQueryRegex = /@media\s+([^{]+)\s*\{([^{}]*(?:\{[^{}]*\}[^{}]*)*)\}/g;
+    const mediaQueryRegex =
+      /@media\s+([^{]+)\s*\{([^{}]*(?:\{[^{}]*\}[^{}]*)*)\}/g;
     const mediaQueries: MediaQueryAnalysis[] = [];
     let match;
 
@@ -311,10 +340,10 @@ export class CssAnalyzer {
 
       mediaQueries.push({
         query,
-        size: Buffer.byteLength(match[0], 'utf8'),
+        size: Buffer.byteLength(match[0], "utf8"),
         ruleCount,
         breakpoint: this.extractBreakpoint(query),
-        canOptimize: this.canOptimizeMediaQuery(query, content)
+        canOptimize: this.canOptimizeMediaQuery(query, content),
       });
     }
 
@@ -354,7 +383,7 @@ export class CssAnalyzer {
         value,
         usage,
         isUnused: usage === 0,
-        scope: this.determinePropertyScope(property, css)
+        scope: this.determinePropertyScope(property, css),
       });
     }
 
@@ -366,7 +395,10 @@ export class CssAnalyzer {
    */
   private analyzeDuplicateRules(css: string): DuplicateRuleAnalysis[] {
     const ruleRegex = /([^{}]+)\s*\{([^}]*)\}/g;
-    const ruleMap = new Map<string, { selector: string; rules: string; count: number; size: number }>();
+    const ruleMap = new Map<
+      string,
+      { selector: string; rules: string; count: number; size: number }
+    >();
     const duplicates: DuplicateRuleAnalysis[] = [];
     let match;
 
@@ -374,7 +406,7 @@ export class CssAnalyzer {
       const selector = match[1].trim();
       const rules = match[2].trim();
       const key = `${selector}:${rules}`;
-      const size = Buffer.byteLength(match[0], 'utf8');
+      const size = Buffer.byteLength(match[0], "utf8");
 
       if (ruleMap.has(key)) {
         const existing = ruleMap.get(key)!;
@@ -391,8 +423,8 @@ export class CssAnalyzer {
           selector: data.selector,
           rules: [data.rules],
           count: data.count,
-          wastedBytes: data.size - (data.size / data.count),
-          canMerge: this.canMergeRules(data.selector, data.rules)
+          wastedBytes: data.size - data.size / data.count,
+          canMerge: this.canMergeRules(data.selector, data.rules),
         });
       }
     }
@@ -405,37 +437,45 @@ export class CssAnalyzer {
    */
   private calculateSpecificity(selector: string): number {
     let specificity = 0;
-    
+
     // Count IDs (100 points each)
     specificity += (selector.match(/#/g) || []).length * 100;
-    
+
     // Count classes, attributes, pseudo-classes (10 points each)
     specificity += (selector.match(/[\.\[:](?!:)/g) || []).length * 10;
-    
+
     // Count elements and pseudo-elements (1 point each)
-    specificity += (selector.match(/(?:^|[\s>+~])(?:[a-z]+|::?[a-z-]+)/gi) || []).length;
-    
+    specificity += (
+      selector.match(/(?:^|[\s>+~])(?:[a-z]+|::?[a-z-]+)/gi) || []
+    ).length;
+
     return specificity;
   }
 
   /**
    * Classify selector complexity
    */
-  private classifyComplexity(selector: string): 'simple' | 'moderate' | 'complex' {
+  private classifyComplexity(
+    selector: string,
+  ): "simple" | "moderate" | "complex" {
     const parts = selector.split(/[\s>+~]/).length;
     const specificity = this.calculateSpecificity(selector);
 
-    if (parts <= 2 && specificity <= 20) return 'simple';
-    if (parts <= 4 && specificity <= 50) return 'moderate';
-    return 'complex';
+    if (parts <= 2 && specificity <= 20) return "simple";
+    if (parts <= 4 && specificity <= 50) return "moderate";
+    return "complex";
   }
 
   /**
    * Extract breakpoint from media query
    */
   private extractBreakpoint(query: string): string | undefined {
-    const breakpointMatch = query.match(/(?:min-width|max-width):\s*(\d+(?:\.\d+)?)(px|em|rem)/);
-    return breakpointMatch ? `${breakpointMatch[1]}${breakpointMatch[2]}` : undefined;
+    const breakpointMatch = query.match(
+      /(?:min-width|max-width):\s*(\d+(?:\.\d+)?)(px|em|rem)/,
+    );
+    return breakpointMatch
+      ? `${breakpointMatch[1]}${breakpointMatch[2]}`
+      : undefined;
   }
 
   /**
@@ -444,21 +484,32 @@ export class CssAnalyzer {
   private canOptimizeMediaQuery(query: string, content: string): boolean {
     // Simple heuristics for optimization potential
     const ruleCount = (content.match(/\{/g) || []).length;
-    const hasRedundantRules = content.includes('display: none') && ruleCount > 1;
+    const hasRedundantRules =
+      content.includes("display: none") && ruleCount > 1;
     const hasEmptyRules = /\{\s*\}/.test(content);
-    
+
     return hasRedundantRules || hasEmptyRules || ruleCount < 2;
   }
 
   /**
    * Determine CSS custom property scope
    */
-  private determinePropertyScope(property: string, css: string): 'global' | 'component' | 'local' {
-    if (css.includes(`:root { ${property}:`)) return 'global';
-    if (css.includes(`html { ${property}:`)) return 'global';
-    
-    const usageCount = (css.match(new RegExp(`var\\(${property.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'g')) || []).length;
-    return usageCount > 5 ? 'component' : 'local';
+  private determinePropertyScope(
+    property: string,
+    css: string,
+  ): "global" | "component" | "local" {
+    if (css.includes(`:root { ${property}:`)) return "global";
+    if (css.includes(`html { ${property}:`)) return "global";
+
+    const usageCount = (
+      css.match(
+        new RegExp(
+          `var\\(${property.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`,
+          "g",
+        ),
+      ) || []
+    ).length;
+    return usageCount > 5 ? "component" : "local";
   }
 
   /**
@@ -466,36 +517,58 @@ export class CssAnalyzer {
    */
   private canMergeRules(selector: string, rules: string): boolean {
     // Avoid merging media queries or complex selectors
-    if (selector.includes('@') || selector.includes(':hover') || selector.includes(':focus')) {
+    if (
+      selector.includes("@") ||
+      selector.includes(":hover") ||
+      selector.includes(":focus")
+    ) {
       return false;
     }
-    
+
     // Check for conflicting properties
-    const properties = rules.split(';').map(rule => rule.split(':')[0].trim()).filter(Boolean);
+    const properties = rules
+      .split(";")
+      .map((rule) => rule.split(":")[0].trim())
+      .filter(Boolean);
     return new Set(properties).size === properties.length;
   }
 
   /**
    * Calculate loading priority for chunk
    */
-  private calculateLoadingPriority(chunk: CssChunk): 'critical' | 'high' | 'medium' | 'low' {
-    if (chunk.isEntry) return 'critical';
-    if (chunk.isVendor) return 'high';
-    if (!chunk.isAsync) return 'medium';
-    return 'low';
+  private calculateLoadingPriority(
+    chunk: CssChunk,
+  ): "critical" | "high" | "medium" | "low" {
+    if (chunk.isEntry) return "critical";
+    if (chunk.isVendor) return "high";
+    if (!chunk.isAsync) return "medium";
+    return "low";
   }
 
   /**
    * Calculate summary metrics
    */
-  private calculateSummary(chunks: CssChunk[], assets: HashedAsset[], chunkAnalyses: ChunkAnalysis[]): AnalysisSummary {
+  private calculateSummary(
+    chunks: CssChunk[],
+    assets: HashedAsset[],
+    chunkAnalyses: ChunkAnalysis[],
+  ): AnalysisSummary {
     const totalSize = chunks.reduce((sum, chunk) => sum + chunk.size, 0);
-    const compressedSize = chunks.reduce((sum, chunk) => sum + (chunk.compressedSize || chunk.size), 0);
-    const minifiedAssets = assets.filter(asset => asset.isMinified);
+    const compressedSize = chunks.reduce(
+      (sum, chunk) => sum + (chunk.compressedSize || chunk.size),
+      0,
+    );
+    const minifiedAssets = assets.filter((asset) => asset.isMinified);
     const minificationSavings = minifiedAssets.length > 0 ? totalSize * 0.3 : 0; // Estimate
-    
-    const duplicateBytes = chunkAnalyses.reduce((sum, analysis) => 
-      sum + analysis.duplicateRules.reduce((ruleSum, rule) => ruleSum + rule.wastedBytes, 0), 0
+
+    const duplicateBytes = chunkAnalyses.reduce(
+      (sum, analysis) =>
+        sum +
+        analysis.duplicateRules.reduce(
+          (ruleSum, rule) => ruleSum + rule.wastedBytes,
+          0,
+        ),
+      0,
     );
 
     return {
@@ -507,16 +580,21 @@ export class CssAnalyzer {
       minificationSavings,
       duplicateBytes,
       unusedBytes: 0, // Would need dead code analysis
-      criticalCssRatio: undefined // Would need critical CSS analysis
+      criticalCssRatio: undefined, // Would need critical CSS analysis
     };
   }
 
   /**
    * Calculate performance metrics
    */
-  private calculatePerformanceMetrics(summary: AnalysisSummary, chunkAnalyses: ChunkAnalysis[]): PerformanceMetrics {
-    const criticalResourceCount = chunkAnalyses.filter(chunk => 
-      chunk.loadingPriority === 'critical' || chunk.loadingPriority === 'high'
+  private calculatePerformanceMetrics(
+    summary: AnalysisSummary,
+    chunkAnalyses: ChunkAnalysis[],
+  ): PerformanceMetrics {
+    const criticalResourceCount = chunkAnalyses.filter(
+      (chunk) =>
+        chunk.loadingPriority === "critical" ||
+        chunk.loadingPriority === "high",
     ).length;
 
     // Estimates based on typical network conditions
@@ -534,8 +612,8 @@ export class CssAnalyzer {
       estimatedLoadTime: {
         fast3g: fast3gTime,
         slow3g: slow3gTime,
-        cable: cableTime
-      }
+        cable: cableTime,
+      },
     };
   }
 
@@ -545,25 +623,25 @@ export class CssAnalyzer {
   private generateOptimizationSuggestions(
     chunkAnalyses: ChunkAnalysis[],
     assetAnalyses: AssetAnalysis[],
-    summary: AnalysisSummary
+    summary: AnalysisSummary,
   ): OptimizationSuggestions {
     const suggestions: OptimizationSuggestions = {
       critical: [],
       high: [],
       medium: [],
-      low: []
+      low: [],
     };
 
     // Large file warnings
     for (const chunk of chunkAnalyses) {
       if (chunk.size > this.config.reporting.maxAssetSize) {
         suggestions.critical.push({
-          type: 'chunking',
+          type: "chunking",
           message: `Chunk ${chunk.name} is ${Math.round(chunk.size / 1024)}KB, consider splitting`,
-          impact: 'critical',
+          impact: "critical",
           estimatedSavings: chunk.size * 0.3,
-          effort: 'medium',
-          implementation: 'Enable chunking or reduce chunk size'
+          effort: "medium",
+          implementation: "Enable chunking or reduce chunk size",
         });
       }
     }
@@ -572,27 +650,31 @@ export class CssAnalyzer {
     for (const asset of assetAnalyses) {
       if (asset.optimization.canCompress && !asset.compressedSize) {
         suggestions.high.push({
-          type: 'compression',
+          type: "compression",
           message: `Asset ${asset.originalPath} can be compressed`,
-          impact: 'high',
+          impact: "high",
           estimatedSavings: asset.optimization.estimatedSavings,
-          effort: 'low',
-          implementation: 'Enable compression in build configuration'
+          effort: "low",
+          implementation: "Enable compression in build configuration",
         });
       }
     }
 
     // Duplicate rule suggestions
     for (const chunk of chunkAnalyses) {
-      const duplicateWaste = chunk.duplicateRules.reduce((sum, rule) => sum + rule.wastedBytes, 0);
-      if (duplicateWaste > 1024) { // More than 1KB of duplicates
+      const duplicateWaste = chunk.duplicateRules.reduce(
+        (sum, rule) => sum + rule.wastedBytes,
+        0,
+      );
+      if (duplicateWaste > 1024) {
+        // More than 1KB of duplicates
         suggestions.medium.push({
-          type: 'duplicates',
+          type: "duplicates",
           message: `Chunk ${chunk.name} has ${Math.round(duplicateWaste / 1024)}KB of duplicate rules`,
-          impact: 'medium',
+          impact: "medium",
           estimatedSavings: duplicateWaste,
-          effort: 'medium',
-          implementation: 'Enable rule merging and deduplication'
+          effort: "medium",
+          implementation: "Enable rule merging and deduplication",
         });
       }
     }
@@ -606,41 +688,41 @@ export class CssAnalyzer {
   private generateWarnings(
     chunkAnalyses: ChunkAnalysis[],
     assetAnalyses: AssetAnalysis[],
-    summary: AnalysisSummary
+    summary: AnalysisSummary,
   ): Warning[] {
     const warnings: Warning[] = [];
 
     // Size warnings
     if (summary.totalSize > this.config.reporting.maxEntrypointSize) {
       warnings.push({
-        type: 'size',
-        severity: 'warning',
+        type: "size",
+        severity: "warning",
         message: `Total CSS size (${Math.round(summary.totalSize / 1024)}KB) exceeds recommended limit`,
-        suggestion: 'Consider code splitting or removing unused CSS'
+        suggestion: "Consider code splitting or removing unused CSS",
       });
     }
 
     // Performance warnings
     for (const chunk of chunkAnalyses) {
-      if (chunk.loadingPriority === 'critical' && chunk.size > 14 * 1024) {
+      if (chunk.loadingPriority === "critical" && chunk.size > 14 * 1024) {
         warnings.push({
-          type: 'performance',
-          severity: 'warning',
+          type: "performance",
+          severity: "warning",
           message: `Critical chunk ${chunk.name} is larger than 14KB`,
           file: chunk.name,
-          suggestion: 'Extract non-critical CSS or reduce critical path'
+          suggestion: "Extract non-critical CSS or reduce critical path",
         });
       }
     }
 
     // Optimization warnings
-    const unminifiedAssets = assetAnalyses.filter(asset => !asset.isMinified);
+    const unminifiedAssets = assetAnalyses.filter((asset) => !asset.isMinified);
     if (unminifiedAssets.length > 0) {
       warnings.push({
-        type: 'optimization',
-        severity: 'warning',
+        type: "optimization",
+        severity: "warning",
         message: `${unminifiedAssets.length} assets are not minified`,
-        suggestion: 'Enable minification for production builds'
+        suggestion: "Enable minification for production builds",
       });
     }
 
@@ -652,22 +734,22 @@ export class CssAnalyzer {
    */
   private async generateSourceMap(chunks: CssChunk[]): Promise<SourceMapData> {
     const generator = new SourceMapGenerator({
-      file: 'output.css',
-      sourceRoot: ''
+      file: "output.css",
+      sourceRoot: "",
     });
 
     let line = 1;
-    let column = 0;
+    const column = 0;
 
     for (const chunk of chunks) {
-      const lines = chunk.content.split('\n');
-      
+      const lines = chunk.content.split("\n");
+
       for (let i = 0; i < lines.length; i++) {
         generator.addMapping({
           generated: { line, column: 0 },
           original: { line: i + 1, column: 0 },
           source: chunk.name,
-          name: chunk.id
+          name: chunk.id,
         });
         line++;
       }
@@ -675,11 +757,11 @@ export class CssAnalyzer {
 
     const sourceMap = generator.toString();
     return {
-      file: 'output.css',
-      sourceRoot: '',
-      sources: chunks.map(chunk => chunk.name),
+      file: "output.css",
+      sourceRoot: "",
+      sources: chunks.map((chunk) => chunk.name),
       mappings: JSON.parse(sourceMap).mappings,
-      size: Buffer.byteLength(sourceMap, 'utf8')
+      size: Buffer.byteLength(sourceMap, "utf8"),
     };
   }
 
@@ -689,20 +771,20 @@ export class CssAnalyzer {
   private async analyzeAssetOptimization(asset: HashedAsset): Promise<any> {
     const canMinify = !asset.isMinified;
     const canCompress = !asset.compressedSize && asset.size > 1024;
-    const estimatedSavings = 
-      (canMinify ? asset.size * 0.3 : 0) + 
-      (canCompress ? asset.size * 0.7 : 0);
+    const estimatedSavings =
+      (canMinify ? asset.size * 0.3 : 0) + (canCompress ? asset.size * 0.7 : 0);
 
     const suggestions: string[] = [];
-    if (canMinify) suggestions.push('Enable minification');
-    if (canCompress) suggestions.push('Enable compression');
-    if (asset.size > 100 * 1024) suggestions.push('Consider chunking large assets');
+    if (canMinify) suggestions.push("Enable minification");
+    if (canCompress) suggestions.push("Enable compression");
+    if (asset.size > 100 * 1024)
+      suggestions.push("Consider chunking large assets");
 
     return {
       canMinify,
       canCompress,
       estimatedSavings,
-      suggestions
+      suggestions,
     };
   }
 
@@ -711,8 +793,8 @@ export class CssAnalyzer {
    */
   private async getSourceMapSize(sourceMapPath: string): Promise<number> {
     try {
-      const content = await readFile(sourceMapPath, 'utf8');
-      return Buffer.byteLength(content, 'utf8');
+      const content = await readFile(sourceMapPath, "utf8");
+      return Buffer.byteLength(content, "utf8");
     } catch {
       return 0;
     }
@@ -818,11 +900,11 @@ Generated on ${new Date(report.timestamp).toLocaleString()}
 
 ## Warnings
 
-${report.warnings.map(w => `- **${w.severity.toUpperCase()}**: ${w.message}`).join('\n')}
+${report.warnings.map((w) => `- **${w.severity.toUpperCase()}**: ${w.message}`).join("\n")}
 
 ## Critical Suggestions
 
-${report.optimization.critical.map(s => `- ${s.message} (${Math.round(s.estimatedSavings / 1024)}KB savings)`).join('\n')}
+${report.optimization.critical.map((s) => `- ${s.message} (${Math.round(s.estimatedSavings / 1024)}KB savings)`).join("\n")}
 
 ## Performance Metrics
 
@@ -837,68 +919,78 @@ ${report.optimization.critical.map(s => `- ${s.message} (${Math.round(s.estimate
    */
   async saveReport(
     report: CssAnalysisReport,
-    format: 'html' | 'json' | 'markdown' = 'json',
-    outputPath?: string
+    format: "html" | "json" | "markdown" = "json",
+    outputPath?: string,
   ): Promise<string> {
     const path = outputPath || this.config.reporting.outputPath;
     let content: string;
     let finalPath: string;
 
     switch (format) {
-      case 'html':
+      case "html":
         content = this.generateHtmlReport(report);
-        finalPath = path.replace(/\.json$/, '.html');
+        finalPath = path.replace(/\.json$/, ".html");
         break;
-      case 'markdown':
+      case "markdown":
         content = this.generateMarkdownReport(report);
-        finalPath = path.replace(/\.json$/, '.md');
+        finalPath = path.replace(/\.json$/, ".md");
         break;
       default:
         content = this.generateJsonReport(report);
         finalPath = path;
     }
 
-    await writeFile(finalPath, content, 'utf8');
+    await writeFile(finalPath, content, "utf8");
     return finalPath;
   }
 
   private generateWarningsSection(warnings: Warning[]): string {
-    if (warnings.length === 0) return '';
-    
+    if (warnings.length === 0) return "";
+
     return `
       <div class="section">
         <h2>Warnings</h2>
-        ${warnings.map(w => `
-          <div class="warning ${w.severity === 'error' ? 'error' : ''}">
+        ${warnings
+          .map(
+            (w) => `
+          <div class="warning ${w.severity === "error" ? "error" : ""}">
             <strong>${w.severity.toUpperCase()}:</strong> ${w.message}
-            ${w.suggestion ? `<br><em>Suggestion: ${w.suggestion}</em>` : ''}
+            ${w.suggestion ? `<br><em>Suggestion: ${w.suggestion}</em>` : ""}
           </div>
-        `).join('')}
+        `,
+          )
+          .join("")}
       </div>
     `;
   }
 
-  private generateSuggestionsSection(optimization: OptimizationSuggestions): string {
+  private generateSuggestionsSection(
+    optimization: OptimizationSuggestions,
+  ): string {
     const allSuggestions = [
-      ...optimization.critical.map(s => ({ ...s, priority: 'critical' })),
-      ...optimization.high.map(s => ({ ...s, priority: 'high' })),
-      ...optimization.medium.map(s => ({ ...s, priority: 'medium' })),
-      ...optimization.low.map(s => ({ ...s, priority: 'low' }))
+      ...optimization.critical.map((s) => ({ ...s, priority: "critical" })),
+      ...optimization.high.map((s) => ({ ...s, priority: "high" })),
+      ...optimization.medium.map((s) => ({ ...s, priority: "medium" })),
+      ...optimization.low.map((s) => ({ ...s, priority: "low" })),
     ];
 
-    if (allSuggestions.length === 0) return '';
+    if (allSuggestions.length === 0) return "";
 
     return `
       <div class="section">
         <h2>Optimization Suggestions</h2>
         <ul class="suggestions">
-          ${allSuggestions.map(s => `
+          ${allSuggestions
+            .map(
+              (s) => `
             <li class="suggestion ${s.priority}">
               <strong>${s.message}</strong><br>
               Impact: ${s.impact}, Effort: ${s.effort}, Savings: ${Math.round(s.estimatedSavings / 1024)}KB<br>
               <em>${s.implementation}</em>
             </li>
-          `).join('')}
+          `,
+            )
+            .join("")}
         </ul>
       </div>
     `;
@@ -908,14 +1000,18 @@ ${report.optimization.critical.map(s => `- ${s.message} (${Math.round(s.estimate
     return `
       <div class="section">
         <h2>Chunk Analysis</h2>
-        ${chunks.map(chunk => `
+        ${chunks
+          .map(
+            (chunk) => `
           <div class="chunk">
             <h3>${chunk.name} (${Math.round(chunk.size / 1024)}KB)</h3>
             <p>Priority: ${chunk.loadingPriority}, Entry: ${chunk.isEntry}, Vendor: ${chunk.isVendor}</p>
             <p>Selectors: ${chunk.selectors.length}, Media Queries: ${chunk.mediaQueries.length}</p>
-            ${chunk.duplicateRules.length > 0 ? `<p><strong>Duplicate Rules:</strong> ${chunk.duplicateRules.length}</p>` : ''}
+            ${chunk.duplicateRules.length > 0 ? `<p><strong>Duplicate Rules:</strong> ${chunk.duplicateRules.length}</p>` : ""}
           </div>
-        `).join('')}
+        `,
+          )
+          .join("")}
       </div>
     `;
   }
@@ -956,14 +1052,15 @@ export class CiIntegration {
    */
   shouldFailCi(report: CssAnalysisReport): boolean {
     // Fail on critical warnings
-    if (report.warnings.some(w => w.severity === 'error')) return true;
-    
+    if (report.warnings.some((w) => w.severity === "error")) return true;
+
     // Fail on size thresholds
-    if (report.summary.totalSize > this.config.reporting.maxEntrypointSize) return true;
-    
+    if (report.summary.totalSize > this.config.reporting.maxEntrypointSize)
+      return true;
+
     // Fail on performance thresholds
     if (report.performance.estimatedLoadTime.fast3g > 3000) return true; // 3 seconds
-    
+
     return false;
   }
 
@@ -972,8 +1069,8 @@ export class CiIntegration {
    */
   generateCiComment(report: CssAnalysisReport): string {
     const shouldFail = this.shouldFailCi(report);
-    const emoji = shouldFail ? '❌' : '✅';
-    
+    const emoji = shouldFail ? "❌" : "✅";
+
     return `
 ${emoji} **CSS Analysis Report**
 
@@ -987,10 +1084,10 @@ ${emoji} **CSS Analysis Report**
 - Load Time (3G): ${Math.round(report.performance.estimatedLoadTime.fast3g)}ms
 - Critical Resources: ${report.performance.criticalResourceCount}
 
-${report.warnings.length > 0 ? `**Warnings:** ${report.warnings.length}` : ''}
-${report.optimization.critical.length > 0 ? `**Critical Issues:** ${report.optimization.critical.length}` : ''}
+${report.warnings.length > 0 ? `**Warnings:** ${report.warnings.length}` : ""}
+${report.optimization.critical.length > 0 ? `**Critical Issues:** ${report.optimization.critical.length}` : ""}
 
-${shouldFail ? '**Build should be reviewed before merging.**' : '**Build looks good!**'}
+${shouldFail ? "**Build should be reviewed before merging.**" : "**Build looks good!**"}
     `;
   }
 }
@@ -1000,4 +1097,4 @@ ${shouldFail ? '**Build should be reviewed before merging.**' : '**Build looks g
  */
 export function createCssAnalyzer(): CssAnalyzer {
   return new CssAnalyzer();
-} 
+}

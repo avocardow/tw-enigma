@@ -16,25 +16,25 @@ All features have been successfully implemented with excellent test coverage (99
 Unit tests for space optimization features and new backup strategies, integration tests with existing backup/restore functionality. All tests have been completed with a 99%+ overall success rate across all features.
 
 # Subtasks:
-## 1. Backup Creation Implementation [completed]
+## 1. Backup Creation Implementation [done]
 ### Dependencies: None
 ### Description: Design and implement the core backup creation logic, ensuring data integrity and error handling.
 ### Details:
 Define the scope of data to be backed up, select appropriate backup methods (full, incremental, differential), and implement automated backup routines. Ensure robust error handling and logging for backup operations. Validate that backups are created successfully and are complete.
 
-## 2. Unique Backup Naming Scheme [completed]
+## 2. Unique Backup Naming Scheme [done]
 ### Dependencies: 17.1
 ### Description: Develop and enforce a unique naming convention for backup files to prevent collisions and enable easy identification.
 ### Details:
 Design a naming scheme that incorporates timestamps, source identifiers, and backup type. Implement logic to generate and apply unique names during backup creation. Validate that naming is consistent and prevents overwrites.
 
-## 3. Backup Cleanup and Retention Policy [completed]
+## 3. Backup Cleanup and Retention Policy [done]
 ### Dependencies: 17.2
 ### Description: Implement automated cleanup routines to manage backup retention and free up storage space.
 ### Details:
 Define retention policies (e.g., number of backups to keep, age-based deletion). Implement scheduled cleanup scripts that safely remove outdated or excess backups. Ensure that cleanup does not interfere with active or in-progress backups.
 
-## 4. Restore Functionality Development [completed]
+## 4. Restore Functionality Development [done]
 ### Dependencies: 17.1, 17.2, 17.3
 ### Description: Create and validate the restore process to recover data from backups reliably.
 ### Details:

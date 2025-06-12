@@ -1,6 +1,6 @@
 /**
  * Copyright (c) 2025 Rowan Cardow
- * 
+ *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
@@ -10,23 +10,28 @@
  * @module atomicOps/AtomicFileManager
  */
 
-import * as fs from 'fs/promises';
-import * as path from 'path';
-import { v4 as uuidv4 } from 'uuid';
-import { promisify } from 'util';
+import * as fs from "fs/promises";
+import * as path from "path";
+import { v4 as uuidv4 } from "uuid";
+import { promisify } from "util";
 
 import {
   AtomicFileOptions,
   TempFileInfo,
-  AtomicOperationMetrics
-} from '../types/atomicOps';
+  AtomicOperationMetrics,
+} from "../types/atomicOps";
 
 /** Default options for temporary file management */
-const DEFAULT_TEMP_OPTIONS: Required<Pick<AtomicFileOptions, 'tempDirectory' | 'tempPrefix' | 'tempSuffix' | 'operationTimeout'>> = {
-  tempDirectory: '',
-  tempPrefix: '.tmp-',
-  tempSuffix: '.tmp',
-  operationTimeout: 30000
+const DEFAULT_TEMP_OPTIONS: Required<
+  Pick<
+    AtomicFileOptions,
+    "tempDirectory" | "tempPrefix" | "tempSuffix" | "operationTimeout"
+  >
+> = {
+  tempDirectory: "",
+  tempPrefix: ".tmp-",
+  tempSuffix: ".tmp",
+  operationTimeout: 30000,
 };
 
 /**
@@ -49,24 +54,24 @@ export class AtomicFileManager {
       bufferSize: 64 * 1024,
       maxRetryAttempts: 3,
       enableWAL: false,
-      walDirectory: '.wal',
+      walDirectory: ".wal",
       maxRetries: 3,
       retryDelay: 100,
-      ...options
+      ...options,
     };
-    
+
     this.activeTempFiles = new Map();
     this.cleanupIntervals = new Set();
     this.metrics = this.initializeMetrics();
-    
+
     // Increase max listeners to handle multiple instances in tests
     if (process.getMaxListeners() < 20) {
       process.setMaxListeners(20);
     }
-    
+
     // Set up automatic cleanup on process exit
     this.setupProcessExitHandlers();
-    
+
     // Start periodic cleanup of abandoned files
     this.startPeriodicCleanup();
   }
@@ -77,9 +82,14 @@ export class AtomicFileManager {
    * @param options - Creation options
    * @returns Promise resolving to temporary file information
    */
-  async createTempFile(targetPath: string, options: { cleanupTimeout?: number } = {}): Promise<TempFileInfo> {
+  async createTempFile(
+    targetPath: string,
+    options: { cleanupTimeout?: number } = {},
+  ): Promise<TempFileInfo> {
     if (this.isShuttingDown) {
-      throw new Error('File manager is shutting down, cannot create new temp files');
+      throw new Error(
+        "File manager is shutting down, cannot create new temp files",
+      );
     }
 
     // Use target path's directory if no specific temp directory is configured
@@ -98,14 +108,14 @@ export class AtomicFileManager {
       pid: process.pid,
       threadId: 0, // Node.js is single-threaded
       operationId,
-      cleanupTimeout: options.cleanupTimeout || this.options.operationTimeout
+      cleanupTimeout: options.cleanupTimeout || this.options.operationTimeout,
     };
 
     // Track the temporary file
     this.activeTempFiles.set(operationId, tempInfo);
-    
+
     // Update metrics
-    this.updateMetrics('create', true, 0, 0);
+    this.updateMetrics("create", true, 0, 0);
 
     return tempInfo;
   }
@@ -123,21 +133,26 @@ export class AtomicFileManager {
 
     try {
       // Remove the temporary file
-      await fs.unlink(tempInfo.path).catch(error => {
-        if (error.code !== 'ENOENT') {
+      await fs.unlink(tempInfo.path).catch((error) => {
+        if (error.code !== "ENOENT") {
           console.warn(`Failed to remove temp file ${tempInfo.path}:`, error);
         }
       });
 
       // Remove from tracking
       this.activeTempFiles.delete(operationId);
-      
+
       // Update metrics
-      this.updateMetrics('delete', true, Date.now() - tempInfo.createdAt, 0);
-      
+      this.updateMetrics("delete", true, Date.now() - tempInfo.createdAt, 0);
     } catch (error) {
       console.error(`Error cleaning up temp file ${tempInfo.path}:`, error);
-      this.updateMetrics('delete', false, Date.now() - tempInfo.createdAt, 0, 'CLEANUP_FAILED');
+      this.updateMetrics(
+        "delete",
+        false,
+        Date.now() - tempInfo.createdAt,
+        0,
+        "CLEANUP_FAILED",
+      );
     }
   }
 
@@ -147,31 +162,44 @@ export class AtomicFileManager {
    * @param finalPath - The final destination path (optional, uses targetPath from tempInfo)
    * @returns Promise that resolves when promotion is complete
    */
-  async promoteTempFile(operationId: string, finalPath?: string): Promise<void> {
+  async promoteTempFile(
+    operationId: string,
+    finalPath?: string,
+  ): Promise<void> {
     const tempInfo = this.activeTempFiles.get(operationId);
     if (!tempInfo) {
-      throw new Error(`Temporary file with operation ID ${operationId} not found`);
+      throw new Error(
+        `Temporary file with operation ID ${operationId} not found`,
+      );
     }
 
     const targetPath = finalPath || tempInfo.targetPath;
-    
+
     try {
       // Ensure target directory exists
       await fs.mkdir(path.dirname(targetPath), { recursive: true });
-      
+
       // Atomically move temp file to final location
       await fs.rename(tempInfo.path, targetPath);
-      
+
       // Remove from tracking (successful promotion)
       this.activeTempFiles.delete(operationId);
-      
+
       // Update metrics
-      this.updateMetrics('write', true, Date.now() - tempInfo.createdAt, 0);
-      
+      this.updateMetrics("write", true, Date.now() - tempInfo.createdAt, 0);
     } catch (error) {
       // Keep in tracking for cleanup, but mark as failed
-      console.error(`Failed to promote temp file ${tempInfo.path} to ${targetPath}:`, error);
-      this.updateMetrics('write', false, Date.now() - tempInfo.createdAt, 0, 'RENAME_FAILED');
+      console.error(
+        `Failed to promote temp file ${tempInfo.path} to ${targetPath}:`,
+        error,
+      );
+      this.updateMetrics(
+        "write",
+        false,
+        Date.now() - tempInfo.createdAt,
+        0,
+        "RENAME_FAILED",
+      );
       throw error;
     }
   }
@@ -202,7 +230,7 @@ export class AtomicFileManager {
 
     // Clean up abandoned files
     await Promise.allSettled(
-      abandonedFiles.map(operationId => this.cleanupTempFile(operationId))
+      abandonedFiles.map((operationId) => this.cleanupTempFile(operationId)),
     );
 
     return abandonedFiles.length;
@@ -224,10 +252,12 @@ export class AtomicFileManager {
     // Clean up all active temp files
     const activeOperations = Array.from(this.activeTempFiles.keys());
     await Promise.allSettled(
-      activeOperations.map(operationId => this.cleanupTempFile(operationId))
+      activeOperations.map((operationId) => this.cleanupTempFile(operationId)),
     );
 
-    console.log(`AtomicFileManager shutdown complete. Cleaned up ${activeOperations.length} temp files.`);
+    console.log(
+      `AtomicFileManager shutdown complete. Cleaned up ${activeOperations.length} temp files.`,
+    );
   }
 
   /**
@@ -244,30 +274,31 @@ export class AtomicFileManager {
    * @returns Promise resolving to number of stale files cleaned up
    */
   async cleanupStaleFiles(): Promise<number> {
-    const tempDir = this.options.tempDirectory || '.';
+    const tempDir = this.options.tempDirectory || ".";
     let cleanedCount = 0;
 
     try {
       const files = await fs.readdir(tempDir);
-      const tempFiles = files.filter(file => 
-        file.startsWith(this.options.tempPrefix) && 
-        file.endsWith(this.options.tempSuffix)
+      const tempFiles = files.filter(
+        (file) =>
+          file.startsWith(this.options.tempPrefix) &&
+          file.endsWith(this.options.tempSuffix),
       );
 
       for (const fileName of tempFiles) {
         const filePath = path.join(tempDir, fileName);
-        
+
         try {
           const stats = await fs.stat(filePath);
           const fileAge = Date.now() - stats.mtime.getTime();
-          
+
           // Clean up files older than timeout and not in our active tracking
           if (fileAge > this.options.operationTimeout) {
             // Extract operation ID from filename to check if it's in our tracking
             const operationId = fileName
-              .replace(this.options.tempPrefix, '')
-              .replace(this.options.tempSuffix, '');
-            
+              .replace(this.options.tempPrefix, "")
+              .replace(this.options.tempSuffix, "");
+
             if (!this.activeTempFiles.has(operationId)) {
               await fs.unlink(filePath);
               cleanedCount++;
@@ -275,7 +306,7 @@ export class AtomicFileManager {
           }
         } catch (error) {
           // Skip files that can't be accessed or are already deleted
-          if (error.code !== 'ENOENT') {
+          if (error.code !== "ENOENT") {
             console.warn(`Failed to clean stale temp file ${filePath}:`, error);
           }
         }
@@ -302,17 +333,17 @@ export class AtomicFileManager {
         read: 0,
         write: 0,
         delete: 0,
-        create: 0
-      }
+        create: 0,
+      },
     };
   }
 
   private updateMetrics(
-    operation: 'read' | 'write' | 'delete' | 'create',
+    operation: "read" | "write" | "delete" | "create",
     success: boolean,
     duration: number,
     bytesProcessed: number,
-    errorCode?: string
+    errorCode?: string,
   ): void {
     this.metrics.totalOperations++;
     this.metrics.operationTypes[operation]++;
@@ -323,12 +354,15 @@ export class AtomicFileManager {
     } else {
       this.metrics.failedOperations++;
       if (errorCode) {
-        this.metrics.errorStats[errorCode] = (this.metrics.errorStats[errorCode] || 0) + 1;
+        this.metrics.errorStats[errorCode] =
+          (this.metrics.errorStats[errorCode] || 0) + 1;
       }
     }
 
     // Update average duration
-    const totalDuration = this.metrics.averageDuration * (this.metrics.totalOperations - 1) + duration;
+    const totalDuration =
+      this.metrics.averageDuration * (this.metrics.totalOperations - 1) +
+      duration;
     this.metrics.averageDuration = totalDuration / this.metrics.totalOperations;
 
     // Update operations per second (simple calculation based on average)
@@ -341,14 +375,16 @@ export class AtomicFileManager {
     const cleanupHandler = () => {
       // Synchronous cleanup for process exit
       const activeOperations = Array.from(this.activeTempFiles.keys());
-      console.log(`Process exiting, cleaning up ${activeOperations.length} temp files...`);
+      console.log(
+        `Process exiting, cleaning up ${activeOperations.length} temp files...`,
+      );
       this.shutdown().catch(console.error);
     };
 
-    process.on('exit', cleanupHandler);
-    process.on('SIGINT', cleanupHandler);
-    process.on('SIGTERM', cleanupHandler);
-    process.on('uncaughtException', cleanupHandler);
+    process.on("exit", cleanupHandler);
+    process.on("SIGINT", cleanupHandler);
+    process.on("SIGTERM", cleanupHandler);
+    process.on("uncaughtException", cleanupHandler);
   }
 
   private startPeriodicCleanup(): void {
@@ -358,16 +394,18 @@ export class AtomicFileManager {
         try {
           const abandonedCount = await this.cleanupAbandonedFiles();
           const staleCount = await this.cleanupStaleFiles();
-          
+
           if (abandonedCount > 0 || staleCount > 0) {
-            console.log(`Periodic cleanup: ${abandonedCount} abandoned, ${staleCount} stale temp files removed`);
+            console.log(
+              `Periodic cleanup: ${abandonedCount} abandoned, ${staleCount} stale temp files removed`,
+            );
           }
         } catch (error) {
-          console.warn('Periodic cleanup failed:', error);
+          console.warn("Periodic cleanup failed:", error);
         }
       }
     }, 30000);
 
     this.cleanupIntervals.add(cleanupInterval);
   }
-} 
+}

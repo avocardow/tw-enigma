@@ -1,0 +1,192 @@
+name: 🐛 Bug Report
+description: Report a bug or unexpected behavior in Tailwind Enigma Core
+title: "[Bug]: "
+labels: ["bug", "needs-triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for taking the time to report a bug! Please fill out this template to help us investigate and fix the issue.
+
+        Before submitting, please search existing issues to make sure this hasn't been reported already.
+
+  - type: checkboxes
+    id: prerequisites
+    attributes:
+      label: Prerequisites
+      description: Please confirm the following before submitting your bug report
+      options:
+        - label: I have searched existing issues and this hasn't been reported
+          required: true
+        - label: I have verified this is reproducible with the latest version
+          required: true
+        - label: I have checked the documentation and troubleshooting guides
+          required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is
+      placeholder: Describe the bug you encountered...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+      placeholder: Describe what you expected to happen...
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: Actual Behavior
+      description: What actually happened?
+      placeholder: Describe what actually happened...
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction-steps
+    attributes:
+      label: Steps to Reproduce
+      description: Please provide detailed steps to reproduce the issue
+      placeholder: |
+        1. Install tw-enigma with...
+        2. Create configuration file with...
+        3. Run command...
+        4. See error...
+      value: |
+        1. 
+        2. 
+        3. 
+        4.
+    validations:
+      required: true
+
+  - type: textarea
+    id: minimal-reproduction
+    attributes:
+      label: Minimal Reproduction
+      description: Please provide the smallest possible code example that reproduces the issue
+      placeholder: |
+        ```typescript
+        // Your minimal reproduction code here
+        ```
+      render: typescript
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment Information
+      description: Please provide your environment details
+      placeholder: |
+        - OS: [e.g., macOS 13.0, Windows 11, Ubuntu 22.04]
+        - Node.js version: [e.g., 18.17.0]
+        - Package manager: [e.g., pnpm 8.6.0, npm 9.8.0]
+        - tw-enigma version: [e.g., 0.1.0]
+        - TypeScript version: [e.g., 5.1.0]
+        - Framework: [e.g., Next.js 13.4.0, Vite 4.4.0]
+      value: |
+        - OS: 
+        - Node.js version: 
+        - Package manager: 
+        - tw-enigma version: 
+        - TypeScript version: 
+        - Framework:
+    validations:
+      required: true
+
+  - type: textarea
+    id: configuration
+    attributes:
+      label: Configuration Files
+      description: Please share relevant configuration files (enigma.config.js, tailwind.config.js, etc.)
+      placeholder: |
+        ```javascript
+        // enigma.config.js
+        export default {
+          // Your configuration here
+        };
+        ```
+      render: javascript
+
+  - type: textarea
+    id: error-messages
+    attributes:
+      label: Error Messages and Stack Traces
+      description: Include full error messages and stack traces if available
+      placeholder: |
+        ```
+        Error: Something went wrong
+            at function1 (file1.js:10:5)
+            at function2 (file2.js:20:10)
+        ```
+      render: text
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant Logs
+      description: Include any relevant log output (with debug flags if possible)
+      placeholder: |
+        ```
+        $ npx enigma optimize --debug
+        [DEBUG] Starting optimization...
+        [ERROR] Failed to process file...
+        ```
+      render: text
+
+  - type: dropdown
+    id: impact
+    attributes:
+      label: Bug Impact
+      description: How severely does this bug affect your project?
+      options:
+        - Critical - Project cannot build/deploy
+        - High - Major feature broken or significant performance issue
+        - Medium - Minor feature broken or moderate performance issue
+        - Low - Cosmetic issue or edge case
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: affected-areas
+    attributes:
+      label: Affected Areas
+      description: Which parts of tw-enigma are affected? (Check all that apply)
+      options:
+        - label: CSS Optimization
+        - label: File Discovery/Processing
+        - label: HTML Class Extraction
+        - label: JavaScript/TypeScript Class Extraction
+        - label: Framework Integration (React, Vue, etc.)
+        - label: CLI Commands
+        - label: Configuration System
+        - label: Plugin System
+        - label: Output Generation
+        - label: Performance/Memory Usage
+        - label: Documentation
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Add any other context about the problem here
+      placeholder: Screenshots, related issues, potential solutions you've tried, etc.
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribution
+      description: Would you be interested in contributing a fix?
+      options:
+        - label: I would like to work on fixing this issue
+        - label: I need guidance on how to contribute
+        - label: I can provide additional testing/validation

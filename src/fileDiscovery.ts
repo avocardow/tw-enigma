@@ -1,6 +1,6 @@
 /**
  * Copyright (c) 2025 Rowan Cardow
- * 
+ *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
@@ -22,7 +22,8 @@ export const SUPPORTED_FILE_TYPES = {
 /**
  * All supported file extensions
  */
-export const ALL_SUPPORTED_EXTENSIONS = Object.values(SUPPORTED_FILE_TYPES).flat();
+export const ALL_SUPPORTED_EXTENSIONS =
+  Object.values(SUPPORTED_FILE_TYPES).flat();
 
 /**
  * File discovery options
@@ -164,7 +165,10 @@ export function shouldIncludeFile(
   // Check exclude extensions first - support both simple extensions and compound extensions
   if (options.excludeExtensions?.length) {
     for (const excludeExt of options.excludeExtensions) {
-      if (excludeExt.startsWith('.') && fileName.endsWith(excludeExt.toLowerCase())) {
+      if (
+        excludeExt.startsWith(".") &&
+        fileName.endsWith(excludeExt.toLowerCase())
+      ) {
         return false;
       }
     }
@@ -172,8 +176,8 @@ export function shouldIncludeFile(
 
   // If includeExtensions is specified, only include those
   if (options.includeExtensions?.length) {
-    return options.includeExtensions.some(includeExt => {
-      if (includeExt.startsWith('.')) {
+    return options.includeExtensions.some((includeExt) => {
+      if (includeExt.startsWith(".")) {
         return fileName.endsWith(includeExt.toLowerCase());
       }
       return ext === includeExt.toLowerCase();
@@ -219,7 +223,9 @@ export function deduplicateAndSort(files: string[]): string[] {
 /**
  * Discovers files using glob patterns (synchronous)
  */
-export function discoverFilesSync(options: FileDiscoveryOptions): FileDiscoveryResult {
+export function discoverFilesSync(
+  options: FileDiscoveryOptions,
+): FileDiscoveryResult {
   const startTime = Date.now();
 
   try {
@@ -244,7 +250,7 @@ export function discoverFilesSync(options: FileDiscoveryOptions): FileDiscoveryR
     for (const pattern of patterns) {
       try {
         const files = globSync(pattern, globOptions);
-        
+
         if (files.length > 0) {
           matchedPatterns.push(pattern);
           allFiles.push(...files);
@@ -265,7 +271,9 @@ export function discoverFilesSync(options: FileDiscoveryOptions): FileDiscoveryR
     allFiles = deduplicateAndSort(allFiles);
 
     // Apply file type filtering
-    const filteredFiles = allFiles.filter((file) => shouldIncludeFile(file, options));
+    const filteredFiles = allFiles.filter((file) =>
+      shouldIncludeFile(file, options),
+    );
 
     // Apply max files limit
     const finalFiles = options.maxFiles
@@ -306,7 +314,9 @@ export function discoverFilesSync(options: FileDiscoveryOptions): FileDiscoveryR
 /**
  * Discovers files using glob patterns (asynchronous)
  */
-export async function discoverFiles(options: FileDiscoveryOptions): Promise<FileDiscoveryResult> {
+export async function discoverFiles(
+  options: FileDiscoveryOptions,
+): Promise<FileDiscoveryResult> {
   const startTime = Date.now();
 
   try {
@@ -331,7 +341,7 @@ export async function discoverFiles(options: FileDiscoveryOptions): Promise<File
     for (const pattern of patterns) {
       try {
         const files = await glob(pattern, globOptions);
-        
+
         if (files.length > 0) {
           matchedPatterns.push(pattern);
           allFiles.push(...files);
@@ -352,7 +362,9 @@ export async function discoverFiles(options: FileDiscoveryOptions): Promise<File
     allFiles = deduplicateAndSort(allFiles);
 
     // Apply file type filtering
-    const filteredFiles = allFiles.filter((file) => shouldIncludeFile(file, options));
+    const filteredFiles = allFiles.filter((file) =>
+      shouldIncludeFile(file, options),
+    );
 
     // Apply max files limit
     const finalFiles = options.maxFiles
@@ -393,7 +405,9 @@ export async function discoverFiles(options: FileDiscoveryOptions): Promise<File
 /**
  * Convenience function to discover files from configuration
  */
-export function discoverFilesFromConfig(config: EnigmaConfig): FileDiscoveryResult {
+export function discoverFilesFromConfig(
+  config: EnigmaConfig,
+): FileDiscoveryResult {
   // Handle input patterns - can be string or array, and string might be comma-separated
   let patterns: string[];
   if (!config.input) {
@@ -402,7 +416,10 @@ export function discoverFilesFromConfig(config: EnigmaConfig): FileDiscoveryResu
     patterns = config.input;
   } else {
     // Split comma-separated patterns
-    patterns = config.input.split(',').map(p => p.trim()).filter(p => p.length > 0);
+    patterns = config.input
+      .split(",")
+      .map((p) => p.trim())
+      .filter((p) => p.length > 0);
   }
 
   const options: FileDiscoveryOptions = {
@@ -422,7 +439,9 @@ export function discoverFilesFromConfig(config: EnigmaConfig): FileDiscoveryResu
 /**
  * Convenience function to discover files from configuration (async)
  */
-export async function discoverFilesFromConfigAsync(config: EnigmaConfig): Promise<FileDiscoveryResult> {
+export async function discoverFilesFromConfigAsync(
+  config: EnigmaConfig,
+): Promise<FileDiscoveryResult> {
   // Handle input patterns - can be string or array, and string might be comma-separated
   let patterns: string[];
   if (!config.input) {
@@ -431,7 +450,10 @@ export async function discoverFilesFromConfigAsync(config: EnigmaConfig): Promis
     patterns = config.input;
   } else {
     // Split comma-separated patterns
-    patterns = config.input.split(',').map(p => p.trim()).filter(p => p.length > 0);
+    patterns = config.input
+      .split(",")
+      .map((p) => p.trim())
+      .filter((p) => p.length > 0);
   }
 
   const options: FileDiscoveryOptions = {
@@ -446,4 +468,4 @@ export async function discoverFilesFromConfigAsync(config: EnigmaConfig): Promis
   };
 
   return discoverFiles(options);
-} 
+}

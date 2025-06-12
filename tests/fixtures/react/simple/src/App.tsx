@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 function App() {
   return (
@@ -12,7 +12,8 @@ function App() {
             Testing Tailwind CSS Extraction
           </h1>
           <p className="mt-2 text-gray-500">
-            This component uses various Tailwind CSS utility classes to test the optimization pipeline.
+            This component uses various Tailwind CSS utility classes to test the
+            optimization pipeline.
           </p>
           <button className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200">
             Click Me
@@ -23,4 +24,4 @@ function App() {
   );
 }
 
-export default App; 
+export default App;

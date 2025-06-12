@@ -31,4 +31,4 @@ comment:
   require_changes: false
 
 github_checks:
-  annotations: true 
+  annotations: true

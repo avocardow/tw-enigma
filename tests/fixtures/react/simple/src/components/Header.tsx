@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface HeaderProps {
   title: string;
@@ -14,13 +14,22 @@ export function Header({ title, isLoggedIn = false }: HeaderProps) {
             <h1 className="text-xl font-semibold text-gray-900">{title}</h1>
           </div>
           <nav className="hidden md:flex space-x-8">
-            <a href="#" className="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+            <a
+              href="#"
+              className="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+            >
               Home
             </a>
-            <a href="#" className="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+            <a
+              href="#"
+              className="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+            >
               About
             </a>
-            <a href="#" className="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+            <a
+              href="#"
+              className="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+            >
               Contact
             </a>
           </nav>
@@ -40,4 +49,4 @@ export function Header({ title, isLoggedIn = false }: HeaderProps) {
       </div>
     </header>
   );
-} 
+}

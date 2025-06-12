@@ -1,6 +1,6 @@
 /**
  * Framework Detection System for Tailwind Enigma Core
- * 
+ *
  * Provides comprehensive framework detection capabilities including:
  * - React, Next.js, Vue, Angular, Vite detection
  * - Package.json and dependency analysis
@@ -9,9 +9,9 @@
  * - Confidence scoring and priority ranking
  */
 
-import { z } from 'zod';
-import * as fs from 'fs/promises';
-import * as path from 'path';
+import { z } from "zod";
+import * as fs from "fs/promises";
+import * as path from "path";
 
 // Configuration Schema
 export const FrameworkDetectorOptionsSchema = z.object({
@@ -31,19 +31,21 @@ export const FrameworkDetectorOptionsSchema = z.object({
   confidenceThreshold: z.number().min(0).max(1).default(0.6),
 });
 
-export type FrameworkDetectorOptions = z.infer<typeof FrameworkDetectorOptionsSchema>;
+export type FrameworkDetectorOptions = z.infer<
+  typeof FrameworkDetectorOptionsSchema
+>;
 
 // Core Types
-export type FrameworkType = 
-  | 'react' 
-  | 'nextjs' 
-  | 'vue' 
-  | 'angular' 
-  | 'vite' 
-  | 'svelte'
-  | 'solid'
-  | 'preact'
-  | 'unknown';
+export type FrameworkType =
+  | "react"
+  | "nextjs"
+  | "vue"
+  | "angular"
+  | "vite"
+  | "svelte"
+  | "solid"
+  | "preact"
+  | "unknown";
 
 export interface FrameworkInfo {
   /** Framework identifier */
@@ -75,7 +77,7 @@ export interface FrameworkInfo {
 
 export interface DetectionSource {
   /** Source type */
-  type: 'package' | 'config' | 'code' | 'filesystem';
+  type: "package" | "config" | "code" | "filesystem";
   /** Source description */
   description: string;
   /** Confidence contribution (0-1) */
@@ -155,8 +157,10 @@ export class FrameworkDetector {
 
     // Check cache first
     const cacheKey = targetPath;
-    const cachedResult = this.options.enableCaching ? this.cache.get(cacheKey) : undefined;
-    
+    const cachedResult = this.options.enableCaching
+      ? this.cache.get(cacheKey)
+      : undefined;
+
     if (cachedResult) {
       // Return cached result with updated performance metrics
       return {
@@ -175,35 +179,36 @@ export class FrameworkDetector {
 
       // Build detection context
       const context = await this.buildDetectionContext(targetPath);
-      
+
       // Run all detectors
       const detectionPromises = Array.from(this.detectors.values())
-        .filter(detector => detector.canDetect(context))
-        .map(detector => this.runDetector(detector, context));
+        .filter((detector) => detector.canDetect(context))
+        .map((detector) => this.runDetector(detector, context));
 
       const detectorResults = await Promise.allSettled(detectionPromises);
-      
+
       // Collect successful results
       const frameworks: FrameworkInfo[] = [];
       const issues: string[] = [];
-      
+
       for (const result of detectorResults) {
-        if (result.status === 'fulfilled' && result.value) {
+        if (result.status === "fulfilled" && result.value) {
           frameworks.push(result.value);
-        } else if (result.status === 'rejected') {
+        } else if (result.status === "rejected") {
           issues.push(`Detection error: ${result.reason.message}`);
         }
       }
 
       // Sort by confidence and apply threshold
       const validFrameworks = frameworks
-        .filter(fw => fw.confidence >= this.options.confidenceThreshold)
+        .filter((fw) => fw.confidence >= this.options.confidenceThreshold)
         .sort((a, b) => b.confidence - a.confidence);
 
       // Calculate overall confidence
-      const overallConfidence = validFrameworks.length > 0 
-        ? Math.max(...validFrameworks.map(fw => fw.confidence))
-        : 0;
+      const overallConfidence =
+        validFrameworks.length > 0
+          ? Math.max(...validFrameworks.map((fw) => fw.confidence))
+          : 0;
 
       const detectionTime = performance.now() - startTime;
 
@@ -226,13 +231,13 @@ export class FrameworkDetector {
       }
 
       return result;
-
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       throw new FrameworkDetectionError(
         `Framework detection failed for ${targetPath}: ${errorMessage}`,
         targetPath,
-        error instanceof Error ? error : undefined
+        error instanceof Error ? error : undefined,
       );
     }
   }
@@ -261,14 +266,16 @@ export class FrameworkDetector {
   /**
    * Build detection context from project directory
    */
-  private async buildDetectionContext(rootPath: string): Promise<DetectionContext> {
+  private async buildDetectionContext(
+    rootPath: string,
+  ): Promise<DetectionContext> {
     // Check if directory exists
     try {
       await fs.access(rootPath);
     } catch {
       throw new FrameworkDetectionError(
         `Directory does not exist: ${rootPath}`,
-        rootPath
+        rootPath,
       );
     }
 
@@ -281,8 +288,8 @@ export class FrameworkDetector {
       // Load package.json if enabled
       if (this.options.enablePackageAnalysis) {
         try {
-          const packagePath = path.join(rootPath, 'package.json');
-          const packageContent = await fs.readFile(packagePath, 'utf-8');
+          const packagePath = path.join(rootPath, "package.json");
+          const packageContent = await fs.readFile(packagePath, "utf-8");
           context.packageJson = JSON.parse(packageContent);
         } catch {
           // package.json not found or invalid - not an error
@@ -301,13 +308,13 @@ export class FrameworkDetector {
 
       // Analyze file structure
       context.fileStructure = await this.analyzeFileStructure(rootPath);
-
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       throw new FrameworkDetectionError(
         `Failed to build detection context: ${errorMessage}`,
         rootPath,
-        error instanceof Error ? error : undefined
+        error instanceof Error ? error : undefined,
       );
     }
 
@@ -319,12 +326,13 @@ export class FrameworkDetector {
    */
   private async runDetector(
     detector: IFrameworkDetector,
-    context: DetectionContext
+    context: DetectionContext,
   ): Promise<FrameworkInfo | null> {
     try {
       return await detector.detect(context);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       throw new Error(`${detector.name} detector failed: ${errorMessage}`);
     }
   }
@@ -332,31 +340,33 @@ export class FrameworkDetector {
   /**
    * Analyze configuration files in the project
    */
-  private async analyzeConfigFiles(rootPath: string): Promise<Map<string, any>> {
+  private async analyzeConfigFiles(
+    rootPath: string,
+  ): Promise<Map<string, any>> {
     const configFiles = new Map<string, any>();
-    
+
     const configFilePatterns = [
-      'next.config.js',
-      'next.config.mjs', 
-      'next.config.ts',
-      'vite.config.js',
-      'vite.config.ts',
-      'vite.config.mjs',
-      'angular.json',
-      'vue.config.js',
-      'webpack.config.js',
-      'babel.config.js',
-      '.babelrc',
-      'tsconfig.json',
-      'tailwind.config.js',
-      'tailwind.config.ts',
+      "next.config.js",
+      "next.config.mjs",
+      "next.config.ts",
+      "vite.config.js",
+      "vite.config.ts",
+      "vite.config.mjs",
+      "angular.json",
+      "vue.config.js",
+      "webpack.config.js",
+      "babel.config.js",
+      ".babelrc",
+      "tsconfig.json",
+      "tailwind.config.js",
+      "tailwind.config.ts",
     ];
 
     for (const pattern of configFilePatterns) {
       try {
         const filePath = path.join(rootPath, pattern);
-        const content = await fs.readFile(filePath, 'utf-8');
-        
+        const content = await fs.readFile(filePath, "utf-8");
+
         // Try to parse as JSON first, then as JS module
         try {
           configFiles.set(pattern, JSON.parse(content));
@@ -377,11 +387,11 @@ export class FrameworkDetector {
    */
   private async analyzeSourcePatterns(rootPath: string): Promise<string[]> {
     const patterns: string[] = [];
-    
+
     try {
       // Look for common source directories
-      const sourceDirs = ['src', 'pages', 'app', 'components', 'lib'];
-      
+      const sourceDirs = ["src", "pages", "app", "components", "lib"];
+
       for (const dir of sourceDirs) {
         const dirPath = path.join(rootPath, dir);
         try {
@@ -393,12 +403,12 @@ export class FrameworkDetector {
       }
 
       // Look for specific file patterns (limited for performance)
-      const filePatterns = ['.tsx', '.jsx', '.vue', '.svelte'];
+      const filePatterns = [".tsx", ".jsx", ".vue", ".svelte"];
       let filesFound = 0;
-      
+
       for (const pattern of filePatterns) {
         if (filesFound >= this.options.maxCodeFiles) break;
-        
+
         try {
           const files = await this.findFilesByExtension(rootPath, pattern, 10);
           if (files.length > 0) {
@@ -409,7 +419,6 @@ export class FrameworkDetector {
           // Continue on error
         }
       }
-
     } catch (error) {
       // Non-critical error - continue with empty patterns
     }
@@ -431,9 +440,13 @@ export class FrameworkDetector {
 
     try {
       const items = await fs.readdir(rootPath, { withFileTypes: true });
-      
+
       for (const item of items) {
-        if (item.isDirectory() && !item.name.startsWith('.') && item.name !== 'node_modules') {
+        if (
+          item.isDirectory() &&
+          !item.name.startsWith(".") &&
+          item.name !== "node_modules"
+        ) {
           structure.directories.push(item.name);
         } else if (item.isFile()) {
           structure.files.push(item.name);
@@ -450,24 +463,31 @@ export class FrameworkDetector {
    * Find files by extension (limited search for performance)
    */
   private async findFilesByExtension(
-    rootPath: string, 
-    extension: string, 
-    limit: number
+    rootPath: string,
+    extension: string,
+    limit: number,
   ): Promise<string[]> {
     const files: string[] = [];
-    
-    const searchDir = async (dirPath: string, depth: number = 0): Promise<void> => {
+
+    const searchDir = async (
+      dirPath: string,
+      depth: number = 0,
+    ): Promise<void> => {
       if (depth > 3 || files.length >= limit) return; // Limit recursion depth
-      
+
       try {
         const items = await fs.readdir(dirPath, { withFileTypes: true });
-        
+
         for (const item of items) {
           if (files.length >= limit) break;
-          
+
           if (item.isFile() && item.name.endsWith(extension)) {
             files.push(path.relative(rootPath, path.join(dirPath, item.name)));
-          } else if (item.isDirectory() && !item.name.startsWith('.') && item.name !== 'node_modules') {
+          } else if (
+            item.isDirectory() &&
+            !item.name.startsWith(".") &&
+            item.name !== "node_modules"
+          ) {
             await searchDir(path.join(dirPath, item.name), depth + 1);
           }
         }
@@ -499,20 +519,20 @@ export class FrameworkDetector {
     try {
       // Import and register framework-specific detectors
       const [reactModule, nextjsModule, viteModule] = await Promise.allSettled([
-        import('./detectors/reactDetector.js'),
-        import('./detectors/nextjsDetector.js'),
-        import('./detectors/viteDetector.js'),
+        import("./detectors/reactDetector.js"),
+        import("./detectors/nextjsDetector.js"),
+        import("./detectors/viteDetector.js"),
       ]);
 
-      if (reactModule.status === 'fulfilled') {
+      if (reactModule.status === "fulfilled") {
         this.registerDetector(new reactModule.value.ReactDetector());
       }
 
-      if (nextjsModule.status === 'fulfilled') {
+      if (nextjsModule.status === "fulfilled") {
         this.registerDetector(new nextjsModule.value.NextjsDetector());
       }
 
-      if (viteModule.status === 'fulfilled') {
+      if (viteModule.status === "fulfilled") {
         this.registerDetector(new viteModule.value.ViteDetector());
       }
 
@@ -531,10 +551,10 @@ export class FrameworkDetectionError extends Error {
   constructor(
     message: string,
     public rootPath?: string,
-    public cause?: Error
+    public cause?: Error,
   ) {
     super(message);
-    this.name = 'FrameworkDetectionError';
+    this.name = "FrameworkDetectionError";
   }
 }
 
@@ -542,7 +562,7 @@ export class FrameworkDetectionError extends Error {
  * Create a framework detector with default options
  */
 export function createFrameworkDetector(
-  options: Partial<FrameworkDetectorOptions> = {}
+  options: Partial<FrameworkDetectorOptions> = {},
 ): FrameworkDetector {
   return new FrameworkDetector(options);
 }
@@ -552,8 +572,8 @@ export function createFrameworkDetector(
  */
 export async function detectFramework(
   rootPath: string,
-  options: Partial<FrameworkDetectorOptions> = {}
+  options: Partial<FrameworkDetectorOptions> = {},
 ): Promise<DetectionResult> {
   const detector = createFrameworkDetector({ ...options, rootPath });
   return detector.detect();
-} 
+}

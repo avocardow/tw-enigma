@@ -1,28 +1,28 @@
 /**
  * Copyright (c) 2025 Rowan Cardow
- * 
+ *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
 
 /**
  * Performance Monitoring & Profiling Framework for Tailwind Enigma Core
- * 
+ *
  * Provides comprehensive performance monitoring with CPU, memory, I/O tracking,
  * bottleneck detection, and integration with clinic.js and 0x profiler.
- * 
+ *
  * CHECKPOINT: This completes Phase 2 of the performance optimization implementation.
  */
 
-import { performance, PerformanceObserver } from 'perf_hooks';
-import { EventEmitter } from 'events';
-import { execSync, spawn, ChildProcess } from 'child_process';
-import { writeFileSync, existsSync, mkdirSync } from 'fs';
-import { join } from 'path';
-import { createLogger } from '../logger.js';
-import type { ProfilingConfig, PerformanceMetrics } from './config.js';
+import { performance, PerformanceObserver } from "perf_hooks";
+import { EventEmitter } from "events";
+import { execSync, spawn, ChildProcess } from "child_process";
+import { writeFileSync, existsSync, mkdirSync } from "fs";
+import { join } from "path";
+import { createLogger } from "../logger.js";
+import type { ProfilingConfig, PerformanceMetrics } from "./config.js";
 
-const logger = createLogger('PerformanceProfiler');
+const logger = createLogger("PerformanceProfiler");
 
 /**
  * Performance measurement entry
@@ -89,13 +89,13 @@ interface PerformanceAnalysis {
     operation: string;
     duration: number;
     frequency: number;
-    impact: 'low' | 'medium' | 'high' | 'critical';
+    impact: "low" | "medium" | "high" | "critical";
     recommendations: string[];
   }[];
   trends: {
-    memoryTrend: 'stable' | 'increasing' | 'decreasing' | 'fluctuating';
-    cpuTrend: 'stable' | 'increasing' | 'decreasing' | 'fluctuating';
-    performanceTrend: 'improving' | 'degrading' | 'stable';
+    memoryTrend: "stable" | "increasing" | "decreasing" | "fluctuating";
+    cpuTrend: "stable" | "increasing" | "decreasing" | "fluctuating";
+    performanceTrend: "improving" | "degrading" | "stable";
   };
   recommendations: string[];
 }
@@ -122,7 +122,12 @@ interface ProfilingSession {
 /**
  * External profiler tools
  */
-type ProfilerTool = 'clinic-doctor' | 'clinic-flame' | 'clinic-bubbleprof' | '0x' | 'node-inspect';
+type ProfilerTool =
+  | "clinic-doctor"
+  | "clinic-flame"
+  | "clinic-bubbleprof"
+  | "0x"
+  | "node-inspect";
 
 /**
  * Comprehensive performance profiler and monitoring system
@@ -140,14 +145,14 @@ export class PerformanceProfiler extends EventEmitter {
 
   constructor(config: Partial<ProfilingConfig> = {}) {
     super();
-    
+
     this.config = {
       enabled: true,
       samplingRate: 1, // Default sampling rate
       enableFlameGraphs: false,
       enableMemoryProfiling: true,
       enableCPUProfiling: true,
-      outputDirectory: './performance-reports',
+      outputDirectory: "./performance-reports",
       autoExport: true,
       enableOpenTelemetry: false,
       sampleInterval: 1000, // 1 second
@@ -155,11 +160,11 @@ export class PerformanceProfiler extends EventEmitter {
       enableEventLoop: true,
       enableMemoryDetails: true,
       maxSamples: 1000,
-      outputDir: './performance-reports',
+      outputDir: "./performance-reports",
       enableClinicJs: false,
       enable0x: false,
-      clinicJsPath: 'clinic',
-      zeroXPath: '0x',
+      clinicJsPath: "clinic",
+      zeroXPath: "0x",
       autoAnalysis: true,
       ...config,
     };
@@ -168,7 +173,7 @@ export class PerformanceProfiler extends EventEmitter {
     this.setupPerformanceObserver();
     this.captureBaseline();
 
-    logger.info('PerformanceProfiler initialized', {
+    logger.info("PerformanceProfiler initialized", {
       sampleInterval: this.config.sampleInterval,
       enableGC: this.config.enableGC,
       enableEventLoop: this.config.enableEventLoop,
@@ -179,9 +184,12 @@ export class PerformanceProfiler extends EventEmitter {
   /**
    * Start a new profiling session
    */
-  startSession(name: string, options: Partial<ProfilingSession['options']> = {}): string {
+  startSession(
+    name: string,
+    options: Partial<ProfilingSession["options"]> = {},
+  ): string {
     const sessionId = `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    
+
     const session: ProfilingSession = {
       id: sessionId,
       name,
@@ -202,13 +210,13 @@ export class PerformanceProfiler extends EventEmitter {
     this.sessions.set(sessionId, session);
     this.startMonitoring();
 
-    logger.info('Profiling session started', {
+    logger.info("Profiling session started", {
       sessionId,
       name,
       sampleInterval: session.options.sampleInterval,
     });
 
-    this.emit('sessionStarted', { sessionId, name });
+    this.emit("sessionStarted", { sessionId, name });
     return sessionId;
   }
 
@@ -217,27 +225,28 @@ export class PerformanceProfiler extends EventEmitter {
    */
   stopSession(): PerformanceAnalysis | null {
     if (!this.currentSession) {
-      logger.warn('No active profiling session to stop');
+      logger.warn("No active profiling session to stop");
       return null;
     }
 
     this.currentSession.endTime = performance.now();
     this.stopMonitoring();
 
-    const analysis = this.config.autoAnalysis 
+    const analysis = this.config.autoAnalysis
       ? this.analyzeSession(this.currentSession.id)
       : null;
 
-    logger.info('Profiling session stopped', {
+    logger.info("Profiling session stopped", {
       sessionId: this.currentSession.id,
-      duration: (this.currentSession.endTime - this.currentSession.startTime) / 1000,
+      duration:
+        (this.currentSession.endTime - this.currentSession.startTime) / 1000,
       measurements: this.currentSession.measurements.length,
       snapshots: this.currentSession.snapshots.length,
     });
 
-    this.emit('sessionStopped', { 
-      sessionId: this.currentSession.id, 
-      analysis 
+    this.emit("sessionStopped", {
+      sessionId: this.currentSession.id,
+      analysis,
     });
 
     const sessionId = this.currentSession.id;
@@ -251,7 +260,7 @@ export class PerformanceProfiler extends EventEmitter {
    */
   markStart(name: string, detail?: unknown): void {
     performance.mark(`${name}-start`);
-    
+
     if (this.currentSession) {
       // Store start metadata for later use
       performance.mark(`${name}-start`, { detail });
@@ -264,16 +273,16 @@ export class PerformanceProfiler extends EventEmitter {
   markEnd(name: string, detail?: unknown): PerformanceMeasurement | null {
     const startMark = `${name}-start`;
     const endMark = `${name}-end`;
-    
+
     performance.mark(endMark);
-    
+
     try {
       performance.measure(name, startMark, endMark);
-      
+
       // Get the measurement
-      const entries = performance.getEntriesByName(name, 'measure');
+      const entries = performance.getEntriesByName(name, "measure");
       const measurement = entries[entries.length - 1];
-      
+
       if (measurement && this.currentSession) {
         const perfMeasurement: PerformanceMeasurement = {
           name: measurement.name,
@@ -287,32 +296,33 @@ export class PerformanceProfiler extends EventEmitter {
             timestamp: Date.now(),
           },
         };
-        
+
         this.currentSession.measurements.push(perfMeasurement);
-        
+
         // Check for bottlenecks
-        if (measurement.duration > 100) { // >100ms operations
-          this.emit('bottleneckDetected', {
+        if (measurement.duration > 100) {
+          // >100ms operations
+          this.emit("bottleneckDetected", {
             operation: name,
             duration: measurement.duration,
             sessionId: this.currentSession.id,
           });
         }
-        
+
         // Cleanup marks
         performance.clearMarks(startMark);
         performance.clearMarks(endMark);
         performance.clearMeasures(name);
-        
+
         return perfMeasurement;
       }
     } catch (error) {
-      logger.warn('Failed to create performance measurement', {
+      logger.warn("Failed to create performance measurement", {
         name,
         error: error instanceof Error ? error.message : String(error),
       });
     }
-    
+
     return null;
   }
 
@@ -322,16 +332,19 @@ export class PerformanceProfiler extends EventEmitter {
   async timeFunction<T>(
     name: string,
     fn: () => Promise<T> | T,
-    detail?: unknown
+    detail?: unknown,
   ): Promise<{ result: T; measurement: PerformanceMeasurement | null }> {
     this.markStart(name, detail);
-    
+
     try {
       const result = await fn();
       const measurement = this.markEnd(name, detail);
       return { result, measurement };
     } catch (error) {
-      this.markEnd(name, { ...(detail && typeof detail === 'object' ? detail : {}), error: true });
+      this.markEnd(name, {
+        ...(detail && typeof detail === "object" ? detail : {}),
+        error: true,
+      });
       throw error;
     }
   }
@@ -342,10 +355,10 @@ export class PerformanceProfiler extends EventEmitter {
   async startExternalProfiler(
     tool: ProfilerTool,
     scriptPath: string,
-    args: string[] = []
+    args: string[] = [],
   ): Promise<void> {
     if (this.externalProfiler) {
-      throw new Error('External profiler already running');
+      throw new Error("External profiler already running");
     }
 
     const outputDir = join(this.config.outputDir, `external-${Date.now()}`);
@@ -355,31 +368,31 @@ export class PerformanceProfiler extends EventEmitter {
     let commandArgs: string[];
 
     switch (tool) {
-      case 'clinic-doctor':
+      case "clinic-doctor":
         command = this.config.clinicJsPath;
-        commandArgs = ['doctor', '--dest', outputDir, scriptPath, ...args];
+        commandArgs = ["doctor", "--dest", outputDir, scriptPath, ...args];
         break;
-      case 'clinic-flame':
+      case "clinic-flame":
         command = this.config.clinicJsPath;
-        commandArgs = ['flame', '--dest', outputDir, scriptPath, ...args];
+        commandArgs = ["flame", "--dest", outputDir, scriptPath, ...args];
         break;
-      case 'clinic-bubbleprof':
+      case "clinic-bubbleprof":
         command = this.config.clinicJsPath;
-        commandArgs = ['bubbleprof', '--dest', outputDir, scriptPath, ...args];
+        commandArgs = ["bubbleprof", "--dest", outputDir, scriptPath, ...args];
         break;
-      case '0x':
+      case "0x":
         command = this.config.zeroXPath;
-        commandArgs = ['-o', outputDir, scriptPath, ...args];
+        commandArgs = ["-o", outputDir, scriptPath, ...args];
         break;
-      case 'node-inspect':
-        command = 'node';
-        commandArgs = ['--inspect-brk', scriptPath, ...args];
+      case "node-inspect":
+        command = "node";
+        commandArgs = ["--inspect-brk", scriptPath, ...args];
         break;
       default:
         throw new Error(`Unsupported profiler tool: ${tool}`);
     }
 
-    logger.info('Starting external profiler', {
+    logger.info("Starting external profiler", {
       tool,
       command,
       args: commandArgs,
@@ -387,25 +400,25 @@ export class PerformanceProfiler extends EventEmitter {
     });
 
     this.externalProfiler = spawn(command, commandArgs, {
-      stdio: 'pipe',
-      env: { ...process.env, NODE_ENV: 'development' },
+      stdio: "pipe",
+      env: { ...process.env, NODE_ENV: "development" },
     });
 
-    this.externalProfiler.stdout?.on('data', (data) => {
-      logger.debug('External profiler stdout', { data: data.toString() });
+    this.externalProfiler.stdout?.on("data", (data) => {
+      logger.debug("External profiler stdout", { data: data.toString() });
     });
 
-    this.externalProfiler.stderr?.on('data', (data) => {
-      logger.debug('External profiler stderr', { data: data.toString() });
+    this.externalProfiler.stderr?.on("data", (data) => {
+      logger.debug("External profiler stderr", { data: data.toString() });
     });
 
-    this.externalProfiler.on('close', (code) => {
-      logger.info('External profiler finished', { tool, code, outputDir });
+    this.externalProfiler.on("close", (code) => {
+      logger.info("External profiler finished", { tool, code, outputDir });
       this.externalProfiler = undefined;
-      this.emit('externalProfilerFinished', { tool, code, outputDir });
+      this.emit("externalProfilerFinished", { tool, code, outputDir });
     });
 
-    this.emit('externalProfilerStarted', { tool, outputDir });
+    this.emit("externalProfilerStarted", { tool, outputDir });
   }
 
   /**
@@ -413,9 +426,9 @@ export class PerformanceProfiler extends EventEmitter {
    */
   stopExternalProfiler(): void {
     if (this.externalProfiler) {
-      this.externalProfiler.kill('SIGTERM');
+      this.externalProfiler.kill("SIGTERM");
       this.externalProfiler = undefined;
-      logger.info('External profiler stopped');
+      logger.info("External profiler stopped");
     }
   }
 
@@ -425,46 +438,60 @@ export class PerformanceProfiler extends EventEmitter {
   analyzeSession(sessionId: string): PerformanceAnalysis | null {
     const session = this.sessions.get(sessionId);
     if (!session) {
-      logger.warn('Session not found for analysis', { sessionId });
+      logger.warn("Session not found for analysis", { sessionId });
       return null;
     }
 
-    logger.info('Analyzing session', {
+    logger.info("Analyzing session", {
       sessionId,
       measurements: session.measurements.length,
       snapshots: session.snapshots.length,
     });
 
     // Calculate summary metrics
-    const totalDuration = (session.endTime || performance.now()) - session.startTime;
+    const totalDuration =
+      (session.endTime || performance.now()) - session.startTime;
     const operationCount = session.measurements.length;
-    const averageOperationTime = operationCount > 0 
-      ? session.measurements.reduce((sum, m) => sum + m.duration, 0) / operationCount 
-      : 0;
+    const averageOperationTime =
+      operationCount > 0
+        ? session.measurements.reduce((sum, m) => sum + m.duration, 0) /
+          operationCount
+        : 0;
 
     const peakMemoryUsage = Math.max(
-      ...session.snapshots.map(s => s.memory.heapUsed),
-      0
+      ...session.snapshots.map((s) => s.memory.heapUsed),
+      0,
     );
 
     const peakCpuUsage = Math.max(
-      ...session.snapshots.map(s => s.cpu.percent),
-      0
+      ...session.snapshots.map((s) => s.cpu.percent),
+      0,
     );
 
-    const gcPressure = session.snapshots.reduce((sum, s) => 
-      sum + s.gc.reduce((gcSum, gc) => gcSum + gc.duration, 0), 0
-    ) / session.snapshots.length;
+    const gcPressure =
+      session.snapshots.reduce(
+        (sum, s) => sum + s.gc.reduce((gcSum, gc) => gcSum + gc.duration, 0),
+        0,
+      ) / session.snapshots.length;
 
-    const avgEventLoopLag = session.snapshots.length > 0
-      ? session.snapshots.reduce((sum, s) => sum + s.eventLoop.lag, 0) / session.snapshots.length
-      : 0;
+    const avgEventLoopLag =
+      session.snapshots.length > 0
+        ? session.snapshots.reduce((sum, s) => sum + s.eventLoop.lag, 0) /
+          session.snapshots.length
+        : 0;
 
     // Identify bottlenecks
-    const operationStats = new Map<string, { count: number; totalDuration: number; maxDuration: number }>();
-    
+    const operationStats = new Map<
+      string,
+      { count: number; totalDuration: number; maxDuration: number }
+    >();
+
     for (const measurement of session.measurements) {
-      const stats = operationStats.get(measurement.name) || { count: 0, totalDuration: 0, maxDuration: 0 };
+      const stats = operationStats.get(measurement.name) || {
+        count: 0,
+        totalDuration: 0,
+        maxDuration: 0,
+      };
       stats.count++;
       stats.totalDuration += measurement.duration;
       stats.maxDuration = Math.max(stats.maxDuration, measurement.duration);
@@ -476,7 +503,11 @@ export class PerformanceProfiler extends EventEmitter {
         operation,
         duration: stats.totalDuration,
         frequency: stats.count,
-        impact: this.classifyImpact(stats.maxDuration, stats.totalDuration, operationCount),
+        impact: this.classifyImpact(
+          stats.maxDuration,
+          stats.totalDuration,
+          operationCount,
+        ),
         recommendations: this.generateRecommendations(operation, stats),
       }))
       .sort((a, b) => b.duration - a.duration)
@@ -534,16 +565,17 @@ export class PerformanceProfiler extends EventEmitter {
    * Clear old sessions (keep last N sessions)
    */
   clearOldSessions(keepCount = 10): void {
-    const sessions = Array.from(this.sessions.entries())
-      .sort(([, a], [, b]) => b.startTime - a.startTime);
-    
+    const sessions = Array.from(this.sessions.entries()).sort(
+      ([, a], [, b]) => b.startTime - a.startTime,
+    );
+
     const toDelete = sessions.slice(keepCount);
-    
+
     for (const [sessionId] of toDelete) {
       this.sessions.delete(sessionId);
     }
 
-    logger.info('Cleared old sessions', {
+    logger.info("Cleared old sessions", {
       cleared: toDelete.length,
       remaining: this.sessions.size,
     });
@@ -552,19 +584,22 @@ export class PerformanceProfiler extends EventEmitter {
   /**
    * Export session data
    */
-  exportSession(sessionId: string, format: 'json' | 'csv' = 'json'): string | null {
+  exportSession(
+    sessionId: string,
+    format: "json" | "csv" = "json",
+  ): string | null {
     const session = this.sessions.get(sessionId);
     if (!session) return null;
 
-    if (format === 'json') {
+    if (format === "json") {
       return JSON.stringify(session, null, 2);
     } else {
       // CSV format for measurements
-      const headers = ['name', 'duration', 'startTime', 'endTime'];
-      const rows = session.measurements.map(m => 
-        [m.name, m.duration, m.startTime, m.endTime].join(',')
+      const headers = ["name", "duration", "startTime", "endTime"];
+      const rows = session.measurements.map((m) =>
+        [m.name, m.duration, m.startTime, m.endTime].join(","),
       );
-      return [headers.join(','), ...rows].join('\n');
+      return [headers.join(","), ...rows].join("\n");
     }
   }
 
@@ -575,12 +610,12 @@ export class PerformanceProfiler extends EventEmitter {
     if (this.isMonitoring || !this.currentSession) return;
 
     this.isMonitoring = true;
-    
+
     this.monitoringInterval = setInterval(() => {
       this.captureResourceSnapshot();
     }, this.currentSession.options.sampleInterval);
 
-    logger.debug('Started resource monitoring', {
+    logger.debug("Started resource monitoring", {
       sessionId: this.currentSession.id,
       interval: this.currentSession.options.sampleInterval,
     });
@@ -593,13 +628,13 @@ export class PerformanceProfiler extends EventEmitter {
     if (!this.isMonitoring) return;
 
     this.isMonitoring = false;
-    
+
     if (this.monitoringInterval) {
       clearInterval(this.monitoringInterval);
       this.monitoringInterval = undefined;
     }
 
-    logger.debug('Stopped resource monitoring');
+    logger.debug("Stopped resource monitoring");
   }
 
   /**
@@ -610,10 +645,10 @@ export class PerformanceProfiler extends EventEmitter {
 
     const cpuUsage = process.cpuUsage();
     const memoryUsage = process.memoryUsage();
-    
+
     // Get GC information if available
     const gcInfo = this.getGCInfo();
-    
+
     // Calculate event loop lag
     const eventLoopLag = this.measureEventLoopLag();
 
@@ -640,7 +675,8 @@ export class PerformanceProfiler extends EventEmitter {
       },
       eventLoop: {
         lag: eventLoopLag,
-        utilization: 1 - (eventLoopLag / this.currentSession.options.sampleInterval),
+        utilization:
+          1 - eventLoopLag / this.currentSession.options.sampleInterval,
       },
       gc: gcInfo,
     };
@@ -648,11 +684,14 @@ export class PerformanceProfiler extends EventEmitter {
     this.currentSession.snapshots.push(snapshot);
 
     // Limit snapshot history
-    if (this.currentSession.snapshots.length > this.currentSession.options.maxSamples) {
+    if (
+      this.currentSession.snapshots.length >
+      this.currentSession.options.maxSamples
+    ) {
       this.currentSession.snapshots.shift();
     }
 
-    this.emit('snapshot', { sessionId: this.currentSession.id, snapshot });
+    this.emit("snapshot", { sessionId: this.currentSession.id, snapshot });
   }
 
   /**
@@ -663,21 +702,21 @@ export class PerformanceProfiler extends EventEmitter {
     if (this.config.enableGC) {
       this.gcObserver = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
-          this.emit('gcEvent', {
+          this.emit("gcEvent", {
             type: entry.name,
             duration: entry.duration,
             timestamp: entry.startTime,
           });
         }
       });
-      
-      this.gcObserver.observe({ entryTypes: ['gc'] });
+
+      this.gcObserver.observe({ entryTypes: ["gc"] });
     }
 
     // Observe function events
     this.performanceObserver = new PerformanceObserver((list) => {
       for (const entry of list.getEntries()) {
-        this.emit('performanceEntry', {
+        this.emit("performanceEntry", {
           name: entry.name,
           entryType: entry.entryType,
           startTime: entry.startTime,
@@ -686,7 +725,7 @@ export class PerformanceProfiler extends EventEmitter {
       }
     });
 
-    this.performanceObserver.observe({ entryTypes: ['function'] });
+    this.performanceObserver.observe({ entryTypes: ["function"] });
   }
 
   /**
@@ -720,12 +759,17 @@ export class PerformanceProfiler extends EventEmitter {
         arrayBuffers: memoryUsage.arrayBuffers || 0,
         heapUtilization: memoryUsage.heapUsed / memoryUsage.heapTotal,
       },
-      io: { readBytes: 0, writeBytes: 0, readOperations: 0, writeOperations: 0 },
+      io: {
+        readBytes: 0,
+        writeBytes: 0,
+        readOperations: 0,
+        writeOperations: 0,
+      },
       eventLoop: { lag: 0, utilization: 1 },
       gc: [],
     };
 
-    logger.debug('Baseline metrics captured', {
+    logger.debug("Baseline metrics captured", {
       heapUsed: this.baselineMetrics.memory.heapUsed,
       heapTotal: this.baselineMetrics.memory.heapTotal,
     });
@@ -734,7 +778,7 @@ export class PerformanceProfiler extends EventEmitter {
   /**
    * Get GC information
    */
-  private getGCInfo(): ResourceSnapshot['gc'] {
+  private getGCInfo(): ResourceSnapshot["gc"] {
     // This would be enhanced with actual GC monitoring
     // For now, return empty array
     return [];
@@ -759,14 +803,15 @@ export class PerformanceProfiler extends EventEmitter {
   private classifyImpact(
     maxDuration: number,
     totalDuration: number,
-    totalOperations: number
-  ): 'low' | 'medium' | 'high' | 'critical' {
-    const impactScore = (totalDuration / totalOperations) * Math.log(maxDuration);
-    
-    if (impactScore > 1000) return 'critical';
-    if (impactScore > 500) return 'high';
-    if (impactScore > 100) return 'medium';
-    return 'low';
+    totalOperations: number,
+  ): "low" | "medium" | "high" | "critical" {
+    const impactScore =
+      (totalDuration / totalOperations) * Math.log(maxDuration);
+
+    if (impactScore > 1000) return "critical";
+    if (impactScore > 500) return "high";
+    if (impactScore > 100) return "medium";
+    return "low";
   }
 
   /**
@@ -774,66 +819,76 @@ export class PerformanceProfiler extends EventEmitter {
    */
   private generateRecommendations(
     operation: string,
-    stats: { count: number; totalDuration: number; maxDuration: number }
+    stats: { count: number; totalDuration: number; maxDuration: number },
   ): string[] {
     const recommendations: string[] = [];
-    
+
     if (stats.maxDuration > 1000) {
-      recommendations.push('Consider breaking down this operation into smaller chunks');
+      recommendations.push(
+        "Consider breaking down this operation into smaller chunks",
+      );
     }
-    
+
     if (stats.count > 100 && stats.totalDuration > 10000) {
-      recommendations.push('High frequency operation - consider caching or optimization');
+      recommendations.push(
+        "High frequency operation - consider caching or optimization",
+      );
     }
-    
-    if (operation.includes('file') || operation.includes('io')) {
-      recommendations.push('Consider using streaming or async I/O for better performance');
+
+    if (operation.includes("file") || operation.includes("io")) {
+      recommendations.push(
+        "Consider using streaming or async I/O for better performance",
+      );
     }
-    
+
     return recommendations;
   }
 
   /**
    * Analyze performance trends
    */
-  private analyzeTrends(snapshots: ResourceSnapshot[]): PerformanceAnalysis['trends'] {
+  private analyzeTrends(
+    snapshots: ResourceSnapshot[],
+  ): PerformanceAnalysis["trends"] {
     if (snapshots.length < 2) {
       return {
-        memoryTrend: 'stable',
-        cpuTrend: 'stable',
-        performanceTrend: 'stable',
+        memoryTrend: "stable",
+        cpuTrend: "stable",
+        performanceTrend: "stable",
       };
     }
 
-    const memoryValues = snapshots.map(s => s.memory.heapUsed);
-    const cpuValues = snapshots.map(s => s.cpu.percent);
-    
+    const memoryValues = snapshots.map((s) => s.memory.heapUsed);
+    const cpuValues = snapshots.map((s) => s.cpu.percent);
+
     return {
       memoryTrend: this.calculateTrend(memoryValues),
       cpuTrend: this.calculateTrend(cpuValues),
-      performanceTrend: 'stable', // Would be calculated based on operation times
+      performanceTrend: "stable", // Would be calculated based on operation times
     };
   }
 
   /**
    * Calculate trend direction for a series of values
    */
-  private calculateTrend(values: number[]): 'stable' | 'increasing' | 'decreasing' | 'fluctuating' {
-    if (values.length < 3) return 'stable';
-    
+  private calculateTrend(
+    values: number[],
+  ): "stable" | "increasing" | "decreasing" | "fluctuating" {
+    if (values.length < 3) return "stable";
+
     const first = values.slice(0, Math.floor(values.length / 3));
     const last = values.slice(-Math.floor(values.length / 3));
-    
+
     const firstAvg = first.reduce((a, b) => a + b, 0) / first.length;
     const lastAvg = last.reduce((a, b) => a + b, 0) / last.length;
-    
+
     const change = (lastAvg - firstAvg) / firstAvg;
-    
-    if (Math.abs(change) < 0.1) return 'stable';
-    if (change > 0.1) return 'increasing';
-    if (change < -0.1) return 'decreasing';
-    
-    return 'fluctuating';
+
+    if (Math.abs(change) < 0.1) return "stable";
+    if (change > 0.1) return "increasing";
+    if (change < -0.1) return "decreasing";
+
+    return "fluctuating";
   }
 
   /**
@@ -848,40 +903,55 @@ export class PerformanceProfiler extends EventEmitter {
     trends: any;
   }): string[] {
     const recommendations: string[] = [];
-    
-    if (data.peakMemoryUsage > 500 * 1024 * 1024) { // 500MB
-      recommendations.push('High memory usage detected - consider implementing memory optimization strategies');
+
+    if (data.peakMemoryUsage > 500 * 1024 * 1024) {
+      // 500MB
+      recommendations.push(
+        "High memory usage detected - consider implementing memory optimization strategies",
+      );
     }
-    
+
     if (data.avgEventLoopLag > 10) {
-      recommendations.push('Event loop lag detected - consider using worker threads for CPU-intensive tasks');
+      recommendations.push(
+        "Event loop lag detected - consider using worker threads for CPU-intensive tasks",
+      );
     }
-    
+
     if (data.bottlenecks.length > 5) {
-      recommendations.push('Multiple bottlenecks detected - prioritize optimization of critical path operations');
+      recommendations.push(
+        "Multiple bottlenecks detected - prioritize optimization of critical path operations",
+      );
     }
-    
-    if (data.trends.memoryTrend === 'increasing') {
-      recommendations.push('Memory usage trend is increasing - check for memory leaks');
+
+    if (data.trends.memoryTrend === "increasing") {
+      recommendations.push(
+        "Memory usage trend is increasing - check for memory leaks",
+      );
     }
-    
+
     return recommendations;
   }
 
   /**
    * Save analysis report to file
    */
-  private saveAnalysisReport(sessionId: string, analysis: PerformanceAnalysis): void {
-    const reportPath = join(this.config.outputDir, `analysis-${sessionId}.json`);
-    
+  private saveAnalysisReport(
+    sessionId: string,
+    analysis: PerformanceAnalysis,
+  ): void {
+    const reportPath = join(
+      this.config.outputDir,
+      `analysis-${sessionId}.json`,
+    );
+
     try {
       writeFileSync(reportPath, JSON.stringify(analysis, null, 2));
-      logger.info('Analysis report saved', { reportPath });
+      logger.info("Analysis report saved", { reportPath });
     } catch (error) {
-      logger.error('Failed to save analysis report', {
+      logger.error("Failed to save analysis report", {
         reportPath,
         error: error instanceof Error ? error.message : String(error),
       });
     }
   }
-} 
+}

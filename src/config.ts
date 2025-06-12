@@ -1459,6 +1459,80 @@ export async function loadEnhancedConfig(
 }
 
 /**
+ * Load configuration asynchronously with CLI args support
+ */
+export async function loadConfig(cliArgs?: CliArguments): Promise<ConfigResult> {
+  try {
+    // Load config from file
+    const { config: fileConfig, filepath, isEmpty } = await loadConfigFromFile(
+      cliArgs?.config ? undefined : process.cwd(),
+      cliArgs?.config
+    );
+
+    // Normalize and merge CLI arguments
+    const cliConfig = cliArgs ? normalizeCliArguments(cliArgs) : {};
+
+    // Merge CLI args with file config (CLI args take precedence)
+    const mergedConfig = deepMerge(fileConfig, cliConfig);
+
+    // Validate and apply defaults
+    const config = validateConfig(mergedConfig, filepath);
+
+    return {
+      config,
+      filepath,
+      isEmpty
+    };
+  } catch (error) {
+    // If loading fails, create default config with CLI args
+    const cliConfig = cliArgs ? normalizeCliArguments(cliArgs) : {};
+    const config = validateConfig(cliConfig);
+
+    return {
+      config,
+      isEmpty: true
+    };
+  }
+}
+
+/**
+ * Load configuration synchronously with CLI args support
+ */
+export function loadConfigSync(cliArgs?: CliArguments): ConfigResult {
+  try {
+    // Load config from file synchronously
+    const { config: fileConfig, filepath, isEmpty } = loadConfigFromFileSync(
+      cliArgs?.config ? undefined : process.cwd(),
+      cliArgs?.config
+    );
+
+    // Normalize and merge CLI arguments
+    const cliConfig = cliArgs ? normalizeCliArguments(cliArgs) : {};
+
+    // Merge CLI args with file config (CLI args take precedence)
+    const mergedConfig = deepMerge(fileConfig, cliConfig);
+
+    // Validate and apply defaults
+    const config = validateConfig(mergedConfig, filepath);
+
+    return {
+      config,
+      filepath,
+      isEmpty
+    };
+  } catch (error) {
+    // If loading fails, create default config with CLI args
+    const cliConfig = cliArgs ? normalizeCliArguments(cliArgs) : {};
+    const config = validateConfig(cliConfig);
+
+    return {
+      config,
+      isEmpty: true
+    };
+  }
+}
+
+/**
  * Get configuration with sensible defaults for common use cases
  */
 export async function getConfig(cliArgs?: CliArguments): Promise<EnigmaConfig> {

@@ -1,6 +1,6 @@
 /**
  * Copyright (c) 2025 Rowan Cardow
- * 
+ *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
@@ -11,16 +11,16 @@
 export { version } from "../package.json";
 
 // Core Modules
-export * from './config.js';
-export * from './fileDiscovery.js';
-export * from './htmlExtractor.js';
-export * from './jsExtractor.js';
-export * from './cssInjector.js';
-export * from './performance/index.js';
+export * from "./config.js";
+export * from "./fileDiscovery.js";
+export * from "./htmlExtractor.js";
+export * from "./jsExtractor.js";
+export * from "./cssInjector.js";
+export * from "./performance/index.js";
 
 // Core Utilities
-export { createLogger as logger } from './logger.js';
-export { ErrorHandler } from './errorHandler/errorHandler.js';
+export { createLogger as logger } from "./logger.js";
+export { ErrorHandler } from "./errorHandler/errorHandler.js";
 
 // Explicit exports from fileIntegrity.ts to avoid conflicts
 export {
@@ -54,8 +54,8 @@ export {
   FileIntegrityValidator,
   createFileIntegrityValidator,
   calculateFileChecksum,
-  validateFileIntegrity
-} from './fileIntegrity.js';
+  validateFileIntegrity,
+} from "./fileIntegrity.js";
 
 // Explicit exports from htmlRewriter.ts to avoid conflicts
 export {
@@ -81,8 +81,8 @@ export {
   ConflictResolutionError,
   HtmlValidationError,
   HtmlRewriter,
-  createHtmlRewriter
-} from './htmlRewriter.js';
+  createHtmlRewriter,
+} from "./htmlRewriter.js";
 
 // #endregion
 
@@ -96,17 +96,17 @@ export {
   generateFrequencyMap,
   generatePatternGroups,
   quickFrequencyAnalysis,
-  
+
   // Statistics and analysis
   calculateFrequencyStatistics,
   generateCoOccurrenceAnalysis,
   generateFrameworkAnalysis,
-  
+
   // Utility functions
   sortFrequencyMap,
   filterFrequencyMap,
   exportToJson,
-  
+
   // Types and schemas
   type PatternAnalysisOptions,
   type AggregatedClassData,
@@ -116,12 +116,12 @@ export {
   type FrameworkAnalysis,
   type PatternGroup,
   PatternAnalysisOptionsSchema,
-  
+
   // Error classes
   PatternAnalysisError,
   DataAggregationError,
   FrequencyCalculationError,
-} from './patternAnalysis.js';
+} from "./patternAnalysis.js";
 
 // Name Generation exports
 export {
@@ -133,7 +133,7 @@ export {
   toCustomBase,
   calculateOptimalLength,
   validateBaseConversions,
-  
+
   // Sequential generation
   generateSequentialName,
   generateSequentialNames,
@@ -143,25 +143,25 @@ export {
   batchGenerateAvailableNames,
   calculateGenerationStatistics,
   validateGenerationSetup,
-  
+
   // Frequency-based optimization
   sortByFrequency,
   createFrequencyBuckets,
   optimizeByFrequency,
   calculateCompressionStats,
   analyzeFrequencyDistribution,
-  
+
   // Main API
   NameCollisionManager,
   generateOptimizedNames,
   exportNameGenerationResult,
   generateSimpleNames,
-  
+
   // Configuration and validation
   validateNameGenerationOptions,
   isValidCssIdentifier,
   isReservedName,
-  
+
   // Constants and types
   ALPHABET_CONFIGS,
   CSS_RESERVED_KEYWORDS,
@@ -172,13 +172,13 @@ export {
   type BaseConversionResult,
   type FrequencyBucket,
   NameGenerationOptionsSchema,
-  
+
   // Error classes
   NameGenerationError,
   CollisionError,
   InvalidNameError,
   CacheError,
-} from './nameGeneration.js';
+} from "./nameGeneration.js";
 
 // Framework Detection
 export {
@@ -193,55 +193,55 @@ export {
   type DetectionSource,
   type IFrameworkDetector,
   type FrameworkDetectorOptions,
-} from './frameworkDetector.js';
+} from "./frameworkDetector.js";
 
 // Framework-specific detectors
-export { ReactDetector } from './detectors/reactDetector.js';
-export { NextjsDetector } from './detectors/nextjsDetector.js';
-export { ViteDetector } from './detectors/viteDetector.js';
+export { ReactDetector } from "./detectors/reactDetector.js";
+export { NextjsDetector } from "./detectors/nextjsDetector.js";
+export { ViteDetector } from "./detectors/viteDetector.js";
 
 // Build Tool Integrations
-export { 
-  IntegrationManager, 
+export {
+  IntegrationManager,
   createIntegrationManager,
-  type IntegrationManagerConfig, 
-  type IntegrationStatus 
-} from './integrations/core/integrationManager.js';
+  type IntegrationManagerConfig,
+  type IntegrationStatus,
+} from "./integrations/core/integrationManager.js";
 
 // Build Tool Plugins
-export { 
-  EnigmaWebpackPlugin, 
-  createWebpackPlugin 
-} from './integrations/webpack/webpackPlugin.js';
+export {
+  EnigmaWebpackPlugin,
+  createWebpackPlugin,
+} from "./integrations/webpack/webpackPlugin.js";
 
-export { 
-  EnigmaVitePlugin, 
-  createVitePlugin, 
-  enigmaVite 
-} from './integrations/vite/vitePlugin.js';
+export {
+  EnigmaVitePlugin,
+  createVitePlugin,
+  enigmaVite,
+} from "./integrations/vite/vitePlugin.js";
 
 // Core Integration Types and Utilities
-export type { 
-  BuildToolPlugin, 
+export type {
+  BuildToolPlugin,
   BuildToolPluginConfig,
   BuildToolContext,
   BuildToolResult,
   BuildToolType,
   BuildToolHooks,
   OptimizationResult,
-  HMRUpdate
-} from './integrations/core/buildToolPlugin.js';
+  HMRUpdate,
+} from "./integrations/core/buildToolPlugin.js";
 
-export { 
+export {
   ConfigDetector,
   type AutoConfigResult,
-  type DetectedBuildConfig 
-} from './integrations/core/configDetector.js';
+  type DetectedBuildConfig,
+} from "./integrations/core/configDetector.js";
 
-export { 
+export {
   createHMRHandler,
   type HMRHandler,
-  type HMRConfig 
-} from './integrations/core/hmrHandler.js';
+  type HMRConfig,
+} from "./integrations/core/hmrHandler.js";
 
-// #endregion 
+// #endregion

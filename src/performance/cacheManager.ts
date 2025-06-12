@@ -1,19 +1,19 @@
 /**
  * Copyright (c) 2025 Rowan Cardow
- * 
+ *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
 
 /**
  * Intelligent Caching System for Tailwind Enigma Core
- * 
+ *
  * Provides multi-tier caching with different strategies:
  * - LRU (Least Recently Used)
- * - LFU (Least Frequently Used) 
+ * - LFU (Least Frequently Used)
  * - TTL (Time To Live)
  * - ARC (Adaptive Replacement Cache)
- * 
+ *
  * Features:
  * - Memory-aware cache sizing
  * - Cache analytics and monitoring
@@ -22,11 +22,15 @@
  * - Performance metrics collection
  */
 
-import { EventEmitter } from 'events';
-import { promises as fs } from 'fs';
-import path from 'path';
-import { performance } from 'perf_hooks';
-import type { CacheConfig, CacheStrategy, PerformanceMetrics } from './config.js';
+import { EventEmitter } from "events";
+import { promises as fs } from "fs";
+import path from "path";
+import { performance } from "perf_hooks";
+import type {
+  CacheConfig,
+  CacheStrategy,
+  PerformanceMetrics,
+} from "./config.js";
 
 /**
  * Cache entry with metadata
@@ -81,20 +85,20 @@ export class CacheManager<T = unknown> extends EventEmitter {
 
   constructor(config: Partial<CacheConfig> = {}) {
     super();
-    
+
     this.config = {
       enabled: true,
       maxSize: 100 * 1024 * 1024, // 100MB
-      strategy: 'lru',
+      strategy: "lru",
       ttl: 3600000, // 1 hour
       persistence: false,
       compressionEnabled: false,
       memoryPressureThreshold: 0.8,
-      ...config
+      ...config,
     };
 
     this.compressionEnabled = this.config.compressionEnabled;
-    
+
     this.stats = {
       hits: 0,
       misses: 0,
@@ -103,22 +107,22 @@ export class CacheManager<T = unknown> extends EventEmitter {
       entryCount: 0,
       hitRate: 0,
       averageAccessTime: 0,
-      memoryUsage: 0
+      memoryUsage: 0,
     };
 
     // Initialize ARC-specific structures if using ARC strategy
-    if (this.config.strategy === 'arc') {
+    if (this.config.strategy === "arc") {
       this.arcLists = {
         t1: new Map(),
         t2: new Map(),
         b1: new Set(),
         b2: new Set(),
-        p: 0
+        p: 0,
       };
     }
 
     this.startPeriodicCleanup();
-    
+
     if (this.config.persistence) {
       this.startPersistence();
     }
@@ -129,14 +133,14 @@ export class CacheManager<T = unknown> extends EventEmitter {
    */
   async get(key: string): Promise<T | undefined> {
     const startTime = performance.now();
-    
+
     if (!this.config.enabled) {
       return undefined;
     }
 
     try {
       let entry = this.cache.get(key);
-      
+
       if (!entry) {
         // Try loading from persistence if enabled
         if (this.config.persistence) {
@@ -158,24 +162,23 @@ export class CacheManager<T = unknown> extends EventEmitter {
 
         // Update access metadata
         this.updateAccessMetadata(entry);
-        
+
         // Handle strategy-specific logic
-        if (this.config.strategy === 'arc' && this.arcLists) {
+        if (this.config.strategy === "arc" && this.arcLists) {
           this.arcOnHit(key, entry);
         }
 
         this.recordHit(startTime);
-        this.emit('hit', key, entry.value);
-        
+        this.emit("hit", key, entry.value);
+
         return entry.value;
       }
 
       this.recordMiss(startTime);
-      this.emit('miss', key);
+      this.emit("miss", key);
       return undefined;
-      
     } catch (error) {
-      this.emit('error', error);
+      this.emit("error", error);
       this.recordMiss(startTime);
       return undefined;
     }
@@ -184,7 +187,11 @@ export class CacheManager<T = unknown> extends EventEmitter {
   /**
    * Set value in cache
    */
-  async set(key: string, value: T, options: { ttl?: number; priority?: number } = {}): Promise<boolean> {
+  async set(
+    key: string,
+    value: T,
+    options: { ttl?: number; priority?: number } = {},
+  ): Promise<boolean> {
     if (!this.config.enabled) {
       return false;
     }
@@ -192,7 +199,7 @@ export class CacheManager<T = unknown> extends EventEmitter {
     try {
       const size = this.calculateSize(value);
       const now = Date.now();
-      
+
       const entry: CacheEntry<T> = {
         key,
         value,
@@ -201,31 +208,30 @@ export class CacheManager<T = unknown> extends EventEmitter {
         lastAccessed: now,
         created: now,
         ttl: options.ttl || this.config.ttl,
-        compressed: this.compressionEnabled
+        compressed: this.compressionEnabled,
       };
 
       // Check if we need to evict entries to make space
       await this.ensureSpace(size);
 
       // Handle strategy-specific insertion
-      if (this.config.strategy === 'arc' && this.arcLists) {
+      if (this.config.strategy === "arc" && this.arcLists) {
         this.arcOnInsert(key, entry);
       } else {
         this.cache.set(key, entry);
       }
 
-      this.updateStats(entry, 'add');
-      this.emit('set', key, value, size);
-      
+      this.updateStats(entry, "add");
+      this.emit("set", key, value, size);
+
       // Persist if enabled
       if (this.config.persistence) {
         await this.persistEntry(key, entry);
       }
 
       return true;
-      
     } catch (error) {
-      this.emit('error', error);
+      this.emit("error", error);
       return false;
     }
   }
@@ -235,25 +241,25 @@ export class CacheManager<T = unknown> extends EventEmitter {
    */
   async delete(key: string): Promise<boolean> {
     const entry = this.cache.get(key);
-    
+
     if (entry) {
       this.cache.delete(key);
-      this.updateStats(entry, 'remove');
-      
-      if (this.config.strategy === 'arc' && this.arcLists) {
+      this.updateStats(entry, "remove");
+
+      if (this.config.strategy === "arc" && this.arcLists) {
         this.arcOnDelete(key);
       }
-      
-      this.emit('delete', key);
-      
+
+      this.emit("delete", key);
+
       // Remove from persistence
       if (this.config.persistence) {
         await this.removeFromPersistence(key);
       }
-      
+
       return true;
     }
-    
+
     return false;
   }
 
@@ -263,7 +269,7 @@ export class CacheManager<T = unknown> extends EventEmitter {
   async clear(): Promise<void> {
     const entryCount = this.cache.size;
     this.cache.clear();
-    
+
     if (this.arcLists) {
       this.arcLists.t1.clear();
       this.arcLists.t2.clear();
@@ -271,10 +277,10 @@ export class CacheManager<T = unknown> extends EventEmitter {
       this.arcLists.b2.clear();
       this.arcLists.p = 0;
     }
-    
+
     this.resetStats();
-    this.emit('clear', entryCount);
-    
+    this.emit("clear", entryCount);
+
     if (this.config.persistence) {
       await this.clearPersistence();
     }
@@ -295,7 +301,7 @@ export class CacheManager<T = unknown> extends EventEmitter {
     this.updateHitRate();
     return {
       ...this.stats,
-      config: { ...this.config }
+      config: { ...this.config },
     };
   }
 
@@ -319,19 +325,19 @@ export class CacheManager<T = unknown> extends EventEmitter {
   private async cleanup(): Promise<void> {
     const now = Date.now();
     const expiredKeys: string[] = [];
-    
+
     for (const [key, entry] of this.cache.entries()) {
       if (this.isExpired(entry)) {
         expiredKeys.push(key);
       }
     }
-    
+
     for (const key of expiredKeys) {
       await this.delete(key);
     }
-    
+
     if (expiredKeys.length > 0) {
-      this.emit('cleanup', expiredKeys.length);
+      this.emit("cleanup", expiredKeys.length);
     }
   }
 
@@ -340,15 +346,20 @@ export class CacheManager<T = unknown> extends EventEmitter {
    */
   private async ensureSpace(requiredSize: number): Promise<void> {
     let iterations = 0;
-    while (this.stats.totalSize + requiredSize > this.config.maxSize && this.cache.size > 0) {
+    while (
+      this.stats.totalSize + requiredSize > this.config.maxSize &&
+      this.cache.size > 0
+    ) {
       iterations++;
       if (iterations > 10) {
-        console.error('ensureSpace: Too many iterations, breaking to prevent infinite loop');
+        console.error(
+          "ensureSpace: Too many iterations, breaking to prevent infinite loop",
+        );
         break;
       }
-      
+
       const keyToEvict = this.selectEvictionCandidate();
-      
+
       if (keyToEvict) {
         await this.evict(keyToEvict);
       } else {
@@ -364,13 +375,13 @@ export class CacheManager<T = unknown> extends EventEmitter {
     if (this.cache.size === 0) return null;
 
     switch (this.config.strategy) {
-      case 'lru':
+      case "lru":
         return this.selectLRUCandidate();
-      case 'lfu':
+      case "lfu":
         return this.selectLFUCandidate();
-      case 'ttl':
+      case "ttl":
         return this.selectTTLCandidate();
-      case 'arc':
+      case "arc":
         return this.selectARCCandidate();
       default:
         return this.selectLRUCandidate();
@@ -416,14 +427,14 @@ export class CacheManager<T = unknown> extends EventEmitter {
    */
   private selectTTLCandidate(): string | null {
     const now = Date.now();
-    
+
     // First, find expired entries
     for (const [key, entry] of this.cache.entries()) {
       if (this.isExpired(entry)) {
         return key;
       }
     }
-    
+
     // If no expired entries, fall back to LRU
     return this.selectLRUCandidate();
   }
@@ -454,7 +465,7 @@ export class CacheManager<T = unknown> extends EventEmitter {
     if (entry) {
       await this.delete(key);
       this.stats.evictions++;
-      this.emit('evict', key, 'space');
+      this.emit("evict", key, "space");
     }
   }
 
@@ -524,7 +535,7 @@ export class CacheManager<T = unknown> extends EventEmitter {
    */
   private isExpired(entry: CacheEntry<T>): boolean {
     if (!entry.ttl) return false;
-    return Date.now() > (entry.created + entry.ttl);
+    return Date.now() > entry.created + entry.ttl;
   }
 
   /**
@@ -532,10 +543,10 @@ export class CacheManager<T = unknown> extends EventEmitter {
    */
   private calculateSize(value: T): number {
     if (value === null || value === undefined) return 0;
-    
+
     try {
       const json = JSON.stringify(value);
-      return Buffer.byteLength(json, 'utf8');
+      return Buffer.byteLength(json, "utf8");
     } catch {
       // Fallback for circular references or non-serializable objects
       return 1024; // Estimate 1KB for complex objects
@@ -545,15 +556,15 @@ export class CacheManager<T = unknown> extends EventEmitter {
   /**
    * Update cache statistics
    */
-  private updateStats(entry: CacheEntry<T>, operation: 'add' | 'remove'): void {
-    if (operation === 'add') {
+  private updateStats(entry: CacheEntry<T>, operation: "add" | "remove"): void {
+    if (operation === "add") {
       this.stats.totalSize += entry.size;
       this.stats.entryCount++;
     } else {
       this.stats.totalSize -= entry.size;
       this.stats.entryCount--;
     }
-    
+
     this.stats.memoryUsage = (this.stats.totalSize / this.config.maxSize) * 100;
   }
 
@@ -579,12 +590,13 @@ export class CacheManager<T = unknown> extends EventEmitter {
   private updateAverageAccessTime(startTime: number): void {
     const accessTime = performance.now() - startTime;
     const totalAccesses = this.stats.hits + this.stats.misses;
-    
+
     if (totalAccesses === 1) {
       this.stats.averageAccessTime = accessTime;
     } else {
-      this.stats.averageAccessTime = 
-        (this.stats.averageAccessTime * (totalAccesses - 1) + accessTime) / totalAccesses;
+      this.stats.averageAccessTime =
+        (this.stats.averageAccessTime * (totalAccesses - 1) + accessTime) /
+        totalAccesses;
     }
   }
 
@@ -593,7 +605,8 @@ export class CacheManager<T = unknown> extends EventEmitter {
    */
   private updateHitRate(): void {
     const totalAccesses = this.stats.hits + this.stats.misses;
-    this.stats.hitRate = totalAccesses > 0 ? (this.stats.hits / totalAccesses) : 0;
+    this.stats.hitRate =
+      totalAccesses > 0 ? this.stats.hits / totalAccesses : 0;
   }
 
   /**
@@ -608,7 +621,7 @@ export class CacheManager<T = unknown> extends EventEmitter {
       entryCount: 0,
       hitRate: 0,
       averageAccessTime: 0,
-      memoryUsage: 0
+      memoryUsage: 0,
     });
   }
 
@@ -618,7 +631,7 @@ export class CacheManager<T = unknown> extends EventEmitter {
   private startPeriodicCleanup(): void {
     const interval = this.config.cleanupInterval || 60000; // Default to 1 minute
     this.cleanupTimer = setInterval(() => {
-      this.cleanup().catch(error => this.emit('error', error));
+      this.cleanup().catch((error) => this.emit("error", error));
     }, interval);
   }
 
@@ -627,29 +640,31 @@ export class CacheManager<T = unknown> extends EventEmitter {
    */
   private startPersistence(): void {
     if (!this.config.persistencePath) return;
-    
+
     this.persistenceTimer = setInterval(() => {
-      this.persistAll().catch(error => this.emit('error', error));
+      this.persistAll().catch((error) => this.emit("error", error));
     }, 30000); // Persist every 30 seconds
   }
 
   /**
    * Load entry from persistent storage
    */
-  private async loadFromPersistence(key: string): Promise<CacheEntry<T> | null> {
+  private async loadFromPersistence(
+    key: string,
+  ): Promise<CacheEntry<T> | null> {
     if (!this.config.persistencePath) return null;
-    
+
     try {
       const filePath = path.join(this.config.persistencePath, `${key}.json`);
-      const data = await fs.readFile(filePath, 'utf8');
+      const data = await fs.readFile(filePath, "utf8");
       const entry = JSON.parse(data) as CacheEntry<T>;
-      
+
       // Check if entry is still valid
       if (this.isExpired(entry)) {
         await this.removeFromPersistence(key);
         return null;
       }
-      
+
       return entry;
     } catch {
       return null;
@@ -661,13 +676,13 @@ export class CacheManager<T = unknown> extends EventEmitter {
    */
   private async persistEntry(key: string, entry: CacheEntry<T>): Promise<void> {
     if (!this.config.persistencePath) return;
-    
+
     try {
       const filePath = path.join(this.config.persistencePath, `${key}.json`);
       await fs.mkdir(this.config.persistencePath, { recursive: true });
-      await fs.writeFile(filePath, JSON.stringify(entry), 'utf8');
+      await fs.writeFile(filePath, JSON.stringify(entry), "utf8");
     } catch (error) {
-      this.emit('error', error);
+      this.emit("error", error);
     }
   }
 
@@ -676,7 +691,7 @@ export class CacheManager<T = unknown> extends EventEmitter {
    */
   private async persistAll(): Promise<void> {
     const promises = Array.from(this.cache.entries()).map(([key, entry]) =>
-      this.persistEntry(key, entry)
+      this.persistEntry(key, entry),
     );
     await Promise.allSettled(promises);
   }
@@ -686,7 +701,7 @@ export class CacheManager<T = unknown> extends EventEmitter {
    */
   private async removeFromPersistence(key: string): Promise<void> {
     if (!this.config.persistencePath) return;
-    
+
     try {
       const filePath = path.join(this.config.persistencePath, `${key}.json`);
       await fs.unlink(filePath);
@@ -700,15 +715,17 @@ export class CacheManager<T = unknown> extends EventEmitter {
    */
   private async clearPersistence(): Promise<void> {
     if (!this.config.persistencePath) return;
-    
+
     try {
       const files = await fs.readdir(this.config.persistencePath);
       const promises = files
-        .filter(file => file.endsWith('.json'))
-        .map(file => fs.unlink(path.join(this.config.persistencePath!, file)));
+        .filter((file) => file.endsWith(".json"))
+        .map((file) =>
+          fs.unlink(path.join(this.config.persistencePath!, file)),
+        );
       await Promise.allSettled(promises);
     } catch (error) {
-      this.emit('error', error);
+      this.emit("error", error);
     }
   }
 
@@ -719,15 +736,15 @@ export class CacheManager<T = unknown> extends EventEmitter {
     if (this.cleanupTimer) {
       clearInterval(this.cleanupTimer);
     }
-    
+
     if (this.persistenceTimer) {
       clearInterval(this.persistenceTimer);
     }
-    
+
     if (this.config.persistence) {
       await this.persistAll();
     }
-    
+
     this.removeAllListeners();
   }
 }
@@ -735,7 +752,9 @@ export class CacheManager<T = unknown> extends EventEmitter {
 /**
  * Factory function to create cache manager with validation
  */
-export function createCacheManager<T = unknown>(config: Partial<CacheConfig> = {}): CacheManager<T> {
+export function createCacheManager<T = unknown>(
+  config: Partial<CacheConfig> = {},
+): CacheManager<T> {
   return new CacheManager<T>(config);
 }
 
@@ -747,9 +766,11 @@ let globalCacheManager: CacheManager | null = null;
 /**
  * Get or create global cache manager instance
  */
-export function getGlobalCacheManager<T = unknown>(config?: Partial<CacheConfig>): CacheManager<T> {
+export function getGlobalCacheManager<T = unknown>(
+  config?: Partial<CacheConfig>,
+): CacheManager<T> {
   if (!globalCacheManager) {
     globalCacheManager = new CacheManager<T>(config);
   }
   return globalCacheManager as CacheManager<T>;
-} 
+}

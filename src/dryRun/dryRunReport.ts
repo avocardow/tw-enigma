@@ -1,13 +1,18 @@
 /**
  * Copyright (c) 2025 Rowan Cardow
- * 
+ *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
 
-import { FileOperation } from './mockFileSystem';
-import { DryRunStatistics, DryRunPerformanceMetrics, formatStatisticsSummary, calculatePerformanceMetrics } from './dryRunStatistics';
-import { DryRunOptions } from './dryRunSimulator';
+import { FileOperation } from "./mockFileSystem";
+import {
+  DryRunStatistics,
+  DryRunPerformanceMetrics,
+  formatStatisticsSummary,
+  calculatePerformanceMetrics,
+} from "./dryRunStatistics";
+import { DryRunOptions } from "./dryRunSimulator";
 
 // =============================================================================
 // TYPES & INTERFACES
@@ -28,7 +33,7 @@ export interface DryRunReport {
     /** Duration of the dry run simulation */
     executionTime: number;
   };
-  
+
   /** Summary of operations */
   summary: {
     /** High-level statistics */
@@ -38,7 +43,7 @@ export interface DryRunReport {
     /** Human-readable summary text */
     text: string;
   };
-  
+
   /** Detailed operation breakdown */
   operations: {
     /** All operations performed */
@@ -50,7 +55,7 @@ export interface DryRunReport {
     /** Failed operations */
     failed: FileOperation[];
   };
-  
+
   /** Change analysis */
   changes: {
     /** Files that would be created */
@@ -62,7 +67,7 @@ export interface DryRunReport {
     /** Directories that would be created */
     directories: string[];
   };
-  
+
   /** Recommendations and insights */
   insights: {
     /** Potential issues or warnings */
@@ -72,7 +77,7 @@ export interface DryRunReport {
     /** Performance insights */
     performance: string[];
   };
-  
+
   /** File content previews (if enabled) */
   previews?: {
     [filePath: string]: {
@@ -86,7 +91,7 @@ export interface DryRunReport {
 /**
  * Report export formats
  */
-export type ReportFormat = 'json' | 'markdown' | 'text' | 'html';
+export type ReportFormat = "json" | "markdown" | "text" | "html";
 
 // =============================================================================
 // REPORT GENERATION
@@ -99,58 +104,63 @@ export function createDryRunReport(
   operations: FileOperation[],
   statistics: DryRunStatistics,
   options: DryRunOptions,
-  executionTime: number = 0
+  executionTime: number = 0,
 ): DryRunReport {
   const performance = calculatePerformanceMetrics(operations, executionTime);
-  
+
   const report: DryRunReport = {
     metadata: {
       timestamp: new Date().toISOString(),
-      version: '1.0.0', // TODO: Get from package.json
+      version: "1.0.0", // TODO: Get from package.json
       options,
-      executionTime
+      executionTime,
     },
-    
+
     summary: {
       statistics,
       performance,
-      text: formatStatisticsSummary(statistics)
+      text: formatStatisticsSummary(statistics),
     },
-    
+
     operations: {
       all: operations,
       byType: groupOperationsByType(operations),
       byPath: groupOperationsByPath(operations),
-      failed: operations.filter(op => !op.success)
+      failed: operations.filter((op) => !op.success),
     },
-    
+
     changes: analyzeChanges(operations),
-    
+
     insights: generateInsights(operations, statistics, performance),
-    
-    ...(options.includeContent && { previews: generatePreviews(operations, options.maxContentPreview || 500) })
+
+    ...(options.includeContent && {
+      previews: generatePreviews(operations, options.maxContentPreview || 500),
+    }),
   };
-  
+
   return report;
 }
 
 /**
  * Export report to specified format
  */
-export function exportReport(report: DryRunReport, format: ReportFormat): string {
+export function exportReport(
+  report: DryRunReport,
+  format: ReportFormat,
+): string {
   switch (format) {
-    case 'json':
+    case "json":
       return JSON.stringify(report, null, 2);
-    
-    case 'markdown':
+
+    case "markdown":
       return generateMarkdownReport(report);
-    
-    case 'text':
+
+    case "text":
       return generateTextReport(report);
-    
-    case 'html':
+
+    case "html":
       return generateHtmlReport(report);
-    
+
     default:
       throw new Error(`Unsupported report format: ${format}`);
   }
@@ -164,112 +174,116 @@ export function exportReport(report: DryRunReport, format: ReportFormat): string
  * Generate markdown format report
  */
 function generateMarkdownReport(report: DryRunReport): string {
-  let md = '# Dry Run Report\n\n';
-  
+  let md = "# Dry Run Report\n\n";
+
   // Metadata
-  md += '## Metadata\n\n';
+  md += "## Metadata\n\n";
   md += `- **Generated**: ${report.metadata.timestamp}\n`;
   md += `- **Version**: ${report.metadata.version}\n`;
   md += `- **Execution Time**: ${report.metadata.executionTime}ms\n\n`;
-  
+
   // Summary
-  md += '## Summary\n\n';
-  md += report.summary.text + '\n';
-  
+  md += "## Summary\n\n";
+  md += report.summary.text + "\n";
+
   // Performance
   if (report.summary.performance.operationsPerSecond > 0) {
-    md += '### Performance Metrics\n\n';
+    md += "### Performance Metrics\n\n";
     md += `- **Operations/sec**: ${report.summary.performance.operationsPerSecond.toFixed(2)}\n`;
     md += `- **Bytes/sec**: ${formatBytes(report.summary.performance.bytesPerSecond)}\n\n`;
   }
-  
+
   // Changes
-  md += '## Changes\n\n';
-  
+  md += "## Changes\n\n";
+
   if (report.changes.created.length > 0) {
-    md += '### Files to Create\n\n';
-    report.changes.created.forEach(file => {
+    md += "### Files to Create\n\n";
+    report.changes.created.forEach((file) => {
       md += `- \`${file}\`\n`;
     });
-    md += '\n';
+    md += "\n";
   }
-  
+
   if (report.changes.modified.length > 0) {
-    md += '### Files to Modify\n\n';
-    report.changes.modified.forEach(change => {
+    md += "### Files to Modify\n\n";
+    report.changes.modified.forEach((change) => {
       const sizeDiff = change.sizeAfter - change.sizeBefore;
-      const sizeChange = sizeDiff > 0 ? `+${formatBytes(sizeDiff)}` : formatBytes(sizeDiff);
+      const sizeChange =
+        sizeDiff > 0 ? `+${formatBytes(sizeDiff)}` : formatBytes(sizeDiff);
       md += `- \`${change.path}\` (${formatBytes(change.sizeBefore)} → ${formatBytes(change.sizeAfter)}, ${sizeChange})\n`;
     });
-    md += '\n';
+    md += "\n";
   }
-  
+
   if (report.changes.deleted.length > 0) {
-    md += '### Files to Delete\n\n';
-    report.changes.deleted.forEach(file => {
+    md += "### Files to Delete\n\n";
+    report.changes.deleted.forEach((file) => {
       md += `- \`${file}\`\n`;
     });
-    md += '\n';
+    md += "\n";
   }
-  
+
   if (report.changes.directories.length > 0) {
-    md += '### Directories to Create\n\n';
-    report.changes.directories.forEach(dir => {
+    md += "### Directories to Create\n\n";
+    report.changes.directories.forEach((dir) => {
       md += `- \`${dir}\`\n`;
     });
-    md += '\n';
+    md += "\n";
   }
-  
+
   // Insights
-  if (report.insights.warnings.length > 0 || report.insights.recommendations.length > 0) {
-    md += '## Insights\n\n';
-    
+  if (
+    report.insights.warnings.length > 0 ||
+    report.insights.recommendations.length > 0
+  ) {
+    md += "## Insights\n\n";
+
     if (report.insights.warnings.length > 0) {
-      md += '### ⚠️ Warnings\n\n';
-      report.insights.warnings.forEach(warning => {
+      md += "### ⚠️ Warnings\n\n";
+      report.insights.warnings.forEach((warning) => {
         md += `- ${warning}\n`;
       });
-      md += '\n';
+      md += "\n";
     }
-    
+
     if (report.insights.recommendations.length > 0) {
-      md += '### 💡 Recommendations\n\n';
-      report.insights.recommendations.forEach(rec => {
+      md += "### 💡 Recommendations\n\n";
+      report.insights.recommendations.forEach((rec) => {
         md += `- ${rec}\n`;
       });
-      md += '\n';
+      md += "\n";
     }
   }
-  
+
   // Failed operations
   if (report.operations.failed.length > 0) {
-    md += '## Failed Operations\n\n';
-    report.operations.failed.forEach(op => {
+    md += "## Failed Operations\n\n";
+    report.operations.failed.forEach((op) => {
       md += `- **${op.type.toUpperCase()}** \`${op.path}\`: ${op.error}\n`;
     });
-    md += '\n';
+    md += "\n";
   }
-  
+
   // Content previews
   if (report.previews && Object.keys(report.previews).length > 0) {
-    md += '## Content Previews\n\n';
-    
+    md += "## Content Previews\n\n";
+
     for (const [filePath, preview] of Object.entries(report.previews)) {
       md += `### \`${filePath}\`\n\n`;
-      
+
       if (preview.before && preview.after) {
-        md += '**Before:**\n```\n' + preview.before + '\n```\n\n';
-        md += '**After:**\n```\n' + preview.after + '\n```\n\n';
+        md += "**Before:**\n```\n" + preview.before + "\n```\n\n";
+        md += "**After:**\n```\n" + preview.after + "\n```\n\n";
       } else if (preview.after) {
-        md += '**Content:**\n```\n' + preview.after + '\n```\n\n';
+        md += "**Content:**\n```\n" + preview.after + "\n```\n\n";
       }
-      
+
       if (preview.diff) {
-        md += '**Diff:**\n```diff\n' + preview.diff + '\n```\n\n';
+        md += "**Diff:**\n```diff\n" + preview.diff + "\n```\n\n";
       }
     }
   }
-  
+
   return md;
 }
 
@@ -277,47 +291,47 @@ function generateMarkdownReport(report: DryRunReport): string {
  * Generate plain text format report
  */
 function generateTextReport(report: DryRunReport): string {
-  let text = '='.repeat(60) + '\n';
-  text += 'DRY RUN REPORT\n';
-  text += '='.repeat(60) + '\n\n';
-  
+  let text = "=".repeat(60) + "\n";
+  text += "DRY RUN REPORT\n";
+  text += "=".repeat(60) + "\n\n";
+
   // Metadata
-  text += 'METADATA:\n';
+  text += "METADATA:\n";
   text += `---------\n`;
   text += `Generated: ${report.metadata.timestamp}\n`;
   text += `Version: ${report.metadata.version}\n`;
   text += `Execution Time: ${report.metadata.executionTime}ms\n\n`;
-  
+
   // Summary
-  text += report.summary.text + '\n';
-  
+  text += report.summary.text + "\n";
+
   // Changes
-  text += 'CHANGES:\n';
-  text += '--------\n';
+  text += "CHANGES:\n";
+  text += "--------\n";
   text += `Files to create: ${report.changes.created.length}\n`;
   text += `Files to modify: ${report.changes.modified.length}\n`;
   text += `Files to delete: ${report.changes.deleted.length}\n`;
   text += `Directories to create: ${report.changes.directories.length}\n\n`;
-  
+
   // Insights
   if (report.insights.warnings.length > 0) {
-    text += 'WARNINGS:\n';
-    text += '---------\n';
+    text += "WARNINGS:\n";
+    text += "---------\n";
     report.insights.warnings.forEach((warning, i) => {
       text += `${i + 1}. ${warning}\n`;
     });
-    text += '\n';
+    text += "\n";
   }
-  
+
   if (report.insights.recommendations.length > 0) {
-    text += 'RECOMMENDATIONS:\n';
-    text += '---------------\n';
+    text += "RECOMMENDATIONS:\n";
+    text += "---------------\n";
     report.insights.recommendations.forEach((rec, i) => {
       text += `${i + 1}. ${rec}\n`;
     });
-    text += '\n';
+    text += "\n";
   }
-  
+
   return text;
 }
 
@@ -386,44 +400,47 @@ function generateHtmlReport(report: DryRunReport): string {
   // Changes
   if (report.changes.created.length > 0 || report.changes.modified.length > 0) {
     html += `<div class="section"><h2>📁 Changes</h2>`;
-    
+
     if (report.changes.created.length > 0) {
       html += `<h3>Files to Create</h3><div class="file-list">`;
-      report.changes.created.forEach(file => {
+      report.changes.created.forEach((file) => {
         html += `<code>${file}</code><br>`;
       });
       html += `</div>`;
     }
-    
+
     if (report.changes.modified.length > 0) {
       html += `<h3>Files to Modify</h3><div class="file-list">`;
-      report.changes.modified.forEach(change => {
+      report.changes.modified.forEach((change) => {
         html += `<code>${change.path}</code> (${formatBytes(change.sizeBefore)} → ${formatBytes(change.sizeAfter)})<br>`;
       });
       html += `</div>`;
     }
-    
+
     html += `</div>`;
   }
 
   // Insights
-  if (report.insights.warnings.length > 0 || report.insights.recommendations.length > 0) {
+  if (
+    report.insights.warnings.length > 0 ||
+    report.insights.recommendations.length > 0
+  ) {
     html += `<div class="section"><h2>💡 Insights</h2>`;
-    
+
     if (report.insights.warnings.length > 0) {
       html += `<h3>⚠️ Warnings</h3>`;
-      report.insights.warnings.forEach(warning => {
+      report.insights.warnings.forEach((warning) => {
         html += `<div class="warning">${warning}</div>`;
       });
     }
-    
+
     if (report.insights.recommendations.length > 0) {
       html += `<h3>💡 Recommendations</h3>`;
-      report.insights.recommendations.forEach(rec => {
+      report.insights.recommendations.forEach((rec) => {
         html += `<div class="recommendation">${rec}</div>`;
       });
     }
-    
+
     html += `</div>`;
   }
 
@@ -438,72 +455,80 @@ function generateHtmlReport(report: DryRunReport): string {
 /**
  * Group operations by type
  */
-function groupOperationsByType(operations: FileOperation[]): Record<string, FileOperation[]> {
+function groupOperationsByType(
+  operations: FileOperation[],
+): Record<string, FileOperation[]> {
   const grouped: Record<string, FileOperation[]> = {};
-  
+
   for (const operation of operations) {
     if (!grouped[operation.type]) {
       grouped[operation.type] = [];
     }
     grouped[operation.type].push(operation);
   }
-  
+
   return grouped;
 }
 
 /**
  * Group operations by file path
  */
-function groupOperationsByPath(operations: FileOperation[]): Record<string, FileOperation[]> {
+function groupOperationsByPath(
+  operations: FileOperation[],
+): Record<string, FileOperation[]> {
   const grouped: Record<string, FileOperation[]> = {};
-  
+
   for (const operation of operations) {
     if (!grouped[operation.path]) {
       grouped[operation.path] = [];
     }
     grouped[operation.path].push(operation);
   }
-  
+
   return grouped;
 }
 
 /**
  * Analyze changes from operations
  */
-function analyzeChanges(operations: FileOperation[]): DryRunReport['changes'] {
-  const changes: DryRunReport['changes'] = {
+function analyzeChanges(operations: FileOperation[]): DryRunReport["changes"] {
+  const changes: DryRunReport["changes"] = {
     created: [],
     modified: [],
     deleted: [],
-    directories: []
+    directories: [],
   };
-  
+
   for (const operation of operations) {
     switch (operation.type) {
-      case 'create':
+      case "create":
         changes.created.push(operation.path);
         break;
-      
-      case 'write':
-        const sizeBefore = operation.previousContent ? calculateContentSize(operation.previousContent) : 0;
-        const sizeAfter = operation.newContent ? calculateContentSize(operation.newContent) : 0;
+
+      case "write":
+        const sizeBefore = operation.previousContent
+          ? calculateContentSize(operation.previousContent)
+          : 0;
+        const sizeAfter = operation.newContent
+          ? calculateContentSize(operation.newContent)
+          : 0;
         changes.modified.push({
           path: operation.path,
           sizeBefore,
-          sizeAfter
+          sizeAfter,
         });
         break;
-      
-      case 'delete':
+
+      case "delete":
         changes.deleted.push(operation.path);
         break;
-      
-      case 'mkdir':
+
+      case "mkdir":
         changes.directories.push(operation.path);
         break;
     }
   }
-  
+
   return changes;
 }
 
@@ -513,52 +538,67 @@ function analyzeChanges(operations: FileOperation[]): DryRunReport['changes'] {
 function generateInsights(
   operations: FileOperation[],
   statistics: DryRunStatistics,
-  performance: DryRunPerformanceMetrics
-): DryRunReport['insights'] {
-  const insights: DryRunReport['insights'] = {
+  performance: DryRunPerformanceMetrics,
+): DryRunReport["insights"] {
+  const insights: DryRunReport["insights"] = {
     warnings: [],
     recommendations: [],
-    performance: []
+    performance: [],
   };
-  
+
   // Warnings
   if (statistics.failedOperations > 0) {
-    insights.warnings.push(`${statistics.failedOperations} operations failed and may cause issues`);
+    insights.warnings.push(
+      `${statistics.failedOperations} operations failed and may cause issues`,
+    );
   }
-  
-  if (statistics.sizeImpact.netSizeChange > 100 * 1024 * 1024) { // > 100MB
-    insights.warnings.push(`Large net size increase (${formatBytes(statistics.sizeImpact.netSizeChange)}) - consider optimization`);
+
+  if (statistics.sizeImpact.netSizeChange > 100 * 1024 * 1024) {
+    // > 100MB
+    insights.warnings.push(
+      `Large net size increase (${formatBytes(statistics.sizeImpact.netSizeChange)}) - consider optimization`,
+    );
   }
-  
-  const largeFiles = operations.filter(op => {
+
+  const largeFiles = operations.filter((op) => {
     const size = op.newContent ? calculateContentSize(op.newContent) : 0;
     return size > 10 * 1024 * 1024; // > 10MB
   });
-  
+
   if (largeFiles.length > 0) {
-    insights.warnings.push(`${largeFiles.length} files are very large (>10MB) and may impact performance`);
+    insights.warnings.push(
+      `${largeFiles.length} files are very large (>10MB) and may impact performance`,
+    );
   }
-  
+
   // Recommendations
   insights.recommendations.push(...performance.optimizationSuggestions);
-  
+
   if (statistics.frequentPaths.length > 0) {
-    const hotFiles = statistics.frequentPaths.filter(p => p.count > 5);
+    const hotFiles = statistics.frequentPaths.filter((p) => p.count > 5);
     if (hotFiles.length > 0) {
-      insights.recommendations.push(`Consider caching or optimizing ${hotFiles.length} frequently accessed files`);
+      insights.recommendations.push(
+        `Consider caching or optimizing ${hotFiles.length} frequently accessed files`,
+      );
     }
   }
-  
+
   // Performance insights
   if (performance.operationsPerSecond > 0) {
-    insights.performance.push(`Processing speed: ${performance.operationsPerSecond.toFixed(2)} operations/second`);
-    insights.performance.push(`Data throughput: ${formatBytes(performance.bytesPerSecond)}/second`);
+    insights.performance.push(
+      `Processing speed: ${performance.operationsPerSecond.toFixed(2)} operations/second`,
+    );
+    insights.performance.push(
+      `Data throughput: ${formatBytes(performance.bytesPerSecond)}/second`,
+    );
   }
-  
+
   if (performance.bottlenecks.length > 0) {
-    insights.performance.push(...performance.bottlenecks.map(b => `Bottleneck: ${b}`));
+    insights.performance.push(
+      ...performance.bottlenecks.map((b) => `Bottleneck: ${b}`),
+    );
   }
-  
+
   return insights;
 }
 
@@ -567,39 +607,45 @@ function generateInsights(
  */
 function generatePreviews(
   operations: FileOperation[],
-  maxLength: number
+  maxLength: number,
 ): Record<string, { before?: string; after?: string; diff?: string }> {
-  const previews: Record<string, { before?: string; after?: string; diff?: string }> = {};
-  
+  const previews: Record<
+    string,
+    { before?: string; after?: string; diff?: string }
+  > = {};
+
   for (const operation of operations) {
-    if (operation.type === 'write' || operation.type === 'create') {
+    if (operation.type === "write" || operation.type === "create") {
       const preview: { before?: string; after?: string; diff?: string } = {};
-      
-      if (operation.previousContent && typeof operation.previousContent === 'string') {
+
+      if (
+        operation.previousContent &&
+        typeof operation.previousContent === "string"
+      ) {
         preview.before = operation.previousContent.substring(0, maxLength);
         if (operation.previousContent.length > maxLength) {
-          preview.before += '... (truncated)';
+          preview.before += "... (truncated)";
         }
       }
-      
-      if (operation.newContent && typeof operation.newContent === 'string') {
+
+      if (operation.newContent && typeof operation.newContent === "string") {
         preview.after = operation.newContent.substring(0, maxLength);
         if (operation.newContent.length > maxLength) {
-          preview.after += '... (truncated)';
+          preview.after += "... (truncated)";
         }
       }
-      
+
       // Generate simple diff if both before and after exist
       if (preview.before && preview.after) {
         preview.diff = generateSimpleDiff(preview.before, preview.after);
       }
-      
+
       if (preview.before || preview.after) {
         previews[operation.path] = preview;
       }
     }
   }
-  
+
   return previews;
 }
 
@@ -610,19 +656,19 @@ function calculateContentSize(content: string | Buffer): number {
   if (Buffer.isBuffer(content)) {
     return content.length;
   }
-  return Buffer.byteLength(content, 'utf8');
+  return Buffer.byteLength(content, "utf8");
 }
 
 /**
  * Format bytes as human-readable string
  */
 function formatBytes(bytes: number): string {
-  if (bytes === 0) return '0 B';
-  
+  if (bytes === 0) return "0 B";
+
   const k = 1024;
-  const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+  const sizes = ["B", "KB", "MB", "GB", "TB"];
   const i = Math.floor(Math.log(Math.abs(bytes)) / Math.log(k));
-  
+
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
 }
 
@@ -630,16 +676,16 @@ function formatBytes(bytes: number): string {
  * Generate a simple diff between two strings
  */
 function generateSimpleDiff(before: string, after: string): string {
-  const beforeLines = before.split('\n');
-  const afterLines = after.split('\n');
-  
-  let diff = '';
+  const beforeLines = before.split("\n");
+  const afterLines = after.split("\n");
+
+  let diff = "";
   const maxLines = Math.max(beforeLines.length, afterLines.length);
-  
+
   for (let i = 0; i < maxLines; i++) {
     const beforeLine = beforeLines[i];
     const afterLine = afterLines[i];
-    
+
     if (beforeLine !== afterLine) {
       if (beforeLine !== undefined) {
         diff += `- ${beforeLine}\n`;
@@ -649,6 +695,6 @@ function generateSimpleDiff(before: string, after: string): string {
       }
     }
   }
-  
-  return diff || '(no changes)';
-} 
+
+  return diff || "(no changes)";
+}

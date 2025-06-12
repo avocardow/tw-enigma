@@ -1,11 +1,11 @@
 /**
  * Copyright (c) 2025 Rowan Cardow
- * 
+ *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import {
   CssChunker,
   CssChunk,
@@ -13,12 +13,12 @@ import {
   DependencyGraph,
   UsagePatternAnalyzer,
   createCssChunker,
-  validateChunkingStrategy
-} from '../../src/output/cssChunker.js';
-import { ChunkingConfig } from '../../src/output/cssOutputConfig.js';
+  validateChunkingStrategy,
+} from "../../src/output/cssChunker.js";
+import { ChunkingConfig } from "../../src/output/cssOutputConfig.js";
 
 // =============================================================================
-// TEST DATA AND FIXTURES  
+// TEST DATA AND FIXTURES
 // =============================================================================
 
 const mockCssContent = `
@@ -71,9 +71,11 @@ const mockCssContent = `
 
 const mockLargeCssContent = `
 /* Large CSS file for size-based chunking tests */
-${Array.from({ length: 100 }, (_, i) => `
+${Array.from(
+  { length: 100 },
+  (_, i) => `
 .component-${i} {
-  color: #${i.toString(16).padStart(6, '0')};
+  color: #${i.toString(16).padStart(6, "0")};
   padding: ${i}px;
   margin: ${i * 2}px;
   width: ${i * 10}px;
@@ -87,25 +89,26 @@ ${Array.from({ length: 100 }, (_, i) => `
 .component-${i}:active {
   transform: scale(0.95);
 }
-`).join('')}
+`,
+).join("")}
 `;
 
 const createMockChunk = (overrides: Partial<CssChunk> = {}): CssChunk => ({
-  id: '1',
-  name: 'main',
+  id: "1",
+  name: "main",
   content: mockCssContent,
-  size: Buffer.byteLength(mockCssContent, 'utf8'),
-  type: 'main',
+  size: Buffer.byteLength(mockCssContent, "utf8"),
+  type: "main",
   priority: 1,
   dependencies: new Set(),
-  routes: new Set(['/']),
-  components: new Set(['Button', 'Card']),
-  loadingStrategy: 'eager',
-  ...overrides
+  routes: new Set(["/"]),
+  components: new Set(["Button", "Card"]),
+  loadingStrategy: "eager",
+  ...overrides,
 });
 
 const mockChunkingConfig: ChunkingConfig = {
-  strategy: 'hybrid',
+  strategy: "hybrid",
   maxChunkSize: 50000,
   minChunkSize: 10000,
   targetChunks: 3,
@@ -114,202 +117,202 @@ const mockChunkingConfig: ChunkingConfig = {
   splitVendor: true,
   splitCritical: true,
   routeBased: true,
-  componentBased: true
+  componentBased: true,
 };
 
 const mockUsageData = {
   files: [
     {
-      path: '/src/components/Button.tsx',
-      classes: ['button', 'button-primary'],
-      frequency: { 'button': 15, 'button-primary': 8 }
+      path: "/src/components/Button.tsx",
+      classes: ["button", "button-primary"],
+      frequency: { button: 15, "button-primary": 8 },
     },
     {
-      path: '/src/components/Card.tsx', 
-      classes: ['card', 'card-header'],
-      frequency: { 'card': 12, 'card-header': 6 }
+      path: "/src/components/Card.tsx",
+      classes: ["card", "card-header"],
+      frequency: { card: 12, "card-header": 6 },
     },
     {
-      path: '/src/pages/Home.tsx',
-      classes: ['button', 'card', 'form-input'],
-      frequency: { 'button': 3, 'card': 2, 'form-input': 4 }
+      path: "/src/pages/Home.tsx",
+      classes: ["button", "card", "form-input"],
+      frequency: { button: 3, card: 2, "form-input": 4 },
     },
     {
-      path: '/src/pages/Dashboard.tsx',
-      classes: ['card', 'form-input'],
-      frequency: { 'card': 5, 'form-input': 8 }
-    }
+      path: "/src/pages/Dashboard.tsx",
+      classes: ["card", "form-input"],
+      frequency: { card: 5, "form-input": 8 },
+    },
   ],
   routes: [
-    { path: '/', components: ['Button', 'Card'], critical: true },
-    { path: '/dashboard', components: ['Card'], critical: false },
-    { path: '/profile', components: ['Button'], critical: false }
-  ]
+    { path: "/", components: ["Button", "Card"], critical: true },
+    { path: "/dashboard", components: ["Card"], critical: false },
+    { path: "/profile", components: ["Button"], critical: false },
+  ],
 };
 
 // =============================================================================
 // DEPENDENCY GRAPH TESTS
 // =============================================================================
 
-describe('DependencyGraph', () => {
+describe("DependencyGraph", () => {
   let graph: DependencyGraph;
 
   beforeEach(() => {
     graph = new DependencyGraph();
   });
 
-  describe('constructor', () => {
-    it('should create empty dependency graph', () => {
+  describe("constructor", () => {
+    it("should create empty dependency graph", () => {
       expect(graph.getNodes().size).toBe(0);
       expect(graph.getEdges().size).toBe(0);
     });
   });
 
-  describe('addNode', () => {
-    it('should add CSS rule node', () => {
-      graph.addNode('button', 'rule', mockCssContent);
-      
+  describe("addNode", () => {
+    it("should add CSS rule node", () => {
+      graph.addNode("button", "rule", mockCssContent);
+
       const nodes = graph.getNodes();
-      expect(nodes.has('button')).toBe(true);
-      expect(nodes.get('button')).toMatchObject({
-        id: 'button',
-        type: 'rule',
+      expect(nodes.has("button")).toBe(true);
+      expect(nodes.get("button")).toMatchObject({
+        id: "button",
+        type: "rule",
         content: mockCssContent,
         dependencies: new Set(),
-        dependents: new Set()
+        dependents: new Set(),
       });
     });
 
-    it('should add component node', () => {
-      graph.addNode('Button', 'component', '');
-      
+    it("should add component node", () => {
+      graph.addNode("Button", "component", "");
+
       const nodes = graph.getNodes();
-      expect(nodes.has('Button')).toBe(true);
-      expect(nodes.get('Button')?.type).toBe('component');
+      expect(nodes.has("Button")).toBe(true);
+      expect(nodes.get("Button")?.type).toBe("component");
     });
 
-    it('should not duplicate existing nodes', () => {
-      graph.addNode('button', 'rule', mockCssContent);
-      graph.addNode('button', 'rule', 'different content');
-      
+    it("should not duplicate existing nodes", () => {
+      graph.addNode("button", "rule", mockCssContent);
+      graph.addNode("button", "rule", "different content");
+
       const nodes = graph.getNodes();
       expect(nodes.size).toBe(1);
-      expect(nodes.get('button')?.content).toBe(mockCssContent); // First content preserved
+      expect(nodes.get("button")?.content).toBe(mockCssContent); // First content preserved
     });
   });
 
-  describe('addEdge', () => {
+  describe("addEdge", () => {
     beforeEach(() => {
-      graph.addNode('button', 'rule', '');
-      graph.addNode('button-primary', 'rule', '');
+      graph.addNode("button", "rule", "");
+      graph.addNode("button-primary", "rule", "");
     });
 
-    it('should add dependency edge', () => {
-      graph.addEdge('button-primary', 'button', 'extends');
-      
+    it("should add dependency edge", () => {
+      graph.addEdge("button-primary", "button", "extends");
+
       const edges = graph.getEdges();
       expect(edges.size).toBe(1);
-      
-      const buttonNode = graph.getNodes().get('button');
-      const primaryNode = graph.getNodes().get('button-primary');
-      
-      expect(buttonNode?.dependents.has('button-primary')).toBe(true);
-      expect(primaryNode?.dependencies.has('button')).toBe(true);
+
+      const buttonNode = graph.getNodes().get("button");
+      const primaryNode = graph.getNodes().get("button-primary");
+
+      expect(buttonNode?.dependents.has("button-primary")).toBe(true);
+      expect(primaryNode?.dependencies.has("button")).toBe(true);
     });
 
-    it('should handle different edge types', () => {
-      graph.addEdge('button-primary', 'button', 'extends');
-      graph.addEdge('button', 'form-input', 'composes');
-      
+    it("should handle different edge types", () => {
+      graph.addEdge("button-primary", "button", "extends");
+      graph.addEdge("button", "form-input", "composes");
+
       const edges = graph.getEdges();
       expect(edges.size).toBe(2);
-      
+
       // Check edge types
       for (const [key, edge] of edges) {
-        if (edge.from === 'button-primary') {
-          expect(edge.type).toBe('extends');
-        } else if (edge.from === 'button') {
-          expect(edge.type).toBe('composes');
+        if (edge.from === "button-primary") {
+          expect(edge.type).toBe("extends");
+        } else if (edge.from === "button") {
+          expect(edge.type).toBe("composes");
         }
       }
     });
 
-    it('should not add edge with missing nodes', () => {
+    it("should not add edge with missing nodes", () => {
       expect(() => {
-        graph.addEdge('nonexistent', 'button', 'extends');
+        graph.addEdge("nonexistent", "button", "extends");
       }).toThrow();
     });
   });
 
-  describe('getStronglyConnectedComponents', () => {
-    it('should find strongly connected components', () => {
+  describe("getStronglyConnectedComponents", () => {
+    it("should find strongly connected components", () => {
       // Create a cycle: A -> B -> C -> A
-      graph.addNode('A', 'rule', '');
-      graph.addNode('B', 'rule', '');
-      graph.addNode('C', 'rule', '');
-      graph.addEdge('A', 'B', 'extends');
-      graph.addEdge('B', 'C', 'extends');
-      graph.addEdge('C', 'A', 'extends');
-      
+      graph.addNode("A", "rule", "");
+      graph.addNode("B", "rule", "");
+      graph.addNode("C", "rule", "");
+      graph.addEdge("A", "B", "extends");
+      graph.addEdge("B", "C", "extends");
+      graph.addEdge("C", "A", "extends");
+
       const components = graph.getStronglyConnectedComponents();
-      
+
       // Should find one component with all three nodes
       expect(components).toHaveLength(1);
-      expect(components[0]).toEqual(expect.arrayContaining(['A', 'B', 'C']));
+      expect(components[0]).toEqual(expect.arrayContaining(["A", "B", "C"]));
     });
 
-    it('should handle acyclic graph', () => {
-      graph.addNode('A', 'rule', '');
-      graph.addNode('B', 'rule', '');
-      graph.addNode('C', 'rule', '');
-      graph.addEdge('A', 'B', 'extends');
-      graph.addEdge('B', 'C', 'extends');
-      
+    it("should handle acyclic graph", () => {
+      graph.addNode("A", "rule", "");
+      graph.addNode("B", "rule", "");
+      graph.addNode("C", "rule", "");
+      graph.addEdge("A", "B", "extends");
+      graph.addEdge("B", "C", "extends");
+
       const components = graph.getStronglyConnectedComponents();
-      
+
       // Each node should be its own component
       expect(components).toHaveLength(3);
-      expect(components.map(c => c.length)).toEqual([1, 1, 1]);
+      expect(components.map((c) => c.length)).toEqual([1, 1, 1]);
     });
   });
 
-  describe('getTopologicalOrder', () => {
-    it('should return topological order for acyclic graph', () => {
-      graph.addNode('A', 'rule', '');
-      graph.addNode('B', 'rule', '');
-      graph.addNode('C', 'rule', '');
-      graph.addEdge('C', 'B', 'extends');
-      graph.addEdge('B', 'A', 'extends');
-      
+  describe("getTopologicalOrder", () => {
+    it("should return topological order for acyclic graph", () => {
+      graph.addNode("A", "rule", "");
+      graph.addNode("B", "rule", "");
+      graph.addNode("C", "rule", "");
+      graph.addEdge("C", "B", "extends");
+      graph.addEdge("B", "A", "extends");
+
       const order = graph.getTopologicalOrder();
-      
+
       expect(order).toHaveLength(3);
-      
+
       // A should come before B, B should come before C
-      const indexA = order.indexOf('A');
-      const indexB = order.indexOf('B');
-      const indexC = order.indexOf('C');
-      
+      const indexA = order.indexOf("A");
+      const indexB = order.indexOf("B");
+      const indexC = order.indexOf("C");
+
       expect(indexA).toBeLessThan(indexB);
       expect(indexB).toBeLessThan(indexC);
     });
 
-    it('should handle cyclic graph', () => {
-      graph.addNode('A', 'rule', '');
-      graph.addNode('B', 'rule', '');
-      graph.addEdge('A', 'B', 'extends');
-      graph.addEdge('B', 'A', 'extends');
-      
+    it("should handle cyclic graph", () => {
+      graph.addNode("A", "rule", "");
+      graph.addNode("B", "rule", "");
+      graph.addEdge("A", "B", "extends");
+      graph.addEdge("B", "A", "extends");
+
       const order = graph.getTopologicalOrder();
-      
+
       // Should still return all nodes even with cycles
       expect(order).toHaveLength(2);
-      expect(order).toEqual(expect.arrayContaining(['A', 'B']));
+      expect(order).toEqual(expect.arrayContaining(["A", "B"]));
     });
   });
 
-  describe('analyzeDependencies', () => {
-    it('should analyze CSS dependencies', () => {
+  describe("analyzeDependencies", () => {
+    it("should analyze CSS dependencies", () => {
       const cssWithDependencies = `
         .base { color: blue; }
         .extended:extend(.base) { font-weight: bold; }
@@ -317,7 +320,7 @@ describe('DependencyGraph', () => {
       `;
 
       const analysis = graph.analyzeDependencies(cssWithDependencies);
-      
+
       expect(analysis.rules.size).toBeGreaterThan(0);
       expect(analysis.imports).toBeDefined();
       expect(analysis.extends).toBeDefined();
@@ -327,63 +330,63 @@ describe('DependencyGraph', () => {
 });
 
 // =============================================================================
-// USAGE PATTERN ANALYZER TESTS  
+// USAGE PATTERN ANALYZER TESTS
 // =============================================================================
 
-describe('UsagePatternAnalyzer', () => {
+describe("UsagePatternAnalyzer", () => {
   let analyzer: UsagePatternAnalyzer;
 
   beforeEach(() => {
     analyzer = new UsagePatternAnalyzer();
   });
 
-  describe('constructor', () => {
-    it('should create usage pattern analyzer', () => {
+  describe("constructor", () => {
+    it("should create usage pattern analyzer", () => {
       expect(analyzer).toBeInstanceOf(UsagePatternAnalyzer);
     });
   });
 
-  describe('analyzeUsage', () => {
-    it('should analyze usage patterns from source files', () => {
+  describe("analyzeUsage", () => {
+    it("should analyze usage patterns from source files", () => {
       const analysis = analyzer.analyzeUsage(mockUsageData.files);
-      
-      expect(analysis.classFrequency.has('button')).toBe(true);
-      expect(analysis.classFrequency.get('button')).toBe(18); // 15 + 3
-      expect(analysis.classFrequency.get('card')).toBe(19); // 12 + 2 + 5
-      
-      expect(analysis.componentUsage.has('Button')).toBe(true);
+
+      expect(analysis.classFrequency.has("button")).toBe(true);
+      expect(analysis.classFrequency.get("button")).toBe(18); // 15 + 3
+      expect(analysis.classFrequency.get("card")).toBe(19); // 12 + 2 + 5
+
+      expect(analysis.componentUsage.has("Button")).toBe(true);
       expect(analysis.fileAssociations.size).toBeGreaterThan(0);
     });
 
-    it('should handle empty usage data', () => {
+    it("should handle empty usage data", () => {
       const analysis = analyzer.analyzeUsage([]);
-      
+
       expect(analysis.classFrequency.size).toBe(0);
       expect(analysis.componentUsage.size).toBe(0);
       expect(analysis.fileAssociations.size).toBe(0);
     });
 
-    it('should calculate co-occurrence patterns', () => {
+    it("should calculate co-occurrence patterns", () => {
       const analysis = analyzer.analyzeUsage(mockUsageData.files);
-      
+
       // button and button-primary should co-occur
-      const buttonCoOccurrence = analysis.coOccurrence.get('button');
-      expect(buttonCoOccurrence?.has('button-primary')).toBe(true);
-      
+      const buttonCoOccurrence = analysis.coOccurrence.get("button");
+      expect(buttonCoOccurrence?.has("button-primary")).toBe(true);
+
       // card and card-header should co-occur
-      const cardCoOccurrence = analysis.coOccurrence.get('card');
-      expect(cardCoOccurrence?.has('card-header')).toBe(true);
+      const cardCoOccurrence = analysis.coOccurrence.get("card");
+      expect(cardCoOccurrence?.has("card-header")).toBe(true);
     });
   });
 
-  describe('getClassesByFrequency', () => {
-    it('should return classes sorted by frequency', () => {
+  describe("getClassesByFrequency", () => {
+    it("should return classes sorted by frequency", () => {
       const analysis = analyzer.analyzeUsage(mockUsageData.files);
       const sortedClasses = analyzer.getClassesByFrequency(analysis);
-      
+
       expect(sortedClasses).toBeInstanceOf(Array);
       expect(sortedClasses.length).toBeGreaterThan(0);
-      
+
       // Should be sorted in descending order of frequency
       for (let i = 1; i < sortedClasses.length; i++) {
         const prevFreq = analysis.classFrequency.get(sortedClasses[i - 1]) || 0;
@@ -393,17 +396,20 @@ describe('UsagePatternAnalyzer', () => {
     });
   });
 
-  describe('getRouteSpecificClasses', () => {
-    it('should identify route-specific class usage', () => {
+  describe("getRouteSpecificClasses", () => {
+    it("should identify route-specific class usage", () => {
       const analysis = analyzer.analyzeUsage(mockUsageData.files);
-      const routeClasses = analyzer.getRouteSpecificClasses(analysis, mockUsageData.routes);
-      
-      expect(routeClasses.has('/')).toBe(true);
-      expect(routeClasses.has('/dashboard')).toBe(true);
-      
-      const homeClasses = routeClasses.get('/');
-      expect(homeClasses?.has('button')).toBe(true);
-      expect(homeClasses?.has('card')).toBe(true);
+      const routeClasses = analyzer.getRouteSpecificClasses(
+        analysis,
+        mockUsageData.routes,
+      );
+
+      expect(routeClasses.has("/")).toBe(true);
+      expect(routeClasses.has("/dashboard")).toBe(true);
+
+      const homeClasses = routeClasses.get("/");
+      expect(homeClasses?.has("button")).toBe(true);
+      expect(homeClasses?.has("card")).toBe(true);
     });
   });
 });
@@ -412,71 +418,76 @@ describe('UsagePatternAnalyzer', () => {
 // CSS CHUNKER TESTS
 // =============================================================================
 
-describe('CssChunker', () => {
+describe("CssChunker", () => {
   let chunker: CssChunker;
 
   beforeEach(() => {
     chunker = new CssChunker(mockChunkingConfig);
   });
 
-  describe('constructor', () => {
-    it('should create CSS chunker with config', () => {
+  describe("constructor", () => {
+    it("should create CSS chunker with config", () => {
       expect(chunker).toBeInstanceOf(CssChunker);
     });
 
-    it('should validate chunking strategy', () => {
+    it("should validate chunking strategy", () => {
       expect(() => {
-        new CssChunker({ ...mockChunkingConfig, strategy: 'invalid' as any });
+        new CssChunker({ ...mockChunkingConfig, strategy: "invalid" as any });
       }).toThrow();
     });
   });
 
-  describe('chunkBySize', () => {
-    it('should split large CSS into size-based chunks', () => {
-      const config = { ...mockChunkingConfig, strategy: 'size' as ChunkingStrategy };
+  describe("chunkBySize", () => {
+    it("should split large CSS into size-based chunks", () => {
+      const config = {
+        ...mockChunkingConfig,
+        strategy: "size" as ChunkingStrategy,
+      };
       const sizeChunker = new CssChunker(config);
-      
+
       const chunks = sizeChunker.chunkBySize(mockLargeCssContent, {
-        routes: new Set(['/large']),
-        components: new Set(['LargeComponent'])
+        routes: new Set(["/large"]),
+        components: new Set(["LargeComponent"]),
       });
-      
+
       expect(chunks.length).toBeGreaterThan(1);
-      
+
       // Each chunk should be under max size
       for (const chunk of chunks) {
         expect(chunk.size).toBeLessThanOrEqual(config.maxChunkSize);
       }
-      
+
       // Total content should be preserved
-      const totalContent = chunks.map(c => c.content).join('');
-      expect(totalContent.replace(/\s/g, '')).toContain(mockLargeCssContent.replace(/\s/g, ''));
+      const totalContent = chunks.map((c) => c.content).join("");
+      expect(totalContent.replace(/\s/g, "")).toContain(
+        mockLargeCssContent.replace(/\s/g, ""),
+      );
     });
 
-    it('should handle small CSS content', () => {
+    it("should handle small CSS content", () => {
       const chunks = chunker.chunkBySize(mockCssContent, {
-        routes: new Set(['/']),
-        components: new Set(['Button'])
+        routes: new Set(["/"]),
+        components: new Set(["Button"]),
       });
-      
+
       // Small content should result in single chunk
       expect(chunks).toHaveLength(1);
       expect(chunks[0].content).toBe(mockCssContent);
     });
 
-    it('should respect minimum chunk size', () => {
-      const config = { 
-        ...mockChunkingConfig, 
-        strategy: 'size' as ChunkingStrategy,
-        minChunkSize: 1000
+    it("should respect minimum chunk size", () => {
+      const config = {
+        ...mockChunkingConfig,
+        strategy: "size" as ChunkingStrategy,
+        minChunkSize: 1000,
       };
       const sizeChunker = new CssChunker(config);
-      
+
       const chunks = sizeChunker.chunkBySize(mockLargeCssContent, {
-        routes: new Set(['/test']),
-        components: new Set(['Test'])
+        routes: new Set(["/test"]),
+        components: new Set(["Test"]),
       });
-      
+
       // All chunks should be above minimum size (except possibly the last one)
       for (let i = 0; i < chunks.length - 1; i++) {
         expect(chunks[i].size).toBeGreaterThanOrEqual(config.minChunkSize);
@@ -484,168 +495,213 @@ describe('CssChunker', () => {
     });
   });
 
-  describe('chunkByUsage', () => {
-    it('should create usage-based chunks', () => {
-      const config = { ...mockChunkingConfig, strategy: 'usage' as ChunkingStrategy };
+  describe("chunkByUsage", () => {
+    it("should create usage-based chunks", () => {
+      const config = {
+        ...mockChunkingConfig,
+        strategy: "usage" as ChunkingStrategy,
+      };
       const usageChunker = new CssChunker(config);
-      
+
       const chunks = usageChunker.chunkByUsage(mockCssContent, mockUsageData);
-      
+
       expect(chunks.length).toBeGreaterThan(0);
-      
+
       // Should group related classes together
-      const buttonChunk = chunks.find(c => c.content.includes('button'));
-      const cardChunk = chunks.find(c => c.content.includes('card'));
-      
+      const buttonChunk = chunks.find((c) => c.content.includes("button"));
+      const cardChunk = chunks.find((c) => c.content.includes("card"));
+
       expect(buttonChunk).toBeDefined();
       expect(cardChunk).toBeDefined();
     });
 
-    it('should handle empty usage data', () => {
-      const chunks = chunker.chunkByUsage(mockCssContent, { files: [], routes: [] });
-      
+    it("should handle empty usage data", () => {
+      const chunks = chunker.chunkByUsage(mockCssContent, {
+        files: [],
+        routes: [],
+      });
+
       // Should still create at least one chunk
       expect(chunks.length).toBeGreaterThan(0);
       expect(chunks[0].content).toContain(mockCssContent);
     });
   });
 
-  describe('chunkByRoute', () => {
-    it('should create route-specific chunks', () => {
-      const config = { ...mockChunkingConfig, strategy: 'route' as ChunkingStrategy };
+  describe("chunkByRoute", () => {
+    it("should create route-specific chunks", () => {
+      const config = {
+        ...mockChunkingConfig,
+        strategy: "route" as ChunkingStrategy,
+      };
       const routeChunker = new CssChunker(config);
-      
+
       const chunks = routeChunker.chunkByRoute(mockCssContent, mockUsageData);
-      
+
       expect(chunks.length).toBeGreaterThan(0);
-      
+
       // Should have chunks for different routes
-      const homeChunk = chunks.find(c => c.routes.has('/'));
-      const dashboardChunk = chunks.find(c => c.routes.has('/dashboard'));
-      
+      const homeChunk = chunks.find((c) => c.routes.has("/"));
+      const dashboardChunk = chunks.find((c) => c.routes.has("/dashboard"));
+
       expect(homeChunk).toBeDefined();
       expect(dashboardChunk).toBeDefined();
     });
 
-    it('should mark critical route chunks', () => {
+    it("should mark critical route chunks", () => {
       const chunks = chunker.chunkByRoute(mockCssContent, mockUsageData);
-      
-      const criticalChunk = chunks.find(c => c.routes.has('/'));
-      expect(criticalChunk?.type).toBe('critical');
+
+      const criticalChunk = chunks.find((c) => c.routes.has("/"));
+      expect(criticalChunk?.type).toBe("critical");
     });
   });
 
-  describe('chunkByComponent', () => {
-    it('should create component-specific chunks', () => {
-      const config = { ...mockChunkingConfig, strategy: 'component' as ChunkingStrategy };
+  describe("chunkByComponent", () => {
+    it("should create component-specific chunks", () => {
+      const config = {
+        ...mockChunkingConfig,
+        strategy: "component" as ChunkingStrategy,
+      };
       const componentChunker = new CssChunker(config);
-      
-      const chunks = componentChunker.chunkByComponent(mockCssContent, mockUsageData);
-      
+
+      const chunks = componentChunker.chunkByComponent(
+        mockCssContent,
+        mockUsageData,
+      );
+
       expect(chunks.length).toBeGreaterThan(0);
-      
+
       // Should have chunks for different components
-      const buttonChunk = chunks.find(c => c.components.has('Button'));
-      const cardChunk = chunks.find(c => c.components.has('Card'));
-      
+      const buttonChunk = chunks.find((c) => c.components.has("Button"));
+      const cardChunk = chunks.find((c) => c.components.has("Card"));
+
       expect(buttonChunk).toBeDefined();
       expect(cardChunk).toBeDefined();
     });
   });
 
-  describe('chunkHybrid', () => {
-    it('should combine multiple chunking strategies', () => {
+  describe("chunkHybrid", () => {
+    it("should combine multiple chunking strategies", () => {
       const chunks = chunker.chunkHybrid(mockCssContent, mockUsageData);
-      
+
       expect(chunks.length).toBeGreaterThan(0);
-      
+
       // Should have different types of chunks
-      const chunkTypes = new Set(chunks.map(c => c.type));
+      const chunkTypes = new Set(chunks.map((c) => c.type));
       expect(chunkTypes.size).toBeGreaterThan(1);
     });
 
-    it('should optimize chunk distribution', () => {
+    it("should optimize chunk distribution", () => {
       const chunks = chunker.chunkHybrid(mockLargeCssContent, mockUsageData);
-      
+
       // Should respect target chunk count
-      expect(chunks.length).toBeLessThanOrEqual(mockChunkingConfig.targetChunks * 2);
-      
+      expect(chunks.length).toBeLessThanOrEqual(
+        mockChunkingConfig.targetChunks * 2,
+      );
+
       // Should have reasonable size distribution
       const totalSize = chunks.reduce((sum, chunk) => sum + chunk.size, 0);
       const averageSize = totalSize / chunks.length;
-      
+
       expect(averageSize).toBeGreaterThan(mockChunkingConfig.minChunkSize);
       expect(averageSize).toBeLessThan(mockChunkingConfig.maxChunkSize);
     });
   });
 
-  describe('processChunks', () => {
-    it('should process CSS and create chunks', () => {
+  describe("processChunks", () => {
+    it("should process CSS and create chunks", () => {
       const result = chunker.processChunks(mockCssContent, mockUsageData);
-      
+
       expect(result.chunks.length).toBeGreaterThan(0);
       expect(result.metadata).toBeDefined();
       expect(result.metadata.totalSize).toBeGreaterThan(0);
       expect(result.metadata.chunkCount).toBe(result.chunks.length);
     });
 
-    it('should include processing metadata', () => {
+    it("should include processing metadata", () => {
       const result = chunker.processChunks(mockCssContent, mockUsageData);
-      
+
       expect(result.metadata).toMatchObject({
         strategy: mockChunkingConfig.strategy,
         totalSize: expect.any(Number),
         chunkCount: expect.any(Number),
         averageChunkSize: expect.any(Number),
-        processingTime: expect.any(Number)
+        processingTime: expect.any(Number),
       });
     });
 
-    it('should handle different strategies', () => {
-      const strategies: ChunkingStrategy[] = ['size', 'usage', 'route', 'component', 'hybrid'];
-      
+    it("should handle different strategies", () => {
+      const strategies: ChunkingStrategy[] = [
+        "size",
+        "usage",
+        "route",
+        "component",
+        "hybrid",
+      ];
+
       for (const strategy of strategies) {
         const config = { ...mockChunkingConfig, strategy };
         const strategyChunker = new CssChunker(config);
-        
-        const result = strategyChunker.processChunks(mockCssContent, mockUsageData);
-        
+
+        const result = strategyChunker.processChunks(
+          mockCssContent,
+          mockUsageData,
+        );
+
         expect(result.chunks.length).toBeGreaterThan(0);
         expect(result.metadata.strategy).toBe(strategy);
       }
     });
   });
 
-  describe('optimizeChunks', () => {
-    it('should merge small chunks', () => {
+  describe("optimizeChunks", () => {
+    it("should merge small chunks", () => {
       // Create chunks with some very small ones
       const smallChunks = [
-        createMockChunk({ id: '1', name: 'small1', content: '.a{color:red}', size: 13 }),
-        createMockChunk({ id: '2', name: 'small2', content: '.b{color:blue}', size: 14 }),
-        createMockChunk({ id: '3', name: 'large', content: mockCssContent, size: mockCssContent.length })
+        createMockChunk({
+          id: "1",
+          name: "small1",
+          content: ".a{color:red}",
+          size: 13,
+        }),
+        createMockChunk({
+          id: "2",
+          name: "small2",
+          content: ".b{color:blue}",
+          size: 14,
+        }),
+        createMockChunk({
+          id: "3",
+          name: "large",
+          content: mockCssContent,
+          size: mockCssContent.length,
+        }),
       ];
-      
+
       const optimized = chunker.optimizeChunks(smallChunks);
-      
+
       // Should have fewer chunks due to merging
       expect(optimized.length).toBeLessThan(smallChunks.length);
-      
+
       // Large chunk should be preserved
-      const largeChunk = optimized.find(c => c.content.includes('button'));
+      const largeChunk = optimized.find((c) => c.content.includes("button"));
       expect(largeChunk).toBeDefined();
     });
 
-    it('should preserve chunk dependencies', () => {
+    it("should preserve chunk dependencies", () => {
       const chunksWithDeps = [
-        createMockChunk({ id: '1', name: 'base', dependencies: new Set() }),
-        createMockChunk({ id: '2', name: 'dependent', dependencies: new Set(['1']) })
+        createMockChunk({ id: "1", name: "base", dependencies: new Set() }),
+        createMockChunk({
+          id: "2",
+          name: "dependent",
+          dependencies: new Set(["1"]),
+        }),
       ];
-      
+
       const optimized = chunker.optimizeChunks(chunksWithDeps);
-      
+
       // Dependencies should be preserved
-      const dependentChunk = optimized.find(c => c.name === 'dependent');
-      expect(dependentChunk?.dependencies.has('1')).toBe(true);
+      const dependentChunk = optimized.find((c) => c.name === "dependent");
+      expect(dependentChunk?.dependencies.has("1")).toBe(true);
     });
   });
 });
@@ -654,32 +710,38 @@ describe('CssChunker', () => {
 // UTILITY FUNCTION TESTS
 // =============================================================================
 
-describe('Utility Functions', () => {
-  describe('createCssChunker', () => {
-    it('should create CSS chunker with config', () => {
+describe("Utility Functions", () => {
+  describe("createCssChunker", () => {
+    it("should create CSS chunker with config", () => {
       const chunker = createCssChunker(mockChunkingConfig);
       expect(chunker).toBeInstanceOf(CssChunker);
     });
 
-    it('should validate config', () => {
+    it("should validate config", () => {
       expect(() => {
-        createCssChunker({ ...mockChunkingConfig, strategy: 'invalid' as any });
+        createCssChunker({ ...mockChunkingConfig, strategy: "invalid" as any });
       }).toThrow();
     });
   });
 
-  describe('validateChunkingStrategy', () => {
-    it('should validate valid strategies', () => {
-      const validStrategies: ChunkingStrategy[] = ['size', 'usage', 'route', 'component', 'hybrid'];
-      
+  describe("validateChunkingStrategy", () => {
+    it("should validate valid strategies", () => {
+      const validStrategies: ChunkingStrategy[] = [
+        "size",
+        "usage",
+        "route",
+        "component",
+        "hybrid",
+      ];
+
       for (const strategy of validStrategies) {
         expect(() => validateChunkingStrategy(strategy)).not.toThrow();
       }
     });
 
-    it('should reject invalid strategies', () => {
+    it("should reject invalid strategies", () => {
       expect(() => {
-        validateChunkingStrategy('invalid' as any);
+        validateChunkingStrategy("invalid" as any);
       }).toThrow();
     });
   });
@@ -689,93 +751,120 @@ describe('Utility Functions', () => {
 // INTEGRATION TESTS
 // =============================================================================
 
-describe('Integration Tests', () => {
-  it('should create complete chunking pipeline', () => {
+describe("Integration Tests", () => {
+  it("should create complete chunking pipeline", () => {
     const chunker = createCssChunker(mockChunkingConfig);
-    
+
     // Process large CSS with complex usage patterns
     const complexUsageData = {
       files: [
         ...mockUsageData.files,
         {
-          path: '/src/components/ComplexComponent.tsx',
+          path: "/src/components/ComplexComponent.tsx",
           classes: Array.from({ length: 50 }, (_, i) => `component-${i}`),
-          frequency: Array.from({ length: 50 }, (_, i) => ({ [`component-${i}`]: i + 1 }))
-            .reduce((acc, curr) => ({ ...acc, ...curr }), {})
-        }
+          frequency: Array.from({ length: 50 }, (_, i) => ({
+            [`component-${i}`]: i + 1,
+          })).reduce((acc, curr) => ({ ...acc, ...curr }), {}),
+        },
       ],
       routes: [
         ...mockUsageData.routes,
-        { path: '/complex', components: ['ComplexComponent'], critical: false }
-      ]
+        { path: "/complex", components: ["ComplexComponent"], critical: false },
+      ],
     };
-    
+
     const result = chunker.processChunks(mockLargeCssContent, complexUsageData);
-    
+
     // Should create reasonable number of chunks
     expect(result.chunks.length).toBeGreaterThan(1);
     expect(result.chunks.length).toBeLessThanOrEqual(10);
-    
+
     // Should preserve all content
-    const totalContent = result.chunks.map(c => c.content).join('');
+    const totalContent = result.chunks.map((c) => c.content).join("");
     expect(totalContent.length).toBeGreaterThan(0);
-    
+
     // Should have reasonable metadata
     expect(result.metadata.totalSize).toBeGreaterThan(0);
     expect(result.metadata.averageChunkSize).toBeGreaterThan(0);
     expect(result.metadata.processingTime).toBeGreaterThan(0);
   });
 
-  it('should handle edge cases gracefully', () => {
+  it("should handle edge cases gracefully", () => {
     const chunker = createCssChunker(mockChunkingConfig);
-    
+
     // Empty CSS
-    const emptyResult = chunker.processChunks('', mockUsageData);
+    const emptyResult = chunker.processChunks("", mockUsageData);
     expect(emptyResult.chunks).toHaveLength(0);
-    
+
     // CSS with only comments
-    const commentOnlyResult = chunker.processChunks('/* just comments */', mockUsageData);
+    const commentOnlyResult = chunker.processChunks(
+      "/* just comments */",
+      mockUsageData,
+    );
     expect(commentOnlyResult.chunks.length).toBeLessThanOrEqual(1);
-    
+
     // CSS with invalid syntax
-    const invalidCssResult = chunker.processChunks('.invalid { color: ; }', mockUsageData);
+    const invalidCssResult = chunker.processChunks(
+      ".invalid { color: ; }",
+      mockUsageData,
+    );
     expect(invalidCssResult.chunks.length).toBeGreaterThan(0);
   });
 
-  it('should work with different chunking configurations', () => {
+  it("should work with different chunking configurations", () => {
     const configs = [
-      { ...mockChunkingConfig, strategy: 'size' as ChunkingStrategy, maxChunkSize: 20000 },
-      { ...mockChunkingConfig, strategy: 'usage' as ChunkingStrategy, targetChunks: 5 },
-      { ...mockChunkingConfig, strategy: 'route' as ChunkingStrategy, routeBased: true },
-      { ...mockChunkingConfig, strategy: 'component' as ChunkingStrategy, componentBased: true },
-      { ...mockChunkingConfig, strategy: 'hybrid' as ChunkingStrategy, splitVendor: true }
+      {
+        ...mockChunkingConfig,
+        strategy: "size" as ChunkingStrategy,
+        maxChunkSize: 20000,
+      },
+      {
+        ...mockChunkingConfig,
+        strategy: "usage" as ChunkingStrategy,
+        targetChunks: 5,
+      },
+      {
+        ...mockChunkingConfig,
+        strategy: "route" as ChunkingStrategy,
+        routeBased: true,
+      },
+      {
+        ...mockChunkingConfig,
+        strategy: "component" as ChunkingStrategy,
+        componentBased: true,
+      },
+      {
+        ...mockChunkingConfig,
+        strategy: "hybrid" as ChunkingStrategy,
+        splitVendor: true,
+      },
     ];
-    
+
     for (const config of configs) {
       const chunker = createCssChunker(config);
       const result = chunker.processChunks(mockCssContent, mockUsageData);
-      
+
       expect(result.chunks.length).toBeGreaterThan(0);
       expect(result.metadata.strategy).toBe(config.strategy);
     }
   });
 
-  it('should maintain CSS rule integrity across chunks', () => {
+  it("should maintain CSS rule integrity across chunks", () => {
     const chunker = createCssChunker({
       ...mockChunkingConfig,
-      strategy: 'size',
-      maxChunkSize: 500 // Force splitting
+      strategy: "size",
+      maxChunkSize: 500, // Force splitting
     });
-    
+
     const result = chunker.processChunks(mockCssContent, mockUsageData);
-    
+
     // Check that CSS rules are not broken across chunks
     for (const chunk of result.chunks) {
       // Count opening and closing braces
       const openBraces = (chunk.content.match(/\{/g) || []).length;
       const closeBraces = (chunk.content.match(/\}/g) || []).length;
-      
+
       expect(openBraces).toBe(closeBraces);
     }
   });
-}); 
+});

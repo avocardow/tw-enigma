@@ -26,8 +26,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'pnpm'
+          node-version: "20"
+          cache: "pnpm"
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -67,9 +67,9 @@ jobs:
           release_name: v${{ fromJson(steps.changesets.outputs.publishedPackages)[0].version }}
           body: |
             ## Changes
-            
+
             ${{ steps.changesets.outputs.publishedPackages }}
-            
+
             See the [CHANGELOG.md](./CHANGELOG.md) for full details.
           draft: false
-          prerelease: false 
+          prerelease: false

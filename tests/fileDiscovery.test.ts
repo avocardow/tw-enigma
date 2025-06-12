@@ -21,7 +21,8 @@ describe("File Discovery Module", () => {
   const testFiles = {
     "index.html": "<html><body>Test</body></html>",
     "app.js": "console.log('test');",
-    "component.jsx": "export default function Component() { return <div>Test</div>; }",
+    "component.jsx":
+      "export default function Component() { return <div>Test</div>; }",
     "utils.ts": "export function test() { return true; }",
     "types.d.ts": "export interface Test { id: number; }",
     "styles.css": ".test { color: red; }",
@@ -62,9 +63,18 @@ describe("File Discovery Module", () => {
     it("should export supported file types", () => {
       expect(SUPPORTED_FILE_TYPES).toBeDefined();
       expect(SUPPORTED_FILE_TYPES.HTML).toEqual([".html", ".htm"]);
-      expect(SUPPORTED_FILE_TYPES.JAVASCRIPT).toEqual([".js", ".jsx", ".ts", ".tsx"]);
+      expect(SUPPORTED_FILE_TYPES.JAVASCRIPT).toEqual([
+        ".js",
+        ".jsx",
+        ".ts",
+        ".tsx",
+      ]);
       expect(SUPPORTED_FILE_TYPES.CSS).toEqual([".css"]);
-      expect(SUPPORTED_FILE_TYPES.TEMPLATE).toEqual([".vue", ".svelte", ".astro"]);
+      expect(SUPPORTED_FILE_TYPES.TEMPLATE).toEqual([
+        ".vue",
+        ".svelte",
+        ".astro",
+      ]);
     });
 
     it("should export all supported extensions", () => {
@@ -86,14 +96,18 @@ describe("File Discovery Module", () => {
     it("should reject invalid patterns", () => {
       expect(() => validateGlobPattern("")).toThrow(FileDiscoveryError);
       expect(() => validateGlobPattern("  ")).toThrow(FileDiscoveryError);
-      expect(() => validateGlobPattern(" pattern ")).toThrow(FileDiscoveryError);
+      expect(() => validateGlobPattern(" pattern ")).toThrow(
+        FileDiscoveryError,
+      );
     });
 
     it("should warn about potentially dangerous patterns", () => {
       const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
       validateGlobPattern("../dangerous");
       expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Warning: Pattern "../dangerous" contains ".."')
+        expect.stringContaining(
+          'Warning: Pattern "../dangerous" contains ".."',
+        ),
       );
       consoleSpy.mockRestore();
     });
@@ -116,19 +130,33 @@ describe("File Discovery Module", () => {
     });
 
     it("should reject missing patterns", () => {
-      expect(() => validateOptions({} as FileDiscoveryOptions)).toThrow(FileDiscoveryError);
-      expect(() => validateOptions({ patterns: [] })).toThrow(FileDiscoveryError);
+      expect(() => validateOptions({} as FileDiscoveryOptions)).toThrow(
+        FileDiscoveryError,
+      );
+      expect(() => validateOptions({ patterns: [] })).toThrow(
+        FileDiscoveryError,
+      );
     });
 
     it("should validate numeric options", () => {
-      expect(() => validateOptions({ patterns: ["*.js"], maxFiles: 0 })).toThrow(FileDiscoveryError);
-      expect(() => validateOptions({ patterns: ["*.js"], maxFiles: -1 })).toThrow(FileDiscoveryError);
-      expect(() => validateOptions({ patterns: ["*.js"], maxFiles: 10 })).not.toThrow();
+      expect(() =>
+        validateOptions({ patterns: ["*.js"], maxFiles: 0 }),
+      ).toThrow(FileDiscoveryError);
+      expect(() =>
+        validateOptions({ patterns: ["*.js"], maxFiles: -1 }),
+      ).toThrow(FileDiscoveryError);
+      expect(() =>
+        validateOptions({ patterns: ["*.js"], maxFiles: 10 }),
+      ).not.toThrow();
     });
 
     it("should validate working directory", () => {
-      expect(() => validateOptions({ patterns: ["*.js"], cwd: "" })).toThrow(FileDiscoveryError);
-      expect(() => validateOptions({ patterns: ["*.js"], cwd: "  " })).toThrow(FileDiscoveryError);
+      expect(() => validateOptions({ patterns: ["*.js"], cwd: "" })).toThrow(
+        FileDiscoveryError,
+      );
+      expect(() => validateOptions({ patterns: ["*.js"], cwd: "  " })).toThrow(
+        FileDiscoveryError,
+      );
     });
   });
 
@@ -225,7 +253,7 @@ describe("File Discovery Module", () => {
         cwd: testDir,
       };
       const result = discoverFilesSync(options);
-      
+
       expect(result.files).toContain("index.html");
       expect(result.count).toBe(1);
       expect(result.breakdown.HTML).toBe(1);
@@ -239,7 +267,7 @@ describe("File Discovery Module", () => {
         cwd: testDir,
       };
       const result = discoverFilesSync(options);
-      
+
       expect(result.files).toContain("index.html");
       expect(result.files).toContain("app.js");
       // Note: component.jsx is also included because .jsx is a JavaScript type
@@ -254,7 +282,7 @@ describe("File Discovery Module", () => {
         cwd: testDir,
       };
       const result = discoverFilesSync(options);
-      
+
       expect(result.files).toContain("index.html");
       expect(result.files).toContain("nested/deep.html");
       expect(result.count).toBe(2);
@@ -267,7 +295,7 @@ describe("File Discovery Module", () => {
         includeTypes: ["CSS"],
       };
       const result = discoverFilesSync(options);
-      
+
       expect(result.files).toContain("styles.css");
       expect(result.files).not.toContain("index.html");
       // Note: ignored.min.css is also included as it's a CSS file
@@ -281,7 +309,7 @@ describe("File Discovery Module", () => {
         excludePatterns: ["nested/**"],
       };
       const result = discoverFilesSync(options);
-      
+
       expect(result.files).not.toContain("nested/deep.html");
       expect(result.files).toContain("index.html");
     });
@@ -293,7 +321,7 @@ describe("File Discovery Module", () => {
         maxFiles: 3,
       };
       const result = discoverFilesSync(options);
-      
+
       expect(result.count).toBe(3);
       expect(result.files.length).toBe(3);
     });
@@ -304,7 +332,7 @@ describe("File Discovery Module", () => {
         cwd: testDir,
       };
       const result = discoverFilesSync(options);
-      
+
       expect(result.files).toEqual([]);
       expect(result.count).toBe(0);
       expect(result.emptyPatterns).toContain("*.nonexistent");
@@ -317,7 +345,7 @@ describe("File Discovery Module", () => {
         absolutePaths: true,
       };
       const result = discoverFilesSync(options);
-      
+
       expect(result.files[0]).toMatch(/^\/.*index\.html$/);
     });
   });
@@ -329,7 +357,7 @@ describe("File Discovery Module", () => {
         cwd: testDir,
       };
       const result = await discoverFiles(options);
-      
+
       expect(result.files).toContain("index.html");
       expect(result.count).toBe(1);
       expect(result.breakdown.HTML).toBe(1);
@@ -341,7 +369,7 @@ describe("File Discovery Module", () => {
         cwd: testDir,
       };
       const result = await discoverFiles(options);
-      
+
       expect(result.files).toContain("index.html");
       expect(result.files).toContain("app.js");
       // Note: component.jsx is also included because .jsx is a JavaScript type
@@ -378,7 +406,7 @@ describe("File Discovery Module", () => {
         excludeExtensions: config.excludeExtensions,
         absolutePaths: false,
       };
-      
+
       const result = discoverFilesSync(options);
       expect(result.files).toContain("index.html");
       expect(result.count).toBe(1);
@@ -402,7 +430,7 @@ describe("File Discovery Module", () => {
       };
 
       // Split comma-separated patterns manually for testing
-      const patterns = config.input.split(',').map(p => p.trim());
+      const patterns = config.input.split(",").map((p) => p.trim());
       const options = {
         patterns,
         cwd: testDir,
@@ -413,7 +441,7 @@ describe("File Discovery Module", () => {
         excludeExtensions: config.excludeExtensions,
         absolutePaths: false,
       };
-      
+
       const result = discoverFilesSync(options);
       expect(result.files).toContain("index.html");
       expect(result.files).toContain("app.js");
@@ -448,7 +476,7 @@ describe("File Discovery Module", () => {
         excludeExtensions: config.excludeExtensions,
         absolutePaths: false,
       };
-      
+
       const result = discoverFilesSync(options);
       expect(result.files).toContain("index.html");
       expect(result.files).toContain("app.js");
@@ -482,7 +510,7 @@ describe("File Discovery Module", () => {
         excludeExtensions: config.excludeExtensions,
         absolutePaths: false,
       };
-      
+
       const result = discoverFilesSync(options);
       // Should find supported files
       expect(result.count).toBeGreaterThan(0);
@@ -515,7 +543,7 @@ describe("File Discovery Module", () => {
         excludeExtensions: config.excludeExtensions,
         absolutePaths: false,
       };
-      
+
       const result = await discoverFiles(options);
       expect(result.files).toContain("index.html");
       expect(result.count).toBe(1);
@@ -550,16 +578,19 @@ describe("File Discovery Module", () => {
         excludeExtensions: config.excludeExtensions,
         absolutePaths: false,
       };
-      
+
       const result = discoverFilesSync(options);
       expect(result.count).toBe(2);
-      expect(result.files.every(file => 
-        file.endsWith('.js') || file.endsWith('.jsx') || 
-        file.endsWith('.ts') || file.endsWith('.tsx')
-      )).toBe(true);
-      expect(result.files.every(file => 
-        !file.includes('.min.')
-      )).toBe(true);
+      expect(
+        result.files.every(
+          (file) =>
+            file.endsWith(".js") ||
+            file.endsWith(".jsx") ||
+            file.endsWith(".ts") ||
+            file.endsWith(".tsx"),
+        ),
+      ).toBe(true);
+      expect(result.files.every((file) => !file.includes(".min."))).toBe(true);
     });
   });
 
@@ -596,7 +627,9 @@ describe("File Discovery Module", () => {
         validateGlobPattern("");
       } catch (error) {
         expect(error).toBeInstanceOf(FileDiscoveryError);
-        expect((error as FileDiscoveryError).message).toContain("Pattern must be a non-empty string");
+        expect((error as FileDiscoveryError).message).toContain(
+          "Pattern must be a non-empty string",
+        );
         expect((error as FileDiscoveryError).code).toBe("INVALID_PATTERN");
       }
     });
@@ -620,7 +653,7 @@ describe("File Discovery Module", () => {
       const start = Date.now();
       const result = discoverFilesSync(options);
       const duration = Date.now() - start;
-      
+
       expect(duration).toBeLessThan(100); // Should complete quickly
       expect(result.duration).toBeGreaterThanOrEqual(0); // Duration can be 0 for very fast operations
     });
@@ -628,13 +661,13 @@ describe("File Discovery Module", () => {
     it("should handle empty directories", () => {
       const emptyDir = join(testDir, "empty");
       mkdirSync(emptyDir);
-      
+
       const options: FileDiscoveryOptions = {
         patterns: "**/*",
         cwd: emptyDir,
       };
       const result = discoverFilesSync(options);
-      
+
       expect(result.files).toEqual([]);
       expect(result.count).toBe(0);
     });
@@ -645,11 +678,14 @@ describe("File Discovery Module", () => {
         cwd: testDir,
       };
       const result = discoverFilesSync(options);
-      
+
       expect(result.files).toEqual([]);
       expect(result.count).toBe(0);
-      expect(result.emptyPatterns).toEqual(["*.nonexistent", "*.alsononexistent"]);
+      expect(result.emptyPatterns).toEqual([
+        "*.nonexistent",
+        "*.alsononexistent",
+      ]);
       expect(result.matchedPatterns).toEqual([]);
     });
   });
-}); 
+});

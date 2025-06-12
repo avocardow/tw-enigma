@@ -17,4 +17,4 @@
     "build": "tsc",
     "dev": "tsc --watch"
   }
-} 
+}

@@ -1,6 +1,6 @@
 /**
  * Copyright (c) 2025 Rowan Cardow
- * 
+ *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
@@ -10,13 +10,16 @@
  * Provides the main API contract, hooks, and validation for the PostCSS plugin system
  */
 
-import { z } from 'zod';
-import { createLogger } from './logger.js';
-import { EnigmaPostCSSProcessor } from './postcssIntegration.js';
-import { createPluginManager, createDefaultDiscoveryOptions } from './core/pluginManager.js';
-import { createTailwindOptimizer } from './core/plugins/tailwindOptimizer.js';
-import { createCssMinifier } from './core/plugins/cssMinifier.js';
-import { createSourceMapper } from './core/plugins/sourceMapper.js';
+import { z } from "zod";
+import { createLogger } from "./logger.js";
+import { EnigmaPostCSSProcessor } from "./postcssIntegration.js";
+import {
+  createPluginManager,
+  createDefaultDiscoveryOptions,
+} from "./core/pluginManager.js";
+import { createTailwindOptimizer } from "./core/plugins/tailwindOptimizer.js";
+import { createCssMinifier } from "./core/plugins/cssMinifier.js";
+import { createSourceMapper } from "./core/plugins/sourceMapper.js";
 import type {
   PluginManager,
   EnigmaPlugin,
@@ -24,33 +27,45 @@ import type {
   ProcessorConfig,
   ProcessingResult,
   PluginHooks,
-  ValidationResult
-} from './types/plugins.js';
-import type { EnigmaConfig } from './config.js';
-import type { FrequencyAnalysisResult, PatternAnalysisResult } from './patternAnalysis.js';
+  ValidationResult,
+} from "./types/plugins.js";
+import type { EnigmaConfig } from "./config.js";
+import type {
+  FrequencyAnalysisResult,
+  PatternAnalysisResult,
+} from "./patternAnalysis.js";
 
-const logger = createLogger('plugin-api');
+const logger = createLogger("plugin-api");
 
 /**
  * Plugin API configuration schema
  */
 export const PluginApiConfigSchema = z.object({
-  plugins: z.array(z.object({
-    name: z.string(),
-    enabled: z.boolean().optional().default(true),
-    options: z.record(z.unknown()).optional().default({})
-  })).optional().default([]),
-  discovery: z.object({
-    autoDiscover: z.boolean().optional().default(true),
-    searchPaths: z.array(z.string()).optional().default(['./plugins']),
-    includeBuiltins: z.boolean().optional().default(true)
-  }).optional(),
-  processing: z.object({
-    parallel: z.boolean().optional().default(false),
-    maxConcurrency: z.number().min(1).max(10).optional().default(3),
-    timeout: z.number().min(1000).max(30000).optional().default(10000),
-    retryAttempts: z.number().min(0).max(5).optional().default(1)
-  }).optional()
+  plugins: z
+    .array(
+      z.object({
+        name: z.string(),
+        enabled: z.boolean().optional().default(true),
+        options: z.record(z.unknown()).optional().default({}),
+      }),
+    )
+    .optional()
+    .default([]),
+  discovery: z
+    .object({
+      autoDiscover: z.boolean().optional().default(true),
+      searchPaths: z.array(z.string()).optional().default(["./plugins"]),
+      includeBuiltins: z.boolean().optional().default(true),
+    })
+    .optional(),
+  processing: z
+    .object({
+      parallel: z.boolean().optional().default(false),
+      maxConcurrency: z.number().min(1).max(10).optional().default(3),
+      timeout: z.number().min(1000).max(30000).optional().default(10000),
+      retryAttempts: z.number().min(0).max(5).optional().default(1),
+    })
+    .optional(),
 });
 
 type PluginApiConfig = z.infer<typeof PluginApiConfigSchema>;
@@ -78,8 +93,8 @@ export class EnigmaPluginApi {
   constructor(config?: EnigmaConfig) {
     this.manager = createPluginManager();
     this.processor = new EnigmaPostCSSProcessor(this.manager, config);
-    
-    logger.debug('Plugin API initialized');
+
+    logger.debug("Plugin API initialized");
   }
 
   /**
@@ -87,12 +102,12 @@ export class EnigmaPluginApi {
    */
   async initialize(config: PluginApiConfig = {}): Promise<void> {
     if (this.isInitialized) {
-      logger.warn('Plugin API already initialized');
+      logger.warn("Plugin API already initialized");
       return;
     }
 
     try {
-      logger.info('Initializing plugin API', { config });
+      logger.info("Initializing plugin API", { config });
 
       // Validate configuration
       const validatedConfig = PluginApiConfigSchema.parse(config);
@@ -118,11 +133,12 @@ export class EnigmaPluginApi {
       await this.manager.initializePlugins(validatedConfig.plugins);
 
       this.isInitialized = true;
-      logger.info('Plugin API initialization completed');
-
+      logger.info("Plugin API initialization completed");
     } catch (error) {
-      logger.error('Plugin API initialization failed', { error });
-      throw new Error(`Plugin API initialization failed: ${error instanceof Error ? error.message : String(error)}`);
+      logger.error("Plugin API initialization failed", { error });
+      throw new Error(
+        `Plugin API initialization failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -132,14 +148,13 @@ export class EnigmaPluginApi {
   registerPlugin(plugin: EnigmaPlugin): void {
     try {
       this.manager.register(plugin);
-      
+
       // Trigger hook
       if (this.hooks.onPluginRegistered) {
         this.hooks.onPluginRegistered(plugin);
       }
 
       logger.debug(`Plugin ${plugin.meta.name} registered via API`);
-
     } catch (error) {
       logger.error(`Failed to register plugin ${plugin.meta.name}`, { error });
       throw error;
@@ -152,14 +167,13 @@ export class EnigmaPluginApi {
   unregisterPlugin(pluginName: string): void {
     try {
       this.manager.unregister(pluginName);
-      
+
       // Trigger hook
       if (this.hooks.onPluginUnregistered) {
         this.hooks.onPluginUnregistered(pluginName);
       }
 
       logger.debug(`Plugin ${pluginName} unregistered via API`);
-
     } catch (error) {
       logger.error(`Failed to unregister plugin ${pluginName}`, { error });
       throw error;
@@ -184,16 +198,16 @@ export class EnigmaPluginApi {
    * Process CSS through the plugin pipeline
    */
   async processCss(
-    css: string, 
+    css: string,
     options: {
       filename?: string;
       frequencyData?: FrequencyAnalysisResult;
       patternData?: PatternAnalysisResult;
       sourceMap?: boolean;
-    } = {}
+    } = {},
   ): Promise<ProcessingResult> {
     if (!this.isInitialized) {
-      throw new Error('Plugin API not initialized. Call initialize() first.');
+      throw new Error("Plugin API not initialized. Call initialize() first.");
     }
 
     try {
@@ -202,7 +216,7 @@ export class EnigmaPluginApi {
         filename: options.filename,
         sourceMap: options.sourceMap ?? false,
         frequencyData: options.frequencyData,
-        patternData: options.patternData
+        patternData: options.patternData,
       };
 
       if (this.hooks.onProcessingStart) {
@@ -217,20 +231,22 @@ export class EnigmaPluginApi {
         this.hooks.onProcessingComplete(result);
       }
 
-      logger.debug('CSS processing completed via API', {
+      logger.debug("CSS processing completed via API", {
         inputSize: css.length,
         outputSize: result.css.length,
-        duration: result.processingTime
+        duration: result.processingTime,
       });
 
       return result;
-
     } catch (error) {
-      logger.error('CSS processing failed via API', { error });
-      
+      logger.error("CSS processing failed via API", { error });
+
       // Trigger error hook
       if (this.hooks.onError) {
-        this.hooks.onError(error instanceof Error ? error : new Error(String(error)), 'processCss');
+        this.hooks.onError(
+          error instanceof Error ? error : new Error(String(error)),
+          "processCss",
+        );
       }
 
       throw error;
@@ -243,13 +259,12 @@ export class EnigmaPluginApi {
   validateConfig(config: PluginApiConfig): ValidationResult {
     try {
       PluginApiConfigSchema.parse(config);
-      
+
       // Additional plugin-specific validation
-      const pluginNames = config.plugins?.map(p => p.name) || [];
+      const pluginNames = config.plugins?.map((p) => p.name) || [];
       const validation = this.manager.validateDependencies(pluginNames);
 
       return validation;
-
     } catch (error) {
       return {
         valid: false,
@@ -257,7 +272,7 @@ export class EnigmaPluginApi {
         warnings: [],
         missingDependencies: [],
         circularDependencies: [],
-        conflicts: []
+        conflicts: [],
       };
     }
   }
@@ -267,7 +282,9 @@ export class EnigmaPluginApi {
    */
   setHooks(hooks: Partial<ApiHooks>): void {
     this.hooks = { ...this.hooks, ...hooks };
-    logger.debug('API hooks updated', { hookCount: Object.keys(this.hooks).length });
+    logger.debug("API hooks updated", {
+      hookCount: Object.keys(this.hooks).length,
+    });
   }
 
   /**
@@ -277,7 +294,7 @@ export class EnigmaPluginApi {
     return {
       registeredPlugins: this.manager.getAllPlugins().length,
       resourceStats: this.manager.getResourceStats(),
-      isInitialized: this.isInitialized
+      isInitialized: this.isInitialized,
     };
   }
 
@@ -289,11 +306,10 @@ export class EnigmaPluginApi {
       await this.manager.cleanup();
       this.isInitialized = false;
       this.hooks = {};
-      
-      logger.info('Plugin API cleanup completed');
 
+      logger.info("Plugin API cleanup completed");
     } catch (error) {
-      logger.error('Plugin API cleanup failed', { error });
+      logger.error("Plugin API cleanup failed", { error });
       throw error;
     }
   }
@@ -305,7 +321,7 @@ export class EnigmaPluginApi {
     const builtinPlugins = [
       createTailwindOptimizer(),
       createCssMinifier(),
-      createSourceMapper()
+      createSourceMapper(),
     ];
 
     for (const plugin of builtinPlugins) {
@@ -313,7 +329,9 @@ export class EnigmaPluginApi {
         this.manager.register(plugin);
         logger.debug(`Built-in plugin ${plugin.meta.name} registered`);
       } catch (error) {
-        logger.warn(`Failed to register built-in plugin ${plugin.meta.name}`, { error });
+        logger.warn(`Failed to register built-in plugin ${plugin.meta.name}`, {
+          error,
+        });
       }
     }
   }
@@ -325,11 +343,12 @@ export class EnigmaPluginApi {
     try {
       const discoveryOptions = {
         ...createDefaultDiscoveryOptions(),
-        ...discoveryConfig
+        ...discoveryConfig,
       };
 
-      const discoveredPlugins = await this.manager.discoverPlugins(discoveryOptions);
-      
+      const discoveredPlugins =
+        await this.manager.discoverPlugins(discoveryOptions);
+
       for (const plugin of discoveredPlugins) {
         if (!this.manager.hasPlugin(plugin.meta.name)) {
           this.manager.register(plugin);
@@ -337,16 +356,18 @@ export class EnigmaPluginApi {
       }
 
       logger.debug(`Discovered ${discoveredPlugins.length} plugins`);
-
     } catch (error) {
-      logger.warn('Plugin discovery failed', { error });
+      logger.warn("Plugin discovery failed", { error });
     }
   }
 
   /**
    * Configure a specific plugin
    */
-  private async configurePlugin(pluginName: string, options: Record<string, unknown>): Promise<void> {
+  private async configurePlugin(
+    pluginName: string,
+    options: Record<string, unknown>,
+  ): Promise<void> {
     const plugin = this.manager.getPlugin(pluginName);
     if (!plugin) {
       logger.warn(`Plugin ${pluginName} not found for configuration`);
@@ -371,19 +392,19 @@ export function createPluginApi(config?: EnigmaConfig): EnigmaPluginApi {
 export function createDefaultPluginConfig(): PluginApiConfig {
   return {
     plugins: [
-      { name: 'tailwind-optimizer', enabled: true },
-      { name: 'css-minifier', enabled: true },
-      { name: 'source-mapper', enabled: true }
+      { name: "tailwind-optimizer", enabled: true },
+      { name: "css-minifier", enabled: true },
+      { name: "source-mapper", enabled: true },
     ],
     discovery: {
       autoDiscover: true,
-      includeBuiltins: true
+      includeBuiltins: true,
     },
     processing: {
       parallel: false,
       maxConcurrency: 3,
-      timeout: 10000
-    }
+      timeout: 10000,
+    },
   };
 }
 
@@ -395,5 +416,5 @@ export type {
   PluginConfig,
   ProcessorConfig,
   ProcessingResult,
-  ValidationResult
-}; 
+  ValidationResult,
+};

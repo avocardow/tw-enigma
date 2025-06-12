@@ -1,23 +1,23 @@
 /**
  * Copyright (c) 2025 Rowan Cardow
- * 
+ *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
 
 /**
  * @fileoverview Atomic permission manager with comprehensive permission and ownership handling
- * @module atomicOps/AtomicPermissionManager  
+ * @module atomicOps/AtomicPermissionManager
  */
 
-import * as fs from 'fs/promises';
-import * as path from 'path';
+import * as fs from "fs/promises";
+import * as path from "path";
 
 import {
   AtomicFileOptions,
   AtomicOperationResult,
-  AtomicOperationMetrics
-} from '../types/atomicOps';
+  AtomicOperationMetrics,
+} from "../types/atomicOps";
 
 /** Permission change information */
 interface PermissionChange {
@@ -40,9 +40,9 @@ export class AtomicPermissionManager {
 
   constructor(options: AtomicFileOptions = {}) {
     this.options = {
-      tempDirectory: '',
-      tempPrefix: '.perm-',
-      tempSuffix: '.bak',
+      tempDirectory: "",
+      tempPrefix: ".perm-",
+      tempSuffix: ".bak",
       operationTimeout: 30000,
       enableFsync: true,
       preservePermissions: true,
@@ -50,12 +50,12 @@ export class AtomicPermissionManager {
       bufferSize: 64 * 1024,
       maxRetryAttempts: 3,
       enableWAL: false,
-      walDirectory: '.wal',
+      walDirectory: ".wal",
       maxRetries: 3,
       retryDelay: 100,
-      ...options
+      ...options,
     };
-    
+
     this.permissionHistory = [];
     this.metrics = this.initializeMetrics();
   }
@@ -68,14 +68,14 @@ export class AtomicPermissionManager {
    * @returns Promise resolving to operation result
    */
   async changePermissions(
-    filePath: string, 
+    filePath: string,
     newPermissions: number,
-    preserveOwnership: boolean = this.options.preserveOwnership
+    preserveOwnership: boolean = this.options.preserveOwnership,
   ): Promise<AtomicOperationResult> {
     const startTime = Date.now();
     const result: AtomicOperationResult = {
       success: false,
-      operation: 'permission_change',
+      operation: "permission_change",
       filePath,
       rollbackOperation: null,
       bytesProcessed: 0,
@@ -87,15 +87,15 @@ export class AtomicPermissionManager {
         retryAttempts: 0,
         walUsed: false,
         backupCreated: false,
-        checksumVerified: false
-      }
+        checksumVerified: false,
+      },
     };
 
     try {
       // Get current file stats
       const stats = await fs.stat(filePath);
       const oldPermissions = stats.mode;
-      
+
       // Store old ownership if preserving
       let oldOwnership: { uid: number; gid: number } | undefined;
       if (preserveOwnership) {
@@ -111,7 +111,7 @@ export class AtomicPermissionManager {
         oldPermissions,
         newPermissions,
         oldOwnership,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
 
       // Apply permission change
@@ -119,10 +119,10 @@ export class AtomicPermissionManager {
 
       // Create rollback operation
       result.rollbackOperation = {
-        type: 'permission_change',
+        type: "permission_change",
         filePath,
         originalPermissions: oldPermissions,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
 
       // Store in history
@@ -132,18 +132,24 @@ export class AtomicPermissionManager {
       result.success = true;
       result.duration = Date.now() - startTime;
       result.metadata.endTime = Date.now();
-      
-      this.updateMetrics('write', true, result.duration, 0);
-      
-      return result;
 
+      this.updateMetrics("write", true, result.duration, 0);
+
+      return result;
     } catch (error) {
-      result.error = error instanceof Error ? error.message : 'Permission change failed';
+      result.error =
+        error instanceof Error ? error.message : "Permission change failed";
       result.duration = Date.now() - startTime;
       result.metadata.endTime = Date.now();
-      
-      this.updateMetrics('write', false, result.duration, 0, 'PERMISSION_FAILED');
-      
+
+      this.updateMetrics(
+        "write",
+        false,
+        result.duration,
+        0,
+        "PERMISSION_FAILED",
+      );
+
       return result;
     }
   }
@@ -155,11 +161,15 @@ export class AtomicPermissionManager {
    * @param gid - New group ID
    * @returns Promise resolving to operation result
    */
-  async changeOwnership(filePath: string, uid: number, gid: number): Promise<AtomicOperationResult> {
+  async changeOwnership(
+    filePath: string,
+    uid: number,
+    gid: number,
+  ): Promise<AtomicOperationResult> {
     const startTime = Date.now();
     const result: AtomicOperationResult = {
       success: false,
-      operation: 'ownership_change',
+      operation: "ownership_change",
       filePath,
       rollbackOperation: null,
       bytesProcessed: 0,
@@ -171,8 +181,8 @@ export class AtomicPermissionManager {
         retryAttempts: 0,
         walUsed: false,
         backupCreated: false,
-        checksumVerified: false
-      }
+        checksumVerified: false,
+      },
     };
 
     try {
@@ -188,28 +198,34 @@ export class AtomicPermissionManager {
 
       // Create rollback operation
       result.rollbackOperation = {
-        type: 'permission_change',
+        type: "permission_change",
         filePath,
         originalPermissions: stats.mode,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
 
       // Success
       result.success = true;
       result.duration = Date.now() - startTime;
       result.metadata.endTime = Date.now();
-      
-      this.updateMetrics('write', true, result.duration, 0);
-      
-      return result;
 
+      this.updateMetrics("write", true, result.duration, 0);
+
+      return result;
     } catch (error) {
-      result.error = error instanceof Error ? error.message : 'Ownership change failed';
+      result.error =
+        error instanceof Error ? error.message : "Ownership change failed";
       result.duration = Date.now() - startTime;
       result.metadata.endTime = Date.now();
-      
-      this.updateMetrics('write', false, result.duration, 0, 'OWNERSHIP_FAILED');
-      
+
+      this.updateMetrics(
+        "write",
+        false,
+        result.duration,
+        0,
+        "OWNERSHIP_FAILED",
+      );
+
       return result;
     }
   }
@@ -220,32 +236,41 @@ export class AtomicPermissionManager {
    * @param targetPath - Target file path
    * @returns Promise resolving to operation result
    */
-  async preservePermissions(sourcePath: string, targetPath: string): Promise<AtomicOperationResult> {
+  async preservePermissions(
+    sourcePath: string,
+    targetPath: string,
+  ): Promise<AtomicOperationResult> {
     try {
       const sourceStats = await fs.stat(sourcePath);
-      
+
       const result = await this.changePermissions(targetPath, sourceStats.mode);
-      
+
       // Also preserve ownership if enabled
       if (this.options.preserveOwnership) {
-        const ownershipResult = await this.changeOwnership(targetPath, sourceStats.uid, sourceStats.gid);
+        const ownershipResult = await this.changeOwnership(
+          targetPath,
+          sourceStats.uid,
+          sourceStats.gid,
+        );
         if (!ownershipResult.success) {
           // If ownership fails but permissions succeeded, still return partial success
           result.error = `Permissions preserved but ownership failed: ${ownershipResult.error}`;
         }
       }
-      
+
       return result;
-      
     } catch (error) {
       return {
         success: false,
-        operation: 'preserve_permissions',
+        operation: "preserve_permissions",
         filePath: targetPath,
         rollbackOperation: null,
         bytesProcessed: 0,
         duration: 0,
-        error: error instanceof Error ? error.message : 'Failed to preserve permissions',
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to preserve permissions",
         metadata: {
           startTime: Date.now(),
           endTime: Date.now(),
@@ -253,8 +278,8 @@ export class AtomicPermissionManager {
           retryAttempts: 0,
           walUsed: false,
           backupCreated: false,
-          checksumVerified: false
-        }
+          checksumVerified: false,
+        },
       };
     }
   }
@@ -306,7 +331,7 @@ export class AtomicPermissionManager {
    */
   async shutdown(): Promise<void> {
     this.permissionHistory.length = 0;
-    console.log('AtomicPermissionManager shutdown complete.');
+    console.log("AtomicPermissionManager shutdown complete.");
   }
 
   private initializeMetrics(): AtomicOperationMetrics {
@@ -324,17 +349,17 @@ export class AtomicPermissionManager {
         read: 0,
         write: 0,
         delete: 0,
-        create: 0
-      }
+        create: 0,
+      },
     };
   }
 
   private updateMetrics(
-    operation: 'read' | 'write' | 'delete' | 'create',
+    operation: "read" | "write" | "delete" | "create",
     success: boolean,
     duration: number,
     bytesProcessed: number,
-    errorCode?: string
+    errorCode?: string,
   ): void {
     this.metrics.totalOperations++;
     this.metrics.operationTypes[operation]++;
@@ -345,12 +370,15 @@ export class AtomicPermissionManager {
     } else {
       this.metrics.failedOperations++;
       if (errorCode) {
-        this.metrics.errorStats[errorCode] = (this.metrics.errorStats[errorCode] || 0) + 1;
+        this.metrics.errorStats[errorCode] =
+          (this.metrics.errorStats[errorCode] || 0) + 1;
       }
     }
 
     // Update average duration
-    const totalDuration = this.metrics.averageDuration * (this.metrics.totalOperations - 1) + duration;
+    const totalDuration =
+      this.metrics.averageDuration * (this.metrics.totalOperations - 1) +
+      duration;
     this.metrics.averageDuration = totalDuration / this.metrics.totalOperations;
 
     // Update operations per second
@@ -358,4 +386,4 @@ export class AtomicPermissionManager {
       this.metrics.operationsPerSecond = 1000 / this.metrics.averageDuration;
     }
   }
-} 
+}

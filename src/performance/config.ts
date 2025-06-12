@@ -1,6 +1,6 @@
 /**
  * Copyright (c) 2025 Rowan Cardow
- * 
+ *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
@@ -10,12 +10,12 @@
  * Centralizes all configuration options for performance optimizations
  */
 
-import { EventEmitter } from 'events';
+import { EventEmitter } from "events";
 
 /**
  * Cache strategy options
  */
-export type CacheStrategy = 'lru' | 'lfu' | 'ttl' | 'arc';
+export type CacheStrategy = "lru" | "lfu" | "ttl" | "arc";
 
 /**
  * Worker task types for type-safe worker communication
@@ -25,7 +25,7 @@ export interface WorkerTask<T = unknown, R = unknown> {
   type: string;
   data: T;
   timeout?: number;
-  priority?: 'low' | 'normal' | 'high' | 'critical';
+  priority?: "low" | "normal" | "high" | "critical";
   metadata?: Record<string, unknown>;
 }
 
@@ -62,7 +62,7 @@ export interface CacheConfig {
  */
 export interface MemoryConfig {
   maxSemiSpaceSize: number; // V8 --max-semi-space-size value in MB
-  maxOldSpaceSize: number;  // V8 --max-old-space-size value in MB
+  maxOldSpaceSize: number; // V8 --max-old-space-size value in MB
   enableGCOptimization: boolean;
   memoryBudget: number; // Maximum memory usage in bytes
   enableObjectPooling: boolean;
@@ -141,8 +141,8 @@ export interface PerformanceConfig {
   streams: StreamConfig;
   batching: BatchConfig;
   enableAnalytics: boolean;
-  logLevel: 'debug' | 'info' | 'warn' | 'error';
-  environmentProfile?: 'development' | 'production' | 'testing';
+  logLevel: "debug" | "info" | "warn" | "error";
+  environmentProfile?: "development" | "production" | "testing";
 }
 
 /**
@@ -153,35 +153,35 @@ export interface PerformanceMetrics {
   operationDuration: number;
   totalExecutionTime: number;
   averageOperationTime: number;
-  
+
   // Memory metrics
   heapUsed: number;
   heapTotal: number;
   external: number;
   rss: number;
-  
+
   // Worker metrics
   activeWorkers: number;
   queuedTasks: number;
   completedTasks: number;
   failedTasks: number;
-  
+
   // Cache metrics
   cacheHits: number;
   cacheMisses: number;
   cacheSize: number;
   cacheHitRate: number;
-  
+
   // System metrics
   cpuUsage: number;
   memoryUsage: number;
   eventLoopLag: number;
-  
+
   // Performance indicators
   throughput: number; // Operations per second
   latency: number; // Average response time
   errorRate: number; // Percentage of failed operations
-  
+
   timestamp: number;
 }
 
@@ -202,14 +202,27 @@ export interface SystemResources {
  * Performance event types for EventEmitter
  */
 export interface PerformanceEvents extends EventEmitter {
-  on(event: 'metrics', listener: (metrics: PerformanceMetrics) => void): this;
-  on(event: 'warning', listener: (warning: { type: string; message: string; data?: unknown }) => void): this;
-  on(event: 'error', listener: (error: Error) => void): this;
-  on(event: 'workerStarted', listener: (workerId: string) => void): this;
-  on(event: 'workerStopped', listener: (workerId: string) => void): this;
-  on(event: 'cacheEviction', listener: (key: string, reason: string) => void): this;
-  on(event: 'memoryPressure', listener: (usage: number) => void): this;
-  on(event: 'performanceBudgetExceeded', listener: (operation: string, duration: number) => void): this;
+  on(event: "metrics", listener: (metrics: PerformanceMetrics) => void): this;
+  on(
+    event: "warning",
+    listener: (warning: {
+      type: string;
+      message: string;
+      data?: unknown;
+    }) => void,
+  ): this;
+  on(event: "error", listener: (error: Error) => void): this;
+  on(event: "workerStarted", listener: (workerId: string) => void): this;
+  on(event: "workerStopped", listener: (workerId: string) => void): this;
+  on(
+    event: "cacheEviction",
+    listener: (key: string, reason: string) => void,
+  ): this;
+  on(event: "memoryPressure", listener: (usage: number) => void): this;
+  on(
+    event: "performanceBudgetExceeded",
+    listener: (operation: string, duration: number) => void,
+  ): this;
 }
 
 /**
@@ -218,39 +231,39 @@ export interface PerformanceEvents extends EventEmitter {
 export const DEFAULT_PERFORMANCE_CONFIG: PerformanceConfig = {
   workers: {
     enabled: true,
-    poolSize: Math.max(2, Math.min(8, require('os').cpus().length)),
+    poolSize: Math.max(2, Math.min(8, require("os").cpus().length)),
     taskTimeout: 30000, // 30 seconds
     maxQueueSize: 1000,
     enableFallback: true,
   },
-  
+
   cache: {
     enabled: true,
     maxSize: 100 * 1024 * 1024, // 100MB
-    strategy: 'lru',
+    strategy: "lru",
     ttl: 3600000, // 1 hour
     persistence: false,
     compressionEnabled: true,
     memoryPressureThreshold: 0.8,
     cleanupInterval: 60000, // 1 minute
   },
-  
+
   memory: {
     maxSemiSpaceSize: 64, // 64MB for new generation
-    maxOldSpaceSize: 2048, // 2GB for old generation  
+    maxOldSpaceSize: 2048, // 2GB for old generation
     enableGCOptimization: true,
     memoryBudget: 1024 * 1024 * 1024, // 1GB
     enableObjectPooling: true,
     gcThreshold: 0.8,
   },
-  
+
   profiling: {
     enabled: false, // Disabled by default for production
     samplingRate: 99, // 99 samples per second
     enableFlameGraphs: false,
     enableMemoryProfiling: false,
     enableCPUProfiling: false,
-    outputDirectory: './performance-profiles',
+    outputDirectory: "./performance-profiles",
     autoExport: false,
     enableOpenTelemetry: false,
     // Additional properties used by profiler
@@ -260,13 +273,13 @@ export const DEFAULT_PERFORMANCE_CONFIG: PerformanceConfig = {
     enableMemoryDetails: false,
     maxSamples: 1000,
     autoAnalysis: false,
-    outputDir: './performance-profiles',
-    clinicJsPath: 'clinic',
-    zeroXPath: '0x',
+    outputDir: "./performance-profiles",
+    clinicJsPath: "clinic",
+    zeroXPath: "0x",
     enableClinicJs: false,
     enable0x: false,
   },
-  
+
   streams: {
     enabled: true,
     highWaterMark: 64 * 1024, // 64KB
@@ -274,7 +287,7 @@ export const DEFAULT_PERFORMANCE_CONFIG: PerformanceConfig = {
     maxConcurrentStreams: 10,
     chunkSize: 16 * 1024, // 16KB
   },
-  
+
   batching: {
     enabled: true,
     defaultBatchSize: 100,
@@ -284,7 +297,7 @@ export const DEFAULT_PERFORMANCE_CONFIG: PerformanceConfig = {
     maxConcurrentBatches: 5,
     maxConcurrency: 10,
     batchSize: 100,
-    priorityLevels: ['high', 'normal', 'low'],
+    priorityLevels: ["high", "normal", "low"],
     retryAttempts: 3,
     queueTimeout: 10000,
     enableDependencies: true,
@@ -294,10 +307,10 @@ export const DEFAULT_PERFORMANCE_CONFIG: PerformanceConfig = {
       maxCpuUsage: 0.8,
     },
   },
-  
+
   enableAnalytics: true,
-  logLevel: 'info',
-  environmentProfile: 'production',
+  logLevel: "info",
+  environmentProfile: "production",
 };
 
 /**
@@ -310,12 +323,12 @@ export const ENVIRONMENT_PROFILES = {
       enableFlameGraphs: true,
       enableMemoryProfiling: true,
     },
-    logLevel: 'debug' as const,
+    logLevel: "debug" as const,
     workers: {
       poolSize: 2, // Fewer workers for development
     },
   },
-  
+
   testing: {
     workers: {
       enabled: false, // Disable workers for consistent testing
@@ -326,9 +339,9 @@ export const ENVIRONMENT_PROFILES = {
     profiling: {
       enabled: false,
     },
-    logLevel: 'warn' as const,
+    logLevel: "warn" as const,
   },
-  
+
   production: {
     profiling: {
       enabled: false, // Performance overhead in production
@@ -337,32 +350,40 @@ export const ENVIRONMENT_PROFILES = {
       enableGCOptimization: true,
       maxSemiSpaceSize: 128, // Larger for production workloads
     },
-    logLevel: 'error' as const,
+    logLevel: "error" as const,
   },
 } as const;
 
 /**
  * Validates performance configuration
  */
-export function validatePerformanceConfig(config: Partial<PerformanceConfig>): string[] {
+export function validatePerformanceConfig(
+  config: Partial<PerformanceConfig>,
+): string[] {
   const errors: string[] = [];
-  
+
   if (config.workers?.poolSize && config.workers.poolSize < 1) {
-    errors.push('Worker pool size must be at least 1');
+    errors.push("Worker pool size must be at least 1");
   }
-  
+
   if (config.cache?.maxSize && config.cache.maxSize < 1024 * 1024) {
-    errors.push('Cache size must be at least 1MB');
+    errors.push("Cache size must be at least 1MB");
   }
-  
-  if (config.memory?.memoryBudget && config.memory.memoryBudget < 128 * 1024 * 1024) {
-    errors.push('Memory budget must be at least 128MB');
+
+  if (
+    config.memory?.memoryBudget &&
+    config.memory.memoryBudget < 128 * 1024 * 1024
+  ) {
+    errors.push("Memory budget must be at least 128MB");
   }
-  
-  if (config.profiling?.samplingRate && (config.profiling.samplingRate < 1 || config.profiling.samplingRate > 1000)) {
-    errors.push('Profiling sampling rate must be between 1 and 1000');
+
+  if (
+    config.profiling?.samplingRate &&
+    (config.profiling.samplingRate < 1 || config.profiling.samplingRate > 1000)
+  ) {
+    errors.push("Profiling sampling rate must be between 1 and 1000");
   }
-  
+
   return errors;
 }
 
@@ -371,20 +392,47 @@ export function validatePerformanceConfig(config: Partial<PerformanceConfig>): s
  */
 export function createEnvironmentConfig(
   baseConfig: Partial<PerformanceConfig> = {},
-  environment: keyof typeof ENVIRONMENT_PROFILES = 'production'
+  environment: keyof typeof ENVIRONMENT_PROFILES = "production",
 ): PerformanceConfig {
   const envOverrides = ENVIRONMENT_PROFILES[environment] as any;
-  
+
   return {
     ...DEFAULT_PERFORMANCE_CONFIG,
     ...baseConfig,
-    workers: { ...DEFAULT_PERFORMANCE_CONFIG.workers, ...baseConfig.workers, ...(envOverrides.workers || {}) },
-    cache: { ...DEFAULT_PERFORMANCE_CONFIG.cache, ...baseConfig.cache, ...(envOverrides.cache || {}) },
-    memory: { ...DEFAULT_PERFORMANCE_CONFIG.memory, ...baseConfig.memory, ...(envOverrides.memory || {}) },
-    profiling: { ...DEFAULT_PERFORMANCE_CONFIG.profiling, ...baseConfig.profiling, ...(envOverrides.profiling || {}) },
-    streams: { ...DEFAULT_PERFORMANCE_CONFIG.streams, ...baseConfig.streams, ...(envOverrides.streams || {}) },
-    batching: { ...DEFAULT_PERFORMANCE_CONFIG.batching, ...baseConfig.batching, ...(envOverrides.batching || {}) },
-    logLevel: envOverrides.logLevel || baseConfig.logLevel || DEFAULT_PERFORMANCE_CONFIG.logLevel,
+    workers: {
+      ...DEFAULT_PERFORMANCE_CONFIG.workers,
+      ...baseConfig.workers,
+      ...(envOverrides.workers || {}),
+    },
+    cache: {
+      ...DEFAULT_PERFORMANCE_CONFIG.cache,
+      ...baseConfig.cache,
+      ...(envOverrides.cache || {}),
+    },
+    memory: {
+      ...DEFAULT_PERFORMANCE_CONFIG.memory,
+      ...baseConfig.memory,
+      ...(envOverrides.memory || {}),
+    },
+    profiling: {
+      ...DEFAULT_PERFORMANCE_CONFIG.profiling,
+      ...baseConfig.profiling,
+      ...(envOverrides.profiling || {}),
+    },
+    streams: {
+      ...DEFAULT_PERFORMANCE_CONFIG.streams,
+      ...baseConfig.streams,
+      ...(envOverrides.streams || {}),
+    },
+    batching: {
+      ...DEFAULT_PERFORMANCE_CONFIG.batching,
+      ...baseConfig.batching,
+      ...(envOverrides.batching || {}),
+    },
+    logLevel:
+      envOverrides.logLevel ||
+      baseConfig.logLevel ||
+      DEFAULT_PERFORMANCE_CONFIG.logLevel,
     environmentProfile: environment,
   };
-} 
+}

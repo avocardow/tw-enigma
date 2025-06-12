@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { spawn } from "child_process";
 import { join } from "path";
 
-const CLI_PATH = join(process.cwd(), "dist", "bin", "enigma.js");
+const CLI_PATH = join(process.cwd(), "dist", "enigma.js");
 
 // Helper function to run CLI and capture output
 function runCLI(args: string[]): Promise<{
@@ -162,24 +162,30 @@ describe("Enhanced CLI Tests", () => {
     it("should handle missing config file gracefully", async () => {
       const result = await runCLI(["--config", "nonexistent.config.js"]);
 
-      expect(result.exitCode).toBe(1);
-      expect(result.stdout).toContain("Configuration Error");
+      // Should gracefully fall back to defaults instead of failing
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("Failed to load configuration file");
+      expect(result.stdout).toContain("Configuration loaded successfully");
     });
 
     it("should accept config file with --config flag", async () => {
       // This test expects the config file to not exist, so it should fail gracefully
       const result = await runCLI(["--config", "test.config.js"]);
 
-      expect(result.exitCode).toBe(1);
-      expect(result.stdout).toContain("Configuration Error");
+      // Should gracefully fall back to defaults instead of failing
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("Failed to load configuration file");
+      expect(result.stdout).toContain("Configuration loaded successfully");
     });
 
     it("should accept config file with -c flag", async () => {
       // This test expects the config file to not exist, so it should fail gracefully
       const result = await runCLI(["-c", "custom.config.js"]);
 
-      expect(result.exitCode).toBe(1);
-      expect(result.stdout).toContain("Configuration Error");
+      // Should gracefully fall back to defaults instead of failing
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("Failed to load configuration file");
+      expect(result.stdout).toContain("Configuration loaded successfully");
     });
   });
 
@@ -250,7 +256,9 @@ describe("Enhanced CLI Tests", () => {
 
       expect(result.exitCode).toBe(0);
       expect(result.stdout).toContain("Final configuration:");
-      expect(result.stdout).toContain('"excludePatterns":["*.test.*","*.spec.*"]');
+      expect(result.stdout).toContain(
+        '"excludePatterns":["*.test.*","*.spec.*"]',
+      );
     });
   });
 

@@ -1,15 +1,15 @@
 /**
  * Copyright (c) 2025 Rowan Cardow
- * 
+ *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { 
-  AssetHasher, 
-  CssCompressor, 
-  CssMinifier, 
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import {
+  AssetHasher,
+  CssCompressor,
+  CssMinifier,
   ManifestGenerator,
   AssetHashingOptions,
   CompressedAsset,
@@ -18,10 +18,14 @@ import {
   createCssCompressor,
   createCssMinifier,
   createManifestGenerator,
-  validateAssetHashingOptions
-} from '../../src/output/assetHasher.js';
-import { CssChunk } from '../../src/output/cssChunker.js';
-import { CompressionConfig, OptimizationConfig, OutputPaths } from '../../src/output/cssOutputConfig.js';
+  validateAssetHashingOptions,
+} from "../../src/output/assetHasher.js";
+import { CssChunk } from "../../src/output/cssChunker.js";
+import {
+  CompressionConfig,
+  OptimizationConfig,
+  OutputPaths,
+} from "../../src/output/cssOutputConfig.js";
 
 // =============================================================================
 // TEST DATA AND FIXTURES
@@ -91,25 +95,25 @@ const mockMinifiableCss = `
 `;
 
 const createMockChunk = (overrides: Partial<CssChunk> = {}): CssChunk => ({
-  id: '1',
-  name: 'main',
+  id: "1",
+  name: "main",
   content: mockCssContent,
-  size: Buffer.byteLength(mockCssContent, 'utf8'),
-  type: 'main',
+  size: Buffer.byteLength(mockCssContent, "utf8"),
+  type: "main",
   priority: 1,
   dependencies: new Set(),
-  routes: new Set(['/']),
-  components: new Set(['Header', 'Container']),
-  loadingStrategy: 'eager',
-  ...overrides
+  routes: new Set(["/"]),
+  components: new Set(["Header", "Container"]),
+  loadingStrategy: "eager",
+  ...overrides,
 });
 
 const mockCompressionConfig: CompressionConfig = {
-  type: 'auto',
+  type: "auto",
   level: 6,
   threshold: 1024,
   includeBrotli: true,
-  includeGzip: true
+  includeGzip: true,
 };
 
 const mockOptimizationConfig: OptimizationConfig = {
@@ -119,21 +123,21 @@ const mockOptimizationConfig: OptimizationConfig = {
   normalizeColors: true,
   optimizeCalc: true,
   removeEmpty: true,
-  sourceMap: false
+  sourceMap: false,
 };
 
 const mockOutputPaths: OutputPaths = {
-  css: 'dist/css',
-  assets: 'dist/assets',
-  manifest: 'dist/manifest.json',
-  reports: 'dist/reports'
+  css: "dist/css",
+  assets: "dist/assets",
+  manifest: "dist/manifest.json",
+  reports: "dist/reports",
 };
 
 // =============================================================================
 // ASSET HASHER TESTS
 // =============================================================================
 
-describe('AssetHasher', () => {
+describe("AssetHasher", () => {
   let assetHasher: AssetHasher;
 
   beforeEach(() => {
@@ -144,184 +148,188 @@ describe('AssetHasher', () => {
     assetHasher.clearCache();
   });
 
-  describe('constructor', () => {
-    it('should create with default options', () => {
+  describe("constructor", () => {
+    it("should create with default options", () => {
       const hasher = new AssetHasher();
       expect(hasher).toBeInstanceOf(AssetHasher);
     });
 
-    it('should create with custom options', () => {
+    it("should create with custom options", () => {
       const options: AssetHashingOptions = {
-        algorithm: 'sha256',
+        algorithm: "sha256",
         length: 16,
         includeContent: true,
         includeMetadata: true,
         generateIntegrity: true,
-        integrityAlgorithm: 'sha512'
+        integrityAlgorithm: "sha512",
       };
 
       const hasher = new AssetHasher(options);
       expect(hasher).toBeInstanceOf(AssetHasher);
     });
 
-    it('should validate options with Zod schema', () => {
+    it("should validate options with Zod schema", () => {
       expect(() => {
-        new AssetHasher({ algorithm: 'invalid' as any });
+        new AssetHasher({ algorithm: "invalid" as any });
       }).toThrow();
     });
   });
 
-  describe('hashContent', () => {
-    it('should hash CSS content successfully', () => {
-      const result = assetHasher.hashContent(mockCssContent, 'main.css');
+  describe("hashContent", () => {
+    it("should hash CSS content successfully", () => {
+      const result = assetHasher.hashContent(mockCssContent, "main.css");
 
       expect(result).toMatchObject({
-        original: 'main.css',
+        original: "main.css",
         hashed: expect.stringMatching(/^main\.[a-f0-9]{8}\.css$/),
         hash: expect.stringMatching(/^[a-f0-9]{8}$/),
-        algorithm: 'xxhash',
+        algorithm: "xxhash",
         size: expect.any(Number),
-        mimeType: 'text/css',
-        lastModified: expect.any(Date)
+        mimeType: "text/css",
+        lastModified: expect.any(Date),
       });
 
       expect(result.integrity).toMatch(/^sha384-/);
     });
 
-    it('should generate different hashes for different content', () => {
-      const result1 = assetHasher.hashContent('content1', 'test1.css');
-      const result2 = assetHasher.hashContent('content2', 'test2.css');
+    it("should generate different hashes for different content", () => {
+      const result1 = assetHasher.hashContent("content1", "test1.css");
+      const result2 = assetHasher.hashContent("content2", "test2.css");
 
       expect(result1.hash).not.toBe(result2.hash);
       expect(result1.hashed).not.toBe(result2.hashed);
     });
 
-    it('should generate same hash for identical content', () => {
-      const result1 = assetHasher.hashContent(mockCssContent, 'test.css');
-      const result2 = assetHasher.hashContent(mockCssContent, 'test.css');
+    it("should generate same hash for identical content", () => {
+      const result1 = assetHasher.hashContent(mockCssContent, "test.css");
+      const result2 = assetHasher.hashContent(mockCssContent, "test.css");
 
       expect(result1.hash).toBe(result2.hash);
       expect(result1.hashed).toBe(result2.hashed);
     });
 
-    it('should respect hash length option', () => {
+    it("should respect hash length option", () => {
       const hasher = new AssetHasher({ length: 16 });
-      const result = hasher.hashContent(mockCssContent, 'test.css');
+      const result = hasher.hashContent(mockCssContent, "test.css");
 
       expect(result.hash).toHaveLength(16);
       expect(result.hashed).toMatch(/^test\.[a-f0-9]{16}\.css$/);
     });
 
-    it('should support different hash algorithms', () => {
-      const algorithms: Array<AssetHashingOptions['algorithm']> = ['md5', 'sha1', 'sha256'];
+    it("should support different hash algorithms", () => {
+      const algorithms: Array<AssetHashingOptions["algorithm"]> = [
+        "md5",
+        "sha1",
+        "sha256",
+      ];
 
       for (const algorithm of algorithms) {
         const hasher = new AssetHasher({ algorithm });
-        const result = hasher.hashContent(mockCssContent, 'test.css');
+        const result = hasher.hashContent(mockCssContent, "test.css");
 
         expect(result.algorithm).toBe(algorithm);
         expect(result.hash).toMatch(/^[a-f0-9]+$/);
       }
     });
 
-    it('should generate integrity hash when enabled', () => {
-      const hasher = new AssetHasher({ 
+    it("should generate integrity hash when enabled", () => {
+      const hasher = new AssetHasher({
         generateIntegrity: true,
-        integrityAlgorithm: 'sha256' 
+        integrityAlgorithm: "sha256",
       });
-      const result = hasher.hashContent(mockCssContent, 'test.css');
+      const result = hasher.hashContent(mockCssContent, "test.css");
 
       expect(result.integrity).toMatch(/^sha256-/);
     });
 
-    it('should not generate integrity hash when disabled', () => {
+    it("should not generate integrity hash when disabled", () => {
       const hasher = new AssetHasher({ generateIntegrity: false });
-      const result = hasher.hashContent(mockCssContent, 'test.css');
+      const result = hasher.hashContent(mockCssContent, "test.css");
 
       expect(result.integrity).toBeUndefined();
     });
 
-    it('should handle metadata inclusion', () => {
+    it("should handle metadata inclusion", () => {
       const hasher = new AssetHasher({ includeMetadata: true });
-      const result1 = hasher.hashContent(mockCssContent, 'test1.css');
-      const result2 = hasher.hashContent(mockCssContent, 'test2.css');
+      const result1 = hasher.hashContent(mockCssContent, "test1.css");
+      const result2 = hasher.hashContent(mockCssContent, "test2.css");
 
       // Different filenames should produce different hashes when metadata is included
       expect(result1.hash).not.toBe(result2.hash);
     });
   });
 
-  describe('hashChunk', () => {
-    it('should hash a CSS chunk', () => {
+  describe("hashChunk", () => {
+    it("should hash a CSS chunk", () => {
       const chunk = createMockChunk();
       const result = assetHasher.hashChunk(chunk);
 
-      expect(result.original).toBe('main.css');
+      expect(result.original).toBe("main.css");
       expect(result.hashed).toMatch(/^main\.[a-f0-9]{8}\.css$/);
       expect(result.size).toBe(chunk.size);
     });
 
-    it('should handle chunks with different names', () => {
-      const chunk1 = createMockChunk({ name: 'vendor' });
-      const chunk2 = createMockChunk({ name: 'critical' });
+    it("should handle chunks with different names", () => {
+      const chunk1 = createMockChunk({ name: "vendor" });
+      const chunk2 = createMockChunk({ name: "critical" });
 
       const result1 = assetHasher.hashChunk(chunk1);
       const result2 = assetHasher.hashChunk(chunk2);
 
-      expect(result1.original).toBe('vendor.css');
-      expect(result2.original).toBe('critical.css');
+      expect(result1.original).toBe("vendor.css");
+      expect(result2.original).toBe("critical.css");
     });
   });
 
-  describe('hashChunks', () => {
-    it('should hash multiple chunks', () => {
+  describe("hashChunks", () => {
+    it("should hash multiple chunks", () => {
       const chunks = [
-        createMockChunk({ id: '1', name: 'main' }),
-        createMockChunk({ id: '2', name: 'vendor' }),
-        createMockChunk({ id: '3', name: 'critical' })
+        createMockChunk({ id: "1", name: "main" }),
+        createMockChunk({ id: "2", name: "vendor" }),
+        createMockChunk({ id: "3", name: "critical" }),
       ];
 
       const results = assetHasher.hashChunks(chunks);
 
       expect(results.size).toBe(3);
-      expect(results.has('1')).toBe(true);
-      expect(results.has('2')).toBe(true);
-      expect(results.has('3')).toBe(true);
+      expect(results.has("1")).toBe(true);
+      expect(results.has("2")).toBe(true);
+      expect(results.has("3")).toBe(true);
 
-      const mainResult = results.get('1')!;
-      expect(mainResult.original).toBe('main.css');
+      const mainResult = results.get("1")!;
+      expect(mainResult.original).toBe("main.css");
     });
 
-    it('should handle empty chunks array', () => {
+    it("should handle empty chunks array", () => {
       const results = assetHasher.hashChunks([]);
       expect(results.size).toBe(0);
     });
   });
 
-  describe('cache functionality', () => {
-    it('should cache hash results', () => {
-      const spy = jest.spyOn(require('crypto'), 'createHash');
-      
+  describe("cache functionality", () => {
+    it("should cache hash results", () => {
+      const spy = jest.spyOn(require("crypto"), "createHash");
+
       // First call should create hash
-      assetHasher.hashContent(mockCssContent, 'test.css');
+      assetHasher.hashContent(mockCssContent, "test.css");
       const firstCallCount = spy.mock.calls.length;
 
       // Second call should use cache
-      assetHasher.hashContent(mockCssContent, 'test.css');
+      assetHasher.hashContent(mockCssContent, "test.css");
       const secondCallCount = spy.mock.calls.length;
 
       expect(secondCallCount).toBe(firstCallCount);
       spy.mockRestore();
     });
 
-    it('should clear cache', () => {
-      assetHasher.hashContent(mockCssContent, 'test.css');
-      
+    it("should clear cache", () => {
+      assetHasher.hashContent(mockCssContent, "test.css");
+
       const stats = assetHasher.getCacheStats();
       expect(stats.size).toBeGreaterThan(0);
 
       assetHasher.clearCache();
-      
+
       const clearedStats = assetHasher.getCacheStats();
       expect(clearedStats.size).toBe(0);
     });
@@ -332,115 +340,130 @@ describe('AssetHasher', () => {
 // CSS COMPRESSOR TESTS
 // =============================================================================
 
-describe('CssCompressor', () => {
+describe("CssCompressor", () => {
   let compressor: CssCompressor;
 
   beforeEach(() => {
     compressor = new CssCompressor(mockCompressionConfig);
   });
 
-  describe('constructor', () => {
-    it('should create with compression config', () => {
+  describe("constructor", () => {
+    it("should create with compression config", () => {
       expect(compressor).toBeInstanceOf(CssCompressor);
     });
   });
 
-  describe('compressContent', () => {
-    it('should compress CSS content with gzip', async () => {
+  describe("compressContent", () => {
+    it("should compress CSS content with gzip", async () => {
       const config: CompressionConfig = {
         ...mockCompressionConfig,
-        type: 'gzip'
+        type: "gzip",
       };
       const gzipCompressor = new CssCompressor(config);
 
-      const results = await gzipCompressor.compressContent(mockCssContent, 'test.css');
+      const results = await gzipCompressor.compressContent(
+        mockCssContent,
+        "test.css",
+      );
 
       expect(results).toHaveLength(1);
       expect(results[0]).toMatchObject({
-        originalPath: 'test.css',
-        compressedPath: 'test.css.gz',
+        originalPath: "test.css",
+        compressedPath: "test.css.gz",
         originalSize: expect.any(Number),
         compressedSize: expect.any(Number),
         compressionRatio: expect.any(Number),
-        compressionType: 'gzip',
+        compressionType: "gzip",
         compressionLevel: config.level,
-        isMinified: true
+        isMinified: true,
       });
 
       expect(results[0].compressedSize).toBeLessThan(results[0].originalSize);
     });
 
-    it('should compress CSS content with brotli', async () => {
+    it("should compress CSS content with brotli", async () => {
       const config: CompressionConfig = {
         ...mockCompressionConfig,
-        type: 'brotli'
+        type: "brotli",
       };
       const brotliCompressor = new CssCompressor(config);
 
-      const results = await brotliCompressor.compressContent(mockCssContent, 'test.css');
+      const results = await brotliCompressor.compressContent(
+        mockCssContent,
+        "test.css",
+      );
 
       expect(results).toHaveLength(1);
-      expect(results[0].compressionType).toBe('brotli');
-      expect(results[0].compressedPath).toBe('test.css.br');
+      expect(results[0].compressionType).toBe("brotli");
+      expect(results[0].compressedPath).toBe("test.css.br");
     });
 
-    it('should compress with both formats when type is auto', async () => {
-      const results = await compressor.compressContent(mockCssContent, 'test.css');
+    it("should compress with both formats when type is auto", async () => {
+      const results = await compressor.compressContent(
+        mockCssContent,
+        "test.css",
+      );
 
       expect(results).toHaveLength(2);
-      
-      const brotliResult = results.find(r => r.compressionType === 'brotli');
-      const gzipResult = results.find(r => r.compressionType === 'gzip');
+
+      const brotliResult = results.find((r) => r.compressionType === "brotli");
+      const gzipResult = results.find((r) => r.compressionType === "gzip");
 
       expect(brotliResult).toBeDefined();
       expect(gzipResult).toBeDefined();
     });
 
-    it('should skip compression for files below threshold', async () => {
+    it("should skip compression for files below threshold", async () => {
       const config: CompressionConfig = {
         ...mockCompressionConfig,
-        threshold: 10000 // Higher than our test content
+        threshold: 10000, // Higher than our test content
       };
       const thresholdCompressor = new CssCompressor(config);
 
-      const results = await thresholdCompressor.compressContent(mockCssContent, 'test.css');
+      const results = await thresholdCompressor.compressContent(
+        mockCssContent,
+        "test.css",
+      );
 
       expect(results).toHaveLength(0);
     });
 
-    it('should handle compression errors gracefully', async () => {
+    it("should handle compression errors gracefully", async () => {
       // Mock a compression failure
-      const originalGzip = require('zlib').gzip;
-      require('zlib').gzip = vi.fn((content, options, callback) => {
-        callback(new Error('Compression failed'));
+      const originalGzip = require("zlib").gzip;
+      require("zlib").gzip = vi.fn((content, options, callback) => {
+        callback(new Error("Compression failed"));
       });
 
-      const results = await compressor.compressContent(mockCssContent, 'test.css');
+      const results = await compressor.compressContent(
+        mockCssContent,
+        "test.css",
+      );
 
       // Should return partial results (brotli might still work)
       expect(results.length).toBeLessThanOrEqual(2);
 
       // Restore original function
-      require('zlib').gzip = originalGzip;
+      require("zlib").gzip = originalGzip;
     });
   });
 
-  describe('compressChunk', () => {
-    it('should compress a CSS chunk', async () => {
+  describe("compressChunk", () => {
+    it("should compress a CSS chunk", async () => {
       const chunk = createMockChunk();
       const results = await compressor.compressChunk(chunk);
 
       expect(results.length).toBeGreaterThan(0);
-      expect(results[0].originalPath).toBe('main.css');
+      expect(results[0].originalPath).toBe("main.css");
     });
   });
 
-  describe('compressChunks', () => {
-    it('should compress multiple chunks in parallel', async () => {
+  describe("compressChunks", () => {
+    it("should compress multiple chunks in parallel", async () => {
       const chunks = [
-        createMockChunk({ id: '1', name: 'main' }),
-        createMockChunk({ id: '2', name: 'vendor' }),
-        createMockChunk({ id: '3', name: 'critical' })
+        createMockChunk({ id: "1", name: "main" }),
+        createMockChunk({ id: "2", name: "vendor" }),
+        createMockChunk({ id: "3", name: "critical" }),
       ];
 
       const startTime = Date.now();
@@ -448,16 +471,16 @@ describe('CssCompressor', () => {
       const endTime = Date.now();
 
       expect(results.size).toBe(3);
-      expect(results.has('1')).toBe(true);
-      expect(results.has('2')).toBe(true);
-      expect(results.has('3')).toBe(true);
+      expect(results.has("1")).toBe(true);
+      expect(results.has("2")).toBe(true);
+      expect(results.has("3")).toBe(true);
 
       // Parallel processing should be faster than sequential
       // This is a rough test, but processing should complete reasonably quickly
       expect(endTime - startTime).toBeLessThan(5000);
     });
 
-    it('should handle empty chunks array', async () => {
+    it("should handle empty chunks array", async () => {
       const results = await compressor.compressChunks([]);
       expect(results.size).toBe(0);
     });
@@ -468,42 +491,45 @@ describe('CssCompressor', () => {
 // CSS MINIFIER TESTS
 // =============================================================================
 
-describe('CssMinifier', () => {
+describe("CssMinifier", () => {
   let minifier: CssMinifier;
 
   beforeEach(() => {
     minifier = new CssMinifier(mockOptimizationConfig);
   });
 
-  describe('constructor', () => {
-    it('should create with optimization config', () => {
+  describe("constructor", () => {
+    it("should create with optimization config", () => {
       expect(minifier).toBeInstanceOf(CssMinifier);
     });
   });
 
-  describe('minifyCss', () => {
-    it('should minify CSS when minification is enabled', async () => {
-      const result = await minifier.minifyCss(mockMinifiableCss, 'test.css');
+  describe("minifyCss", () => {
+    it("should minify CSS when minification is enabled", async () => {
+      const result = await minifier.minifyCss(mockMinifiableCss, "test.css");
 
       expect(result.minified).toBeDefined();
       expect(result.stats.minifiedSize).toBeLessThan(result.stats.originalSize);
       expect(result.stats.reduction).toBeGreaterThan(0);
     });
 
-    it('should skip minification when disabled', async () => {
+    it("should skip minification when disabled", async () => {
       const config: OptimizationConfig = {
         ...mockOptimizationConfig,
-        minify: false
+        minify: false,
       };
       const noMinifyMinifier = new CssMinifier(config);
 
-      const result = await noMinifyMinifier.minifyCss(mockMinifiableCss, 'test.css');
+      const result = await noMinifyMinifier.minifyCss(
+        mockMinifiableCss,
+        "test.css",
+      );
 
       expect(result.minified).toBe(mockMinifiableCss);
       expect(result.stats.reduction).toBe(0);
     });
 
-    it('should remove comments when configured', async () => {
+    it("should remove comments when configured", async () => {
       const cssWithComments = `
         /* Remove this comment */
         .test { color: red; }
@@ -511,27 +537,27 @@ describe('CssMinifier', () => {
         .important { color: blue; }
       `;
 
-      const result = await minifier.minifyCss(cssWithComments, 'test.css');
+      const result = await minifier.minifyCss(cssWithComments, "test.css");
 
-      expect(result.minified).not.toContain('Remove this comment');
-      expect(result.minified).toContain('Keep this important comment');
+      expect(result.minified).not.toContain("Remove this comment");
+      expect(result.minified).toContain("Keep this important comment");
     });
 
-    it('should merge duplicate selectors when configured', async () => {
+    it("should merge duplicate selectors when configured", async () => {
       const cssWithDuplicates = `
         .test { color: red; }
         .other { background: blue; }
         .test { margin: 10px; }
       `;
 
-      const result = await minifier.minifyCss(cssWithDuplicates, 'test.css');
+      const result = await minifier.minifyCss(cssWithDuplicates, "test.css");
 
       // Should have merged .test rules
       const testRuleCount = (result.minified.match(/\.test/g) || []).length;
       expect(testRuleCount).toBe(1);
     });
 
-    it('should normalize colors when configured', async () => {
+    it("should normalize colors when configured", async () => {
       const cssWithColors = `
         .test {
           color: #ff0000;
@@ -540,14 +566,14 @@ describe('CssMinifier', () => {
         }
       `;
 
-      const result = await minifier.minifyCss(cssWithColors, 'test.css');
+      const result = await minifier.minifyCss(cssWithColors, "test.css");
 
       // Should convert #ff0000 to #f00, #aabbcc to #abc
-      expect(result.minified).toContain('#f00');
-      expect(result.minified).toContain('#abc');
+      expect(result.minified).toContain("#f00");
+      expect(result.minified).toContain("#abc");
     });
 
-    it('should optimize calc() expressions when configured', async () => {
+    it("should optimize calc() expressions when configured", async () => {
       const cssWithCalc = `
         .test {
           width: calc(10px);
@@ -555,49 +581,54 @@ describe('CssMinifier', () => {
         }
       `;
 
-      const result = await minifier.minifyCss(cssWithCalc, 'test.css');
+      const result = await minifier.minifyCss(cssWithCalc, "test.css");
 
       // Should simplify calc(10px) to 10px
-      expect(result.minified).toContain('10px');
-      expect(result.minified).not.toContain('calc(10px)');
+      expect(result.minified).toContain("10px");
+      expect(result.minified).not.toContain("calc(10px)");
     });
 
-    it('should remove empty rules when configured', async () => {
+    it("should remove empty rules when configured", async () => {
       const cssWithEmpty = `
         .test { color: red; }
         .empty { /* nothing */ }
         .another { margin: 10px; }
       `;
 
-      const result = await minifier.minifyCss(cssWithEmpty, 'test.css');
+      const result = await minifier.minifyCss(cssWithEmpty, "test.css");
 
-      expect(result.minified).not.toContain('.empty');
-      expect(result.minified).toContain('.test');
-      expect(result.minified).toContain('.another');
+      expect(result.minified).not.toContain(".empty");
+      expect(result.minified).toContain(".test");
+      expect(result.minified).toContain(".another");
     });
 
-    it('should generate source maps when configured', async () => {
+    it("should generate source maps when configured", async () => {
       const config: OptimizationConfig = {
         ...mockOptimizationConfig,
-        sourceMap: true
+        sourceMap: true,
       };
       const sourcemapMinifier = new CssMinifier(config);
 
-      const result = await sourcemapMinifier.minifyCss(mockMinifiableCss, 'test.css');
+      const result = await sourcemapMinifier.minifyCss(
+        mockMinifiableCss,
+        "test.css",
+      );
 
       expect(result.sourceMap).toBeDefined();
-      expect(result.sourceMap).toContain('mappings');
+      expect(result.sourceMap).toContain("mappings");
     });
 
-    it('should handle CSS processing errors gracefully', async () => {
-      const invalidCss = '.test { color: ; }'; // Invalid CSS
+    it("should handle CSS processing errors gracefully", async () => {
+      const invalidCss = ".test { color: ; }"; // Invalid CSS
 
-      await expect(minifier.minifyCss(invalidCss, 'test.css')).rejects.toThrow(/CSS minification failed/);
+      await expect(minifier.minifyCss(invalidCss, "test.css")).rejects.toThrow(
+        /CSS minification failed/,
+      );
     });
   });
 
-  describe('minifyChunk', () => {
-    it('should minify a CSS chunk', async () => {
+  describe("minifyChunk", () => {
+    it("should minify a CSS chunk", async () => {
       const chunk = createMockChunk({ content: mockMinifiableCss });
       const result = await minifier.minifyChunk(chunk);
 
@@ -608,12 +639,12 @@ describe('CssMinifier', () => {
     });
   });
 
-  describe('minifyChunks', () => {
-    it('should minify multiple chunks in parallel', async () => {
+  describe("minifyChunks", () => {
+    it("should minify multiple chunks in parallel", async () => {
       const chunks = [
-        createMockChunk({ id: '1', content: mockMinifiableCss }),
-        createMockChunk({ id: '2', content: mockMinifiableCss }),
-        createMockChunk({ id: '3', content: mockMinifiableCss })
+        createMockChunk({ id: "1", content: mockMinifiableCss }),
+        createMockChunk({ id: "2", content: mockMinifiableCss }),
+        createMockChunk({ id: "3", content: mockMinifiableCss }),
       ];
 
       const startTime = Date.now();
@@ -621,7 +652,7 @@ describe('CssMinifier', () => {
       const endTime = Date.now();
 
       expect(results).toHaveLength(3);
-      
+
       for (const result of results) {
         expect(result.content.length).toBeLessThan(mockMinifiableCss.length);
       }
@@ -636,93 +667,112 @@ describe('CssMinifier', () => {
 // MANIFEST GENERATOR TESTS
 // =============================================================================
 
-describe('ManifestGenerator', () => {
+describe("ManifestGenerator", () => {
   let generator: ManifestGenerator;
 
   beforeEach(() => {
     generator = new ManifestGenerator(mockOutputPaths);
   });
 
-  describe('constructor', () => {
-    it('should create with output paths', () => {
+  describe("constructor", () => {
+    it("should create with output paths", () => {
       expect(generator).toBeInstanceOf(ManifestGenerator);
     });
   });
 
-  describe('generateManifest', () => {
-    it('should generate a complete asset manifest', () => {
+  describe("generateManifest", () => {
+    it("should generate a complete asset manifest", () => {
       const chunks = [
-        createMockChunk({ id: '1', name: 'main', priority: 1 }),
-        createMockChunk({ id: '2', name: 'vendor', priority: 2 }),
-        createMockChunk({ id: '3', name: 'critical', priority: 3 })
+        createMockChunk({ id: "1", name: "main", priority: 1 }),
+        createMockChunk({ id: "2", name: "vendor", priority: 2 }),
+        createMockChunk({ id: "3", name: "critical", priority: 3 }),
       ];
 
       const hashes = new Map([
-        ['1', { 
-          original: 'main.css', 
-          hashed: 'main.abc123.css', 
-          hash: 'abc123', 
-          algorithm: 'xxhash' as const,
-          size: 1000,
-          mimeType: 'text/css',
-          lastModified: new Date(),
-          integrity: 'sha384-hash1'
-        }],
-        ['2', { 
-          original: 'vendor.css', 
-          hashed: 'vendor.def456.css', 
-          hash: 'def456', 
-          algorithm: 'xxhash' as const,
-          size: 2000,
-          mimeType: 'text/css',
-          lastModified: new Date(),
-          integrity: 'sha384-hash2'
-        }],
-        ['3', { 
-          original: 'critical.css', 
-          hashed: 'critical.ghi789.css', 
-          hash: 'ghi789', 
-          algorithm: 'xxhash' as const,
-          size: 500,
-          mimeType: 'text/css',
-          lastModified: new Date(),
-          integrity: 'sha384-hash3'
-        }]
+        [
+          "1",
+          {
+            original: "main.css",
+            hashed: "main.abc123.css",
+            hash: "abc123",
+            algorithm: "xxhash" as const,
+            size: 1000,
+            mimeType: "text/css",
+            lastModified: new Date(),
+            integrity: "sha384-hash1",
+          },
+        ],
+        [
+          "2",
+          {
+            original: "vendor.css",
+            hashed: "vendor.def456.css",
+            hash: "def456",
+            algorithm: "xxhash" as const,
+            size: 2000,
+            mimeType: "text/css",
+            lastModified: new Date(),
+            integrity: "sha384-hash2",
+          },
+        ],
+        [
+          "3",
+          {
+            original: "critical.css",
+            hashed: "critical.ghi789.css",
+            hash: "ghi789",
+            algorithm: "xxhash" as const,
+            size: 500,
+            mimeType: "text/css",
+            lastModified: new Date(),
+            integrity: "sha384-hash3",
+          },
+        ],
       ]);
 
       const compressions = new Map([
-        ['1', [{
-          originalPath: 'main.css',
-          compressedPath: 'main.css.gz',
-          originalSize: 1000,
-          compressedSize: 300,
-          compressionRatio: 0.3,
-          compressionType: 'gzip' as const,
-          compressionLevel: 6,
-          isMinified: true
-        }]],
-        ['2', [{
-          originalPath: 'vendor.css',
-          compressedPath: 'vendor.css.br',
-          originalSize: 2000,
-          compressedSize: 400,
-          compressionRatio: 0.2,
-          compressionType: 'brotli' as const,
-          compressionLevel: 6,
-          isMinified: true
-        }]]
+        [
+          "1",
+          [
+            {
+              originalPath: "main.css",
+              compressedPath: "main.css.gz",
+              originalSize: 1000,
+              compressedSize: 300,
+              compressionRatio: 0.3,
+              compressionType: "gzip" as const,
+              compressionLevel: 6,
+              isMinified: true,
+            },
+          ],
+        ],
+        [
+          "2",
+          [
+            {
+              originalPath: "vendor.css",
+              compressedPath: "vendor.css.br",
+              originalSize: 2000,
+              compressedSize: 400,
+              compressionRatio: 0.2,
+              compressionType: "brotli" as const,
+              compressionLevel: 6,
+              isMinified: true,
+            },
+          ],
+        ],
       ]);
 
       const manifest = generator.generateManifest(chunks, hashes, compressions);
 
       expect(manifest).toMatchObject({
-        version: '1.0.0',
+        version: "1.0.0",
         generated: expect.any(Date),
         buildConfig: {
-          strategy: 'css-output-optimization',
+          strategy: "css-output-optimization",
           optimization: true,
           compression: true,
-          hashing: true
+          hashing: true,
         },
         assets: expect.any(Object),
         entrypoints: expect.any(Object),
@@ -731,93 +781,101 @@ describe('ManifestGenerator', () => {
           totalSize: 3500,
           compressedSize: 700,
           compressionRatio: 5,
-          optimizationRatio: 1
-        }
+          optimizationRatio: 1,
+        },
       });
 
       // Check individual assets
-      expect(manifest.assets['main.css']).toMatchObject({
-        file: 'main.css',
-        src: 'main.abc123.css',
+      expect(manifest.assets["main.css"]).toMatchObject({
+        file: "main.css",
+        src: "main.abc123.css",
         size: 1000,
-        hash: 'abc123',
-        integrity: 'sha384-hash1',
-        type: 'css',
+        hash: "abc123",
+        integrity: "sha384-hash1",
+        type: "css",
         priority: 1,
-        loading: 'eager',
+        loading: "eager",
         compressed: {
           gzip: {
-            file: 'main.css.gz',
-            size: 300
-          }
-        }
+            file: "main.css.gz",
+            size: 300,
+          },
+        },
       });
 
-      expect(manifest.assets['vendor.css']).toMatchObject({
+      expect(manifest.assets["vendor.css"]).toMatchObject({
         compressed: {
           brotli: {
-            file: 'vendor.css.br',
-            size: 400
-          }
-        }
+            file: "vendor.css.br",
+            size: 400,
+          },
+        },
       });
 
       // Check entrypoints
-      expect(manifest.entrypoints).toHaveProperty('main');
-      expect(manifest.entrypoints).toHaveProperty('secondary');
+      expect(manifest.entrypoints).toHaveProperty("main");
+      expect(manifest.entrypoints).toHaveProperty("secondary");
     });
 
-    it('should handle chunks without compression', () => {
-      const chunks = [createMockChunk({ id: '1', name: 'main' })];
+    it("should handle chunks without compression", () => {
+      const chunks = [createMockChunk({ id: "1", name: "main" })];
       const hashes = new Map([
-        ['1', { 
-          original: 'main.css', 
-          hashed: 'main.abc123.css', 
-          hash: 'abc123', 
-          algorithm: 'xxhash' as const,
-          size: 1000,
-          mimeType: 'text/css',
-          lastModified: new Date(),
-          integrity: 'sha384-hash1'
-        }]
+        [
+          "1",
+          {
+            original: "main.css",
+            hashed: "main.abc123.css",
+            hash: "abc123",
+            algorithm: "xxhash" as const,
+            size: 1000,
+            mimeType: "text/css",
+            lastModified: new Date(),
+            integrity: "sha384-hash1",
+          },
+        ],
       ]);
       const compressions = new Map();
 
       const manifest = generator.generateManifest(chunks, hashes, compressions);
 
-      expect(manifest.assets['main.css'].compressed).toBeUndefined();
+      expect(manifest.assets["main.css"].compressed).toBeUndefined();
       expect(manifest.buildConfig.compression).toBe(false);
     });
 
-    it('should handle chunks without routes or components', () => {
-      const chunks = [createMockChunk({ 
-        id: '1', 
-        name: 'main',
-        routes: new Set(),
-        components: new Set()
-      })];
+    it("should handle chunks without routes or components", () => {
+      const chunks = [
+        createMockChunk({
+          id: "1",
+          name: "main",
+          routes: new Set(),
+          components: new Set(),
+        }),
+      ];
       const hashes = new Map([
-        ['1', { 
-          original: 'main.css', 
-          hashed: 'main.abc123.css', 
-          hash: 'abc123', 
-          algorithm: 'xxhash' as const,
-          size: 1000,
-          mimeType: 'text/css',
-          lastModified: new Date(),
-          integrity: 'sha384-hash1'
-        }]
+        [
+          "1",
+          {
+            original: "main.css",
+            hashed: "main.abc123.css",
+            hash: "abc123",
+            algorithm: "xxhash" as const,
+            size: 1000,
+            mimeType: "text/css",
+            lastModified: new Date(),
+            integrity: "sha384-hash1",
+          },
+        ],
       ]);
       const compressions = new Map();
 
       const manifest = generator.generateManifest(chunks, hashes, compressions);
 
-      expect(manifest.assets['main.css'].routes).toBeUndefined();
-      expect(manifest.assets['main.css'].components).toBeUndefined();
+      expect(manifest.assets["main.css"].routes).toBeUndefined();
+      expect(manifest.assets["main.css"].components).toBeUndefined();
     });
 
-    it('should skip chunks without hashes', () => {
-      const chunks = [createMockChunk({ id: '1', name: 'main' })];
+    it("should skip chunks without hashes", () => {
+      const chunks = [createMockChunk({ id: "1", name: "main" })];
       const hashes = new Map(); // No hashes
       const compressions = new Map();
 
@@ -828,16 +886,16 @@ describe('ManifestGenerator', () => {
     });
   });
 
-  describe('saveManifest', () => {
-    it('should save manifest successfully', async () => {
+  describe("saveManifest", () => {
+    it("should save manifest successfully", async () => {
       const manifest: AssetManifest = {
-        version: '1.0.0',
+        version: "1.0.0",
         generated: new Date(),
         buildConfig: {
-          strategy: 'test',
+          strategy: "test",
           optimization: true,
           compression: true,
-          hashing: true
+          hashing: true,
         },
         assets: {},
         entrypoints: {},
@@ -846,11 +904,13 @@ describe('ManifestGenerator', () => {
           totalSize: 0,
           compressedSize: 0,
           compressionRatio: 1,
-          optimizationRatio: 1
-        }
+          optimizationRatio: 1,
+        },
       };
 
-      await expect(generator.saveManifest(manifest, 'test-manifest.json')).resolves.toBeUndefined();
+      await expect(
+        generator.saveManifest(manifest, "test-manifest.json"),
+      ).resolves.toBeUndefined();
     });
   });
 });
@@ -859,78 +919,78 @@ describe('ManifestGenerator', () => {
 // UTILITY FUNCTION TESTS
 // =============================================================================
 
-describe('Utility Functions', () => {
-  describe('createAssetHasher', () => {
-    it('should create asset hasher with default options', () => {
+describe("Utility Functions", () => {
+  describe("createAssetHasher", () => {
+    it("should create asset hasher with default options", () => {
       const hasher = createAssetHasher();
       expect(hasher).toBeInstanceOf(AssetHasher);
     });
 
-    it('should create asset hasher with custom options', () => {
-      const options = { algorithm: 'sha256' as const, length: 16 };
+    it("should create asset hasher with custom options", () => {
+      const options = { algorithm: "sha256" as const, length: 16 };
       const hasher = createAssetHasher(options);
       expect(hasher).toBeInstanceOf(AssetHasher);
     });
   });
 
-  describe('createCssCompressor', () => {
-    it('should create CSS compressor with config', () => {
+  describe("createCssCompressor", () => {
+    it("should create CSS compressor with config", () => {
       const compressor = createCssCompressor(mockCompressionConfig);
       expect(compressor).toBeInstanceOf(CssCompressor);
     });
   });
 
-  describe('createCssMinifier', () => {
-    it('should create CSS minifier with config', () => {
+  describe("createCssMinifier", () => {
+    it("should create CSS minifier with config", () => {
       const minifier = createCssMinifier(mockOptimizationConfig);
       expect(minifier).toBeInstanceOf(CssMinifier);
     });
   });
 
-  describe('createManifestGenerator', () => {
-    it('should create manifest generator with paths', () => {
+  describe("createManifestGenerator", () => {
+    it("should create manifest generator with paths", () => {
       const generator = createManifestGenerator(mockOutputPaths);
       expect(generator).toBeInstanceOf(ManifestGenerator);
     });
   });
 
-  describe('validateAssetHashingOptions', () => {
-    it('should validate valid options', () => {
+  describe("validateAssetHashingOptions", () => {
+    it("should validate valid options", () => {
       const validOptions = {
-        algorithm: 'sha256',
+        algorithm: "sha256",
         length: 10,
         includeContent: true,
         includeMetadata: false,
         generateIntegrity: true,
-        integrityAlgorithm: 'sha384'
+        integrityAlgorithm: "sha384",
       };
 
       const result = validateAssetHashingOptions(validOptions);
       expect(result).toEqual(validOptions);
     });
 
-    it('should throw on invalid options', () => {
+    it("should throw on invalid options", () => {
       const invalidOptions = {
-        algorithm: 'invalid',
-        length: -1
+        algorithm: "invalid",
+        length: -1,
       };
 
       expect(() => validateAssetHashingOptions(invalidOptions)).toThrow();
     });
 
-    it('should apply defaults for missing options', () => {
+    it("should apply defaults for missing options", () => {
       const partialOptions = {
-        algorithm: 'md5'
+        algorithm: "md5",
       };
 
       const result = validateAssetHashingOptions(partialOptions);
       expect(result).toMatchObject({
-        algorithm: 'md5',
+        algorithm: "md5",
         length: 8,
         includeContent: true,
         includeMetadata: false,
         generateIntegrity: true,
-        integrityAlgorithm: 'sha384'
+        integrityAlgorithm: "sha384",
       });
     });
   });
@@ -940,25 +1000,29 @@ describe('Utility Functions', () => {
 // INTEGRATION TESTS
 // =============================================================================
 
-describe('Integration Tests', () => {
-  it('should create complete asset optimization pipeline', async () => {
+describe("Integration Tests", () => {
+  it("should create complete asset optimization pipeline", async () => {
     // Create components
-    const hasher = createAssetHasher({ algorithm: 'sha256', length: 12 });
+    const hasher = createAssetHasher({ algorithm: "sha256", length: 12 });
     const compressor = createCssCompressor(mockCompressionConfig);
     const minifier = createCssMinifier(mockOptimizationConfig);
     const generator = createManifestGenerator(mockOutputPaths);
 
     // Create test chunks
     const chunks = [
-      createMockChunk({ id: '1', name: 'main', content: mockMinifiableCss }),
-      createMockChunk({ id: '2', name: 'vendor', content: mockCssContent })
+      createMockChunk({ id: "1", name: "main", content: mockMinifiableCss }),
+      createMockChunk({ id: "2", name: "vendor", content: mockCssContent }),
     ];
 
     // Process pipeline
     const minifiedChunks = await minifier.minifyChunks(chunks);
     const hashes = hasher.hashChunks(minifiedChunks);
     const compressions = await compressor.compressChunks(minifiedChunks);
-    const manifest = generator.generateManifest(minifiedChunks, hashes, compressions);
+    const manifest = generator.generateManifest(
+      minifiedChunks,
+      hashes,
+      compressions,
+    );
 
     // Verify complete pipeline
     expect(minifiedChunks).toHaveLength(2);
@@ -968,7 +1032,9 @@ describe('Integration Tests', () => {
 
     // Verify optimization occurred
     for (const chunk of minifiedChunks) {
-      expect(chunk.size).toBeLessThan(Buffer.byteLength(mockMinifiableCss, 'utf8'));
+      expect(chunk.size).toBeLessThan(
+        Buffer.byteLength(mockMinifiableCss, "utf8"),
+      );
     }
 
     // Verify compression occurred
@@ -987,30 +1053,34 @@ describe('Integration Tests', () => {
     expect(manifest.buildConfig.hashing).toBe(true);
   });
 
-  it('should handle error scenarios gracefully', async () => {
+  it("should handle error scenarios gracefully", async () => {
     const hasher = createAssetHasher();
     const compressor = createCssCompressor({
       ...mockCompressionConfig,
-      threshold: 999999 // Very high threshold to skip compression
+      threshold: 999999, // Very high threshold to skip compression
     });
     const minifier = createCssMinifier({
       ...mockOptimizationConfig,
-      minify: false // Disable minification
+      minify: false, // Disable minification
     });
     const generator = createManifestGenerator(mockOutputPaths);
 
-    const chunks = [createMockChunk({ id: '1', name: 'main' })];
+    const chunks = [createMockChunk({ id: "1", name: "main" })];
 
     // Process with limitations
     const minifiedChunks = await minifier.minifyChunks(chunks);
     const hashes = hasher.hashChunks(minifiedChunks);
     const compressions = await compressor.compressChunks(minifiedChunks);
-    const manifest = generator.generateManifest(minifiedChunks, hashes, compressions);
+    const manifest = generator.generateManifest(
+      minifiedChunks,
+      hashes,
+      compressions,
+    );
 
     // Should still work but with no optimization
     expect(minifiedChunks[0].content).toBe(chunks[0].content); // No minification
-    expect(compressions.get('1')).toHaveLength(0); // No compression
+    expect(compressions.get("1")).toHaveLength(0); // No compression
     expect(manifest.buildConfig.compression).toBe(false);
     expect(manifest.stats.compressionRatio).toBe(1);
   });
-}); 
+});

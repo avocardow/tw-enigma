@@ -1,15 +1,15 @@
 /**
  * Copyright (c) 2025 Rowan Cardow
- * 
+ *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
 
-import * as cheerio from 'cheerio';
-import { AnyNode } from 'domhandler';
-import * as fs from 'fs/promises';
-import { z } from 'zod';
-import type { NameGenerationResult } from './nameGeneration.js';
+import * as cheerio from "cheerio";
+import { AnyNode } from "domhandler";
+import * as fs from "fs/promises";
+import { z } from "zod";
+import type { NameGenerationResult } from "./nameGeneration.js";
 
 /**
  * Configuration options for HTML rewriting operations
@@ -17,36 +17,39 @@ import type { NameGenerationResult } from './nameGeneration.js';
 export const HtmlRewriteOptionsSchema = z.object({
   // File handling options
   createBackup: z.boolean().default(true),
-  backupSuffix: z.string().default('.backup'),
+  backupSuffix: z.string().default(".backup"),
   preserveComments: z.boolean().default(true),
   preserveWhitespace: z.boolean().default(true),
-  
+
   // Safety options
   validateOutput: z.boolean().default(true),
-  maxFileSize: z.number().min(1).default(10 * 1024 * 1024), // 10MB
+  maxFileSize: z
+    .number()
+    .min(1)
+    .default(10 * 1024 * 1024), // 10MB
   timeout: z.number().min(1).default(10000), // 10 seconds
   dryRun: z.boolean().default(false), // Test mode without actual changes
-  
+
   // HTML parsing options
   xmlMode: z.boolean().default(false),
   decodeEntities: z.boolean().default(true),
   lowerCaseAttributeNames: z.boolean().default(false),
   recognizeSelfClosing: z.boolean().default(true),
-  
-  // Pattern matching options  
+
+  // Pattern matching options
   caseSensitive: z.boolean().default(true),
   wholeWordsOnly: z.boolean().default(false),
   preserveOriginalPatterns: z.boolean().default(false), // Keep original alongside new
-  
+
   // Output formatting
   formatOutput: z.boolean().default(true),
   indentSize: z.number().min(0).max(8).default(2),
   useSpaces: z.boolean().default(true),
-  
+
   // Performance options
   enableCaching: z.boolean().default(true),
   batchSize: z.number().min(1).default(100),
-  
+
   // Logging and debugging
   verbose: z.boolean().default(false),
   logChanges: z.boolean().default(true),
@@ -81,13 +84,22 @@ export interface PatternMatchResult {
  * Advanced pattern matching condition
  */
 export interface PatternCondition {
-  type: 'attribute' | 'text' | 'tag' | 'parent' | 'sibling' | 'custom';
+  type: "attribute" | "text" | "tag" | "parent" | "sibling" | "custom";
   selector?: string;
   attribute?: string;
   value?: string | RegExp;
-  operator?: 'equals' | 'contains' | 'startsWith' | 'endsWith' | 'matches' | 'exists';
+  operator?:
+    | "equals"
+    | "contains"
+    | "startsWith"
+    | "endsWith"
+    | "matches"
+    | "exists";
   negate?: boolean;
-  customCheck?: (element: cheerio.Cheerio<AnyNode>, $: cheerio.CheerioAPI) => boolean;
+  customCheck?: (
+    element: cheerio.Cheerio<AnyNode>,
+    $: cheerio.CheerioAPI,
+  ) => boolean;
 }
 
 /**
@@ -112,35 +124,41 @@ export interface HtmlPattern {
   id: string;
   name: string;
   description?: string;
-  
+
   // Basic matching
   selector: string;
   attribute: string;
   pattern: string | RegExp;
-  replacement: string | ((match: string, element: cheerio.Cheerio<AnyNode>, context: any) => string);
-  
+  replacement:
+    | string
+    | ((
+        match: string,
+        element: cheerio.Cheerio<AnyNode>,
+        context: any,
+      ) => string);
+
   // Advanced matching
   conditions?: PatternCondition[];
   caseSensitive?: boolean;
   wholeWordOnly?: boolean;
   multipleMatches?: boolean;
-  
+
   // Replacement options
   preserveCase?: boolean;
   escapeReplacement?: boolean;
-  
+
   // Control
   priority: number;
   enabled: boolean;
   runOnce?: boolean;
   maxMatches?: number;
-  
+
   // Context and validation
   tags?: string[];
   excludeTags?: string[];
   parentSelector?: string;
   excludeParentSelector?: string;
-  
+
   // Performance
   timeout?: number;
   cacheKey?: string;
@@ -184,7 +202,7 @@ export interface HtmlRewriteResult {
   conflicts: Array<{
     patternIds: string[];
     elementSelector: string;
-    resolution: 'highest-priority' | 'first-match' | 'manual-review';
+    resolution: "highest-priority" | "first-match" | "manual-review";
     chosenPatternId?: string;
   }>;
   metadata: {
@@ -199,12 +217,15 @@ export interface HtmlRewriteResult {
     warnings: string[];
   };
   statistics: {
-    patternStats: Map<string, {
-      attempts: number;
-      successes: number;
-      failures: number;
-      conflicts: number;
-    }>;
+    patternStats: Map<
+      string,
+      {
+        attempts: number;
+        successes: number;
+        failures: number;
+        conflicts: number;
+      }
+    >;
     elementStats: {
       totalProcessed: number;
       totalModified: number;
@@ -251,10 +272,10 @@ export class HtmlRewriteError extends Error {
     message: string,
     public source?: string,
     public operation?: string,
-    public cause?: Error
+    public cause?: Error,
   ) {
     super(message);
-    this.name = 'HtmlRewriteError';
+    this.name = "HtmlRewriteError";
   }
 }
 
@@ -263,10 +284,10 @@ export class PatternValidationError extends HtmlRewriteError {
     message: string,
     public patternId: string,
     public validationErrors: string[],
-    cause?: Error
+    cause?: Error,
   ) {
-    super(message, undefined, 'pattern-validation', cause);
-    this.name = 'PatternValidationError';
+    super(message, undefined, "pattern-validation", cause);
+    this.name = "PatternValidationError";
   }
 }
 
@@ -275,10 +296,10 @@ export class BackupError extends HtmlRewriteError {
     message: string,
     public filePath: string,
     public backupPath?: string,
-    cause?: Error
+    cause?: Error,
   ) {
-    super(message, filePath, 'backup', cause);
-    this.name = 'BackupError';
+    super(message, filePath, "backup", cause);
+    this.name = "BackupError";
   }
 }
 
@@ -287,10 +308,10 @@ export class ConflictResolutionError extends HtmlRewriteError {
     message: string,
     public conflictingPatterns: string[],
     public elementSelector: string,
-    cause?: Error
+    cause?: Error,
   ) {
-    super(message, undefined, 'conflict-resolution', cause);
-    this.name = 'ConflictResolutionError';
+    super(message, undefined, "conflict-resolution", cause);
+    this.name = "ConflictResolutionError";
   }
 }
 
@@ -299,10 +320,10 @@ export class HtmlValidationError extends HtmlRewriteError {
     message: string,
     public validationErrors: string[],
     public htmlFragment?: string,
-    cause?: Error
+    cause?: Error,
   ) {
-    super(message, undefined, 'html-validation', cause);
-    this.name = 'HtmlValidationError';
+    super(message, undefined, "html-validation", cause);
+    this.name = "HtmlValidationError";
   }
 }
 
@@ -311,19 +332,23 @@ export interface FormatPreservationOptions {
   preserveIndentation: boolean;
   preserveComments: boolean;
   preserveEmptyLines: boolean;
-  indentationStyle: 'spaces' | 'tabs';
+  indentationStyle: "spaces" | "tabs";
   indentationSize: number;
-  lineEndings: 'lf' | 'crlf' | 'auto';
+  lineEndings: "lf" | "crlf" | "auto";
   trimTrailingWhitespace: boolean;
 }
 
 export interface FormatAnalysis {
-  indentationStyle: 'spaces' | 'tabs' | 'mixed' | 'none';
+  indentationStyle: "spaces" | "tabs" | "mixed" | "none";
   indentationSize: number;
-  lineEndings: 'lf' | 'crlf' | 'mixed';
+  lineEndings: "lf" | "crlf" | "mixed";
   hasTrailingWhitespace: boolean;
   preservedWhitespace: Map<string, string>; // element selector -> whitespace
-  preservedComments: Array<{ content: string; position: number; type: 'before' | 'after' | 'inline' }>;
+  preservedComments: Array<{
+    content: string;
+    position: number;
+    type: "before" | "after" | "inline";
+  }>;
   originalFormatting: {
     totalLines: number;
     emptyLines: number[];
@@ -341,7 +366,11 @@ export interface HtmlRewriterIntegration {
 export interface BatchOperationOptions {
   concurrency: number;
   continueOnError: boolean;
-  progressCallback?: (processed: number, total: number, current: string) => void;
+  progressCallback?: (
+    processed: number,
+    total: number,
+    current: string,
+  ) => void;
   errorCallback?: (file: string, error: Error) => void;
   dryRun: boolean;
   createBackups: boolean;
@@ -393,8 +422,8 @@ export class HtmlRewriter {
       timeout: 30000,
       backup: {
         enabled: true,
-        directory: '.backups',
-        suffix: '.backup',
+        directory: ".backups",
+        suffix: ".backup",
         maxBackups: 10,
         compressOld: false,
         retentionDays: 30,
@@ -407,9 +436,9 @@ export class HtmlRewriter {
       preserveIndentation: this.options.preserveWhitespace,
       preserveComments: this.options.preserveComments,
       preserveEmptyLines: this.options.preserveWhitespace,
-      indentationStyle: 'spaces',
+      indentationStyle: "spaces",
       indentationSize: 2,
-      lineEndings: 'auto',
+      lineEndings: "auto",
       trimTrailingWhitespace: false,
     };
   }
@@ -417,7 +446,9 @@ export class HtmlRewriter {
   /**
    * Set the name mapping from the name generation system
    */
-  setNameMapping(nameMapping: Map<string, string> | NameGenerationResult): void {
+  setNameMapping(
+    nameMapping: Map<string, string> | NameGenerationResult,
+  ): void {
     if (nameMapping instanceof Map) {
       this.nameMapping = nameMapping;
     } else {
@@ -432,9 +463,9 @@ export class HtmlRewriter {
     const validationResult = this.validatePattern(pattern);
     if (!validationResult.valid) {
       throw new PatternValidationError(
-        `Invalid pattern '${pattern.id}': ${validationResult.errors.join(', ')}`,
+        `Invalid pattern '${pattern.id}': ${validationResult.errors.join(", ")}`,
         pattern.id,
-        validationResult.errors
+        validationResult.errors,
       );
     }
 
@@ -474,7 +505,7 @@ export class HtmlRewriter {
    */
   async rewriteHtml(
     html: string,
-    source: string = 'string'
+    source: string = "string",
   ): Promise<HtmlRewriteResult> {
     const startTime = Date.now();
     const metadata = {
@@ -535,10 +566,14 @@ export class HtmlRewriter {
       // Serialize HTML
       const serializeStart = Date.now();
       let modifiedHtml = this.serializeHtml($);
-      statistics.performanceStats.serializationTime = Date.now() - serializeStart;
+      statistics.performanceStats.serializationTime =
+        Date.now() - serializeStart;
 
       // Restore formatting if preservation is enabled
-      if (this.formatPreservation.preserveWhitespace || this.formatPreservation.preserveIndentation) {
+      if (
+        this.formatPreservation.preserveWhitespace ||
+        this.formatPreservation.preserveIndentation
+      ) {
         modifiedHtml = this.restoreFormatting(modifiedHtml);
       }
 
@@ -564,14 +599,16 @@ export class HtmlRewriter {
         statistics: result.statistics || statistics,
       };
     } catch (error) {
-      metadata.errors.push(error instanceof Error ? error.message : String(error));
+      metadata.errors.push(
+        error instanceof Error ? error.message : String(error),
+      );
       metadata.processingTime = Date.now() - startTime;
 
       throw new HtmlRewriteError(
         `Failed to rewrite HTML: ${error instanceof Error ? error.message : String(error)}`,
         source,
-        'rewrite',
-        error instanceof Error ? error : undefined
+        "rewrite",
+        error instanceof Error ? error : undefined,
       );
     }
   }
@@ -587,7 +624,7 @@ export class HtmlRewriter {
         throw new HtmlRewriteError(
           `File size (${stats.size} bytes) exceeds maximum allowed size (${this.options.maxFileSize} bytes)`,
           filePath,
-          'file-size-check'
+          "file-size-check",
         );
       }
 
@@ -598,14 +635,14 @@ export class HtmlRewriter {
       }
 
       // Read file
-      const html = await fs.readFile(filePath, 'utf-8');
-      
+      const html = await fs.readFile(filePath, "utf-8");
+
       // Process HTML
       const result = await this.rewriteHtml(html, filePath);
-      
+
       // Write modified HTML back to file (unless dry run)
       if (!this.options.dryRun) {
-        await fs.writeFile(filePath, result.modifiedHtml, 'utf-8');
+        await fs.writeFile(filePath, result.modifiedHtml, "utf-8");
       }
 
       // Add backup path to metadata
@@ -614,18 +651,18 @@ export class HtmlRewriter {
       }
 
       result.metadata.fileSize = stats.size;
-      
+
       return result;
     } catch (error) {
       if (error instanceof HtmlRewriteError) {
         throw error;
       }
-      
+
       throw new HtmlRewriteError(
         `Failed to rewrite file: ${error instanceof Error ? error.message : String(error)}`,
         filePath,
-        'file-rewrite',
-        error instanceof Error ? error : undefined
+        "file-rewrite",
+        error instanceof Error ? error : undefined,
       );
     }
   }
@@ -639,30 +676,34 @@ export class HtmlRewriter {
 
     for (let i = 0; i < filePaths.length; i += batchSize) {
       const batch = filePaths.slice(i, i + batchSize);
-      const batchPromises = batch.map(filePath => this.rewriteFile(filePath));
-      
+      const batchPromises = batch.map((filePath) => this.rewriteFile(filePath));
+
       try {
         const batchResults = await Promise.allSettled(batchPromises);
-        
+
         for (const result of batchResults) {
-          if (result.status === 'fulfilled') {
+          if (result.status === "fulfilled") {
             results.push(result.value);
           } else {
             // Create error result for failed files
             results.push({
               success: false,
-              originalHtml: '',
-              modifiedHtml: '',
+              originalHtml: "",
+              modifiedHtml: "",
               appliedReplacements: [],
               skippedReplacements: [],
               conflicts: [],
               metadata: {
-                source: 'unknown',
+                source: "unknown",
                 processedAt: new Date(),
                 processingTime: 0,
                 totalElements: 0,
                 modifiedElements: 0,
-                errors: [result.reason instanceof Error ? result.reason.message : String(result.reason)],
+                errors: [
+                  result.reason instanceof Error
+                    ? result.reason.message
+                    : String(result.reason),
+                ],
                 warnings: [],
               },
               statistics: {
@@ -687,8 +728,8 @@ export class HtmlRewriter {
         throw new HtmlRewriteError(
           `Batch processing failed: ${error instanceof Error ? error.message : String(error)}`,
           `batch-${i / batchSize}`,
-          'batch-processing',
-          error instanceof Error ? error : undefined
+          "batch-processing",
+          error instanceof Error ? error : undefined,
         );
       }
     }
@@ -717,18 +758,27 @@ export class HtmlRewriter {
    */
   private async processReplacements(
     $: cheerio.CheerioAPI,
-    source: string
+    source: string,
   ): Promise<Partial<HtmlRewriteResult>> {
     const startTime = Date.now();
     const appliedReplacements: PatternReplacement[] = [];
-    const skippedReplacements: Array<{ patternId: string; reason: string; elementSelector: string }> = [];
-    const conflicts: Array<{ patternIds: string[]; elementSelector: string; resolution: 'highest-priority' | 'first-match' | 'manual-review'; chosenPatternId?: string }> = [];
+    const skippedReplacements: Array<{
+      patternId: string;
+      reason: string;
+      elementSelector: string;
+    }> = [];
+    const conflicts: Array<{
+      patternIds: string[];
+      elementSelector: string;
+      resolution: "highest-priority" | "first-match" | "manual-review";
+      chosenPatternId?: string;
+    }> = [];
     const errors: string[] = [];
     const warnings: string[] = [];
-    
+
     // Get enabled patterns sorted by priority
     const enabledPatterns = Array.from(this.patterns.values())
-      .filter(pattern => pattern.enabled)
+      .filter((pattern) => pattern.enabled)
       .sort((a, b) => b.priority - a.priority);
 
     if (enabledPatterns.length === 0) {
@@ -740,7 +790,7 @@ export class HtmlRewriter {
           source,
           processedAt: new Date(),
           processingTime: Date.now() - startTime,
-          totalElements: $('*').length,
+          totalElements: $("*").length,
           modifiedElements: 0,
           errors,
           warnings,
@@ -749,25 +799,44 @@ export class HtmlRewriter {
     }
 
     // Track elements that have been modified to detect conflicts
-    const elementModifications = new Map<string, Array<{ patternId: string; originalValue: string; newValue: string }>>();
-    const patternStats = new Map<string, { attempts: number; successes: number; failures: number; conflicts: number }>();
-    
+    const elementModifications = new Map<
+      string,
+      Array<{ patternId: string; originalValue: string; newValue: string }>
+    >();
+    const patternStats = new Map<
+      string,
+      {
+        attempts: number;
+        successes: number;
+        failures: number;
+        conflicts: number;
+      }
+    >();
+
     // Initialize pattern stats
     for (const pattern of enabledPatterns) {
-      patternStats.set(pattern.id, { attempts: 0, successes: 0, failures: 0, conflicts: 0 });
+      patternStats.set(pattern.id, {
+        attempts: 0,
+        successes: 0,
+        failures: 0,
+        conflicts: 0,
+      });
     }
 
     // Process each pattern
     for (const pattern of enabledPatterns) {
       try {
         // Skip if pattern has run once and is configured to run only once
-        if (pattern.runOnce && appliedReplacements.some(r => r.patternId === pattern.id)) {
+        if (
+          pattern.runOnce &&
+          appliedReplacements.some((r) => r.patternId === pattern.id)
+        ) {
           continue;
         }
 
         // Find elements matching the pattern selector
         const elements = $(pattern.selector);
-        
+
         if (elements.length === 0) {
           continue;
         }
@@ -786,7 +855,7 @@ export class HtmlRewriter {
             }
 
             // Get current attribute value
-            const currentValue = element.attr(pattern.attribute) || '';
+            const currentValue = element.attr(pattern.attribute) || "";
             if (!currentValue) {
               return; // Continue to next element
             }
@@ -805,32 +874,48 @@ export class HtmlRewriter {
             for (const match of matches) {
               try {
                 // Generate replacement value
-                const replacement = this.generateReplacement(match.matched, pattern, element, {
-                  tagName: (element.prop('tagName') as string)?.toLowerCase() || 'unknown',
-                  position: index,
-                  parentSelector: (element.parent().prop('tagName') as string) || undefined
-                });
+                const replacement = this.generateReplacement(
+                  match.matched,
+                  pattern,
+                  element,
+                  {
+                    tagName:
+                      (element.prop("tagName") as string)?.toLowerCase() ||
+                      "unknown",
+                    position: index,
+                    parentSelector:
+                      (element.parent().prop("tagName") as string) || undefined,
+                  },
+                );
 
                 // Check for conflicts with previous modifications
                 const elementKey = elementId;
                 const existingMods = elementModifications.get(elementKey) || [];
-                
+
                 // Detect conflicts
-                const conflictingMods = existingMods.filter(mod => 
-                  mod.originalValue.includes(match.matched) || 
-                  modifiedValue.includes(match.matched)
+                const conflictingMods = existingMods.filter(
+                  (mod) =>
+                    mod.originalValue.includes(match.matched) ||
+                    modifiedValue.includes(match.matched),
                 );
 
                 if (conflictingMods.length > 0) {
                   // Handle conflict based on priority
-                  const conflictingPatternIds = conflictingMods.map(mod => mod.patternId);
-                  const allConflictingIds = [...conflictingPatternIds, pattern.id];
-                  
+                  const conflictingPatternIds = conflictingMods.map(
+                    (mod) => mod.patternId,
+                  );
+                  const allConflictingIds = [
+                    ...conflictingPatternIds,
+                    pattern.id,
+                  ];
+
                   // Check if this is a higher priority pattern
                   const currentPatternPriority = pattern.priority;
-                  const hasHigherPriority = conflictingMods.every(mod => {
+                  const hasHigherPriority = conflictingMods.every((mod) => {
                     const conflictingPattern = this.patterns.get(mod.patternId);
-                    return conflictingPattern ? currentPatternPriority > conflictingPattern.priority : true;
+                    return conflictingPattern
+                      ? currentPatternPriority > conflictingPattern.priority
+                      : true;
                   });
 
                   if (hasHigherPriority) {
@@ -838,8 +923,8 @@ export class HtmlRewriter {
                     conflicts.push({
                       patternIds: allConflictingIds,
                       elementSelector: this.generateElementSelector(element),
-                      resolution: 'highest-priority',
-                      chosenPatternId: pattern.id
+                      resolution: "highest-priority",
+                      chosenPatternId: pattern.id,
                     });
 
                     // Update stats for conflicting patterns
@@ -851,8 +936,8 @@ export class HtmlRewriter {
                     // Skip this pattern due to lower priority
                     skippedReplacements.push({
                       patternId: pattern.id,
-                      reason: `Conflict with higher priority pattern(s): ${conflictingPatternIds.join(', ')}`,
-                      elementSelector: this.generateElementSelector(element)
+                      reason: `Conflict with higher priority pattern(s): ${conflictingPatternIds.join(", ")}`,
+                      elementSelector: this.generateElementSelector(element),
                     });
                     stats.conflicts++;
                     return; // Continue to next element
@@ -860,8 +945,11 @@ export class HtmlRewriter {
                 }
 
                 // Apply the replacement
-                const newValue = modifiedValue.replace(match.matched, replacement);
-                
+                const newValue = modifiedValue.replace(
+                  match.matched,
+                  replacement,
+                );
+
                 if (newValue !== modifiedValue) {
                   // Create replacement record
                   const replacementRecord: PatternReplacement = {
@@ -873,7 +961,9 @@ export class HtmlRewriter {
                       index: match.index,
                     },
                     metadata: {
-                      tagName: (element.prop('tagName') as string)?.toLowerCase() || 'unknown',
+                      tagName:
+                        (element.prop("tagName") as string)?.toLowerCase() ||
+                        "unknown",
                       attributes: this.getElementAttributes(element),
                       depth: this.getElementDepth(element),
                       hasConflicts: conflictingMods.length > 0,
@@ -892,7 +982,7 @@ export class HtmlRewriter {
                   elementModifications.get(elementKey)!.push({
                     patternId: pattern.id,
                     originalValue: currentValue,
-                    newValue: newValue
+                    newValue: newValue,
                   });
                 }
 
@@ -902,12 +992,16 @@ export class HtmlRewriter {
                 }
 
                 // Check max matches limit
-                if (pattern.maxMatches && elementReplacements.length >= pattern.maxMatches) {
+                if (
+                  pattern.maxMatches &&
+                  elementReplacements.length >= pattern.maxMatches
+                ) {
                   break;
                 }
-
               } catch (matchError) {
-                errors.push(`Error processing match for pattern '${pattern.id}': ${matchError instanceof Error ? matchError.message : String(matchError)}`);
+                errors.push(
+                  `Error processing match for pattern '${pattern.id}': ${matchError instanceof Error ? matchError.message : String(matchError)}`,
+                );
                 stats.failures++;
               }
             }
@@ -918,22 +1012,24 @@ export class HtmlRewriter {
               appliedReplacements.push(...elementReplacements);
               stats.successes++;
             }
-
           } catch (elementError) {
-            errors.push(`Error processing element for pattern '${pattern.id}': ${elementError instanceof Error ? elementError.message : String(elementError)}`);
+            errors.push(
+              `Error processing element for pattern '${pattern.id}': ${elementError instanceof Error ? elementError.message : String(elementError)}`,
+            );
             stats.failures++;
           }
         });
-
       } catch (patternError) {
-        errors.push(`Error processing pattern '${pattern.id}': ${patternError instanceof Error ? patternError.message : String(patternError)}`);
+        errors.push(
+          `Error processing pattern '${pattern.id}': ${patternError instanceof Error ? patternError.message : String(patternError)}`,
+        );
         const stats = patternStats.get(pattern.id);
         if (stats) stats.failures++;
       }
     }
 
     // Calculate statistics
-    const totalElements = $('*').length;
+    const totalElements = $("*").length;
     const modifiedElements = appliedReplacements.length; // Each replacement represents one modified element
     const processingTime = Date.now() - startTime;
 
@@ -982,46 +1078,53 @@ export class HtmlRewriter {
   /**
    * Validate pattern configuration
    */
-  private validatePattern(pattern: HtmlPattern): { valid: boolean; errors: string[] } {
+  private validatePattern(pattern: HtmlPattern): {
+    valid: boolean;
+    errors: string[];
+  } {
     const errors: string[] = [];
 
-    if (!pattern.id || pattern.id.trim() === '') {
-      errors.push('Pattern ID is required');
+    if (!pattern.id || pattern.id.trim() === "") {
+      errors.push("Pattern ID is required");
     }
 
-    if (!pattern.selector || pattern.selector.trim() === '') {
-      errors.push('Selector is required');
+    if (!pattern.selector || pattern.selector.trim() === "") {
+      errors.push("Selector is required");
     }
 
-    if (!pattern.attribute || pattern.attribute.trim() === '') {
-      errors.push('Attribute is required');
+    if (!pattern.attribute || pattern.attribute.trim() === "") {
+      errors.push("Attribute is required");
     }
 
     if (!pattern.pattern) {
-      errors.push('Pattern is required');
+      errors.push("Pattern is required");
     }
 
     if (!pattern.replacement) {
-      errors.push('Replacement is required');
+      errors.push("Replacement is required");
     }
 
-    if (typeof pattern.priority !== 'number' || pattern.priority < 0) {
-      errors.push('Priority must be a non-negative number');
+    if (typeof pattern.priority !== "number" || pattern.priority < 0) {
+      errors.push("Priority must be a non-negative number");
     }
 
     // Test CSS selector syntax
     try {
-      cheerio.load('<div></div>')(pattern.selector);
+      cheerio.load("<div></div>")(pattern.selector);
     } catch (error) {
-      errors.push(`Invalid CSS selector: ${error instanceof Error ? error.message : String(error)}`);
+      errors.push(
+        `Invalid CSS selector: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
 
     // Test regex pattern if it's a regex
     if (pattern.pattern instanceof RegExp) {
       try {
-        'test'.match(pattern.pattern);
+        "test".match(pattern.pattern);
       } catch (error) {
-        errors.push(`Invalid regex pattern: ${error instanceof Error ? error.message : String(error)}`);
+        errors.push(
+          `Invalid regex pattern: ${error instanceof Error ? error.message : String(error)}`,
+        );
       }
     }
 
@@ -1044,7 +1147,7 @@ export class HtmlRewriter {
         `Failed to create backup: ${error instanceof Error ? error.message : String(error)}`,
         filePath,
         undefined,
-        error instanceof Error ? error : undefined
+        error instanceof Error ? error : undefined,
       );
     }
   }
@@ -1062,7 +1165,7 @@ export class HtmlRewriter {
         `Invalid HTML output: ${error instanceof Error ? error.message : String(error)}`,
         [error instanceof Error ? error.message : String(error)],
         html.slice(0, 500),
-        error instanceof Error ? error : undefined
+        error instanceof Error ? error : undefined,
       );
     }
   }
@@ -1121,7 +1224,7 @@ export class HtmlRewriter {
     const patterns = Array.from(this.patterns.values());
     return {
       patternsCount: patterns.length,
-      enabledPatternsCount: patterns.filter(p => p.enabled).length,
+      enabledPatternsCount: patterns.filter((p) => p.enabled).length,
       options: this.options,
     };
   }
@@ -1133,11 +1236,17 @@ export class HtmlRewriter {
    */
   addPatternSet(patternSet: PatternSet): void {
     if (!patternSet.id) {
-      throw new PatternValidationError('Pattern set ID is required', '', ['Missing pattern set ID']);
+      throw new PatternValidationError("Pattern set ID is required", "", [
+        "Missing pattern set ID",
+      ]);
     }
 
     if (this.patternSets.has(patternSet.id)) {
-      throw new PatternValidationError(`Pattern set '${patternSet.id}' already exists`, patternSet.id, ['Duplicate pattern set ID']);
+      throw new PatternValidationError(
+        `Pattern set '${patternSet.id}' already exists`,
+        patternSet.id,
+        ["Duplicate pattern set ID"],
+      );
     }
 
     // Validate all patterns in the set
@@ -1145,12 +1254,18 @@ export class HtmlRewriter {
     for (const pattern of patternSet.patterns) {
       const validation = this.validatePattern(pattern);
       if (!validation.valid) {
-        errors.push(...validation.errors.map(err => `Pattern '${pattern.id}': ${err}`));
+        errors.push(
+          ...validation.errors.map((err) => `Pattern '${pattern.id}': ${err}`),
+        );
       }
     }
 
     if (errors.length > 0) {
-      throw new PatternValidationError(`Pattern set validation failed`, patternSet.id, errors);
+      throw new PatternValidationError(
+        `Pattern set validation failed`,
+        patternSet.id,
+        errors,
+      );
     }
 
     this.patternSets.set(patternSet.id, patternSet);
@@ -1173,10 +1288,13 @@ export class HtmlRewriter {
   /**
    * Find patterns that match a specific element
    */
-  findMatchingPatterns(html: string, elementSelector: string): PatternMatchResult[] {
+  findMatchingPatterns(
+    html: string,
+    elementSelector: string,
+  ): PatternMatchResult[] {
     const $ = this.loadHtml(html);
     const element = $(elementSelector);
-    
+
     if (element.length === 0) {
       return [];
     }
@@ -1195,8 +1313,8 @@ export class HtmlRewriter {
             matches,
             performance: {
               matchTime: Date.now() - startTime,
-              elementCount: element.length
-            }
+              elementCount: element.length,
+            },
           });
         }
       } catch (error) {
@@ -1211,13 +1329,17 @@ export class HtmlRewriter {
   /**
    * Check if a pattern would match an element (without applying)
    */
-  wouldPatternMatch(html: string, elementSelector: string, patternId: string): boolean {
+  wouldPatternMatch(
+    html: string,
+    elementSelector: string,
+    patternId: string,
+  ): boolean {
     const pattern = this.patterns.get(patternId);
     if (!pattern || !pattern.enabled) return false;
 
     const $ = this.loadHtml(html);
     const element = $(elementSelector);
-    
+
     if (element.length === 0) return false;
 
     const matches = this.findPatternMatches($, element, pattern);
@@ -1230,7 +1352,7 @@ export class HtmlRewriter {
   private findPatternMatches(
     $: cheerio.CheerioAPI,
     elements: cheerio.Cheerio<any>,
-    pattern: HtmlPattern
+    pattern: HtmlPattern,
   ): Array<{
     element: cheerio.Cheerio<AnyNode>;
     originalValue: string;
@@ -1256,48 +1378,74 @@ export class HtmlRewriter {
 
     elements.each((index, el) => {
       const element = $(el);
-      
+
       // Check tag restrictions
-      if (pattern.tags && !pattern.tags.includes((element.prop('tagName') as string)?.toLowerCase() || '')) {
+      if (
+        pattern.tags &&
+        !pattern.tags.includes(
+          (element.prop("tagName") as string)?.toLowerCase() || "",
+        )
+      ) {
         return;
       }
-      
-      if (pattern.excludeTags && pattern.excludeTags.includes((element.prop('tagName') as string)?.toLowerCase() || '')) {
+
+      if (
+        pattern.excludeTags &&
+        pattern.excludeTags.includes(
+          (element.prop("tagName") as string)?.toLowerCase() || "",
+        )
+      ) {
         return;
       }
 
       // Check parent selector restrictions
-      if (pattern.parentSelector && !element.closest(pattern.parentSelector).length) {
+      if (
+        pattern.parentSelector &&
+        !element.closest(pattern.parentSelector).length
+      ) {
         return;
       }
-      
-      if (pattern.excludeParentSelector && element.closest(pattern.excludeParentSelector).length) {
+
+      if (
+        pattern.excludeParentSelector &&
+        element.closest(pattern.excludeParentSelector).length
+      ) {
         return;
       }
 
       // Check custom conditions
-      if (pattern.conditions && !this.evaluateConditions($, element, pattern.conditions)) {
+      if (
+        pattern.conditions &&
+        !this.evaluateConditions($, element, pattern.conditions)
+      ) {
         return;
       }
 
       // Get attribute value
-      const originalValue = element.attr(pattern.attribute) || '';
+      const originalValue = element.attr(pattern.attribute) || "";
       if (!originalValue) return;
 
       // Apply pattern matching
       const patternMatches = this.matchPattern(originalValue, pattern);
-      
+
       for (const match of patternMatches) {
         // Check max matches limit before adding
         if (pattern.maxMatches && matches.length >= pattern.maxMatches) {
           break;
         }
 
-        const replacement = this.generateReplacement(match.matched, pattern, element, { 
-          tagName: (element.prop('tagName') as string)?.toLowerCase() || 'unknown',
-          position: index,
-          parentSelector: (element.parent().prop('tagName') as string) || undefined
-        });
+        const replacement = this.generateReplacement(
+          match.matched,
+          pattern,
+          element,
+          {
+            tagName:
+              (element.prop("tagName") as string)?.toLowerCase() || "unknown",
+            position: index,
+            parentSelector:
+              (element.parent().prop("tagName") as string) || undefined,
+          },
+        );
 
         matches.push({
           element,
@@ -1305,10 +1453,12 @@ export class HtmlRewriter {
           matchedPart: match.matched,
           replacement,
           context: {
-            tagName: (element.prop('tagName') as string)?.toLowerCase() || 'unknown',
+            tagName:
+              (element.prop("tagName") as string)?.toLowerCase() || "unknown",
             position: index,
-            parentSelector: (element.parent().prop('tagName') as string) || undefined
-          }
+            parentSelector:
+              (element.parent().prop("tagName") as string) || undefined,
+          },
         });
 
         // Stop on first match if configured
@@ -1330,44 +1480,44 @@ export class HtmlRewriter {
   private evaluateConditions(
     $: cheerio.CheerioAPI,
     element: cheerio.Cheerio<any>,
-    conditions: PatternCondition[]
+    conditions: PatternCondition[],
   ): boolean {
-    return conditions.every(condition => {
+    return conditions.every((condition) => {
       let result = false;
 
       switch (condition.type) {
-        case 'attribute':
+        case "attribute":
           if (condition.attribute) {
             const value = element.attr(condition.attribute);
             result = this.evaluateConditionValue(value, condition);
           }
           break;
-          
-        case 'text': {
+
+        case "text": {
           const text = element.text();
           result = this.evaluateConditionValue(text, condition);
           break;
         }
-          
-        case 'tag': {
-          const tagName = (element.prop('tagName') as string)?.toLowerCase();
+
+        case "tag": {
+          const tagName = (element.prop("tagName") as string)?.toLowerCase();
           result = this.evaluateConditionValue(tagName, condition);
           break;
         }
-          
-        case 'parent':
+
+        case "parent":
           if (condition.selector) {
             result = element.closest(condition.selector).length > 0;
           }
           break;
-          
-        case 'sibling':
+
+        case "sibling":
           if (condition.selector) {
             result = element.siblings(condition.selector).length > 0;
           }
           break;
-          
-        case 'custom':
+
+        case "custom":
           if (condition.customCheck) {
             result = condition.customCheck(element, $);
           }
@@ -1381,36 +1531,40 @@ export class HtmlRewriter {
   /**
    * Evaluate condition value based on operator
    */
-  private evaluateConditionValue(value: string | undefined, condition: PatternCondition): boolean {
-    if (value === undefined) return condition.operator === 'exists' ? false : true;
-    if (!condition.value) return condition.operator === 'exists';
+  private evaluateConditionValue(
+    value: string | undefined,
+    condition: PatternCondition,
+  ): boolean {
+    if (value === undefined)
+      return condition.operator === "exists" ? false : true;
+    if (!condition.value) return condition.operator === "exists";
 
     switch (condition.operator) {
-      case 'equals':
-        return condition.value instanceof RegExp 
+      case "equals":
+        return condition.value instanceof RegExp
           ? condition.value.test(value)
           : value === condition.value;
-          
-      case 'contains':
+
+      case "contains":
         return condition.value instanceof RegExp
           ? condition.value.test(value)
           : value.includes(condition.value as string);
-          
-      case 'startsWith':
+
+      case "startsWith":
         return value.startsWith(condition.value as string);
-        
-      case 'endsWith':
+
+      case "endsWith":
         return value.endsWith(condition.value as string);
-        
-      case 'matches':
+
+      case "matches":
         if (condition.value instanceof RegExp) {
           return condition.value.test(value);
         }
         return new RegExp(condition.value as string).test(value);
-        
-      case 'exists':
+
+      case "exists":
         return true;
-        
+
       default:
         return false;
     }
@@ -1419,18 +1573,25 @@ export class HtmlRewriter {
   /**
    * Match a pattern against a value
    */
-  private matchPattern(value: string, pattern: HtmlPattern): Array<{ matched: string; index: number }> {
+  private matchPattern(
+    value: string,
+    pattern: HtmlPattern,
+  ): Array<{ matched: string; index: number }> {
     const matches: Array<{ matched: string; index: number }> = [];
-    
+
     if (pattern.pattern instanceof RegExp) {
       const flags = pattern.pattern.flags;
       const caseInsensitive = pattern.caseSensitive === false;
-      const finalFlags = caseInsensitive && !flags.includes('i') ? flags + 'i' : flags;
-      
+      const finalFlags =
+        caseInsensitive && !flags.includes("i") ? flags + "i" : flags;
+
       const regex = new RegExp(pattern.pattern.source, finalFlags);
-      
+
       if (pattern.multipleMatches !== false) {
-        const globalRegex = new RegExp(pattern.pattern.source, finalFlags.includes('g') ? finalFlags : finalFlags + 'g');
+        const globalRegex = new RegExp(
+          pattern.pattern.source,
+          finalFlags.includes("g") ? finalFlags : finalFlags + "g",
+        );
         let match;
         while ((match = globalRegex.exec(value)) !== null) {
           matches.push({ matched: match[0], index: match.index });
@@ -1443,22 +1604,29 @@ export class HtmlRewriter {
         }
       }
     } else {
-      const searchValue = pattern.caseSensitive === false 
-        ? pattern.pattern.toLowerCase() 
-        : pattern.pattern;
-      const targetValue = pattern.caseSensitive === false 
-        ? value.toLowerCase() 
-        : value;
+      const searchValue =
+        pattern.caseSensitive === false
+          ? pattern.pattern.toLowerCase()
+          : pattern.pattern;
+      const targetValue =
+        pattern.caseSensitive === false ? value.toLowerCase() : value;
 
       if (pattern.wholeWordOnly) {
-        const escapedPattern = searchValue.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const flags = pattern.caseSensitive === false ? 'gi' : 'g';
+        const escapedPattern = searchValue.replace(
+          /[.*+?^${}()|[\]\\]/g,
+          "\\$&",
+        );
+        const flags = pattern.caseSensitive === false ? "gi" : "g";
         const regex = new RegExp(`\\b${escapedPattern}\\b`, flags);
-        const searchText = pattern.caseSensitive === false ? value.toLowerCase() : value;
+        const searchText =
+          pattern.caseSensitive === false ? value.toLowerCase() : value;
         let match;
         while ((match = regex.exec(searchText)) !== null) {
           // Get the actual matched text from the original value
-          const actualMatch = value.substring(match.index, match.index + match[0].length);
+          const actualMatch = value.substring(
+            match.index,
+            match.index + match[0].length,
+          );
           matches.push({ matched: actualMatch, index: match.index });
           if (!pattern.multipleMatches) break;
           if (pattern.maxMatches && matches.length >= pattern.maxMatches) break;
@@ -1466,7 +1634,10 @@ export class HtmlRewriter {
       } else {
         let index = targetValue.indexOf(searchValue);
         while (index !== -1) {
-          const actualMatch = value.substring(index, index + searchValue.length);
+          const actualMatch = value.substring(
+            index,
+            index + searchValue.length,
+          );
           matches.push({ matched: actualMatch, index });
           if (!pattern.multipleMatches) break;
           if (pattern.maxMatches && matches.length >= pattern.maxMatches) break;
@@ -1485,18 +1656,18 @@ export class HtmlRewriter {
     matched: string,
     pattern: HtmlPattern,
     element: cheerio.Cheerio<any>,
-    context: any
+    context: any,
   ): string {
     let replacement: string;
 
-    if (typeof pattern.replacement === 'function') {
+    if (typeof pattern.replacement === "function") {
       replacement = pattern.replacement(matched, element, context);
     } else {
       replacement = pattern.replacement;
     }
 
     // Apply case preservation if requested
-    if (pattern.preserveCase && typeof pattern.replacement === 'string') {
+    if (pattern.preserveCase && typeof pattern.replacement === "string") {
       replacement = this.preserveCase(matched, replacement);
     }
 
@@ -1529,11 +1700,11 @@ export class HtmlRewriter {
    */
   private escapeHtml(text: string): string {
     return text
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
   }
 
   // ================== STEP 3: CLASS REPLACEMENT ENGINE HELPERS ==================
@@ -1544,28 +1715,47 @@ export class HtmlRewriter {
   private elementMatchesPattern(
     $: cheerio.CheerioAPI,
     element: cheerio.Cheerio<any>,
-    pattern: HtmlPattern
+    pattern: HtmlPattern,
   ): boolean {
     // Check tag restrictions
-    if (pattern.tags && !pattern.tags.includes((element.prop('tagName') as string)?.toLowerCase() || '')) {
+    if (
+      pattern.tags &&
+      !pattern.tags.includes(
+        (element.prop("tagName") as string)?.toLowerCase() || "",
+      )
+    ) {
       return false;
     }
-    
-    if (pattern.excludeTags && pattern.excludeTags.includes((element.prop('tagName') as string)?.toLowerCase() || '')) {
+
+    if (
+      pattern.excludeTags &&
+      pattern.excludeTags.includes(
+        (element.prop("tagName") as string)?.toLowerCase() || "",
+      )
+    ) {
       return false;
     }
 
     // Check parent selector restrictions
-    if (pattern.parentSelector && !element.closest(pattern.parentSelector).length) {
+    if (
+      pattern.parentSelector &&
+      !element.closest(pattern.parentSelector).length
+    ) {
       return false;
     }
-    
-    if (pattern.excludeParentSelector && element.closest(pattern.excludeParentSelector).length) {
+
+    if (
+      pattern.excludeParentSelector &&
+      element.closest(pattern.excludeParentSelector).length
+    ) {
       return false;
     }
 
     // Check custom conditions
-    if (pattern.conditions && !this.evaluateConditions($, element, pattern.conditions)) {
+    if (
+      pattern.conditions &&
+      !this.evaluateConditions($, element, pattern.conditions)
+    ) {
       return false;
     }
 
@@ -1575,20 +1765,24 @@ export class HtmlRewriter {
   /**
    * Generate a unique identifier for an element
    */
-  private generateElementId(element: cheerio.Cheerio<any>, index: number): string {
-    const tagName = (element.prop('tagName') as string)?.toLowerCase() || 'unknown';
-    const id = element.attr('id');
-    const className = element.attr('class');
-    
+  private generateElementId(
+    element: cheerio.Cheerio<any>,
+    index: number,
+  ): string {
+    const tagName =
+      (element.prop("tagName") as string)?.toLowerCase() || "unknown";
+    const id = element.attr("id");
+    const className = element.attr("class");
+
     if (id) {
       return `${tagName}#${id}`;
     }
-    
+
     if (className) {
-      const firstClass = className.split(' ')[0];
+      const firstClass = className.split(" ")[0];
       return `${tagName}.${firstClass}[${index}]`;
     }
-    
+
     return `${tagName}[${index}]`;
   }
 
@@ -1596,33 +1790,39 @@ export class HtmlRewriter {
    * Generate a CSS selector for an element
    */
   private generateElementSelector(element: cheerio.Cheerio<any>): string {
-    const tagName = (element.prop('tagName') as string)?.toLowerCase() || 'unknown';
-    const id = element.attr('id');
-    const className = element.attr('class');
-    
+    const tagName =
+      (element.prop("tagName") as string)?.toLowerCase() || "unknown";
+    const id = element.attr("id");
+    const className = element.attr("class");
+
     if (id) {
       return `${tagName}#${id}`;
     }
-    
+
     if (className) {
-      const classes = className.split(' ').filter(c => c.trim()).slice(0, 2); // Use first 2 classes
-      return `${tagName}.${classes.join('.')}`;
+      const classes = className
+        .split(" ")
+        .filter((c) => c.trim())
+        .slice(0, 2); // Use first 2 classes
+      return `${tagName}.${classes.join(".")}`;
     }
-    
+
     return tagName;
   }
 
   /**
    * Get all attributes of an element as a record
    */
-  private getElementAttributes(element: cheerio.Cheerio<any>): Record<string, string> {
+  private getElementAttributes(
+    element: cheerio.Cheerio<any>,
+  ): Record<string, string> {
     const attributes: Record<string, string> = {};
     const attribs = element.get(0)?.attribs || {};
-    
+
     for (const [key, value] of Object.entries(attribs)) {
       attributes[key] = value as string;
     }
-    
+
     return attributes;
   }
 
@@ -1632,12 +1832,12 @@ export class HtmlRewriter {
   private getElementDepth(element: cheerio.Cheerio<any>): number {
     let depth = 0;
     let current = element.parent();
-    
-    while (current.length > 0 && (current.prop('tagName') as string)) {
+
+    while (current.length > 0 && (current.prop("tagName") as string)) {
       depth++;
       current = current.parent();
     }
-    
+
     return depth;
   }
 
@@ -1645,14 +1845,14 @@ export class HtmlRewriter {
    * Calculate average depth of all elements
    */
   private calculateAverageDepth($: cheerio.CheerioAPI): number {
-    const elements = $('*');
+    const elements = $("*");
     if (elements.length === 0) return 0;
-    
+
     let totalDepth = 0;
     elements.each((_, el) => {
       totalDepth += this.getElementDepth($(el));
     });
-    
+
     return totalDepth / elements.length;
   }
 
@@ -1661,13 +1861,14 @@ export class HtmlRewriter {
    */
   private calculateTagDistribution($: cheerio.CheerioAPI): Map<string, number> {
     const distribution = new Map<string, number>();
-    
-    $('*').each((_, el) => {
+
+    $("*").each((_, el) => {
       const element = $(el);
-      const tagName = (element.prop('tagName') as string)?.toLowerCase() || 'unknown';
+      const tagName =
+        (element.prop("tagName") as string)?.toLowerCase() || "unknown";
       distribution.set(tagName, (distribution.get(tagName) || 0) + 1);
     });
-    
+
     return distribution;
   }
 
@@ -1678,7 +1879,7 @@ export class HtmlRewriter {
    */
   detectPatternOverlaps(
     html: string,
-    elementSelector?: string
+    elementSelector?: string,
   ): Array<{
     elementSelector: string;
     conflictingPatterns: Array<{
@@ -1688,9 +1889,13 @@ export class HtmlRewriter {
       endIndex: number;
       priority: number;
     }>;
-    overlapType: 'exact' | 'partial' | 'nested' | 'adjacent';
-    recommendedResolution: 'highest-priority' | 'merge' | 'split' | 'manual-review';
-    severity: 'low' | 'medium' | 'high' | 'critical';
+    overlapType: "exact" | "partial" | "nested" | "adjacent";
+    recommendedResolution:
+      | "highest-priority"
+      | "merge"
+      | "split"
+      | "manual-review";
+    severity: "low" | "medium" | "high" | "critical";
   }> {
     const $ = this.loadHtml(html);
     const overlaps: Array<{
@@ -1702,18 +1907,24 @@ export class HtmlRewriter {
         endIndex: number;
         priority: number;
       }>;
-      overlapType: 'exact' | 'partial' | 'nested' | 'adjacent';
-      recommendedResolution: 'highest-priority' | 'merge' | 'split' | 'manual-review';
-      severity: 'low' | 'medium' | 'high' | 'critical';
+      overlapType: "exact" | "partial" | "nested" | "adjacent";
+      recommendedResolution:
+        | "highest-priority"
+        | "merge"
+        | "split"
+        | "manual-review";
+      severity: "low" | "medium" | "high" | "critical";
     }> = [];
 
-    const enabledPatterns = Array.from(this.patterns.values()).filter(p => p.enabled);
-    const elementsToCheck = elementSelector ? $(elementSelector) : $('*');
+    const enabledPatterns = Array.from(this.patterns.values()).filter(
+      (p) => p.enabled,
+    );
+    const elementsToCheck = elementSelector ? $(elementSelector) : $("*");
 
     elementsToCheck.each((index, el) => {
       const element = $(el);
       const elementSel = this.generateElementSelector(element);
-      
+
       // Find all patterns that match this element
       const matchingPatterns: Array<{
         patternId: string;
@@ -1725,9 +1936,9 @@ export class HtmlRewriter {
 
       for (const pattern of enabledPatterns) {
         if (this.elementMatchesPattern($, element, pattern)) {
-          const attributeValue = element.attr(pattern.attribute) || '';
+          const attributeValue = element.attr(pattern.attribute) || "";
           const matches = this.matchPattern(attributeValue, pattern);
-          
+
           for (const match of matches) {
             matchingPatterns.push({
               patternId: pattern.id,
@@ -1761,24 +1972,32 @@ export class HtmlRewriter {
   /**
    * Analyze the type and severity of pattern overlaps
    */
-  private analyzePatternOverlaps(patterns: Array<{
-    patternId: string;
-    matchedText: string;
-    startIndex: number;
-    endIndex: number;
-    priority: number;
-  }>): {
+  private analyzePatternOverlaps(
+    patterns: Array<{
+      patternId: string;
+      matchedText: string;
+      startIndex: number;
+      endIndex: number;
+      priority: number;
+    }>,
+  ): {
     hasOverlap: boolean;
-    type: 'exact' | 'partial' | 'nested' | 'adjacent';
-    recommendedResolution: 'highest-priority' | 'merge' | 'split' | 'manual-review';
-    severity: 'low' | 'medium' | 'high' | 'critical';
+    type: "exact" | "partial" | "nested" | "adjacent";
+    recommendedResolution:
+      | "highest-priority"
+      | "merge"
+      | "split"
+      | "manual-review";
+    severity: "low" | "medium" | "high" | "critical";
   } {
     // Sort patterns by start index
-    const sortedPatterns = [...patterns].sort((a, b) => a.startIndex - b.startIndex);
-    
+    const sortedPatterns = [...patterns].sort(
+      (a, b) => a.startIndex - b.startIndex,
+    );
+
     let hasOverlap = false;
-    let overlapType: 'exact' | 'partial' | 'nested' | 'adjacent' = 'exact';
-    let severity: 'low' | 'medium' | 'high' | 'critical' = 'low';
+    let overlapType: "exact" | "partial" | "nested" | "adjacent" = "exact";
+    let severity: "low" | "medium" | "high" | "critical" = "low";
 
     // Check for overlaps between consecutive patterns
     for (let i = 0; i < sortedPatterns.length - 1; i++) {
@@ -1790,42 +2009,60 @@ export class HtmlRewriter {
         hasOverlap = true;
 
         // Determine overlap type
-        if (current.startIndex === next.startIndex && current.endIndex === next.endIndex) {
-          overlapType = 'exact';
-          severity = 'high'; // Exact overlaps are serious
-        } else if (current.startIndex <= next.startIndex && current.endIndex >= next.endIndex) {
-          overlapType = 'nested';
-          severity = 'medium';
-        } else if (next.startIndex <= current.startIndex && next.endIndex >= current.endIndex) {
-          overlapType = 'nested';
-          severity = 'medium';
+        if (
+          current.startIndex === next.startIndex &&
+          current.endIndex === next.endIndex
+        ) {
+          overlapType = "exact";
+          severity = "high"; // Exact overlaps are serious
+        } else if (
+          current.startIndex <= next.startIndex &&
+          current.endIndex >= next.endIndex
+        ) {
+          overlapType = "nested";
+          severity = "medium";
+        } else if (
+          next.startIndex <= current.startIndex &&
+          next.endIndex >= current.endIndex
+        ) {
+          overlapType = "nested";
+          severity = "medium";
         } else {
-          overlapType = 'partial';
-          severity = 'medium';
+          overlapType = "partial";
+          severity = "medium";
         }
       } else if (current.endIndex === next.startIndex) {
         // Adjacent patterns (touching but not overlapping)
-        overlapType = 'adjacent';
-        severity = 'low';
+        overlapType = "adjacent";
+        severity = "low";
       }
     }
 
     // Determine recommended resolution
-    let recommendedResolution: 'highest-priority' | 'merge' | 'split' | 'manual-review';
-    
-    if (overlapType === 'exact') {
-      recommendedResolution = 'highest-priority';
-    } else if (overlapType === 'adjacent') {
-      recommendedResolution = 'merge';
-    } else if (overlapType === 'nested') {
-      recommendedResolution = 'split';
+    let recommendedResolution:
+      | "highest-priority"
+      | "merge"
+      | "split"
+      | "manual-review";
+
+    if (overlapType === "exact") {
+      recommendedResolution = "highest-priority";
+    } else if (overlapType === "adjacent") {
+      recommendedResolution = "merge";
+    } else if (overlapType === "nested") {
+      recommendedResolution = "split";
     } else {
-      recommendedResolution = 'manual-review';
+      recommendedResolution = "manual-review";
     }
 
     // Upgrade severity if there are many conflicting patterns
     if (patterns.length > 3) {
-      severity = severity === 'low' ? 'medium' : severity === 'medium' ? 'high' : 'critical';
+      severity =
+        severity === "low"
+          ? "medium"
+          : severity === "medium"
+            ? "high"
+            : "critical";
     }
 
     return {
@@ -1849,52 +2086,77 @@ export class HtmlRewriter {
         endIndex: number;
         priority: number;
       }>;
-      overlapType: 'exact' | 'partial' | 'nested' | 'adjacent';
-      recommendedResolution: 'highest-priority' | 'merge' | 'split' | 'manual-review';
-      severity: 'low' | 'medium' | 'high' | 'critical';
+      overlapType: "exact" | "partial" | "nested" | "adjacent";
+      recommendedResolution:
+        | "highest-priority"
+        | "merge"
+        | "split"
+        | "manual-review";
+      severity: "low" | "medium" | "high" | "critical";
     }>,
-    strategy: 'auto' | 'highest-priority' | 'merge' | 'split' | 'manual-review' = 'auto'
+    strategy:
+      | "auto"
+      | "highest-priority"
+      | "merge"
+      | "split"
+      | "manual-review" = "auto",
   ): Array<{
     elementSelector: string;
-    resolution: 'highest-priority' | 'merge' | 'split' | 'manual-review' | 'skipped';
+    resolution:
+      | "highest-priority"
+      | "merge"
+      | "split"
+      | "manual-review"
+      | "skipped";
     chosenPatterns: string[];
     reason: string;
     success: boolean;
   }> {
     const resolutions: Array<{
       elementSelector: string;
-      resolution: 'highest-priority' | 'merge' | 'split' | 'manual-review' | 'skipped';
+      resolution:
+        | "highest-priority"
+        | "merge"
+        | "split"
+        | "manual-review"
+        | "skipped";
       chosenPatterns: string[];
       reason: string;
       success: boolean;
     }> = [];
 
     for (const conflict of conflicts) {
-      const resolutionStrategy = strategy === 'auto' ? conflict.recommendedResolution : strategy;
-      
+      const resolutionStrategy =
+        strategy === "auto" ? conflict.recommendedResolution : strategy;
+
       let resolution: {
-        resolution: 'highest-priority' | 'merge' | 'split' | 'manual-review' | 'skipped';
+        resolution:
+          | "highest-priority"
+          | "merge"
+          | "split"
+          | "manual-review"
+          | "skipped";
         chosenPatterns: string[];
         reason: string;
         success: boolean;
       };
 
       switch (resolutionStrategy) {
-        case 'highest-priority':
+        case "highest-priority":
           resolution = this.resolveByHighestPriority(conflict);
           break;
-        case 'merge':
+        case "merge":
           resolution = this.resolveByMerging(conflict);
           break;
-        case 'split':
+        case "split":
           resolution = this.resolveBySplitting(conflict);
           break;
-        case 'manual-review':
+        case "manual-review":
         default:
           resolution = {
-            resolution: 'manual-review',
+            resolution: "manual-review",
             chosenPatterns: [],
-            reason: 'Conflict requires manual review due to complexity',
+            reason: "Conflict requires manual review due to complexity",
             success: false,
           };
           break;
@@ -1921,18 +2183,20 @@ export class HtmlRewriter {
       priority: number;
     }>;
   }): {
-    resolution: 'highest-priority';
+    resolution: "highest-priority";
     chosenPatterns: string[];
     reason: string;
     success: boolean;
   } {
-    const highestPriority = Math.max(...conflict.conflictingPatterns.map(p => p.priority));
+    const highestPriority = Math.max(
+      ...conflict.conflictingPatterns.map((p) => p.priority),
+    );
     const chosenPatterns = conflict.conflictingPatterns
-      .filter(p => p.priority === highestPriority)
-      .map(p => p.patternId);
+      .filter((p) => p.priority === highestPriority)
+      .map((p) => p.patternId);
 
     return {
-      resolution: 'highest-priority',
+      resolution: "highest-priority",
       chosenPatterns,
       reason: `Selected pattern(s) with highest priority (${highestPriority})`,
       success: true,
@@ -1951,13 +2215,15 @@ export class HtmlRewriter {
       priority: number;
     }>;
   }): {
-    resolution: 'merge';
+    resolution: "merge";
     chosenPatterns: string[];
     reason: string;
     success: boolean;
   } {
     // For now, merge by including all non-overlapping patterns
-    const sortedPatterns = [...conflict.conflictingPatterns].sort((a, b) => a.startIndex - b.startIndex);
+    const sortedPatterns = [...conflict.conflictingPatterns].sort(
+      (a, b) => a.startIndex - b.startIndex,
+    );
     const chosenPatterns: string[] = [];
     let lastEndIndex = -1;
 
@@ -1969,7 +2235,7 @@ export class HtmlRewriter {
     }
 
     return {
-      resolution: 'merge',
+      resolution: "merge",
       chosenPatterns,
       reason: `Merged ${chosenPatterns.length} non-overlapping patterns`,
       success: chosenPatterns.length > 0,
@@ -1988,20 +2254,20 @@ export class HtmlRewriter {
       priority: number;
     }>;
   }): {
-    resolution: 'split';
+    resolution: "split";
     chosenPatterns: string[];
     reason: string;
     success: boolean;
   } {
     // For nested patterns, choose the outer pattern
-    const sortedByLength = [...conflict.conflictingPatterns].sort((a, b) => 
-      (b.endIndex - b.startIndex) - (a.endIndex - a.startIndex)
+    const sortedByLength = [...conflict.conflictingPatterns].sort(
+      (a, b) => b.endIndex - b.startIndex - (a.endIndex - a.startIndex),
     );
 
     return {
-      resolution: 'split',
+      resolution: "split",
       chosenPatterns: [sortedByLength[0].patternId],
-      reason: 'Selected outermost pattern for nested conflict',
+      reason: "Selected outermost pattern for nested conflict",
       success: true,
     };
   }
@@ -2033,9 +2299,9 @@ export class HtmlRewriter {
   private analyzeHtmlFormat(html: string): FormatAnalysis {
     const lines = html.split(/\r?\n/);
     const analysis: FormatAnalysis = {
-      indentationStyle: 'none',
+      indentationStyle: "none",
       indentationSize: 0,
-      lineEndings: 'lf',
+      lineEndings: "lf",
       hasTrailingWhitespace: false,
       preservedWhitespace: new Map(),
       preservedComments: [],
@@ -2047,20 +2313,22 @@ export class HtmlRewriter {
     };
 
     // Detect line endings
-    if (html.includes('\r\n')) {
-      analysis.lineEndings = html.includes('\n') && !html.includes('\r\n') ? 'mixed' : 'crlf';
-    } else if (html.includes('\n')) {
-      analysis.lineEndings = 'lf';
+    if (html.includes("\r\n")) {
+      analysis.lineEndings =
+        html.includes("\n") && !html.includes("\r\n") ? "mixed" : "crlf";
+    } else if (html.includes("\n")) {
+      analysis.lineEndings = "lf";
     }
 
     // Analyze indentation
-    const indentationSamples: Array<{ type: 'spaces' | 'tabs'; size: number }> = [];
-    
+    const indentationSamples: Array<{ type: "spaces" | "tabs"; size: number }> =
+      [];
+
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
-      
+
       // Track empty lines
-      if (line.trim() === '') {
+      if (line.trim() === "") {
         analysis.originalFormatting.emptyLines.push(i);
         continue;
       }
@@ -2075,35 +2343,36 @@ export class HtmlRewriter {
       if (match) {
         const indent = match[1];
         analysis.originalFormatting.indentationMap.set(i, indent);
-        
-        if (indent.includes('\t')) {
-          indentationSamples.push({ type: 'tabs', size: indent.length });
+
+        if (indent.includes("\t")) {
+          indentationSamples.push({ type: "tabs", size: indent.length });
         } else {
-          indentationSamples.push({ type: 'spaces', size: indent.length });
+          indentationSamples.push({ type: "spaces", size: indent.length });
         }
       }
     }
 
     // Determine dominant indentation style
-    const spacesSamples = indentationSamples.filter(s => s.type === 'spaces');
-    const tabsSamples = indentationSamples.filter(s => s.type === 'tabs');
-    
+    const spacesSamples = indentationSamples.filter((s) => s.type === "spaces");
+    const tabsSamples = indentationSamples.filter((s) => s.type === "tabs");
+
     if (spacesSamples.length > tabsSamples.length) {
-      analysis.indentationStyle = 'spaces';
+      analysis.indentationStyle = "spaces";
       // Find most common indentation size
-      const sizes = spacesSamples.map(s => s.size);
+      const sizes = spacesSamples.map((s) => s.size);
       const sizeFreq = new Map<number, number>();
       for (const size of sizes) {
         sizeFreq.set(size, (sizeFreq.get(size) || 0) + 1);
       }
-      const mostCommonSize = Array.from(sizeFreq.entries())
-        .sort((a, b) => b[1] - a[1])[0];
+      const mostCommonSize = Array.from(sizeFreq.entries()).sort(
+        (a, b) => b[1] - a[1],
+      )[0];
       analysis.indentationSize = mostCommonSize ? mostCommonSize[0] : 2;
     } else if (tabsSamples.length > spacesSamples.length) {
-      analysis.indentationStyle = 'tabs';
+      analysis.indentationStyle = "tabs";
       analysis.indentationSize = 1;
     } else if (spacesSamples.length > 0 && tabsSamples.length > 0) {
-      analysis.indentationStyle = 'mixed';
+      analysis.indentationStyle = "mixed";
     }
 
     // Extract comments for preservation
@@ -2113,7 +2382,7 @@ export class HtmlRewriter {
       analysis.preservedComments.push({
         content: match[1],
         position: match.index,
-        type: 'inline', // Could be enhanced to detect before/after
+        type: "inline", // Could be enhanced to detect before/after
       });
     }
 
@@ -2128,22 +2397,22 @@ export class HtmlRewriter {
       return;
     }
 
-    $('*').each((index, element) => {
+    $("*").each((index, element) => {
       const $element = $(element);
       const selector = this.generateElementSelector($element);
-      
+
       // Capture surrounding whitespace
       const prev = $element.prev();
       // const next = $element.next(); // Future use for whitespace analysis
-      
-      let whitespace = '';
-      
+
+      let whitespace = "";
+
       // Check for whitespace before element
       if (prev.length === 0) {
         const parent = $element.parent();
         if (parent.length > 0) {
-          const parentHtml = parent.html() || '';
-          const elementHtml = $element.prop('outerHTML') || '';
+          const parentHtml = parent.html() || "";
+          const elementHtml = $element.prop("outerHTML") || "";
           const elementIndex = parentHtml.indexOf(elementHtml);
           if (elementIndex > 0) {
             const beforeContent = parentHtml.substring(0, elementIndex);
@@ -2154,7 +2423,7 @@ export class HtmlRewriter {
           }
         }
       }
-      
+
       if (whitespace && this.formatAnalysis) {
         this.formatAnalysis.preservedWhitespace.set(selector, whitespace);
       }
@@ -2172,19 +2441,23 @@ export class HtmlRewriter {
     let formattedHtml = html;
 
     // Restore line endings
-    if (this.formatAnalysis.lineEndings === 'crlf') {
-      formattedHtml = formattedHtml.replace(/\n/g, '\r\n');
+    if (this.formatAnalysis.lineEndings === "crlf") {
+      formattedHtml = formattedHtml.replace(/\n/g, "\r\n");
     }
 
     // Restore indentation if needed
-    if (this.formatPreservation.preserveIndentation && this.formatAnalysis.originalFormatting.indentationMap.size > 0) {
+    if (
+      this.formatPreservation.preserveIndentation &&
+      this.formatAnalysis.originalFormatting.indentationMap.size > 0
+    ) {
       const lines = formattedHtml.split(/\r?\n/);
       const restoredLines: string[] = [];
-      
+
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
-        const originalIndent = this.formatAnalysis.originalFormatting.indentationMap.get(i);
-        
+        const originalIndent =
+          this.formatAnalysis.originalFormatting.indentationMap.get(i);
+
         if (originalIndent && line.trim()) {
           // Apply original indentation
           restoredLines.push(originalIndent + line.trim());
@@ -2192,8 +2465,10 @@ export class HtmlRewriter {
           restoredLines.push(line);
         }
       }
-      
-      formattedHtml = restoredLines.join(this.formatAnalysis.lineEndings === 'crlf' ? '\r\n' : '\n');
+
+      formattedHtml = restoredLines.join(
+        this.formatAnalysis.lineEndings === "crlf" ? "\r\n" : "\n",
+      );
     }
 
     // Restore comments
@@ -2202,13 +2477,16 @@ export class HtmlRewriter {
         const commentHtml = `<!--${comment.content}-->`;
         // Simple restoration - could be enhanced for precise positioning
         if (!formattedHtml.includes(commentHtml)) {
-          formattedHtml = commentHtml + '\n' + formattedHtml;
+          formattedHtml = commentHtml + "\n" + formattedHtml;
         }
       }
     }
 
     // Handle trailing whitespace
-    if (!this.formatPreservation.trimTrailingWhitespace && this.formatAnalysis.hasTrailingWhitespace) {
+    if (
+      !this.formatPreservation.trimTrailingWhitespace &&
+      this.formatAnalysis.hasTrailingWhitespace
+    ) {
       // Preserve trailing whitespace patterns - simplified implementation
       // const lines = formattedHtml.split(/\r?\n/);
       // This could be enhanced to restore exact trailing whitespace patterns
@@ -2245,14 +2523,29 @@ export class HtmlRewriter {
    * Set integration components
    */
   setIntegration(integration: Partial<HtmlRewriterIntegration>): void {
-    if (integration.fileDiscovery && typeof integration.fileDiscovery.findFiles === 'function') {
-      this.integration = { ...this.integration, fileDiscovery: integration.fileDiscovery };
+    if (
+      integration.fileDiscovery &&
+      typeof integration.fileDiscovery.findFiles === "function"
+    ) {
+      this.integration = {
+        ...this.integration,
+        fileDiscovery: integration.fileDiscovery,
+      };
     }
-    if (integration.nameGeneration && typeof integration.nameGeneration.generateNames === 'function') {
-      this.integration = { ...this.integration, nameGeneration: integration.nameGeneration };
+    if (
+      integration.nameGeneration &&
+      typeof integration.nameGeneration.generateNames === "function"
+    ) {
+      this.integration = {
+        ...this.integration,
+        nameGeneration: integration.nameGeneration,
+      };
     }
     if (integration.cssGeneration) {
-      this.integration = { ...this.integration, cssGeneration: integration.cssGeneration };
+      this.integration = {
+        ...this.integration,
+        cssGeneration: integration.cssGeneration,
+      };
     }
     if (integration.config) {
       this.integration = { ...this.integration, config: integration.config };
@@ -2264,24 +2557,25 @@ export class HtmlRewriter {
    */
   async processDiscoveredFiles(
     patterns?: string[],
-    options: Partial<BatchOperationOptions> = {}
+    options: Partial<BatchOperationOptions> = {},
   ): Promise<BatchOperationResult> {
     if (!this.integration?.fileDiscovery) {
       throw new HtmlRewriteError(
-        'File discovery integration not configured',
-        'integration',
-        'processDiscoveredFiles'
+        "File discovery integration not configured",
+        "integration",
+        "processDiscoveredFiles",
       );
     }
 
     const discoveryOptions = {
-      extensions: ['.html', '.htm', '.xhtml'],
-      patterns: patterns || ['**/*.html', '**/*.htm'],
-      excludePatterns: ['node_modules/**', '.git/**', 'dist/**', 'build/**'],
+      extensions: [".html", ".htm", ".xhtml"],
+      patterns: patterns || ["**/*.html", "**/*.htm"],
+      excludePatterns: ["node_modules/**", ".git/**", "dist/**", "build/**"],
       maxDepth: 10,
     };
 
-    const files = await this.integration.fileDiscovery.findFiles(discoveryOptions);
+    const files =
+      await this.integration.fileDiscovery.findFiles(discoveryOptions);
     return this.processBatch(files, options);
   }
 
@@ -2290,7 +2584,7 @@ export class HtmlRewriter {
    */
   async processBatch(
     filePaths: string[],
-    options: Partial<BatchOperationOptions> = {}
+    options: Partial<BatchOperationOptions> = {},
   ): Promise<BatchOperationResult> {
     const batchOptions: BatchOperationOptions = {
       concurrency: 4,
@@ -2316,45 +2610,54 @@ export class HtmlRewriter {
     };
 
     const processingTimes: number[] = [];
-    
+
     // Process files with controlled concurrency
     const chunks = this.chunkArray(filePaths, batchOptions.concurrency);
-    
+
     for (const chunk of chunks) {
       const promises = chunk.map(async (filePath) => {
         const fileStartTime = Date.now();
         result.processedFiles.push(filePath);
-        
+
         if (batchOptions.progressCallback) {
-          batchOptions.progressCallback(result.processedFiles.length, filePaths.length, filePath);
+          batchOptions.progressCallback(
+            result.processedFiles.length,
+            filePaths.length,
+            filePath,
+          );
         }
 
         try {
           const fileResult = await this.rewriteFile(filePath);
-          
+
           if (fileResult.success) {
             result.successfulFiles.push(filePath);
-            
+
             // Accumulate statistics
-            result.statistics.totalReplacements += fileResult.appliedReplacements.length;
+            result.statistics.totalReplacements +=
+              fileResult.appliedReplacements.length;
             result.statistics.totalConflicts += fileResult.conflicts.length;
-            
+
             const processingTime = Date.now() - fileStartTime;
             processingTimes.push(processingTime);
           } else {
             result.failedFiles.push({
               file: filePath,
-              error: `Processing failed: ${fileResult.metadata.errors.join(', ')}`,
+              error: `Processing failed: ${fileResult.metadata.errors.join(", ")}`,
             });
           }
         } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : String(error);
+          const errorMessage =
+            error instanceof Error ? error.message : String(error);
           result.failedFiles.push({ file: filePath, error: errorMessage });
-          
+
           if (batchOptions.errorCallback) {
-            batchOptions.errorCallback(filePath, error instanceof Error ? error : new Error(errorMessage));
+            batchOptions.errorCallback(
+              filePath,
+              error instanceof Error ? error : new Error(errorMessage),
+            );
           }
-          
+
           if (!batchOptions.continueOnError) {
             throw error;
           }
@@ -2365,9 +2668,10 @@ export class HtmlRewriter {
     }
 
     result.totalTime = Date.now() - startTime;
-    result.statistics.averageProcessingTime = processingTimes.length > 0 
-      ? processingTimes.reduce((a, b) => a + b, 0) / processingTimes.length 
-      : 0;
+    result.statistics.averageProcessingTime =
+      processingTimes.length > 0
+        ? processingTimes.reduce((a, b) => a + b, 0) / processingTimes.length
+        : 0;
 
     return result;
   }
@@ -2377,14 +2681,14 @@ export class HtmlRewriter {
    */
   async rewriteFileAdvanced(
     filePath: string,
-    options: FileOperationOptions = {}
+    options: FileOperationOptions = {},
   ): Promise<HtmlRewriteResult> {
     const fileOptions: FileOperationOptions = {
-      encoding: 'utf-8',
+      encoding: "utf-8",
       overwrite: true,
       preservePermissions: true,
       createBackup: this.options.createBackup,
-      backupSuffix: '.backup',
+      backupSuffix: ".backup",
       validateBeforeWrite: true,
       atomic: true,
       ...options,
@@ -2394,21 +2698,31 @@ export class HtmlRewriter {
       // Check file exists and get stats
       const stats = await fs.stat(filePath);
       if (!stats.isFile()) {
-        throw new HtmlRewriteError(`Path is not a file: ${filePath}`, filePath, 'file-check');
+        throw new HtmlRewriteError(
+          `Path is not a file: ${filePath}`,
+          filePath,
+          "file-check",
+        );
       }
 
       // Create backup if enabled
       let backupPath: string | undefined;
       if (fileOptions.createBackup && !this.options.dryRun) {
-        backupPath = await this.createAdvancedBackup(filePath, fileOptions.backupSuffix!);
+        backupPath = await this.createAdvancedBackup(
+          filePath,
+          fileOptions.backupSuffix!,
+        );
       }
 
       // Read file with specified encoding
-      const originalContent = await fs.readFile(filePath, fileOptions.encoding!);
-      
+      const originalContent = await fs.readFile(
+        filePath,
+        fileOptions.encoding!,
+      );
+
       // Process HTML
       const result = await this.rewriteHtml(originalContent, filePath);
-      
+
       // Validate before writing if enabled
       if (fileOptions.validateBeforeWrite && !this.options.dryRun) {
         await this.validateRewriteResult(result, filePath);
@@ -2417,9 +2731,17 @@ export class HtmlRewriter {
       // Write modified content (unless dry run)
       if (!this.options.dryRun && fileOptions.overwrite) {
         if (fileOptions.atomic) {
-          await this.atomicWrite(filePath, result.modifiedHtml, fileOptions.encoding!);
+          await this.atomicWrite(
+            filePath,
+            result.modifiedHtml,
+            fileOptions.encoding!,
+          );
         } else {
-          await fs.writeFile(filePath, result.modifiedHtml, fileOptions.encoding!);
+          await fs.writeFile(
+            filePath,
+            result.modifiedHtml,
+            fileOptions.encoding!,
+          );
         }
 
         // Preserve file permissions if enabled
@@ -2430,19 +2752,22 @@ export class HtmlRewriter {
 
       // Add backup and file operation metadata
       result.metadata.backupPath = backupPath;
-      result.metadata.fileSize = Buffer.byteLength(result.modifiedHtml, fileOptions.encoding!);
+      result.metadata.fileSize = Buffer.byteLength(
+        result.modifiedHtml,
+        fileOptions.encoding!,
+      );
 
       return result;
     } catch (error) {
       if (error instanceof HtmlRewriteError) {
         throw error;
       }
-      
+
       throw new HtmlRewriteError(
         `Failed to rewrite file: ${error instanceof Error ? error.message : String(error)}`,
         filePath,
-        'file-rewrite-advanced',
-        error instanceof Error ? error : undefined
+        "file-rewrite-advanced",
+        error instanceof Error ? error : undefined,
       );
     }
   }
@@ -2452,25 +2777,26 @@ export class HtmlRewriter {
    */
   async generateAndApplyNames(
     htmlContent: string,
-    extractedClasses: string[]
+    extractedClasses: string[],
   ): Promise<{ html: string; nameMapping: Map<string, string> }> {
     if (!this.integration?.nameGeneration) {
       throw new HtmlRewriteError(
-        'Name generation integration not configured',
-        'integration',
-        'generateAndApplyNames'
+        "Name generation integration not configured",
+        "integration",
+        "generateAndApplyNames",
       );
     }
 
     // Generate new names for extracted classes
-    const nameResult = await this.integration.nameGeneration.generateNames(extractedClasses);
-    
+    const nameResult =
+      await this.integration.nameGeneration.generateNames(extractedClasses);
+
     // Set the name mapping for replacements
     this.setNameMapping(nameResult);
-    
+
     // Apply replacements using generated names
     const result = await this.rewriteHtml(htmlContent);
-    
+
     return {
       html: result.modifiedHtml,
       nameMapping: nameResult.nameMap || new Map(),
@@ -2480,13 +2806,16 @@ export class HtmlRewriter {
   /**
    * Create advanced backup with metadata
    */
-  private async createAdvancedBackup(filePath: string, suffix: string): Promise<string> {
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+  private async createAdvancedBackup(
+    filePath: string,
+    suffix: string,
+  ): Promise<string> {
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
     const backupPath = `${filePath}${suffix}.${timestamp}`;
-    
+
     try {
       await fs.copyFile(filePath, backupPath);
-      
+
       // Create backup metadata
       const metadata = {
         originalFile: filePath,
@@ -2494,17 +2823,17 @@ export class HtmlRewriter {
         originalSize: (await fs.stat(filePath)).size,
         backupPath,
       };
-      
+
       const metadataPath = `${backupPath}.metadata.json`;
       await fs.writeFile(metadataPath, JSON.stringify(metadata, null, 2));
-      
+
       return backupPath;
     } catch (error) {
       throw new BackupError(
         `Failed to create backup: ${error instanceof Error ? error.message : String(error)}`,
         filePath,
         backupPath,
-        error instanceof Error ? error : undefined
+        error instanceof Error ? error : undefined,
       );
     }
   }
@@ -2512,9 +2841,13 @@ export class HtmlRewriter {
   /**
    * Atomic write operation (write to temp file then rename)
    */
-  private async atomicWrite(filePath: string, content: string, encoding: BufferEncoding): Promise<void> {
+  private async atomicWrite(
+    filePath: string,
+    content: string,
+    encoding: BufferEncoding,
+  ): Promise<void> {
     const tempPath = `${filePath}.tmp.${Date.now()}`;
-    
+
     try {
       await fs.writeFile(tempPath, content, encoding);
       await fs.rename(tempPath, filePath);
@@ -2532,12 +2865,15 @@ export class HtmlRewriter {
   /**
    * Validate rewrite result before writing
    */
-  private async validateRewriteResult(result: HtmlRewriteResult, filePath: string): Promise<void> {
+  private async validateRewriteResult(
+    result: HtmlRewriteResult,
+    filePath: string,
+  ): Promise<void> {
     if (!result.success) {
       throw new HtmlValidationError(
         `Rewrite result validation failed for ${filePath}`,
-        ['Processing was not successful'],
-        undefined
+        ["Processing was not successful"],
+        undefined,
       );
     }
 
@@ -2545,7 +2881,7 @@ export class HtmlRewriter {
       throw new HtmlValidationError(
         `Rewrite result contains errors for ${filePath}`,
         result.metadata.errors,
-        result.modifiedHtml.substring(0, 500)
+        result.modifiedHtml.substring(0, 500),
       );
     }
 
@@ -2587,7 +2923,9 @@ export class HtmlRewriter {
 /**
  * Utility function to create HTML rewriter with default options
  */
-export function createHtmlRewriter(options: Partial<HtmlRewriteOptions> = {}): HtmlRewriter {
+export function createHtmlRewriter(
+  options: Partial<HtmlRewriteOptions> = {},
+): HtmlRewriter {
   return new HtmlRewriter(options);
 }
 
@@ -2597,7 +2935,7 @@ export function createHtmlRewriter(options: Partial<HtmlRewriteOptions> = {}): H
 export async function rewriteHtmlString(
   html: string,
   patterns: HtmlPattern[],
-  options: Partial<HtmlRewriteOptions> = {}
+  options: Partial<HtmlRewriteOptions> = {},
 ): Promise<HtmlRewriteResult> {
   const rewriter = createHtmlRewriter(options);
   rewriter.addPatterns(patterns);
@@ -2610,9 +2948,9 @@ export async function rewriteHtmlString(
 export async function rewriteHtmlFile(
   filePath: string,
   patterns: HtmlPattern[],
-  options: Partial<HtmlRewriteOptions> = {}
+  options: Partial<HtmlRewriteOptions> = {},
 ): Promise<HtmlRewriteResult> {
   const rewriter = createHtmlRewriter(options);
   rewriter.addPatterns(patterns);
   return rewriter.rewriteFile(filePath);
-} 
+}

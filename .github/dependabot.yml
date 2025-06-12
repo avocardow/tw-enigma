@@ -54,4 +54,4 @@ updates:
       prefix: "ci"
     labels:
       - "github-actions"
-      - "automated" 
+      - "automated"

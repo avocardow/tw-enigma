@@ -1,24 +1,24 @@
 /**
  * Copyright (c) 2025 Rowan Cardow
- * 
+ *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
 
 /**
  * Error Handler Module - Comprehensive Error Handling for Tailwind Enigma Core
- * 
+ *
  * This module provides a complete error handling solution including:
  * - Circuit breaker pattern for resilient operations
  * - Centralized error handling with categorization
  * - Error recovery strategies and fallbacks
  * - Real-time analytics and health monitoring
  * - Event-driven error notification system
- * 
+ *
  * @example Basic Usage
  * ```typescript
  * import { handleError, getErrorHandler } from './errorHandler';
- * 
+ *
  * try {
  *   // Some risky operation
  *   await riskyOperation();
@@ -29,23 +29,23 @@
  *   }
  * }
  * ```
- * 
+ *
  * @example Circuit Breaker Usage
  * ```typescript
  * import { CircuitBreakerRegistry } from './errorHandler';
- * 
+ *
  * const circuit = CircuitBreakerRegistry.getInstance().getCircuit('api-calls');
- * 
+ *
  * const result = await circuit.call(
  *   () => apiCall(),
  *   (error) => getCachedData() // fallback
  * );
  * ```
- * 
+ *
  * @example Advanced Configuration
  * ```typescript
  * import { ErrorHandler, ErrorSeverity, ErrorCategory } from './errorHandler';
- * 
+ *
  * const errorHandler = ErrorHandler.getInstance({
  *   maxRetries: 3,
  *   retryDelay: 1000,
@@ -54,7 +54,7 @@
  *   enableAnalytics: true,
  *   logLevel: 'info'
  * });
- * 
+ *
  * errorHandler.on('error', (event) => {
  *   if (event.severity === ErrorSeverity.CRITICAL) {
  *     // Send alert to monitoring system
@@ -69,16 +69,16 @@ export {
   ErrorHandler,
   getErrorHandler,
   handleError,
-  type ErrorStats
-} from './errorHandler.js';
+  type ErrorStats,
+} from "./errorHandler.js";
 
 // Circuit breaker components
 export {
   CircuitBreaker,
   CircuitBreakerRegistry,
   CircuitBreakerOpenError,
-  withCircuitBreaker
-} from './circuitBreaker.js';
+  withCircuitBreaker,
+} from "./circuitBreaker.js";
 
 // Type definitions and utilities
 export {
@@ -87,7 +87,7 @@ export {
   ErrorCategory,
   CircuitBreakerState,
   HealthStatus,
-  
+
   // Interfaces
   type EnhancedErrorContext,
   type ErrorHandlerConfig,
@@ -96,29 +96,25 @@ export {
   type CircuitBreakerMetrics,
   type CircuitBreakerFallback,
   type CircuitBreakerHealthStatus,
-  
+
   // Utility functions
   categorizeError,
   severityToNumber,
-  isEnigmaError
-} from './types.js';
+  isEnigmaError,
+} from "./types.js";
 
 // Convenience re-exports for common use cases
-export { createLogger } from '../logger.js';
-export { EnigmaError } from '../errors.js';
+export { createLogger } from "../logger.js";
+export { EnigmaError } from "../errors.js";
 
-import {
-  ErrorHandlerConfig,
-  ErrorSeverity,
-  HealthStatus
-} from './types.js';
-import { ErrorHandler, getErrorHandler } from './errorHandler.js';
-import { CircuitBreakerRegistry } from './circuitBreaker.js';
+import { ErrorHandlerConfig, ErrorSeverity, HealthStatus } from "./types.js";
+import { ErrorHandler, getErrorHandler } from "./errorHandler.js";
+import { CircuitBreakerRegistry } from "./circuitBreaker.js";
 
 /**
  * Initialize error handling with default configuration
  * Call this early in your application lifecycle
- * 
+ *
  * @param config - Optional configuration overrides
  * @returns Configured ErrorHandler instance
  */
@@ -129,13 +125,13 @@ export function initializeErrorHandling(config?: Partial<ErrorHandlerConfig>) {
     exponentialBackoff: true,
     circuitBreakerEnabled: true,
     enableAnalytics: true,
-    logLevel: 'info',
+    logLevel: "info",
     alertThresholds: {
       [ErrorSeverity.CRITICAL]: 1,
       [ErrorSeverity.HIGH]: 5,
       [ErrorSeverity.MEDIUM]: 10,
-      [ErrorSeverity.LOW]: 50
-    }
+      [ErrorSeverity.LOW]: 50,
+    },
   };
 
   return ErrorHandler.getInstance({ ...defaultConfig, ...config });
@@ -143,7 +139,7 @@ export function initializeErrorHandling(config?: Partial<ErrorHandlerConfig>) {
 
 /**
  * Get system health status across all components
- * 
+ *
  * @returns Overall system health information
  */
 export function getSystemHealth() {
@@ -154,12 +150,16 @@ export function getSystemHealth() {
 
   // Determine overall health status
   let overall = HealthStatus.HEALTHY;
-  
-  if (analytics.systemHealth === HealthStatus.UNHEALTHY || 
-      circuitHealth.unhealthy > circuitHealth.healthy) {
+
+  if (
+    analytics.systemHealth === HealthStatus.UNHEALTHY ||
+    circuitHealth.unhealthy > circuitHealth.healthy
+  ) {
     overall = HealthStatus.UNHEALTHY;
-  } else if (analytics.systemHealth === HealthStatus.DEGRADED || 
-             circuitHealth.degraded > 0) {
+  } else if (
+    analytics.systemHealth === HealthStatus.DEGRADED ||
+    circuitHealth.degraded > 0
+  ) {
     overall = HealthStatus.DEGRADED;
   }
 
@@ -168,7 +168,7 @@ export function getSystemHealth() {
     errorHandler: analytics,
     circuitBreakers: circuitHealth,
     uptime: analytics.uptime,
-    timestamp: new Date()
+    timestamp: new Date(),
   };
 }
 
@@ -180,15 +180,15 @@ export async function shutdownErrorHandling(): Promise<void> {
   try {
     const errorHandler = getErrorHandler();
     const circuitRegistry = CircuitBreakerRegistry.getInstance();
-    
+
     // Stop processing new errors
     errorHandler.destroy();
-    
+
     // Destroy all circuit breakers
     circuitRegistry.destroyAll();
-    
-    console.log('Error handling system shutdown complete');
+
+    console.log("Error handling system shutdown complete");
   } catch (error) {
-    console.error('Error during error handling shutdown:', error);
+    console.error("Error during error handling shutdown:", error);
   }
-} 
+}

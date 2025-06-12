@@ -1,5 +1,5 @@
-import { performance, PerformanceObserver } from 'perf_hooks';
-import { cpus, freemem, totalmem } from 'os';
+import { performance, PerformanceObserver } from "perf_hooks";
+import { cpus, freemem, totalmem } from "os";
 
 export interface PerformanceMetrics {
   duration: number;
@@ -74,7 +74,10 @@ export class PerformanceMonitor {
   /**
    * Start monitoring an operation
    */
-  startOperation(operation: string, metadata?: Record<string, any>): PerformanceTimer {
+  startOperation(
+    operation: string,
+    metadata?: Record<string, any>,
+  ): PerformanceTimer {
     const startTime = performance.now();
     const startCpuUsage = process.cpuUsage();
     const startMemory = process.memoryUsage();
@@ -90,16 +93,16 @@ export class PerformanceMonitor {
           memoryUsage: endMemory,
           cpuUsage: {
             user: endCpuUsage.user / 1000, // Convert microseconds to milliseconds
-            system: endCpuUsage.system / 1000
+            system: endCpuUsage.system / 1000,
           },
           timestamp: Date.now(),
           operation,
-          metadata
+          metadata,
         };
 
         this.metrics.push(metrics);
         return metrics;
-      }
+      },
     };
   }
 
@@ -113,13 +116,9 @@ export class PerformanceMonitor {
       iterations?: number;
       warmupIterations?: number;
       metadata?: Record<string, any>;
-    } = {}
+    } = {},
   ): Promise<BenchmarkResult> {
-    const {
-      iterations = 100,
-      warmupIterations = 10,
-      metadata = {}
-    } = options;
+    const { iterations = 100, warmupIterations = 10, metadata = {} } = options;
 
     // Warmup runs
     for (let i = 0; i < warmupIterations; i++) {
@@ -133,32 +132,35 @@ export class PerformanceMonitor {
 
     // Actual benchmark runs
     const metrics: PerformanceMetrics[] = [];
-    
+
     for (let i = 0; i < iterations; i++) {
-      const timer = this.startOperation(operation, { ...metadata, iteration: i });
-      
+      const timer = this.startOperation(operation, {
+        ...metadata,
+        iteration: i,
+      });
+
       try {
         await fn();
       } catch (error) {
         timer.end();
         throw new Error(`Benchmark failed on iteration ${i}: ${error}`);
       }
-      
+
       const metric = timer.end();
       metrics.push(metric);
 
       // Allow event loop to breathe
       if (i % 10 === 0) {
-        await new Promise(resolve => setImmediate(resolve));
+        await new Promise((resolve) => setImmediate(resolve));
       }
     }
 
     const summary = this.calculateSummary(metrics);
-    
+
     const result: BenchmarkResult = {
       operation,
       metrics,
-      summary
+      summary,
     };
 
     // Compare with baseline if available
@@ -192,19 +194,20 @@ export class PerformanceMonitor {
         total: memTotal,
         free: memFree,
         used: memUsed,
-        percentage: (memUsed / memTotal) * 100
+        percentage: (memUsed / memTotal) * 100,
       },
       cpu: {
         cores: cpus().length,
-        loadAverage: process.platform !== 'win32' ? require('os').loadavg() : [0, 0, 0],
-        frequency: cpus()[0]?.speed || 0
+        loadAverage:
+          process.platform !== "win32" ? require("os").loadavg() : [0, 0, 0],
+        frequency: cpus()[0]?.speed || 0,
       },
       process: {
         pid: process.pid,
         uptime: process.uptime(),
         memoryUsage: process.memoryUsage(),
-        cpuUsage: process.cpuUsage()
-      }
+        cpuUsage: process.cpuUsage(),
+      },
     };
   }
 
@@ -217,10 +220,10 @@ export class PerformanceMonitor {
     }
 
     this.isMonitoring = true;
-    
+
     const monitoringTimer = setInterval(() => {
       const metrics = this.getSystemMetrics();
-      this.emit('systemMetrics', metrics);
+      this.emit("systemMetrics", metrics);
     }, interval);
 
     // Store timer for cleanup
@@ -236,7 +239,7 @@ export class PerformanceMonitor {
     }
 
     this.isMonitoring = false;
-    
+
     if ((this as any).monitoringTimer) {
       clearInterval((this as any).monitoringTimer);
       delete (this as any).monitoringTimer;
@@ -250,8 +253,8 @@ export class PerformanceMonitor {
     if (!operation) {
       return [...this.metrics];
     }
-    
-    return this.metrics.filter(m => m.operation === operation);
+
+    return this.metrics.filter((m) => m.operation === operation);
   }
 
   /**
@@ -265,17 +268,21 @@ export class PerformanceMonitor {
    * Export metrics to JSON
    */
   exportMetrics(): string {
-    return JSON.stringify({
-      metrics: this.metrics,
-      baselines: Object.fromEntries(this.baselines),
-      timestamp: Date.now(),
-      systemInfo: {
-        nodeVersion: process.version,
-        platform: process.platform,
-        arch: process.arch,
-        cpus: cpus().length
-      }
-    }, null, 2);
+    return JSON.stringify(
+      {
+        metrics: this.metrics,
+        baselines: Object.fromEntries(this.baselines),
+        timestamp: Date.now(),
+        systemInfo: {
+          nodeVersion: process.version,
+          platform: process.platform,
+          arch: process.arch,
+          cpus: cpus().length,
+        },
+      },
+      null,
+      2,
+    );
   }
 
   /**
@@ -285,7 +292,7 @@ export class PerformanceMonitor {
     try {
       const data = JSON.parse(jsonData);
       this.metrics = data.metrics || [];
-      
+
       if (data.baselines) {
         this.baselines = new Map(Object.entries(data.baselines));
       }
@@ -297,18 +304,21 @@ export class PerformanceMonitor {
   /**
    * Calculate summary statistics
    */
-  private calculateSummary(metrics: PerformanceMetrics[]): BenchmarkResult['summary'] {
-    const durations = metrics.map(m => m.duration);
-    const memoryUsages = metrics.map(m => m.memoryUsage.heapUsed);
-    
+  private calculateSummary(
+    metrics: PerformanceMetrics[],
+  ): BenchmarkResult["summary"] {
+    const durations = metrics.map((m) => m.duration);
+    const memoryUsages = metrics.map((m) => m.memoryUsage.heapUsed);
+
     const totalDuration = durations.reduce((sum, d) => sum + d, 0);
     const averageDuration = totalDuration / durations.length;
     const minDuration = Math.min(...durations);
     const maxDuration = Math.max(...durations);
-    
+
     const memoryPeak = Math.max(...memoryUsages);
-    const memoryAverage = memoryUsages.reduce((sum, m) => sum + m, 0) / memoryUsages.length;
-    
+    const memoryAverage =
+      memoryUsages.reduce((sum, m) => sum + m, 0) / memoryUsages.length;
+
     // Calculate throughput (operations per second)
     const throughput = durations.length / (totalDuration / 1000);
 
@@ -320,22 +330,31 @@ export class PerformanceMonitor {
       iterations: durations.length,
       throughput,
       memoryPeak,
-      memoryAverage
+      memoryAverage,
     };
   }
 
   /**
    * Compare two benchmark results
    */
-  private compareResults(current: BenchmarkResult, baseline: BenchmarkResult): BenchmarkResult['comparison'] {
-    const speedup = (baseline.summary.averageDuration - current.summary.averageDuration) / baseline.summary.averageDuration;
-    const memoryReduction = (baseline.summary.memoryAverage - current.summary.memoryAverage) / baseline.summary.memoryAverage;
-    const throughputImprovement = (current.summary.throughput - baseline.summary.throughput) / baseline.summary.throughput;
+  private compareResults(
+    current: BenchmarkResult,
+    baseline: BenchmarkResult,
+  ): BenchmarkResult["comparison"] {
+    const speedup =
+      (baseline.summary.averageDuration - current.summary.averageDuration) /
+      baseline.summary.averageDuration;
+    const memoryReduction =
+      (baseline.summary.memoryAverage - current.summary.memoryAverage) /
+      baseline.summary.memoryAverage;
+    const throughputImprovement =
+      (current.summary.throughput - baseline.summary.throughput) /
+      baseline.summary.throughput;
 
     return {
       speedup,
       memoryReduction,
-      throughputImprovement
+      throughputImprovement,
     };
   }
 
@@ -347,22 +366,22 @@ export class PerformanceMonitor {
     const markObserver = new PerformanceObserver((list) => {
       const entries = list.getEntries();
       for (const entry of entries) {
-        this.emit('performanceMark', entry);
+        this.emit("performanceMark", entry);
       }
     });
 
-    markObserver.observe({ entryTypes: ['mark'] });
+    markObserver.observe({ entryTypes: ["mark"] });
     this.observers.push(markObserver);
 
     // Measure observer for performance measures
     const measureObserver = new PerformanceObserver((list) => {
       const entries = list.getEntries();
       for (const entry of entries) {
-        this.emit('performanceMeasure', entry);
+        this.emit("performanceMeasure", entry);
       }
     });
 
-    measureObserver.observe({ entryTypes: ['measure'] });
+    measureObserver.observe({ entryTypes: ["measure"] });
     this.observers.push(measureObserver);
   }
 
@@ -396,11 +415,11 @@ export class PerformanceMonitor {
    */
   dispose(): void {
     this.stopMonitoring();
-    
+
     for (const observer of this.observers) {
       observer.disconnect();
     }
-    
+
     this.observers = [];
     this.listeners.clear();
   }
@@ -415,7 +434,9 @@ export class PerformanceUtils {
   /**
    * Measure memory usage of a function
    */
-  static async measureMemory<T>(fn: () => Promise<T> | T): Promise<{ result: T; memoryDelta: number }> {
+  static async measureMemory<T>(
+    fn: () => Promise<T> | T,
+  ): Promise<{ result: T; memoryDelta: number }> {
     // Force garbage collection if available
     if (global.gc) {
       global.gc();
@@ -423,11 +444,11 @@ export class PerformanceUtils {
 
     const beforeMemory = process.memoryUsage();
     const result = await fn();
-    
+
     if (global.gc) {
       global.gc();
     }
-    
+
     const afterMemory = process.memoryUsage();
     const memoryDelta = afterMemory.heapUsed - beforeMemory.heapUsed;
 
@@ -437,7 +458,9 @@ export class PerformanceUtils {
   /**
    * Time a function execution
    */
-  static async time<T>(fn: () => Promise<T> | T): Promise<{ result: T; duration: number }> {
+  static async time<T>(
+    fn: () => Promise<T> | T,
+  ): Promise<{ result: T; duration: number }> {
     const start = performance.now();
     const result = await fn();
     const duration = performance.now() - start;
@@ -450,14 +473,14 @@ export class PerformanceUtils {
    */
   static throttle<T extends (...args: any[]) => any>(
     fn: T,
-    delay: number
+    delay: number,
   ): T & { flush(): void; cancel(): void } {
     let timeoutId: NodeJS.Timeout | null = null;
     let lastArgs: Parameters<T>;
 
     const throttled = (...args: Parameters<T>) => {
       lastArgs = args;
-      
+
       if (timeoutId === null) {
         timeoutId = setTimeout(() => {
           fn.apply(null, lastArgs);
@@ -488,11 +511,11 @@ export class PerformanceUtils {
    * Format bytes to human readable string
    */
   static formatBytes(bytes: number): string {
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    if (bytes === 0) return '0 Bytes';
-    
+    const sizes = ["Bytes", "KB", "MB", "GB"];
+    if (bytes === 0) return "0 Bytes";
+
     const i = Math.floor(Math.log(bytes) / Math.log(1024));
-    return Math.round((bytes / Math.pow(1024, i)) * 100) / 100 + ' ' + sizes[i];
+    return Math.round((bytes / Math.pow(1024, i)) * 100) / 100 + " " + sizes[i];
   }
 
   /**
@@ -502,9 +525,9 @@ export class PerformanceUtils {
     if (ms < 1) return `${Math.round(ms * 1000)}μs`;
     if (ms < 1000) return `${Math.round(ms * 100) / 100}ms`;
     if (ms < 60000) return `${Math.round(ms / 10) / 100}s`;
-    return `${Math.round(ms / 60000 * 100) / 100}min`;
+    return `${Math.round((ms / 60000) * 100) / 100}min`;
   }
 }
 
 // Export singleton instance
-export const performanceMonitor = new PerformanceMonitor(); 
+export const performanceMonitor = new PerformanceMonitor();

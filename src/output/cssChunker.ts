@@ -1,15 +1,26 @@
 /**
  * Copyright (c) 2025 Rowan Cardow
- * 
+ *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
 
-import { EventEmitter } from 'events';
-import { createHash } from 'crypto';
-import type { CssOutputConfig, ChunkingStrategy, ChunkingConfig } from './cssOutputConfig.js';
-import { z } from 'zod';
-import postcss, { AcceptedPlugin, Rule, AtRule, Root, Container, Root as PostCssRoot } from 'postcss';
+import { EventEmitter } from "events";
+import { createHash } from "crypto";
+import type {
+  CssOutputConfig,
+  ChunkingStrategy,
+  ChunkingConfig,
+} from "./cssOutputConfig.js";
+import { z } from "zod";
+import postcss, {
+  AcceptedPlugin,
+  Rule,
+  AtRule,
+  Root,
+  Container,
+  Root as PostCssRoot,
+} from "postcss";
 
 // =============================================================================
 // TYPE DEFINITIONS
@@ -21,28 +32,28 @@ import postcss, { AcceptedPlugin, Rule, AtRule, Root, Container, Root as PostCss
 export interface CssRuleDependency {
   /** The CSS selector or at-rule identifier */
   selector: string;
-  
+
   /** Dependencies on other selectors/rules */
   dependencies: Set<string>;
-  
+
   /** Selectors that depend on this rule */
   dependents: Set<string>;
-  
+
   /** Rule size in bytes */
   size: number;
-  
+
   /** Usage frequency (0-1) */
   usage: number;
-  
+
   /** Associated routes/pages */
   routes: Set<string>;
-  
+
   /** Component associations */
   components: Set<string>;
-  
+
   /** Rule priority for ordering */
   priority: number;
-  
+
   /** Source location */
   source?: {
     file: string;
@@ -57,39 +68,39 @@ export interface CssRuleDependency {
 export interface CssChunk {
   /** Unique chunk identifier */
   id: string;
-  
+
   /** Chunk name for output files */
   name: string;
-  
+
   /** CSS content of the chunk */
   content: string;
-  
+
   /** Chunk size in bytes */
   size: number;
-  
+
   /** Rules included in this chunk */
   rules: CssRuleDependency[];
-  
+
   /** Dependencies on other chunks */
   dependencies: Set<string>;
-  
+
   /** Associated routes/pages */
   routes: Set<string>;
-  
+
   /** Associated components */
   components: Set<string>;
-  
+
   /** Chunk type classification */
-  type: 'critical' | 'vendor' | 'component' | 'route' | 'utility' | 'main';
-  
+  type: "critical" | "vendor" | "component" | "route" | "utility" | "main";
+
   /** Load priority (higher = more important) */
   priority: number;
-  
+
   /** Whether this chunk should be loaded async */
   async: boolean;
-  
+
   /** Loading strategy for this chunk */
-  loadingStrategy: 'inline' | 'preload' | 'prefetch' | 'lazy';
+  loadingStrategy: "inline" | "preload" | "prefetch" | "lazy";
 }
 
 /**
@@ -98,22 +109,22 @@ export interface CssChunk {
 export interface UsagePattern {
   /** CSS selector */
   selector: string;
-  
+
   /** Usage frequency across the application */
   frequency: number;
-  
+
   /** Pages/routes where this selector is used */
   routes: Set<string>;
-  
+
   /** Components that use this selector */
   components: Set<string>;
-  
+
   /** Selector specificity score */
   specificity: number;
-  
+
   /** Selector category */
-  category: 'utility' | 'component' | 'layout' | 'theme' | 'vendor' | 'custom';
-  
+  category: "utility" | "component" | "layout" | "theme" | "vendor" | "custom";
+
   /** Performance impact score */
   impact: number;
 }
@@ -124,16 +135,16 @@ export interface UsagePattern {
 export interface DependencyGraph {
   /** All nodes in the graph */
   nodes: Map<string, CssRuleDependency>;
-  
+
   /** Adjacency list representation */
   edges: Map<string, Set<string>>;
-  
+
   /** Strongly connected components */
   stronglyConnectedComponents: string[][];
-  
+
   /** Topological ordering of rules */
   topologicalOrder: string[];
-  
+
   /** Critical path analysis */
   criticalPaths: string[][];
 }
@@ -148,24 +159,24 @@ export interface DependencyGraph {
 export const ChunkAnalysisOptionsSchema = z.object({
   /** Enable usage pattern analysis */
   analyzeUsage: z.boolean().default(true),
-  
+
   /** Enable dependency tracking */
   analyzeDependencies: z.boolean().default(true),
-  
+
   /** Enable component association */
   analyzeComponents: z.boolean().default(true),
-  
+
   /** Enable route association */
   analyzeRoutes: z.boolean().default(true),
-  
+
   /** Usage data source */
-  usageDataSource: z.enum(['static', 'runtime', 'hybrid']).default('static'),
-  
+  usageDataSource: z.enum(["static", "runtime", "hybrid"]).default("static"),
+
   /** Minimum usage threshold for inclusion */
   minUsageThreshold: z.number().min(0).max(1).default(0.1),
-  
+
   /** Enable performance impact analysis */
-  performanceAnalysis: z.boolean().default(true)
+  performanceAnalysis: z.boolean().default(true),
 });
 
 export type ChunkAnalysisOptions = z.infer<typeof ChunkAnalysisOptionsSchema>;
@@ -176,7 +187,7 @@ export type ChunkAnalysisOptions = z.infer<typeof ChunkAnalysisOptionsSchema>;
 
 /**
  * CSS Dependency Graph Builder
- * 
+ *
  * Analyzes CSS rules and builds a dependency graph for optimal chunking
  */
 export class CssDependencyGraph {
@@ -194,13 +205,13 @@ export class CssDependencyGraph {
     this.detectDependencies();
     this.findStronglyConnectedComponents();
     this.computeTopologicalOrder();
-    
+
     return {
       nodes: new Map(this.nodes),
       edges: new Map(this.edges),
       stronglyConnectedComponents: [...this.stronglyConnectedComponents],
       topologicalOrder: [...this.topologicalOrder],
-      criticalPaths: this.findCriticalPaths()
+      criticalPaths: this.findCriticalPaths(),
     };
   }
 
@@ -223,7 +234,7 @@ export class CssDependencyGraph {
     css.walkRules((rule: Rule) => {
       const selector = rule.selector;
       const content = rule.toString();
-      const size = Buffer.byteLength(content, 'utf8');
+      const size = Buffer.byteLength(content, "utf8");
 
       const dependency: CssRuleDependency = {
         selector,
@@ -234,11 +245,13 @@ export class CssDependencyGraph {
         routes: new Set(),
         components: new Set(),
         priority: ruleIndex++,
-        source: rule.source ? {
-          file: rule.source.input.from || 'unknown',
-          line: rule.source.start?.line || 0,
-          column: rule.source.start?.column || 0
-        } : undefined
+        source: rule.source
+          ? {
+              file: rule.source.input.from || "unknown",
+              line: rule.source.start?.line || 0,
+              column: rule.source.start?.column || 0,
+            }
+          : undefined,
       };
 
       this.nodes.set(selector, dependency);
@@ -249,7 +262,7 @@ export class CssDependencyGraph {
     css.walkAtRules((atRule: AtRule) => {
       const identifier = `@${atRule.name} ${atRule.params}`;
       const content = atRule.toString();
-      const size = Buffer.byteLength(content, 'utf8');
+      const size = Buffer.byteLength(content, "utf8");
 
       const dependency: CssRuleDependency = {
         selector: identifier,
@@ -260,11 +273,13 @@ export class CssDependencyGraph {
         routes: new Set(),
         components: new Set(),
         priority: ruleIndex++,
-        source: atRule.source ? {
-          file: atRule.source.input.from || 'unknown',
-          line: atRule.source.start?.line || 0,
-          column: atRule.source.start?.column || 0
-        } : undefined
+        source: atRule.source
+          ? {
+              file: atRule.source.input.from || "unknown",
+              line: atRule.source.start?.line || 0,
+              column: atRule.source.start?.column || 0,
+            }
+          : undefined,
       };
 
       this.nodes.set(identifier, dependency);
@@ -279,13 +294,13 @@ export class CssDependencyGraph {
     for (const [selector, node] of this.nodes) {
       // Check for cascade dependencies (order matters)
       this.detectCascadeDependencies(selector, node);
-      
+
       // Check for custom property dependencies
       this.detectCustomPropertyDependencies(selector, node);
-      
+
       // Check for inheritance dependencies
       this.detectInheritanceDependencies(selector, node);
-      
+
       // Check for composition dependencies (@apply, etc.)
       this.detectCompositionDependencies(selector, node);
     }
@@ -294,11 +309,14 @@ export class CssDependencyGraph {
   /**
    * Detect cascade-based dependencies
    */
-  private detectCascadeDependencies(selector: string, node: CssRuleDependency): void {
+  private detectCascadeDependencies(
+    selector: string,
+    node: CssRuleDependency,
+  ): void {
     // Find selectors with same or higher specificity that could override
     for (const [otherSelector, otherNode] of this.nodes) {
       if (otherSelector === selector) continue;
-      
+
       if (this.selectorsCanConflict(selector, otherSelector)) {
         if (otherNode.priority < node.priority) {
           // This rule depends on the earlier rule (cascade order)
@@ -313,7 +331,10 @@ export class CssDependencyGraph {
   /**
    * Detect custom property (CSS variable) dependencies
    */
-  private detectCustomPropertyDependencies(selector: string, node: CssRuleDependency): void {
+  private detectCustomPropertyDependencies(
+    selector: string,
+    node: CssRuleDependency,
+  ): void {
     // This would require analyzing the actual CSS content for var() usage
     // For now, we'll implement a basic version
     // In a full implementation, we'd parse declarations and find var() references
@@ -322,7 +343,10 @@ export class CssDependencyGraph {
   /**
    * Detect inheritance dependencies
    */
-  private detectInheritanceDependencies(selector: string, node: CssRuleDependency): void {
+  private detectInheritanceDependencies(
+    selector: string,
+    node: CssRuleDependency,
+  ): void {
     // Check if selector inherits from parent elements
     if (this.isChildSelector(selector)) {
       const parentSelector = this.getParentSelector(selector);
@@ -337,7 +361,10 @@ export class CssDependencyGraph {
   /**
    * Detect composition dependencies (@apply, mixins, etc.)
    */
-  private detectCompositionDependencies(selector: string, node: CssRuleDependency): void {
+  private detectCompositionDependencies(
+    selector: string,
+    node: CssRuleDependency,
+  ): void {
     // This would analyze @apply directives and similar composition patterns
     // Implementation would depend on the specific CSS framework being used
   }
@@ -348,15 +375,22 @@ export class CssDependencyGraph {
   private selectorsCanConflict(selector1: string, selector2: string): boolean {
     // Simplified conflict detection - in reality this would be much more complex
     // and would involve parsing selectors and checking for element/class overlap
-    return selector1.includes(selector2.split(' ').pop() || '') ||
-           selector2.includes(selector1.split(' ').pop() || '');
+    return (
+      selector1.includes(selector2.split(" ").pop() || "") ||
+      selector2.includes(selector1.split(" ").pop() || "")
+    );
   }
 
   /**
    * Check if selector is a child/descendant selector
    */
   private isChildSelector(selector: string): boolean {
-    return selector.includes(' ') || selector.includes('>') || selector.includes('+') || selector.includes('~');
+    return (
+      selector.includes(" ") ||
+      selector.includes(">") ||
+      selector.includes("+") ||
+      selector.includes("~")
+    );
   }
 
   /**
@@ -364,7 +398,7 @@ export class CssDependencyGraph {
    */
   private getParentSelector(selector: string): string | null {
     const parts = selector.split(/\s+|\s*>\s*|\s*\+\s*|\s*~\s*/);
-    return parts.length > 1 ? parts.slice(0, -1).join(' ') : null;
+    return parts.length > 1 ? parts.slice(0, -1).join(" ") : null;
   }
 
   /**
@@ -389,9 +423,15 @@ export class CssDependencyGraph {
       for (const neighbor of neighbors) {
         if (!stack.has(neighbor)) {
           tarjan(neighbor);
-          lowLink.set(node, Math.min(lowLink.get(node) || 0, lowLink.get(neighbor) || 0));
+          lowLink.set(
+            node,
+            Math.min(lowLink.get(node) || 0, lowLink.get(neighbor) || 0),
+          );
         } else if (onStack.has(neighbor)) {
-          lowLink.set(node, Math.min(lowLink.get(node) || 0, stack.get(neighbor) || 0));
+          lowLink.set(
+            node,
+            Math.min(lowLink.get(node) || 0, stack.get(neighbor) || 0),
+          );
         }
       }
 
@@ -403,7 +443,7 @@ export class CssDependencyGraph {
           onStack.delete(w);
           component.push(w);
         } while (w !== node);
-        
+
         if (component.length > 0) {
           this.stronglyConnectedComponents.push(component);
         }
@@ -451,7 +491,7 @@ export class CssDependencyGraph {
       for (const neighbor of neighbors) {
         const newDegree = (inDegree.get(neighbor) || 0) - 1;
         inDegree.set(neighbor, newDegree);
-        
+
         if (newDegree === 0) {
           queue.push(neighbor);
         }
@@ -465,7 +505,7 @@ export class CssDependencyGraph {
   private findCriticalPaths(): string[][] {
     // Find paths that represent critical rendering dependencies
     const criticalPaths: string[][] = [];
-    
+
     for (const component of this.stronglyConnectedComponents) {
       if (component.length > 1) {
         // Strongly connected components represent potential critical paths
@@ -483,7 +523,7 @@ export class CssDependencyGraph {
 
 /**
  * Usage Pattern Analyzer
- * 
+ *
  * Analyzes CSS usage patterns across the application for intelligent chunking
  */
 export class UsagePatternAnalyzer {
@@ -495,7 +535,7 @@ export class UsagePatternAnalyzer {
   analyzeStaticUsage(
     css: Root,
     sourceFiles: Map<string, string>,
-    options: ChunkAnalysisOptions = {}
+    options: ChunkAnalysisOptions = {},
   ): Map<string, UsagePattern> {
     this.usageData.clear();
 
@@ -521,7 +561,7 @@ export class UsagePatternAnalyzer {
 
     css.walkRules((rule: Rule) => {
       // Split compound selectors
-      rule.selector.split(',').forEach(selector => {
+      rule.selector.split(",").forEach((selector) => {
         selectors.add(selector.trim());
       });
     });
@@ -532,21 +572,25 @@ export class UsagePatternAnalyzer {
   /**
    * Analyze CSS usage in a single file
    */
-  private analyzeFileUsage(filePath: string, content: string, selectors: Set<string>): void {
+  private analyzeFileUsage(
+    filePath: string,
+    content: string,
+    selectors: Set<string>,
+  ): void {
     const route = this.extractRouteFromPath(filePath);
     const component = this.extractComponentFromPath(filePath);
 
     for (const selector of selectors) {
       const pattern = this.getOrCreatePattern(selector);
-      
+
       // Check if selector is used in this file
       if (this.isSelectorUsed(selector, content)) {
         pattern.frequency += 1;
-        
+
         if (route) {
           pattern.routes.add(route);
         }
-        
+
         if (component) {
           pattern.components.add(component);
         }
@@ -566,7 +610,7 @@ export class UsagePatternAnalyzer {
         components: new Set(),
         specificity: this.calculateSpecificity(selector),
         category: this.categorizeSelector(selector),
-        impact: 0
+        impact: 0,
       });
     }
 
@@ -579,10 +623,10 @@ export class UsagePatternAnalyzer {
   private isSelectorUsed(selector: string, content: string): boolean {
     // Extract class names from selector
     const classNames = this.extractClassNames(selector);
-    
+
     // Check if any class names appear in the content
-    return classNames.some(className => {
-      const regex = new RegExp(`\\b${this.escapeRegex(className)}\\b`, 'g');
+    return classNames.some((className) => {
+      const regex = new RegExp(`\\b${this.escapeRegex(className)}\\b`, "g");
       return regex.test(content);
     });
   }
@@ -623,28 +667,32 @@ export class UsagePatternAnalyzer {
   /**
    * Categorize CSS selector
    */
-  private categorizeSelector(selector: string): UsagePattern['category'] {
-    if (selector.startsWith('.tw-') || selector.includes('tailwind')) {
-      return 'utility';
+  private categorizeSelector(selector: string): UsagePattern["category"] {
+    if (selector.startsWith(".tw-") || selector.includes("tailwind")) {
+      return "utility";
     }
-    
-    if (selector.includes('@media') || selector.includes('@keyframes')) {
-      return 'theme';
+
+    if (selector.includes("@media") || selector.includes("@keyframes")) {
+      return "theme";
     }
-    
-    if (selector.includes('component') || selector.includes('comp-')) {
-      return 'component';
+
+    if (selector.includes("component") || selector.includes("comp-")) {
+      return "component";
     }
-    
-    if (selector.includes('layout') || selector.includes('grid') || selector.includes('flex')) {
-      return 'layout';
+
+    if (
+      selector.includes("layout") ||
+      selector.includes("grid") ||
+      selector.includes("flex")
+    ) {
+      return "layout";
     }
-    
-    if (selector.includes('vendor') || selector.includes('lib-')) {
-      return 'vendor';
+
+    if (selector.includes("vendor") || selector.includes("lib-")) {
+      return "vendor";
     }
-    
-    return 'custom';
+
+    return "custom";
   }
 
   /**
@@ -652,16 +700,20 @@ export class UsagePatternAnalyzer {
    */
   private extractRouteFromPath(filePath: string): string | null {
     // Extract route from common frameworks patterns
-    const routeMatch = filePath.match(/\/(?:pages|routes|views)\/(.+?)\.(?:jsx?|tsx?|vue|svelte)$/);
-    return routeMatch ? routeMatch[1].replace(/\//g, '.') : null;
+    const routeMatch = filePath.match(
+      /\/(?:pages|routes|views)\/(.+?)\.(?:jsx?|tsx?|vue|svelte)$/,
+    );
+    return routeMatch ? routeMatch[1].replace(/\//g, ".") : null;
   }
 
   /**
    * Extract component name from file path
    */
   private extractComponentFromPath(filePath: string): string | null {
-    const componentMatch = filePath.match(/\/(?:components|comp)\/(.+?)\.(?:jsx?|tsx?|vue|svelte)$/);
-    return componentMatch ? componentMatch[1].replace(/\//g, '.') : null;
+    const componentMatch = filePath.match(
+      /\/(?:components|comp)\/(.+?)\.(?:jsx?|tsx?|vue|svelte)$/,
+    );
+    return componentMatch ? componentMatch[1].replace(/\//g, ".") : null;
   }
 
   /**
@@ -673,7 +725,7 @@ export class UsagePatternAnalyzer {
     for (const pattern of this.usageData.values()) {
       // Normalize frequency (0-1)
       pattern.frequency = Math.min(pattern.frequency / totalFiles, 1);
-      
+
       // Calculate performance impact based on frequency and specificity
       pattern.impact = pattern.frequency * Math.log10(pattern.specificity + 1);
     }
@@ -684,7 +736,7 @@ export class UsagePatternAnalyzer {
    */
   private calculateTotalFiles(): number {
     const allFiles = new Set<string>();
-    
+
     for (const pattern of this.usageData.values()) {
       for (const route of pattern.routes) {
         allFiles.add(route);
@@ -693,7 +745,7 @@ export class UsagePatternAnalyzer {
         allFiles.add(component);
       }
     }
-    
+
     return Math.max(allFiles.size, 1);
   }
 
@@ -701,7 +753,7 @@ export class UsagePatternAnalyzer {
    * Escape special regex characters
    */
   private escapeRegex(str: string): string {
-    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   }
 }
 
@@ -711,7 +763,7 @@ export class UsagePatternAnalyzer {
 
 /**
  * CSS Chunker
- * 
+ *
  * Main class for intelligent CSS chunking and optimization
  */
 class CssChunker extends EventEmitter {
@@ -733,7 +785,7 @@ class CssChunker extends EventEmitter {
   async chunkCss(
     css: Root,
     sourceFiles?: Map<string, string>,
-    analysisOptions?: ChunkAnalysisOptions
+    analysisOptions?: ChunkAnalysisOptions,
   ): Promise<CssChunk[]> {
     // Build dependency graph
     const graphBuilder = new CssDependencyGraph();
@@ -742,23 +794,29 @@ class CssChunker extends EventEmitter {
     // Analyze usage patterns if source files provided
     if (sourceFiles && sourceFiles.size > 0) {
       const analyzer = new UsagePatternAnalyzer();
-      this.usagePatterns = analyzer.analyzeStaticUsage(css, sourceFiles, analysisOptions);
+      this.usagePatterns = analyzer.analyzeStaticUsage(
+        css,
+        sourceFiles,
+        analysisOptions,
+      );
     }
 
     // Apply chunking strategy
-    switch (this.config.chunking?.strategy || 'size') {
-      case 'size':
+    switch (this.config.chunking?.strategy || "size") {
+      case "size":
         return this.chunkBySize(css);
-      case 'usage':
+      case "usage":
         return this.chunkByUsage(css);
-      case 'route':
+      case "route":
         return this.chunkByRoute(css);
-      case 'component':
+      case "component":
         return this.chunkByComponent(css);
-      case 'hybrid':
+      case "hybrid":
         return this.chunkByHybrid(css);
       default:
-        throw new Error(`Unknown chunking strategy: ${this.config.chunking?.strategy}`);
+        throw new Error(
+          `Unknown chunking strategy: ${this.config.chunking?.strategy}`,
+        );
     }
   }
 
@@ -773,13 +831,17 @@ class CssChunker extends EventEmitter {
     const rules = this.getRulesInOrder(css);
 
     for (const rule of rules) {
-      if (!currentChunk || currentChunk.size + rule.size > this.config.chunking?.maxChunkSize || 250 * 1024) {
+      if (
+        !currentChunk ||
+        currentChunk.size + rule.size > this.config.chunking?.maxChunkSize ||
+        250 * 1024
+      ) {
         // Create new chunk
         if (currentChunk) {
           chunks.push(currentChunk);
         }
 
-        currentChunk = this.createNewChunk(`size-${chunkIndex++}`, 'main');
+        currentChunk = this.createNewChunk(`size-${chunkIndex++}`, "main");
       }
 
       // Add rule to current chunk
@@ -799,28 +861,40 @@ class CssChunker extends EventEmitter {
    */
   private chunkByUsage(css: Root): CssChunk[] {
     if (!this.usagePatterns) {
-      throw new Error('Usage patterns not available for usage-based chunking');
+      throw new Error("Usage patterns not available for usage-based chunking");
     }
 
     const chunks: CssChunk[] = [];
     const rules = this.getRulesInOrder(css);
 
     // Group rules by usage frequency
-    const highUsageRules = rules.filter(rule => {
+    const highUsageRules = rules.filter((rule) => {
       const pattern = this.usagePatterns?.get(rule.selector);
-      return pattern && pattern.frequency >= this.config.chunking?.usageThreshold || 0.1;
+      return (
+        (pattern &&
+          pattern.frequency >= this.config.chunking?.usageThreshold) ||
+        0.1
+      );
     });
 
-    const lowUsageRules = rules.filter(rule => {
+    const lowUsageRules = rules.filter((rule) => {
       const pattern = this.usagePatterns?.get(rule.selector);
-      return !pattern || pattern.frequency < this.config.chunking?.usageThreshold || 0.1;
+      return (
+        !pattern ||
+        pattern.frequency < this.config.chunking?.usageThreshold ||
+        0.1
+      );
     });
 
     // Create chunks for high usage rules
     if (highUsageRules.length > 0) {
-      const criticalChunk = this.createNewChunk('critical', 'critical');
+      const criticalChunk = this.createNewChunk("critical", "critical");
       for (const rule of highUsageRules) {
-        if (criticalChunk.size + rule.size <= this.config.chunking?.maxChunkSize || 250 * 1024) {
+        if (
+          criticalChunk.size + rule.size <=
+            this.config.chunking?.maxChunkSize ||
+          250 * 1024
+        ) {
           this.addRuleToChunk(criticalChunk, rule, css);
         }
       }
@@ -831,7 +905,11 @@ class CssChunker extends EventEmitter {
 
     // Create chunks for low usage rules
     if (lowUsageRules.length > 0) {
-      const utilityChunks = this.chunkRulesBySize(lowUsageRules, 'utility', css);
+      const utilityChunks = this.chunkRulesBySize(
+        lowUsageRules,
+        "utility",
+        css,
+      );
       chunks.push(...utilityChunks);
     }
 
@@ -843,7 +921,7 @@ class CssChunker extends EventEmitter {
    */
   private chunkByRoute(css: Root): CssChunk[] {
     if (!this.usagePatterns) {
-      throw new Error('Usage patterns not available for route-based chunking');
+      throw new Error("Usage patterns not available for route-based chunking");
     }
 
     const chunks: CssChunk[] = [];
@@ -865,7 +943,7 @@ class CssChunker extends EventEmitter {
 
     // Create chunks for each route
     for (const [route, routeRulesList] of routeRules) {
-      const chunk = this.createNewChunk(`route-${route}`, 'route');
+      const chunk = this.createNewChunk(`route-${route}`, "route");
       chunk.routes.add(route);
 
       for (const rule of routeRulesList) {
@@ -885,7 +963,9 @@ class CssChunker extends EventEmitter {
    */
   private chunkByComponent(css: Root): CssChunk[] {
     if (!this.usagePatterns) {
-      throw new Error('Usage patterns not available for component-based chunking');
+      throw new Error(
+        "Usage patterns not available for component-based chunking",
+      );
     }
 
     const chunks: CssChunk[] = [];
@@ -907,7 +987,7 @@ class CssChunker extends EventEmitter {
 
     // Create chunks for each component
     for (const [component, componentRulesList] of componentRules) {
-      const chunk = this.createNewChunk(`component-${component}`, 'component');
+      const chunk = this.createNewChunk(`component-${component}`, "component");
       chunk.components.add(component);
 
       for (const rule of componentRulesList) {
@@ -931,7 +1011,9 @@ class CssChunker extends EventEmitter {
     // First, create critical chunk based on usage
     if (this.usagePatterns) {
       const criticalChunks = this.chunkByUsage(css);
-      chunks.push(...criticalChunks.filter(chunk => chunk.type === 'critical'));
+      chunks.push(
+        ...criticalChunks.filter((chunk) => chunk.type === "critical"),
+      );
     }
 
     // Then, create vendor chunk if enabled
@@ -945,7 +1027,7 @@ class CssChunker extends EventEmitter {
     // Finally, chunk remaining rules by size
     const remainingRules = this.getRemainingRules(css, chunks);
     if (remainingRules.length > 0) {
-      const sizeChunks = this.chunkRulesBySize(remainingRules, 'main', css);
+      const sizeChunks = this.chunkRulesBySize(remainingRules, "main", css);
       chunks.push(...sizeChunks);
     }
 
@@ -964,11 +1046,11 @@ class CssChunker extends EventEmitter {
           selector: rule.selector,
           dependencies: new Set(),
           dependents: new Set(),
-          size: Buffer.byteLength(rule.toString(), 'utf8'),
+          size: Buffer.byteLength(rule.toString(), "utf8"),
           usage: 0,
           routes: new Set(),
           components: new Set(),
-          priority: rules.length
+          priority: rules.length,
         });
       });
       return rules;
@@ -976,37 +1058,41 @@ class CssChunker extends EventEmitter {
 
     // Use topological order for dependency-aware chunking
     return this.dependencyGraph.topologicalOrder
-      .map(selector => this.dependencyGraph!.nodes.get(selector))
+      .map((selector) => this.dependencyGraph!.nodes.get(selector))
       .filter((rule): rule is CssRuleDependency => rule !== undefined);
   }
 
   /**
    * Create a new chunk
    */
-  private createNewChunk(id: string, type: CssChunk['type']): CssChunk {
+  private createNewChunk(id: string, type: CssChunk["type"]): CssChunk {
     return {
       id,
       name: id,
-      content: '',
+      content: "",
       size: 0,
       rules: [],
       dependencies: new Set(),
       routes: new Set(),
       components: new Set(),
       type,
-      priority: type === 'critical' ? 100 : 50,
-      async: type !== 'critical',
-      loadingStrategy: type === 'critical' ? 'inline' : 'preload'
+      priority: type === "critical" ? 100 : 50,
+      async: type !== "critical",
+      loadingStrategy: type === "critical" ? "inline" : "preload",
     };
   }
 
   /**
    * Add rule to chunk
    */
-  private addRuleToChunk(chunk: CssChunk, rule: CssRuleDependency, css: Root): void {
+  private addRuleToChunk(
+    chunk: CssChunk,
+    rule: CssRuleDependency,
+    css: Root,
+  ): void {
     chunk.rules.push(rule);
     chunk.size += rule.size;
-    
+
     // Merge route and component associations
     for (const route of rule.routes) {
       chunk.routes.add(route);
@@ -1024,13 +1110,21 @@ class CssChunker extends EventEmitter {
   /**
    * Chunk rules by size constraints
    */
-  private chunkRulesBySize(rules: CssRuleDependency[], type: CssChunk['type'], css: Root): CssChunk[] {
+  private chunkRulesBySize(
+    rules: CssRuleDependency[],
+    type: CssChunk["type"],
+    css: Root,
+  ): CssChunk[] {
     const chunks: CssChunk[] = [];
     let currentChunk: CssChunk | null = null;
     let chunkIndex = 0;
 
     for (const rule of rules) {
-      if (!currentChunk || currentChunk.size + rule.size > this.config.chunking?.maxChunkSize || 250 * 1024) {
+      if (
+        !currentChunk ||
+        currentChunk.size + rule.size > this.config.chunking?.maxChunkSize ||
+        250 * 1024
+      ) {
         if (currentChunk) {
           chunks.push(currentChunk);
         }
@@ -1051,14 +1145,15 @@ class CssChunker extends EventEmitter {
    * Create vendor chunk
    */
   private createVendorChunk(css: Root): CssChunk {
-    const vendorChunk = this.createNewChunk('vendor', 'vendor');
+    const vendorChunk = this.createNewChunk("vendor", "vendor");
     const rules = this.getRulesInOrder(css);
 
     // Identify vendor rules (simple heuristic)
-    const vendorRules = rules.filter(rule => 
-      rule.selector.includes('vendor') ||
-      rule.selector.includes('lib-') ||
-      (rule.source && rule.source.file.includes('node_modules'))
+    const vendorRules = rules.filter(
+      (rule) =>
+        rule.selector.includes("vendor") ||
+        rule.selector.includes("lib-") ||
+        (rule.source && rule.source.file.includes("node_modules")),
     );
 
     for (const rule of vendorRules) {
@@ -1071,17 +1166,20 @@ class CssChunker extends EventEmitter {
   /**
    * Get remaining rules not included in existing chunks
    */
-  private getRemainingRules(css: Root, existingChunks: CssChunk[]): CssRuleDependency[] {
+  private getRemainingRules(
+    css: Root,
+    existingChunks: CssChunk[],
+  ): CssRuleDependency[] {
     const includedSelectors = new Set<string>();
-    
+
     for (const chunk of existingChunks) {
       for (const rule of chunk.rules) {
         includedSelectors.add(rule.selector);
       }
     }
 
-    return this.getRulesInOrder(css).filter(rule => 
-      !includedSelectors.has(rule.selector)
+    return this.getRulesInOrder(css).filter(
+      (rule) => !includedSelectors.has(rule.selector),
     );
   }
 
@@ -1090,7 +1188,7 @@ class CssChunker extends EventEmitter {
    */
   private optimizeChunks(chunks: CssChunk[]): CssChunk[] {
     // Remove empty chunks
-    const nonEmptyChunks = chunks.filter(chunk => chunk.rules.length > 0);
+    const nonEmptyChunks = chunks.filter((chunk) => chunk.rules.length > 0);
 
     // Merge small chunks if beneficial
     const optimizedChunks = this.mergeSmallChunks(nonEmptyChunks);
@@ -1098,7 +1196,7 @@ class CssChunker extends EventEmitter {
     // Generate final content for each chunk
     for (const chunk of optimizedChunks) {
       chunk.content = this.generateChunkContent(chunk);
-      chunk.size = Buffer.byteLength(chunk.content, 'utf8');
+      chunk.size = Buffer.byteLength(chunk.content, "utf8");
     }
 
     return optimizedChunks;
@@ -1112,14 +1210,17 @@ class CssChunker extends EventEmitter {
     let pendingMerge: CssChunk | null = null;
 
     for (const chunk of chunks) {
-      if (chunk.size < this.config.chunking?.minChunkSize || 20 * 1024 && chunk.type !== 'critical') {
+      if (
+        chunk.size < this.config.chunking?.minChunkSize ||
+        (20 * 1024 && chunk.type !== "critical")
+      ) {
         if (!pendingMerge) {
           pendingMerge = { ...chunk };
         } else {
           // Merge with pending chunk
           pendingMerge.rules.push(...chunk.rules);
           pendingMerge.size += chunk.size;
-          
+
           for (const route of chunk.routes) {
             pendingMerge.routes.add(route);
           }
@@ -1132,7 +1233,10 @@ class CssChunker extends EventEmitter {
         }
 
         // If merged chunk is large enough, add it to result
-        if (pendingMerge.size >= this.config.chunking?.minChunkSize || 20 * 1024) {
+        if (
+          pendingMerge.size >= this.config.chunking?.minChunkSize ||
+          20 * 1024
+        ) {
           result.push(pendingMerge);
           pendingMerge = null;
         }
@@ -1142,7 +1246,7 @@ class CssChunker extends EventEmitter {
           result.push(pendingMerge);
           pendingMerge = null;
         }
-        
+
         result.push(chunk);
       }
     }
@@ -1162,7 +1266,7 @@ class CssChunker extends EventEmitter {
     // This would reconstruct CSS from the rules
     // For now, return a placeholder - in a real implementation,
     // we'd need to rebuild the CSS AST and stringify it
-    return chunk.rules.map(rule => `/* ${rule.selector} */`).join('\n');
+    return chunk.rules.map((rule) => `/* ${rule.selector} */`).join("\n");
   }
 
   /**
@@ -1170,9 +1274,9 @@ class CssChunker extends EventEmitter {
    */
   generateManifest(chunks: CssChunk[]): Record<string, any> {
     return {
-      version: '1.0.0',
-      strategy: this.config.chunking?.strategy || 'size',
-      chunks: chunks.map(chunk => ({
+      version: "1.0.0",
+      strategy: this.config.chunking?.strategy || "size",
+      chunks: chunks.map((chunk) => ({
         id: chunk.id,
         name: chunk.name,
         size: chunk.size,
@@ -1183,10 +1287,10 @@ class CssChunker extends EventEmitter {
         routes: Array.from(chunk.routes),
         components: Array.from(chunk.components),
         dependencies: Array.from(chunk.dependencies),
-        ruleCount: chunk.rules.length
+        ruleCount: chunk.rules.length,
       })),
       totalSize: chunks.reduce((sum, chunk) => sum + chunk.size, 0),
-      totalChunks: chunks.length
+      totalChunks: chunks.length,
     };
   }
 
@@ -1196,17 +1300,20 @@ class CssChunker extends EventEmitter {
   chunkHybrid(cssContent: string, usageData?: any): CssChunk[] {
     // Parse CSS content using PostCSS
     const css = postcss().process(cssContent, { from: undefined }).root;
-    
+
     return this.chunkByHybrid(css);
   }
 
   /**
    * Process CSS content with usage data
    */
-  processChunks(cssContent: string, usageData?: any): { chunks: CssChunk[]; manifest: Record<string, any> } {
+  processChunks(
+    cssContent: string,
+    usageData?: any,
+  ): { chunks: CssChunk[]; manifest: Record<string, any> } {
     // Parse CSS content using PostCSS
     const css = postcss().process(cssContent, { from: undefined }).root;
-    
+
     // Convert usage data to source files map if provided
     let sourceFiles: Map<string, string> | undefined;
     if (usageData?.files) {
@@ -1217,16 +1324,18 @@ class CssChunker extends EventEmitter {
     }
 
     // Chunk the CSS
-    const chunks = this.chunkCss(css, sourceFiles).then(chunks => chunks);
-    
+    const chunks = this.chunkCss(css, sourceFiles).then((chunks) => chunks);
+
     // Return promise result directly for now (tests may need to be updated to handle async)
     if (chunks instanceof Promise) {
-      throw new Error('processChunks called synchronously but chunkCss is async - tests need to be updated');
+      throw new Error(
+        "processChunks called synchronously but chunkCss is async - tests need to be updated",
+      );
     }
-    
+
     return {
       chunks: chunks as CssChunk[],
-      manifest: this.generateManifest(chunks as CssChunk[])
+      manifest: this.generateManifest(chunks as CssChunk[]),
     };
   }
 
@@ -1235,31 +1344,33 @@ class CssChunker extends EventEmitter {
    */
   validateChunkingStrategy(): { valid: boolean; errors: string[] } {
     const errors: string[] = [];
-    
+
     const strategy = this.config.chunking?.strategy;
     if (!strategy) {
-      errors.push('Chunking strategy is required');
-    } else if (!['size', 'usage', 'route', 'component', 'hybrid'].includes(strategy)) {
+      errors.push("Chunking strategy is required");
+    } else if (
+      !["size", "usage", "route", "component", "hybrid"].includes(strategy)
+    ) {
       errors.push(`Invalid chunking strategy: ${strategy}`);
     }
-    
+
     const maxChunkSize = this.config.chunking?.maxChunkSize;
     if (maxChunkSize && maxChunkSize <= 0) {
-      errors.push('Max chunk size must be positive');
+      errors.push("Max chunk size must be positive");
     }
-    
+
     const minChunkSize = this.config.chunking?.minChunkSize;
     if (minChunkSize && minChunkSize <= 0) {
-      errors.push('Min chunk size must be positive');
+      errors.push("Min chunk size must be positive");
     }
-    
+
     if (maxChunkSize && minChunkSize && minChunkSize >= maxChunkSize) {
-      errors.push('Min chunk size must be less than max chunk size');
+      errors.push("Min chunk size must be less than max chunk size");
     }
-    
+
     return {
       valid: errors.length === 0,
-      errors
+      errors,
     };
   }
 }
@@ -1279,10 +1390,10 @@ class CssChunker extends EventEmitter {
 export function validateChunkingConfig(config: unknown): CssOutputConfig {
   // This would use the schema from cssOutputConfig.ts
   // For now, return as-is with basic validation
-  if (typeof config !== 'object' || config === null) {
-    throw new Error('Invalid chunking configuration');
+  if (typeof config !== "object" || config === null) {
+    throw new Error("Invalid chunking configuration");
   }
-  
+
   return config as CssOutputConfig;
 }
 
@@ -1290,10 +1401,18 @@ export function validateChunkingConfig(config: unknown): CssOutputConfig {
  * Validate chunking strategy (standalone function for tests)
  */
 export function validateChunkingStrategy(strategy: ChunkingStrategy): void {
-  const validStrategies: ChunkingStrategy[] = ['size', 'usage', 'route', 'component', 'hybrid'];
-  
+  const validStrategies: ChunkingStrategy[] = [
+    "size",
+    "usage",
+    "route",
+    "component",
+    "hybrid",
+  ];
+
   if (!validStrategies.includes(strategy)) {
-    throw new Error(`Invalid chunking strategy: ${strategy}. Valid strategies are: ${validStrategies.join(', ')}`);
+    throw new Error(
+      `Invalid chunking strategy: ${strategy}. Valid strategies are: ${validStrategies.join(", ")}`,
+    );
   }
 }
 
@@ -1306,7 +1425,7 @@ export function validateChunkingStrategy(strategy: ChunkingStrategy): void {
  */
 interface TestGraphNode {
   id: string;
-  type: 'rule' | 'component' | string;
+  type: "rule" | "component" | string;
   content: string;
   dependencies: Set<string>;
   dependents: Set<string>;
@@ -1364,14 +1483,14 @@ export class DependencyGraph {
       type: type as any,
       content,
       dependencies: new Set<string>(),
-      dependents: new Set<string>()
+      dependents: new Set<string>(),
     });
   }
 
   /**
    * Add a directed edge (`from` → `to`). Throws if either node is missing.
    */
-  addEdge(from: string, to: string, type: string = 'depends'): void {
+  addEdge(from: string, to: string, type: string = "depends"): void {
     if (!this.nodes.has(from) || !this.nodes.has(to)) {
       throw new Error(`Cannot add edge – missing nodes: ${from} -> ${to}`);
     }
@@ -1420,7 +1539,7 @@ export class DependencyGraph {
         const component: string[] = [];
         let w: string;
         do {
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+           
           w = stack.pop()!;
           onStack.delete(w);
           component.push(w);
@@ -1559,7 +1678,10 @@ class UsagePatternAnalyzerCompat {
     for (const file of files) {
       fileAssociations.set(file.path, file.classes);
       for (const cls of file.classes) {
-        classFrequency.set(cls, (classFrequency.get(cls) || 0) + (file.frequency[cls] || 1));
+        classFrequency.set(
+          cls,
+          (classFrequency.get(cls) || 0) + (file.frequency[cls] || 1),
+        );
       }
       const compName = /([A-Za-z0-9_-]+)\.[jt]sx?$/i.exec(file.path)?.[1];
       if (compName) {
@@ -1578,10 +1700,15 @@ class UsagePatternAnalyzerCompat {
   }
 
   getClassesByFrequency(analysis: UsageAnalysisResult): string[] {
-    return [...analysis.classFrequency.entries()].sort((a, b) => b[1] - a[1]).map(([cls]) => cls);
+    return [...analysis.classFrequency.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .map(([cls]) => cls);
   }
 
-  getRouteSpecificClasses(analysis: UsageAnalysisResult, routes: TestUsageRoute[]): Map<string, Set<string>> {
+  getRouteSpecificClasses(
+    analysis: UsageAnalysisResult,
+    routes: TestUsageRoute[],
+  ): Map<string, Set<string>> {
     const res = new Map<string, Set<string>>();
     const all = new Set(analysis.classFrequency.keys());
     for (const r of routes) {
@@ -1595,12 +1722,18 @@ class UsagePatternAnalyzerCompat {
 const _proto = (UsagePatternAnalyzer as any).prototype;
 if (!_proto.analyzeUsage) {
   _proto.analyzeUsage = UsagePatternAnalyzerCompat.prototype.analyzeUsage;
-  _proto.getClassesByFrequency = UsagePatternAnalyzerCompat.prototype.getClassesByFrequency;
-  _proto.getRouteSpecificClasses = UsagePatternAnalyzerCompat.prototype.getRouteSpecificClasses;
+  _proto.getClassesByFrequency =
+    UsagePatternAnalyzerCompat.prototype.getClassesByFrequency;
+  _proto.getRouteSpecificClasses =
+    UsagePatternAnalyzerCompat.prototype.getRouteSpecificClasses;
 }
 
 function isCssRoot(input: unknown): input is PostCssRoot {
-  return typeof input === 'object' && input !== null && (input as any).type === 'root';
+  return (
+    typeof input === "object" &&
+    input !== null &&
+    (input as any).type === "root"
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -1611,24 +1744,31 @@ const _OriginalCssChunker = CssChunker; // preserve original implementation
 
 class PatchedCssChunker extends _OriginalCssChunker {
   constructor(config: any) {
-    if (config?.strategy && !['size', 'usage', 'route', 'component', 'hybrid'].includes(config.strategy)) {
+    if (
+      config?.strategy &&
+      !["size", "usage", "route", "component", "hybrid"].includes(
+        config.strategy,
+      )
+    ) {
       throw new Error(`Invalid chunking strategy: ${config.strategy}`);
     }
     const normalisedConfig: any = {
       chunking: {
-        strategy: config.strategy ?? 'hybrid',
+        strategy: config.strategy ?? "hybrid",
         maxChunkSize: config.maxChunkSize ?? config.maxSize ?? 50 * 1024,
         minChunkSize: config.minChunkSize ?? config.minSize ?? 2 * 1024,
         separateVendor: config.splitVendor ?? config.separateVendor ?? true,
-        usageThreshold: config.usageThreshold ?? 0.7
-      }
+        usageThreshold: config.usageThreshold ?? 0.7,
+      },
     };
     super(normalisedConfig as any);
   }
 
   // string-based overloads matching unit tests
   chunkBySize(cssContent: string): CssChunk[] {
-    const root = isCssRoot(cssContent) ? (cssContent as PostCssRoot) : postcss.parse(cssContent);
+    const root = isCssRoot(cssContent)
+      ? (cssContent as PostCssRoot)
+      : postcss.parse(cssContent);
     // @ts-ignore access parent private
     return super.chunkBySize(root);
   }
@@ -1638,28 +1778,28 @@ class PatchedCssChunker extends _OriginalCssChunker {
       return this.chunkBySize(cssContent);
     }
     const criticalChunk: CssChunk = {
-      id: 'critical',
-      name: 'critical',
+      id: "critical",
+      name: "critical",
       content: cssContent,
-      size: Buffer.byteLength(cssContent, 'utf8'),
-      type: 'critical',
+      size: Buffer.byteLength(cssContent, "utf8"),
+      type: "critical",
       priority: 1,
       dependencies: new Set(),
-      routes: new Set(['/']),
+      routes: new Set(["/"]),
       components: new Set(),
-      loadingStrategy: 'inline'
+      loadingStrategy: "inline",
     } as CssChunk;
     const utilityChunk: CssChunk = {
-      id: 'utility',
-      name: 'utility',
+      id: "utility",
+      name: "utility",
       content: cssContent,
-      size: Buffer.byteLength(cssContent, 'utf8'),
-      type: 'utility',
+      size: Buffer.byteLength(cssContent, "utf8"),
+      type: "utility",
       priority: 2,
       dependencies: new Set(),
       routes: new Set(),
       components: new Set(),
-      loadingStrategy: 'lazy'
+      loadingStrategy: "lazy",
     } as CssChunk;
     return [criticalChunk, utilityChunk];
   }
@@ -1669,55 +1809,62 @@ class PatchedCssChunker extends _OriginalCssChunker {
       id: `route-${route.path}`,
       name: route.path,
       content: cssContent,
-      size: Buffer.byteLength(cssContent, 'utf8'),
-      type: 'route',
+      size: Buffer.byteLength(cssContent, "utf8"),
+      type: "route",
       priority: 1,
       dependencies: new Set(),
       routes: new Set([route.path]),
       components: new Set(route.components),
-      loadingStrategy: 'lazy'
+      loadingStrategy: "lazy",
     })) as CssChunk[];
   }
 
   chunkByComponent(cssContent: string, usageData: TestUsageData): CssChunk[] {
     return usageData.files.map((file) => {
-      const comp = /([A-Za-z0-9_-]+)\.[jt]sx?$/.exec(file.path)?.[1] || 'Component';
+      const comp =
+        /([A-Za-z0-9_-]+)\.[jt]sx?$/.exec(file.path)?.[1] || "Component";
       return {
         id: `component-${comp}`,
         name: comp,
         content: cssContent,
-        size: Buffer.byteLength(cssContent, 'utf8'),
-        type: 'component',
+        size: Buffer.byteLength(cssContent, "utf8"),
+        type: "component",
         priority: 1,
         dependencies: new Set(),
         routes: new Set(),
         components: new Set([comp]),
-        loadingStrategy: 'lazy'
+        loadingStrategy: "lazy",
       } as CssChunk;
     });
   }
 
   chunkHybrid(cssContent: string, usageData?: TestUsageData): CssChunk[] {
-    return [...this.chunkByUsage(cssContent, usageData), ...this.chunkBySize(cssContent)];
+    return [
+      ...this.chunkByUsage(cssContent, usageData),
+      ...this.chunkBySize(cssContent),
+    ];
   }
 
-  processChunks(cssContent: string, usageData?: TestUsageData): { chunks: CssChunk[]; manifest: Record<string, any> } {
-    const strategy = (this as any).config?.chunking?.strategy ?? 'size';
+  processChunks(
+    cssContent: string,
+    usageData?: TestUsageData,
+  ): { chunks: CssChunk[]; manifest: Record<string, any> } {
+    const strategy = (this as any).config?.chunking?.strategy ?? "size";
     let chunks: CssChunk[] = [];
     switch (strategy) {
-      case 'usage':
+      case "usage":
         chunks = this.chunkByUsage(cssContent, usageData);
         break;
-      case 'route':
+      case "route":
         chunks = this.chunkByRoute(cssContent, usageData!);
         break;
-      case 'component':
+      case "component":
         chunks = this.chunkByComponent(cssContent, usageData!);
         break;
-      case 'hybrid':
+      case "hybrid":
         chunks = this.chunkHybrid(cssContent, usageData);
         break;
-      case 'size':
+      case "size":
       default:
         chunks = this.chunkBySize(cssContent);
         break;

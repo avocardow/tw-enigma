@@ -1,6 +1,6 @@
 /**
  * React Framework Detector
- * 
+ *
  * Detects React framework usage through:
  * - Package.json dependencies
  * - Import patterns
@@ -8,17 +8,17 @@
  * - Configuration files
  */
 
-import type { 
-  IFrameworkDetector, 
-  FrameworkInfo, 
-  DetectionContext, 
+import type {
+  IFrameworkDetector,
+  FrameworkInfo,
+  DetectionContext,
   DetectionSource,
-  FrameworkType 
-} from '../frameworkDetector.js';
+  FrameworkType,
+} from "../frameworkDetector.js";
 
 export class ReactDetector implements IFrameworkDetector {
-  readonly frameworkType: FrameworkType = 'react';
-  readonly name = 'React Detector';
+  readonly frameworkType: FrameworkType = "react";
+  readonly name = "React Detector";
 
   canDetect(context: DetectionContext): boolean {
     // Can always attempt React detection
@@ -29,7 +29,7 @@ export class ReactDetector implements IFrameworkDetector {
     const sources: DetectionSource[] = [];
     let confidence = 0;
     let version: string | undefined;
-    const metadata: FrameworkInfo['metadata'] = {
+    const metadata: FrameworkInfo["metadata"] = {
       dependencies: [],
       configFiles: [],
       hasTypeScript: false,
@@ -40,10 +40,10 @@ export class ReactDetector implements IFrameworkDetector {
       const packageResults = this.analyzePackageJson(context.packageJson);
       if (packageResults.isReact) {
         sources.push({
-          type: 'package',
-          description: 'React dependencies found in package.json',
+          type: "package",
+          description: "React dependencies found in package.json",
           confidence: packageResults.confidence,
-          location: 'package.json',
+          location: "package.json",
           evidence: packageResults.evidence,
         });
         confidence += packageResults.confidence;
@@ -57,8 +57,8 @@ export class ReactDetector implements IFrameworkDetector {
       const configResults = this.analyzeConfigFiles(context.configFiles);
       if (configResults.isReact) {
         sources.push({
-          type: 'config',
-          description: 'React-related configuration found',
+          type: "config",
+          description: "React-related configuration found",
           confidence: configResults.confidence,
           evidence: configResults.evidence,
         });
@@ -72,8 +72,8 @@ export class ReactDetector implements IFrameworkDetector {
       const codeResults = this.analyzeSourcePatterns(context.sourcePatterns);
       if (codeResults.isReact) {
         sources.push({
-          type: 'code',
-          description: 'React patterns found in source code',
+          type: "code",
+          description: "React patterns found in source code",
           confidence: codeResults.confidence,
           evidence: codeResults.evidence,
         });
@@ -86,8 +86,8 @@ export class ReactDetector implements IFrameworkDetector {
       const fsResults = this.analyzeFileStructure(context.fileStructure);
       if (fsResults.isReact) {
         sources.push({
-          type: 'filesystem',
-          description: 'React-specific file structure detected',
+          type: "filesystem",
+          description: "React-specific file structure detected",
           confidence: fsResults.confidence,
           evidence: fsResults.evidence,
         });
@@ -113,8 +113,8 @@ export class ReactDetector implements IFrameworkDetector {
     metadata.entryPoints = this.detectEntryPoints(context);
 
     return {
-      type: 'react',
-      name: 'React',
+      type: "react",
+      name: "React",
       version,
       confidence: normalizedConfidence,
       sources,
@@ -142,34 +142,34 @@ export class ReactDetector implements IFrameworkDetector {
 
     // Core React packages
     if (allDeps.react) {
-      evidence.push('react dependency found');
-      dependencies.push('react');
+      evidence.push("react dependency found");
+      dependencies.push("react");
       confidence += 0.6;
       version = allDeps.react;
     }
 
-    if (allDeps['react-dom']) {
-      evidence.push('react-dom dependency found');
-      dependencies.push('react-dom');
+    if (allDeps["react-dom"]) {
+      evidence.push("react-dom dependency found");
+      dependencies.push("react-dom");
       confidence += 0.3;
     }
 
     // React ecosystem packages
     const reactEcosystem = [
-      'react-router',
-      'react-router-dom',
-      'react-query',
-      '@tanstack/react-query',
-      'react-hook-form',
-      'react-redux',
-      '@reduxjs/toolkit',
-      'styled-components',
-      '@emotion/react',
-      'framer-motion',
-      'react-spring',
-      'react-transition-group',
-      'react-helmet',
-      'react-helmet-async',
+      "react-router",
+      "react-router-dom",
+      "react-query",
+      "@tanstack/react-query",
+      "react-hook-form",
+      "react-redux",
+      "@reduxjs/toolkit",
+      "styled-components",
+      "@emotion/react",
+      "framer-motion",
+      "react-spring",
+      "react-transition-group",
+      "react-helmet",
+      "react-helmet-async",
     ];
 
     let ecosystemCount = 0;
@@ -177,7 +177,8 @@ export class ReactDetector implements IFrameworkDetector {
       if (allDeps[pkg]) {
         ecosystemCount++;
         dependencies.push(pkg);
-        if (ecosystemCount <= 3) { // Diminishing returns
+        if (ecosystemCount <= 3) {
+          // Diminishing returns
           evidence.push(`${pkg} dependency found`);
         }
       }
@@ -189,14 +190,14 @@ export class ReactDetector implements IFrameworkDetector {
 
     // React tools and build systems
     const reactTools = [
-      'create-react-app',
-      'react-scripts',
-      '@vitejs/plugin-react',
-      '@vitejs/plugin-react-swc',
-      'eslint-plugin-react',
-      'eslint-plugin-react-hooks',
-      '@types/react',
-      '@types/react-dom',
+      "create-react-app",
+      "react-scripts",
+      "@vitejs/plugin-react",
+      "@vitejs/plugin-react-swc",
+      "eslint-plugin-react",
+      "eslint-plugin-react-hooks",
+      "@types/react",
+      "@types/react-dom",
     ];
 
     let toolsCount = 0;
@@ -234,50 +235,58 @@ export class ReactDetector implements IFrameworkDetector {
     let confidence = 0;
 
     // Vite React plugin
-    const viteConfig = configFiles.get('vite.config.js') || 
-                     configFiles.get('vite.config.ts') || 
-                     configFiles.get('vite.config.mjs');
-    
+    const viteConfig =
+      configFiles.get("vite.config.js") ||
+      configFiles.get("vite.config.ts") ||
+      configFiles.get("vite.config.mjs");
+
     if (viteConfig?.plugins || viteConfig?._rawContent) {
       const content = viteConfig._rawContent || JSON.stringify(viteConfig);
-      if (content.includes('@vitejs/plugin-react') || content.includes('plugin-react')) {
-        evidence.push('Vite React plugin configuration found');
-        foundConfigFiles.push('vite.config.*');
+      if (
+        content.includes("@vitejs/plugin-react") ||
+        content.includes("plugin-react")
+      ) {
+        evidence.push("Vite React plugin configuration found");
+        foundConfigFiles.push("vite.config.*");
         confidence += 0.4;
       }
     }
 
     // Webpack configuration
-    const webpackConfig = configFiles.get('webpack.config.js');
+    const webpackConfig = configFiles.get("webpack.config.js");
     if (webpackConfig?._rawContent) {
-      if (webpackConfig._rawContent.includes('react') || 
-          webpackConfig._rawContent.includes('jsx')) {
-        evidence.push('React-related webpack configuration found');
-        foundConfigFiles.push('webpack.config.js');
+      if (
+        webpackConfig._rawContent.includes("react") ||
+        webpackConfig._rawContent.includes("jsx")
+      ) {
+        evidence.push("React-related webpack configuration found");
+        foundConfigFiles.push("webpack.config.js");
         confidence += 0.3;
       }
     }
 
     // Babel configuration
-    const babelConfig = configFiles.get('babel.config.js') || 
-                       configFiles.get('.babelrc');
+    const babelConfig =
+      configFiles.get("babel.config.js") || configFiles.get(".babelrc");
     if (babelConfig) {
       const content = babelConfig._rawContent || JSON.stringify(babelConfig);
-      if (content.includes('@babel/preset-react') || 
-          content.includes('react')) {
-        evidence.push('Babel React preset found');
-        foundConfigFiles.push('babel configuration');
+      if (
+        content.includes("@babel/preset-react") ||
+        content.includes("react")
+      ) {
+        evidence.push("Babel React preset found");
+        foundConfigFiles.push("babel configuration");
         confidence += 0.2;
       }
     }
 
     // TypeScript configuration
-    const tsConfig = configFiles.get('tsconfig.json');
+    const tsConfig = configFiles.get("tsconfig.json");
     if (tsConfig) {
       const content = JSON.stringify(tsConfig);
-      if (content.includes('"jsx"') || content.includes('react')) {
-        evidence.push('TypeScript JSX configuration found');
-        foundConfigFiles.push('tsconfig.json');
+      if (content.includes('"jsx"') || content.includes("react")) {
+        evidence.push("TypeScript JSX configuration found");
+        foundConfigFiles.push("tsconfig.json");
         confidence += 0.15;
       }
     }
@@ -299,18 +308,18 @@ export class ReactDetector implements IFrameworkDetector {
     let confidence = 0;
 
     // JSX/TSX files indicate React
-    if (sourcePatterns.includes('*.jsx')) {
-      evidence.push('JSX files found');
+    if (sourcePatterns.includes("*.jsx")) {
+      evidence.push("JSX files found");
       confidence += 0.3;
     }
 
-    if (sourcePatterns.includes('*.tsx')) {
-      evidence.push('TSX files found');
+    if (sourcePatterns.includes("*.tsx")) {
+      evidence.push("TSX files found");
       confidence += 0.3;
     }
 
     // Common React directories
-    const reactDirs = ['components', 'src'];
+    const reactDirs = ["components", "src"];
     for (const dir of reactDirs) {
       if (sourcePatterns.includes(dir)) {
         evidence.push(`${dir} directory found`);
@@ -325,7 +334,10 @@ export class ReactDetector implements IFrameworkDetector {
     };
   }
 
-  private analyzeFileStructure(fileStructure: { directories: string[]; files: string[] }): {
+  private analyzeFileStructure(fileStructure: {
+    directories: string[];
+    files: string[];
+  }): {
     isReact: boolean;
     confidence: number;
     evidence: string[];
@@ -334,7 +346,7 @@ export class ReactDetector implements IFrameworkDetector {
     let confidence = 0;
 
     // Check for React-specific directories
-    const reactDirs = ['components', 'hooks', 'contexts', 'providers'];
+    const reactDirs = ["components", "hooks", "contexts", "providers"];
     for (const dir of reactDirs) {
       if (fileStructure.directories.includes(dir)) {
         evidence.push(`${dir} directory found`);
@@ -344,12 +356,12 @@ export class ReactDetector implements IFrameworkDetector {
 
     // Check for React-specific files
     const reactFiles = [
-      'App.jsx',
-      'App.tsx', 
-      'index.jsx',
-      'index.tsx',
-      'App.js',
-      'index.js',
+      "App.jsx",
+      "App.tsx",
+      "index.jsx",
+      "index.tsx",
+      "App.js",
+      "index.js",
     ];
 
     for (const file of reactFiles) {
@@ -360,11 +372,11 @@ export class ReactDetector implements IFrameworkDetector {
     }
 
     // Check for Create React App specific files
-    if (fileStructure.files.includes('public')) {
-      const craIndicators = ['public/index.html', 'src/App.js', 'src/index.js'];
+    if (fileStructure.files.includes("public")) {
+      const craIndicators = ["public/index.html", "src/App.js", "src/index.js"];
       // This is a simplified check - in real implementation we'd check deeper
       confidence += 0.1;
-      evidence.push('Create React App structure detected');
+      evidence.push("Create React App structure detected");
     }
 
     return {
@@ -381,19 +393,19 @@ export class ReactDetector implements IFrameworkDetector {
         ...context.packageJson.dependencies,
         ...context.packageJson.devDependencies,
       };
-      
-      if (allDeps.typescript || allDeps['@types/react']) {
+
+      if (allDeps.typescript || allDeps["@types/react"]) {
         return true;
       }
     }
 
     // Check for TSX files
-    if (context.sourcePatterns?.includes('*.tsx')) {
+    if (context.sourcePatterns?.includes("*.tsx")) {
       return true;
     }
 
     // Check for tsconfig.json
-    if (context.configFiles?.has('tsconfig.json')) {
+    if (context.configFiles?.has("tsconfig.json")) {
       return true;
     }
 
@@ -407,19 +419,21 @@ export class ReactDetector implements IFrameworkDetector {
         ...context.packageJson.devDependencies,
       };
 
-      if (allDeps['react-scripts']) return 'Create React App';
-      if (allDeps.vite || allDeps['@vitejs/plugin-react']) return 'Vite';
-      if (allDeps.webpack) return 'Webpack';
-      if (allDeps.parcel) return 'Parcel';
+      if (allDeps["react-scripts"]) return "Create React App";
+      if (allDeps.vite || allDeps["@vitejs/plugin-react"]) return "Vite";
+      if (allDeps.webpack) return "Webpack";
+      if (allDeps.parcel) return "Parcel";
     }
 
-    if (context.configFiles?.has('vite.config.js') || 
-        context.configFiles?.has('vite.config.ts')) {
-      return 'Vite';
+    if (
+      context.configFiles?.has("vite.config.js") ||
+      context.configFiles?.has("vite.config.ts")
+    ) {
+      return "Vite";
     }
 
-    if (context.configFiles?.has('webpack.config.js')) {
-      return 'Webpack';
+    if (context.configFiles?.has("webpack.config.js")) {
+      return "Webpack";
     }
 
     return undefined;
@@ -434,13 +448,18 @@ export class ReactDetector implements IFrameworkDetector {
     }
 
     // Common React entry points
-    const commonEntries = ['src/index.js', 'src/index.ts', 'src/index.jsx', 'src/index.tsx'];
+    const commonEntries = [
+      "src/index.js",
+      "src/index.ts",
+      "src/index.jsx",
+      "src/index.tsx",
+    ];
     for (const entry of commonEntries) {
-      if (context.fileStructure?.files.includes(entry.split('/').pop()!)) {
+      if (context.fileStructure?.files.includes(entry.split("/").pop()!)) {
         entryPoints.push(entry);
       }
     }
 
     return entryPoints;
   }
-} 
+}

@@ -1,0 +1,209 @@
+{
+  "version": "1.0.0",
+  "name": "Tailwind Enigma Autocomplete",
+  "description": "IDE autocomplete configuration for Tailwind Enigma optimized utility classes",
+  "generatedAt": "2025-01-20T18:25:00.000Z",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "utilities": {
+        "type": "array",
+        "description": "List of optimized utility class names",
+        "items": {
+          "type": "string",
+          "pattern": "^tw-opt-[a-zA-Z0-9-]+$"
+        }
+      },
+      "patterns": {
+        "type": "array",
+        "description": "Recognized class patterns for suggestions",
+        "items": {
+          "type": "object",
+          "properties": {
+            "pattern": { "type": "string" },
+            "frequency": { "type": "number" },
+            "suggestion": { "type": "string" },
+            "category": { "type": "string" }
+          }
+        }
+      },
+      "suggestions": {
+        "type": "array",
+        "description": "Context-aware class suggestions",
+        "items": {
+          "type": "object",
+          "properties": {
+            "trigger": { "type": "string" },
+            "completions": { "type": "array", "items": { "type": "string" } },
+            "context": { "type": "string" }
+          }
+        }
+      }
+    }
+  },
+  "utilities": [
+    "tw-opt-0",
+    "tw-opt-1",
+    "tw-opt-2",
+    "tw-opt-freq-0",
+    "tw-opt-freq-1",
+    "tw-opt-freq-2"
+  ],
+  "patterns": [
+    {
+      "pattern": "flex items-center justify-center",
+      "frequency": 15,
+      "suggestion": "tw-opt-center-flex",
+      "category": "layout"
+    },
+    {
+      "pattern": "text-gray-600 font-medium",
+      "frequency": 12,
+      "suggestion": "tw-opt-text-medium",
+      "category": "typography"
+    },
+    {
+      "pattern": "bg-white shadow-lg rounded-lg",
+      "frequency": 10,
+      "suggestion": "tw-opt-card",
+      "category": "components"
+    },
+    {
+      "pattern": "w-full h-full",
+      "frequency": 8,
+      "suggestion": "tw-opt-full-size",
+      "category": "sizing"
+    },
+    {
+      "pattern": "p-4 m-2",
+      "frequency": 7,
+      "suggestion": "tw-opt-spacing-default",
+      "category": "spacing"
+    }
+  ],
+  "suggestions": [
+    {
+      "trigger": "flex",
+      "completions": [
+        "tw-opt-center-flex",
+        "tw-opt-flex-col",
+        "tw-opt-flex-wrap"
+      ],
+      "context": "layout"
+    },
+    {
+      "trigger": "text-",
+      "completions": [
+        "tw-opt-text-medium",
+        "tw-opt-text-large",
+        "tw-opt-text-small"
+      ],
+      "context": "typography"
+    },
+    {
+      "trigger": "bg-",
+      "completions": [
+        "tw-opt-card",
+        "tw-opt-bg-primary",
+        "tw-opt-bg-secondary"
+      ],
+      "context": "background"
+    },
+    {
+      "trigger": "w-",
+      "completions": [
+        "tw-opt-full-size",
+        "tw-opt-container",
+        "tw-opt-responsive"
+      ],
+      "context": "sizing"
+    },
+    {
+      "trigger": "p-",
+      "completions": [
+        "tw-opt-spacing-default",
+        "tw-opt-spacing-large",
+        "tw-opt-spacing-small"
+      ],
+      "context": "spacing"
+    }
+  ],
+  "categories": {
+    "layout": {
+      "description": "Flexbox, grid, and positioning utilities",
+      "color": "#3B82F6",
+      "icon": "layout"
+    },
+    "typography": {
+      "description": "Text styling and font utilities",
+      "color": "#10B981",
+      "icon": "type"
+    },
+    "components": {
+      "description": "Pre-built component patterns",
+      "color": "#8B5CF6",
+      "icon": "component"
+    },
+    "sizing": {
+      "description": "Width, height, and sizing utilities",
+      "color": "#F59E0B",
+      "icon": "resize"
+    },
+    "spacing": {
+      "description": "Margin, padding, and spacing utilities",
+      "color": "#EF4444",
+      "icon": "space"
+    }
+  },
+  "configuration": {
+    "enableIntelliSense": true,
+    "enableHover": true,
+    "enableCompletion": true,
+    "enableValidation": true,
+    "maxSuggestions": 10,
+    "sortBy": "frequency",
+    "showFrequency": true,
+    "showCategory": true,
+    "caseSensitive": false
+  },
+  "integration": {
+    "vscode": {
+      "extensionId": "tailwind-enigma",
+      "configPath": ".vscode/settings.json",
+      "settings": {
+        "tailwindCSS.experimental.classRegex": [
+          ["tw-opt-[\\w-]+", "[\"'`]([^\"'`]*).*?[\"'`]"]
+        ],
+        "tailwindCSS.includeLanguages": {
+          "javascript": "javascript",
+          "typescript": "typescript",
+          "javascriptreact": "javascript",
+          "typescriptreact": "typescript"
+        }
+      }
+    },
+    "webstorm": {
+      "configPath": ".idea/tailwind-enigma.xml",
+      "settings": {
+        "classPattern": "tw-opt-[\\w-]+",
+        "enableCompletion": true
+      }
+    },
+    "sublime": {
+      "configPath": "tailwind-enigma.sublime-settings",
+      "settings": {
+        "auto_complete_selector": "source.css, source.scss, source.js, source.ts",
+        "completions": "utilities"
+      }
+    }
+  },
+  "metadata": {
+    "lastUpdated": "2025-01-20T18:25:00.000Z",
+    "version": "1.0.0",
+    "generator": "Tailwind Enigma Core",
+    "totalUtilities": 6,
+    "totalPatterns": 5,
+    "totalSuggestions": 15,
+    "averageFrequency": 10.4
+  }
+}

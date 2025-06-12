@@ -1,0 +1,214 @@
+name: ✨ Feature Request
+description: Suggest a new feature or enhancement for Tailwind Enigma Core
+title: "[Feature]: "
+labels: ["enhancement", "needs-triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for suggesting a new feature! Please fill out this template to help us understand your request.
+
+        Before submitting, please search existing issues to see if this feature has already been requested.
+
+  - type: checkboxes
+    id: prerequisites
+    attributes:
+      label: Prerequisites
+      description: Please confirm the following before submitting your feature request
+      options:
+        - label: I have searched existing issues and this feature hasn't been requested
+          required: true
+        - label: I have checked the roadmap and documentation
+          required: true
+        - label: This is a feature request, not a bug report
+          required: true
+
+  - type: textarea
+    id: problem-statement
+    attributes:
+      label: Problem Statement
+      description: What problem does this feature solve? What need does it address?
+      placeholder: |
+        Describe the problem or limitation you're experiencing...
+
+        Example: "When optimizing CSS for large applications, it's difficult to identify which optimizations provide the most benefit."
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: Proposed Solution
+      description: Describe your ideal solution to this problem
+      placeholder: |
+        Describe how you envision this feature working...
+
+        Example: "Add a --analyze flag that generates a detailed report showing optimization impact per file."
+    validations:
+      required: true
+
+  - type: textarea
+    id: detailed-description
+    attributes:
+      label: Detailed Description
+      description: Provide a detailed description of the feature, including behavior and implementation ideas
+      placeholder: |
+        Provide more details about:
+        - How should the feature work?
+        - What options/configuration should it have?
+        - How should users interact with it?
+        - Any implementation ideas you have?
+
+  - type: textarea
+    id: use-cases
+    attributes:
+      label: Use Cases
+      description: Describe specific scenarios where this feature would be valuable
+      placeholder: |
+        1. Use case 1: [Describe a specific scenario]
+        2. Use case 2: [Describe another scenario]
+        3. Use case 3: [Additional scenarios]
+      value: |
+        1. 
+        2. 
+        3.
+    validations:
+      required: true
+
+  - type: textarea
+    id: examples
+    attributes:
+      label: Example Usage
+      description: Show how you imagine users would use this feature
+      placeholder: |
+        ```bash
+        # CLI example
+        npx enigma optimize --new-feature
+        ```
+
+        ```typescript
+        // API example
+        const enigma = new TailwindEnigma({
+          newFeature: {
+            enabled: true,
+            options: {}
+          }
+        });
+        ```
+      render: typescript
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternative Solutions
+      description: What alternatives have you considered? How do other tools handle this?
+      placeholder: |
+        - Alternative 1: [Describe an alternative approach]
+        - Alternative 2: [Another approach]
+        - How other tools handle this: [Examples from other CSS optimization tools]
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How important is this feature to you?
+      options:
+        - Critical - Blocking my project/adoption
+        - High - Significantly improves my workflow
+        - Medium - Nice to have, would use occasionally
+        - Low - Minor improvement
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: feature-category
+    attributes:
+      label: Feature Category
+      description: Which area of tw-enigma would this feature affect? (Check all that apply)
+      options:
+        - label: CSS Optimization Engine
+        - label: File Processing & Discovery
+        - label: Class Extraction (HTML, JS, TS, etc.)
+        - label: Framework Integrations
+        - label: CLI Interface
+        - label: Configuration System
+        - label: Plugin System
+        - label: Output Generation & Chunking
+        - label: Performance & Analytics
+        - label: Developer Experience
+        - label: Documentation & Tooling
+
+  - type: dropdown
+    id: complexity
+    attributes:
+      label: Estimated Complexity
+      description: How complex do you think this feature would be to implement?
+      options:
+        - Simple - Small addition or configuration option
+        - Medium - New functionality requiring moderate changes
+        - Complex - Major feature requiring significant architecture changes
+        - Unknown - Not sure about implementation complexity
+
+  - type: checkboxes
+    id: breaking-changes
+    attributes:
+      label: Breaking Changes
+      description: Would this feature require breaking changes?
+      options:
+        - label: This feature would require breaking changes to the API
+        - label: This feature could be implemented without breaking changes
+        - label: I'm not sure about breaking changes
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Any other context, screenshots, mockups, or related information
+      placeholder: |
+        - Links to similar features in other tools
+        - Screenshots or mockups of desired behavior
+        - Performance considerations
+        - Compatibility requirements
+        - Related issues or discussions
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribution
+      description: Would you be interested in contributing this feature?
+      options:
+        - label: I would like to implement this feature myself
+        - label: I can help with design/planning but need implementation help
+        - label: I can provide testing and feedback during development
+        - label: I can help with documentation once implemented
+
+  - type: textarea
+    id: target-audience
+    attributes:
+      label: Target Audience
+      description: Who would benefit from this feature?
+      placeholder: |
+        - Individual developers working on small projects
+        - Teams working on medium-sized applications
+        - Enterprise teams with large-scale applications
+        - CSS optimization specialists
+        - Framework users (React, Vue, etc.)
+        - Build tool integrators
+
+  - type: checkboxes
+    id: related-features
+    attributes:
+      label: Related Features
+      description: Are there any existing features this would integrate with or depend on?
+      options:
+        - label: CSS Output Optimization
+        - label: Performance Budgets
+        - label: Plugin System
+        - label: CLI Commands
+        - label: Configuration System
+        - label: Framework Integrations
+        - label: File Discovery
+        - label: Class Extraction
+        - label: Error Handling

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { join } from 'path';
-import { homedir, tmpdir } from 'os';
+import { homedir, tmpdir, cpus } from 'os';
 import { existsSync } from 'fs';
 import { EnigmaConfigSchema, type EnigmaConfig } from './config.js';
 import { createLogger } from './logger.js';
@@ -44,7 +44,7 @@ export const ENVIRONMENT_DEFAULTS: Record<Environment, Partial<Config>> = {
   development: {
     verbose: true,
     output: './dist',
-    maxConcurrency: Math.min(10, Math.max(1, Math.floor(require('os').cpus().length / 2))), // Respect schema max limit
+    maxConcurrency: Math.min(10, Math.max(1, Math.floor(cpus().length / 2))), // Respect schema max limit
     minify: false,
     removeUnused: false,
     sourceMaps: true,
@@ -92,7 +92,7 @@ export const ENVIRONMENT_DEFAULTS: Record<Environment, Partial<Config>> = {
   production: {
     verbose: false,
     output: './dist',
-    maxConcurrency: Math.min(10, require('os').cpus().length), // Respect schema max limit
+    maxConcurrency: Math.min(10, cpus().length), // Respect schema max limit
     minify: true,
     removeUnused: true,
     sourceMaps: false,
@@ -153,7 +153,7 @@ export const ENVIRONMENT_DEFAULTS: Record<Environment, Partial<Config>> = {
   ci: {
     verbose: true,
     output: './dist',
-    maxConcurrency: Math.min(10, require('os').cpus().length), // Respect schema max limit
+    maxConcurrency: Math.min(10, cpus().length), // Respect schema max limit
     minify: true,
     sourceMaps: true,
     preserveComments: false,

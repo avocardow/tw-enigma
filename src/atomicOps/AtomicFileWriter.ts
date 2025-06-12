@@ -1,6 +1,6 @@
 /**
  * Copyright (c) 2025 Rowan Cardow
- * 
+ *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
@@ -10,14 +10,14 @@
  * @module atomicOps/AtomicFileWriter
  */
 
-import * as fs from 'fs/promises';
-import { createWriteStream, createReadStream } from 'fs';
-import * as path from 'path';
-import { createHash } from 'crypto';
-import { v4 as uuidv4 } from 'uuid';
-import writeFileAtomic from 'write-file-atomic';
-import { promisify } from 'util';
-import { pipeline } from 'stream/promises';
+import * as fs from "fs/promises";
+import { createWriteStream, createReadStream } from "fs";
+import * as path from "path";
+import { createHash } from "crypto";
+import { v4 as uuidv4 } from "uuid";
+import writeFileAtomic from "write-file-atomic";
+import { promisify } from "util";
+import { pipeline } from "stream/promises";
 
 import {
   AtomicFileOptions,
@@ -27,44 +27,44 @@ import {
   FileWriteOptions,
   TempFileInfo,
   RollbackOperation,
-  RollbackStep
-} from '../types/atomicOps';
+  RollbackStep,
+} from "../types/atomicOps";
 
 /** Default options for atomic file operations */
 const DEFAULT_OPTIONS: Required<AtomicFileOptions> = {
   enableFsync: true,
-  tempDirectory: '',
-  tempPrefix: '.tmp-',
-  tempSuffix: '.tmp',
+  tempDirectory: "",
+  tempPrefix: ".tmp-",
+  tempSuffix: ".tmp",
   operationTimeout: 30000,
   preservePermissions: true,
   preserveOwnership: false,
   bufferSize: 64 * 1024, // 64KB
   maxRetryAttempts: 3,
   enableWAL: false,
-  walDirectory: '.wal',
+  walDirectory: ".wal",
   maxRetries: 3,
-  retryDelay: 100
+  retryDelay: 100,
 };
 
 /** Default file write options */
 const DEFAULT_WRITE_OPTIONS: Required<FileWriteOptions> = {
-  encoding: 'utf8',
+  encoding: "utf8",
   mode: 0o644,
   append: false,
   createBackup: true,
   verifyAfterWrite: true,
-  checksumAlgorithm: 'sha256',
+  checksumAlgorithm: "sha256",
   bufferSize: 64 * 1024, // 64KB
   enableCompression: false,
   compressionLevel: 6,
   syncAfterWrite: true,
-  backupDirectory: '',
+  backupDirectory: "",
   maxBackups: 5,
   writeTimeout: 30000,
   enableProgress: false,
   abortOnFirstError: true,
-  maxFileSize: 100 * 1024 * 1024 // 100MB default
+  maxFileSize: 100 * 1024 * 1024, // 100MB default
 };
 
 /**
@@ -90,14 +90,14 @@ export class AtomicFileWriter {
   async writeFile(
     filePath: string,
     content: string | Buffer,
-    options: FileWriteOptions = {}
+    options: FileWriteOptions = {},
   ): Promise<AtomicOperationResult> {
     const startTime = Date.now();
     const mergedOptions = { ...DEFAULT_WRITE_OPTIONS, ...options };
-    
+
     const result: AtomicOperationResult = {
       success: false,
-      operation: 'write',
+      operation: "write",
       filePath,
       duration: 0,
       bytesProcessed: 0,
@@ -108,48 +108,55 @@ export class AtomicFileWriter {
         retryAttempts: 0,
         walUsed: this.options.enableWAL,
         backupCreated: false,
-        checksumVerified: false
-      }
+        checksumVerified: false,
+      },
     };
 
     const rollbackOp: RollbackOperation = {
       operationId: uuidv4(),
       filePath,
       steps: [],
-      timestamp: startTime
+      timestamp: startTime,
     };
 
     try {
       // Step 1: Validate inputs
       if (!filePath || !content) {
-        throw new Error('File path and content are required');
+        throw new Error("File path and content are required");
       }
 
       // Step 2: Prepare content buffer
-      const contentBuffer = Buffer.isBuffer(content) ? content : Buffer.from(content, mergedOptions.encoding);
+      const contentBuffer = Buffer.isBuffer(content)
+        ? content
+        : Buffer.from(content, mergedOptions.encoding);
       result.bytesProcessed = contentBuffer.length;
 
       // Step 2.5: Check file size limits
-      if (mergedOptions.maxFileSize && contentBuffer.length > mergedOptions.maxFileSize) {
-        throw new Error(`File size ${contentBuffer.length} bytes exceeds maximum allowed size ${mergedOptions.maxFileSize} bytes`);
+      if (
+        mergedOptions.maxFileSize &&
+        contentBuffer.length > mergedOptions.maxFileSize
+      ) {
+        throw new Error(
+          `File size ${contentBuffer.length} bytes exceeds maximum allowed size ${mergedOptions.maxFileSize} bytes`,
+        );
       }
 
       // Step 3: Check if file exists and create backup if needed
       let backupPath: string | undefined;
       const fileExists = await this.fileExists(filePath);
-      
+
       if (fileExists && mergedOptions.createBackup) {
         backupPath = await this.createBackup(filePath, mergedOptions);
         result.metadata.backupCreated = true;
         result.metadata.backupPath = backupPath;
-        
+
         rollbackOp.steps.push({
           stepNumber: 1,
           description: `Created backup: ${backupPath}`,
-          type: 'backup',
+          type: "backup",
           filePath: backupPath,
           timestamp: Date.now(),
-          success: true
+          success: true,
         });
       }
 
@@ -158,15 +165,20 @@ export class AtomicFileWriter {
       rollbackOp.steps.push({
         stepNumber: 2,
         description: `Created temporary file: ${tempInfo.path}`,
-        type: 'temp_create',
+        type: "temp_create",
         filePath: tempInfo.path,
         timestamp: Date.now(),
-        success: true
+        success: true,
       });
 
       // Step 5: Write content to temporary file
       if (mergedOptions.append && fileExists) {
-        await this.appendToTempFile(tempInfo.path, filePath, contentBuffer, mergedOptions);
+        await this.appendToTempFile(
+          tempInfo.path,
+          filePath,
+          contentBuffer,
+          mergedOptions,
+        );
       } else {
         await this.writeToTempFile(tempInfo.path, contentBuffer, mergedOptions);
       }
@@ -174,15 +186,19 @@ export class AtomicFileWriter {
       rollbackOp.steps.push({
         stepNumber: 3,
         description: `Wrote ${contentBuffer.length} bytes to temporary file`,
-        type: 'write',
+        type: "write",
         filePath: tempInfo.path,
         timestamp: Date.now(),
-        success: true
+        success: true,
       });
 
       // Step 6: Verify written content if required
       if (mergedOptions.verifyAfterWrite) {
-        const verification = await this.verifyTempFile(tempInfo.path, contentBuffer, mergedOptions);
+        const verification = await this.verifyTempFile(
+          tempInfo.path,
+          contentBuffer,
+          mergedOptions,
+        );
         if (!verification.success) {
           throw new Error(`Content verification failed: ${verification.error}`);
         }
@@ -193,14 +209,14 @@ export class AtomicFileWriter {
 
       // Step 7: Atomically move temp file to final location
       await this.atomicMove(tempInfo.path, filePath, mergedOptions);
-      
+
       rollbackOp.steps.push({
         stepNumber: 4,
         description: `Atomically moved temporary file to final location`,
-        type: 'move',
+        type: "move",
         filePath,
         timestamp: Date.now(),
-        success: true
+        success: true,
       });
 
       // Step 8: Set file permissions if required
@@ -211,11 +227,11 @@ export class AtomicFileWriter {
       // Success!
       result.success = true;
       result.rollbackOperation = rollbackOp;
-      
+
       // Update metrics
       result.duration = Date.now() - startTime;
       result.metadata.endTime = Date.now();
-      
+
       // Add file stats
       try {
         const stats = await fs.stat(filePath);
@@ -223,25 +239,29 @@ export class AtomicFileWriter {
           size: stats.size,
           mode: stats.mode,
           mtime: stats.mtime,
-          birthtime: stats.birthtime
+          birthtime: stats.birthtime,
         };
       } catch (error) {
         // File stats are optional, don't fail the operation
       }
-      
+
       // Clean up old backups if needed
       if (mergedOptions.createBackup && mergedOptions.maxBackups > 0) {
         const dirName = path.dirname(filePath);
         const baseName = path.basename(filePath, path.extname(filePath));
         const ext = path.extname(filePath);
-        await this.cleanupOldBackups(dirName, baseName, ext, mergedOptions.maxBackups).catch(() => {
+        await this.cleanupOldBackups(
+          dirName,
+          baseName,
+          ext,
+          mergedOptions.maxBackups,
+        ).catch(() => {
           // Backup cleanup is not critical, continue
         });
       }
-      
-      this.updateMetrics('write', true, result.duration, result.bytesProcessed);
-      return result;
 
+      this.updateMetrics("write", true, result.duration, result.bytesProcessed);
+      return result;
     } catch (error) {
       // Handle failure
       result.success = false;
@@ -249,18 +269,25 @@ export class AtomicFileWriter {
       result.metadata.endTime = Date.now();
       result.error = {
         code: this.getErrorCode(error),
-        message: error instanceof Error ? error.message : 'Unknown error occurred',
-        details: { originalError: error }
+        message:
+          error instanceof Error ? error.message : "Unknown error occurred",
+        details: { originalError: error },
       };
 
       // Perform rollback
       try {
         await this.performRollback(rollbackOp);
       } catch (rollbackError) {
-        console.error('Rollback failed:', rollbackError);
+        console.error("Rollback failed:", rollbackError);
       }
 
-      this.updateMetrics('write', false, result.duration, result.bytesProcessed, result.error.code);
+      this.updateMetrics(
+        "write",
+        false,
+        result.duration,
+        result.bytesProcessed,
+        result.error.code,
+      );
       return result;
     }
   }
@@ -275,26 +302,26 @@ export class AtomicFileWriter {
   async writeJsonFile(
     filePath: string,
     data: any,
-    options: FileWriteOptions = {}
+    options: FileWriteOptions = {},
   ): Promise<AtomicOperationResult> {
     try {
       const jsonString = JSON.stringify(data, null, 2);
       return this.writeFile(filePath, jsonString, {
         ...options,
-        encoding: 'utf8'
+        encoding: "utf8",
       });
     } catch (error) {
       const startTime = Date.now();
       const result: AtomicOperationResult = {
         success: false,
-        operation: 'write_json',
+        operation: "write_json",
         filePath,
         duration: Date.now() - startTime,
         bytesProcessed: 0,
         error: {
-          code: 'JSON_SERIALIZATION_ERROR',
-          message: `Failed to serialize JSON data: ${error instanceof Error ? error.message : 'Unknown error'}`,
-          details: { originalError: error }
+          code: "JSON_SERIALIZATION_ERROR",
+          message: `Failed to serialize JSON data: ${error instanceof Error ? error.message : "Unknown error"}`,
+          details: { originalError: error },
         },
         metadata: {
           startTime,
@@ -303,11 +330,11 @@ export class AtomicFileWriter {
           retryAttempts: 0,
           walUsed: false,
           backupCreated: false,
-          checksumVerified: false
-        }
+          checksumVerified: false,
+        },
       };
-      
-      this.updateMetrics('write', false, result.duration, 0, result.error.code);
+
+      this.updateMetrics("write", false, result.duration, 0, result.error.code);
       return result;
     }
   }
@@ -322,11 +349,11 @@ export class AtomicFileWriter {
   async appendToFile(
     filePath: string,
     content: string | Buffer,
-    options: FileWriteOptions = {}
+    options: FileWriteOptions = {},
   ): Promise<AtomicOperationResult> {
     return this.writeFile(filePath, content, {
       ...options,
-      append: true
+      append: true,
     });
   }
 
@@ -337,31 +364,39 @@ export class AtomicFileWriter {
    * @returns Promise resolving to array of operation results
    */
   async writeMultipleFiles(
-    files: Array<{ path: string; content: string | Buffer; options?: FileWriteOptions }>,
-    options: { abortOnFirstError?: boolean } = {}
+    files: Array<{
+      path: string;
+      content: string | Buffer;
+      options?: FileWriteOptions;
+    }>,
+    options: { abortOnFirstError?: boolean } = {},
   ): Promise<AtomicOperationResult[]> {
     const results: AtomicOperationResult[] = [];
     const { abortOnFirstError = false } = options;
 
     for (const file of files) {
       try {
-        const result = await this.writeFile(file.path, file.content, file.options);
+        const result = await this.writeFile(
+          file.path,
+          file.content,
+          file.options,
+        );
         results.push(result);
-        
+
         if (!result.success && abortOnFirstError) {
           break;
         }
       } catch (error) {
         const failedResult: AtomicOperationResult = {
           success: false,
-          operation: 'write',
+          operation: "write",
           filePath: file.path,
           duration: 0,
           bytesProcessed: 0,
           error: {
-            code: 'WRITE_ERROR',
-            message: error instanceof Error ? error.message : 'Unknown error',
-            details: { originalError: error }
+            code: "WRITE_ERROR",
+            message: error instanceof Error ? error.message : "Unknown error",
+            details: { originalError: error },
           },
           metadata: {
             startTime: Date.now(),
@@ -370,12 +405,12 @@ export class AtomicFileWriter {
             retryAttempts: 0,
             walUsed: false,
             backupCreated: false,
-            checksumVerified: false
-          }
+            checksumVerified: false,
+          },
         };
-        
+
         results.push(failedResult);
-        
+
         if (abortOnFirstError) {
           break;
         }
@@ -414,13 +449,13 @@ export class AtomicFileWriter {
         create: 0,
         read: 0,
         write: 0,
-        delete: 0
+        delete: 0,
       },
       totalBytesProcessed: 0,
       averageDuration: 0,
       operationsPerSecond: 0,
       totalFsyncCalls: 0,
-      errorStats: {}
+      errorStats: {},
     };
   }
 
@@ -433,21 +468,27 @@ export class AtomicFileWriter {
     }
   }
 
-  private async createBackup(filePath: string, options: Required<FileWriteOptions>): Promise<string> {
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+  private async createBackup(
+    filePath: string,
+    options: Required<FileWriteOptions>,
+  ): Promise<string> {
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
     const ext = path.extname(filePath);
     const baseName = path.basename(filePath, ext);
     const dirName = options.backupDirectory || path.dirname(filePath);
-    
-    const backupPath = path.join(dirName, `${baseName}.backup-${timestamp}${ext}`);
-    
+
+    const backupPath = path.join(
+      dirName,
+      `${baseName}.backup-${timestamp}${ext}`,
+    );
+
     await fs.copyFile(filePath, backupPath);
-    
+
     // Clean up old backups if needed
     if (options.maxBackups > 0) {
       await this.cleanupOldBackups(dirName, baseName, ext, options.maxBackups);
     }
-    
+
     return backupPath;
   }
 
@@ -455,16 +496,19 @@ export class AtomicFileWriter {
     dirName: string,
     baseName: string,
     ext: string,
-    maxBackups: number
+    maxBackups: number,
   ): Promise<void> {
     try {
       const files = await fs.readdir(dirName);
       const backupFiles = files
-        .filter(file => file.startsWith(`${baseName}.backup-`) && file.endsWith(ext))
-        .map(file => ({
+        .filter(
+          (file) =>
+            file.startsWith(`${baseName}.backup-`) && file.endsWith(ext),
+        )
+        .map((file) => ({
           name: file,
           path: path.join(dirName, file),
-          stat: null as any
+          stat: null as any,
         }));
 
       // Get stats for all backup files
@@ -478,19 +522,19 @@ export class AtomicFileWriter {
 
       // Sort by modification time (newest first)
       const validBackups = backupFiles
-        .filter(backup => backup.stat)
+        .filter((backup) => backup.stat)
         .sort((a, b) => b.stat.mtime.getTime() - a.stat.mtime.getTime());
 
       // Remove old backups beyond the limit
       if (validBackups.length > maxBackups) {
         const toDelete = validBackups.slice(maxBackups);
         await Promise.allSettled(
-          toDelete.map(backup => fs.unlink(backup.path))
+          toDelete.map((backup) => fs.unlink(backup.path)),
         );
       }
     } catch (error) {
       // Backup cleanup failure shouldn't fail the main operation
-      console.warn('Failed to cleanup old backups:', error);
+      console.warn("Failed to cleanup old backups:", error);
     }
   }
 
@@ -506,27 +550,27 @@ export class AtomicFileWriter {
       path: tempPath,
       fd: null,
       originalPath: targetPath,
-      size: 0
+      size: 0,
     };
   }
 
   private async writeToTempFile(
     tempPath: string,
     content: Buffer,
-    options: Required<FileWriteOptions>
+    options: Required<FileWriteOptions>,
   ): Promise<void> {
     if (content.length > options.bufferSize) {
       // Use streaming for large content
       await this.writeStreamingToTempFile(tempPath, content, options);
     } else {
       // Direct write for small content
-      await fs.writeFile(tempPath, content, { 
+      await fs.writeFile(tempPath, content, {
         mode: options.mode,
-        flag: 'w'
+        flag: "w",
       });
-      
+
       if (options.syncAfterWrite && this.options.enableFsync) {
-        const fd = await fs.open(tempPath, 'r+');
+        const fd = await fs.open(tempPath, "r+");
         try {
           await fd.sync();
           this.metrics.totalFsyncCalls++;
@@ -541,18 +585,18 @@ export class AtomicFileWriter {
     tempPath: string,
     filePath: string,
     content: Buffer,
-    options: Required<FileWriteOptions>
+    options: Required<FileWriteOptions>,
   ): Promise<void> {
     // First copy the original file to temp if it exists
     if (await this.fileExists(filePath)) {
       await fs.copyFile(filePath, tempPath);
     }
-    
+
     // Then append the new content
     await fs.appendFile(tempPath, content, { mode: options.mode });
-    
+
     if (options.syncAfterWrite && this.options.enableFsync) {
-      const fd = await fs.open(tempPath, 'r+');
+      const fd = await fs.open(tempPath, "r+");
       try {
         await fd.sync();
         this.metrics.totalFsyncCalls++;
@@ -565,16 +609,16 @@ export class AtomicFileWriter {
   private async writeStreamingToTempFile(
     tempPath: string,
     content: Buffer,
-    options: Required<FileWriteOptions>
+    options: Required<FileWriteOptions>,
   ): Promise<void> {
     const writeStream = createWriteStream(tempPath, {
       mode: options.mode,
-      highWaterMark: options.bufferSize
+      highWaterMark: options.bufferSize,
     });
 
     let offset = 0;
     const chunks: Buffer[] = [];
-    
+
     while (offset < content.length) {
       const chunk = content.subarray(offset, offset + options.bufferSize);
       chunks.push(chunk);
@@ -582,17 +626,14 @@ export class AtomicFileWriter {
     }
 
     try {
-      await pipeline(
-        async function* () {
-          for (const chunk of chunks) {
-            yield chunk;
-          }
-        },
-        writeStream
-      );
+      await pipeline(async function* () {
+        for (const chunk of chunks) {
+          yield chunk;
+        }
+      }, writeStream);
 
       if (options.syncAfterWrite && this.options.enableFsync) {
-        const fd = await fs.open(tempPath, 'r+');
+        const fd = await fs.open(tempPath, "r+");
         try {
           await fd.sync();
           this.metrics.totalFsyncCalls++;
@@ -614,16 +655,16 @@ export class AtomicFileWriter {
   private async verifyTempFile(
     tempPath: string,
     expectedContent: Buffer,
-    options: Required<FileWriteOptions>
+    options: Required<FileWriteOptions>,
   ): Promise<{ success: boolean; checksum?: string; error?: string }> {
     try {
       const actualContent = await fs.readFile(tempPath);
-      
+
       // Size check
       if (actualContent.length !== expectedContent.length) {
         return {
           success: false,
-          error: `Size mismatch: expected ${expectedContent.length}, got ${actualContent.length}`
+          error: `Size mismatch: expected ${expectedContent.length}, got ${actualContent.length}`,
         };
       }
 
@@ -631,30 +672,34 @@ export class AtomicFileWriter {
       if (!actualContent.equals(expectedContent)) {
         return {
           success: false,
-          error: 'Content mismatch detected'
+          error: "Content mismatch detected",
         };
       }
 
       // Checksum calculation
       const hash = createHash(options.checksumAlgorithm);
       hash.update(actualContent);
-      const checksum = hash.digest('hex');
+      const checksum = hash.digest("hex");
 
       return { success: true, checksum };
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Verification failed'
+        error: error instanceof Error ? error.message : "Verification failed",
       };
     }
   }
 
-  private async atomicMove(tempPath: string, finalPath: string, options: Required<FileWriteOptions>): Promise<void> {
+  private async atomicMove(
+    tempPath: string,
+    finalPath: string,
+    options: Required<FileWriteOptions>,
+  ): Promise<void> {
     try {
       await fs.rename(tempPath, finalPath);
     } catch (error: any) {
       // If rename fails (e.g., cross-device), fall back to copy + delete
-      if (error.code === 'EXDEV') {
+      if (error.code === "EXDEV") {
         await fs.copyFile(tempPath, finalPath);
         await fs.unlink(tempPath);
       } else {
@@ -663,7 +708,10 @@ export class AtomicFileWriter {
     }
   }
 
-  private async setFilePermissions(filePath: string, mode: number): Promise<void> {
+  private async setFilePermissions(
+    filePath: string,
+    mode: number,
+  ): Promise<void> {
     try {
       await fs.chmod(filePath, mode);
     } catch (error) {
@@ -675,21 +723,21 @@ export class AtomicFileWriter {
   private async performRollback(rollbackOp: RollbackOperation): Promise<void> {
     // Rollback in reverse order
     const steps = [...rollbackOp.steps].reverse();
-    
+
     for (const step of steps) {
       try {
         switch (step.type) {
-          case 'temp_create':
+          case "temp_create":
             // Remove temporary file
             await fs.unlink(step.filePath).catch(() => {});
             break;
-          case 'backup':
+          case "backup":
             // Restore from backup
             if (await this.fileExists(step.filePath)) {
               await fs.copyFile(step.filePath, rollbackOp.filePath);
             }
             break;
-          case 'move':
+          case "move":
             // If the final file was created, remove it
             await fs.unlink(rollbackOp.filePath).catch(() => {});
             break;
@@ -701,34 +749,38 @@ export class AtomicFileWriter {
   }
 
   private updateMetrics(
-    operation: 'read' | 'write' | 'delete' | 'create',
+    operation: "read" | "write" | "delete" | "create",
     success: boolean,
     duration: number,
     bytesProcessed: number,
-    errorCode?: string
+    errorCode?: string,
   ): void {
     this.metrics.totalOperations++;
     this.metrics.operationTypes[operation]++;
-    
+
     if (success) {
       this.metrics.successfulOperations++;
     } else {
       this.metrics.failedOperations++;
       if (errorCode) {
-        this.metrics.errorStats[errorCode] = (this.metrics.errorStats[errorCode] || 0) + 1;
+        this.metrics.errorStats[errorCode] =
+          (this.metrics.errorStats[errorCode] || 0) + 1;
       }
     }
 
     this.metrics.totalBytesProcessed += bytesProcessed;
-    
+
     // Update average duration
     if (this.metrics.totalOperations === 1) {
       this.metrics.averageDuration = duration;
     } else {
-      const totalDuration = (this.metrics.averageDuration * (this.metrics.totalOperations - 1)) + duration;
-      this.metrics.averageDuration = totalDuration / this.metrics.totalOperations;
+      const totalDuration =
+        this.metrics.averageDuration * (this.metrics.totalOperations - 1) +
+        duration;
+      this.metrics.averageDuration =
+        totalDuration / this.metrics.totalOperations;
     }
-    
+
     // Calculate operations per second (simple approximation)
     if (this.metrics.averageDuration > 0) {
       this.metrics.operationsPerSecond = 1000 / this.metrics.averageDuration;
@@ -738,28 +790,34 @@ export class AtomicFileWriter {
   private getErrorCode(error: any): string {
     if (error.code) {
       switch (error.code) {
-        case 'ENOENT': return AtomicOperationError.FILE_NOT_FOUND;
-        case 'EACCES': return AtomicOperationError.PERMISSION_DENIED;
-        case 'EISDIR': return AtomicOperationError.INVALID_OPERATION;
-        case 'ENOSPC': return 'DISK_FULL';
-        case 'EMFILE': 
-        case 'ENFILE': return AtomicOperationError.TEMP_FILE_CREATION_FAILED;
-        default: return error.code;
+        case "ENOENT":
+          return AtomicOperationError.FILE_NOT_FOUND;
+        case "EACCES":
+          return AtomicOperationError.PERMISSION_DENIED;
+        case "EISDIR":
+          return AtomicOperationError.INVALID_OPERATION;
+        case "ENOSPC":
+          return "DISK_FULL";
+        case "EMFILE":
+        case "ENFILE":
+          return AtomicOperationError.TEMP_FILE_CREATION_FAILED;
+        default:
+          return error.code;
       }
     }
-    
-    if (error.message?.includes('timeout')) {
+
+    if (error.message?.includes("timeout")) {
       return AtomicOperationError.TIMEOUT;
     }
-    
-    if (error.message?.includes('verification failed')) {
-      return 'VERIFICATION_FAILED';
+
+    if (error.message?.includes("verification failed")) {
+      return "VERIFICATION_FAILED";
     }
-    
-    if (error.message?.includes('serialize')) {
-      return 'SERIALIZATION_ERROR';
+
+    if (error.message?.includes("serialize")) {
+      return "SERIALIZATION_ERROR";
     }
-    
+
     return AtomicOperationError.INVALID_OPERATION;
   }
-} 
+}

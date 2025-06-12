@@ -1,22 +1,22 @@
 /**
  * Copyright (c) 2025 Rowan Cardow
- * 
+ *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
 
-import { readFile, writeFile } from 'fs/promises';
-import { join, dirname, basename } from 'path';
-import type { CssOutputConfig, CriticalCssConfig } from './cssOutputConfig.js';
+import { readFile, writeFile } from "fs/promises";
+import { join, dirname, basename } from "path";
+import type { CssOutputConfig, CriticalCssConfig } from "./cssOutputConfig.js";
 
 // Critical CSS Types
 export interface CriticalCssResult {
   /** CSS to be inlined in the document head */
   inline: string;
-  
+
   /** CSS files to be preloaded */
   preload: string[];
-  
+
   /** CSS files to be loaded asynchronously */
   async: string[];
 }
@@ -39,7 +39,7 @@ export interface DeliveryOptimization {
   externalCSS: string;
   preloadTags: string[];
   resourceHints: string[];
-  loadingStrategy: 'preload' | 'async' | 'defer';
+  loadingStrategy: "preload" | "async" | "defer";
 }
 
 // Critical CSS Extraction Engine
@@ -54,25 +54,28 @@ export class CriticalCssExtractor {
    * Extract critical CSS from given CSS content
    */
   async extractCritical(
-    css: string, 
-    options: { routes?: string[]; viewport?: { width: number; height: number } } = {}
+    css: string,
+    options: {
+      routes?: string[];
+      viewport?: { width: number; height: number };
+    } = {},
   ): Promise<CriticalCssResult> {
     // Temporary stub implementation
     // In a real implementation, this would analyze the CSS and determine what's critical
     if (!this.config.enabled) {
       return {
-        inline: '',
+        inline: "",
         preload: [],
-        async: [css]
+        async: [css],
       };
     }
-    
+
     // Simple stub logic - take first portion as critical
     const maxSize = this.config.maxSize || 14336; // 14KB default
-    const lines = css.split('\n');
+    const lines = css.split("\n");
     let inlineSize = 0;
-    let inlineLines: string[] = [];
-    
+    const inlineLines: string[] = [];
+
     for (const line of lines) {
       if (inlineSize + line.length > maxSize) {
         break;
@@ -80,11 +83,14 @@ export class CriticalCssExtractor {
       inlineLines.push(line);
       inlineSize += line.length;
     }
-    
+
     return {
-      inline: inlineLines.join('\n'),
+      inline: inlineLines.join("\n"),
       preload: [],
-      async: inlineLines.length < lines.length ? [lines.slice(inlineLines.length).join('\n')] : []
+      async:
+        inlineLines.length < lines.length
+          ? [lines.slice(inlineLines.length).join("\n")]
+          : [],
     };
   }
 
@@ -120,9 +126,10 @@ export class CssDeliveryOptimizer {
       publicPath?: string;
       filename?: string;
       inlineThreshold?: number;
-    } = {}
+    } = {},
   ): Promise<DeliveryOptimization> {
-    const inlineThreshold = options.inlineThreshold || this.config.critical.inlineThreshold;
+    const inlineThreshold =
+      options.inlineThreshold || this.config.critical.inlineThreshold;
     const shouldInline = criticalResult.size.critical <= inlineThreshold;
 
     if (shouldInline) {
@@ -130,18 +137,25 @@ export class CssDeliveryOptimizer {
       return {
         inlineCSS: criticalResult.critical,
         externalCSS: criticalResult.uncritical,
-        preloadTags: this.generatePreloadTags(options.publicPath, options.filename),
+        preloadTags: this.generatePreloadTags(
+          options.publicPath,
+          options.filename,
+        ),
         resourceHints: this.generateResourceHints(),
-        loadingStrategy: 'preload'
+        loadingStrategy: "preload",
       };
     } else {
       // Keep critical CSS external but prioritize loading
       return {
-        inlineCSS: '',
+        inlineCSS: "",
         externalCSS: criticalResult.critical + criticalResult.uncritical,
-        preloadTags: this.generatePreloadTags(options.publicPath, options.filename, true),
+        preloadTags: this.generatePreloadTags(
+          options.publicPath,
+          options.filename,
+          true,
+        ),
         resourceHints: this.generateResourceHints(),
-        loadingStrategy: 'preload'
+        loadingStrategy: "preload",
       };
     }
   }
@@ -149,18 +163,26 @@ export class CssDeliveryOptimizer {
   /**
    * Generate HTML preload tags
    */
-  private generatePreloadTags(publicPath?: string, filename?: string, critical = false): string[] {
+  private generatePreloadTags(
+    publicPath?: string,
+    filename?: string,
+    critical = false,
+  ): string[] {
     const tags: string[] = [];
-    
+
     if (!this.config.delivery.preload) return tags;
 
     const path = publicPath || this.config.output.publicPath;
-    const file = filename || 'styles.css';
+    const file = filename || "styles.css";
     const fullPath = `${path}${file}`;
 
     if (critical) {
-      tags.push(`<link rel="preload" href="${fullPath}" as="style" onload="this.onload=null;this.rel='stylesheet'">`);
-      tags.push(`<noscript><link rel="stylesheet" href="${fullPath}"></noscript>`);
+      tags.push(
+        `<link rel="preload" href="${fullPath}" as="style" onload="this.onload=null;this.rel='stylesheet'">`,
+      );
+      tags.push(
+        `<noscript><link rel="stylesheet" href="${fullPath}"></noscript>`,
+      );
     } else {
       tags.push(`<link rel="preload" href="${fullPath}" as="style">`);
     }
@@ -180,7 +202,9 @@ export class CssDeliveryOptimizer {
 
     if (this.config.delivery.prefetch) {
       hints.push('<link rel="dns-prefetch" href="//fonts.googleapis.com">');
-      hints.push('<link rel="preconnect" href="//fonts.gstatic.com" crossorigin>');
+      hints.push(
+        '<link rel="preconnect" href="//fonts.gstatic.com" crossorigin>',
+      );
     }
 
     return hints;
@@ -252,7 +276,7 @@ export class CriticalCssPipeline {
       html?: string;
       outputDir?: string;
       filename?: string;
-    }
+    },
   ): Promise<{
     result: CriticalCssResult;
     delivery: DeliveryOptimization;
@@ -263,40 +287,48 @@ export class CriticalCssPipeline {
     };
   }> {
     if (!this.config.critical.enabled) {
-      throw new Error('Critical CSS extraction is not enabled');
+      throw new Error("Critical CSS extraction is not enabled");
     }
 
     // Extract critical CSS
     const result = await this.extractor.extractCritical(css, {
       routes: [],
-      viewport: { width: 1024, height: 768 }
+      viewport: { width: 1024, height: 768 },
     });
 
     // Optimize delivery
     const delivery = await this.optimizer.optimizeDelivery(result, {
       publicPath: this.config.output.publicPath,
       filename: options.filename,
-      inlineThreshold: this.config.critical.inlineThreshold
+      inlineThreshold: this.config.critical.inlineThreshold,
     });
 
     // Save files if output directory provided
     const files: any = {};
     if (options.outputDir) {
-      const baseName = options.filename ? basename(options.filename, '.css') : 'styles';
-      
+      const baseName = options.filename
+        ? basename(options.filename, ".css")
+        : "styles";
+
       if (delivery.inlineCSS) {
         const inlinePath = join(options.outputDir, `${baseName}.critical.css`);
-        await writeFile(inlinePath, delivery.inlineCSS, 'utf8');
+        await writeFile(inlinePath, delivery.inlineCSS, "utf8");
         files.inline = inlinePath;
       } else {
-        const criticalPath = join(options.outputDir, `${baseName}.critical.css`);
-        await writeFile(criticalPath, result.critical, 'utf8');
+        const criticalPath = join(
+          options.outputDir,
+          `${baseName}.critical.css`,
+        );
+        await writeFile(criticalPath, result.critical, "utf8");
         files.critical = criticalPath;
       }
 
       if (result.uncritical.trim()) {
-        const uncriticalPath = join(options.outputDir, `${baseName}.uncritical.css`);
-        await writeFile(uncriticalPath, result.uncritical, 'utf8');
+        const uncriticalPath = join(
+          options.outputDir,
+          `${baseName}.uncritical.css`,
+        );
+        await writeFile(uncriticalPath, result.uncritical, "utf8");
         files.uncritical = uncriticalPath;
       }
     }
@@ -304,7 +336,7 @@ export class CriticalCssPipeline {
     return {
       result,
       delivery,
-      files
+      files,
     };
   }
 
@@ -317,26 +349,29 @@ export class CriticalCssPipeline {
     options: {
       outputDir?: string;
       baseFilename?: string;
-    } = {}
+    } = {},
   ): Promise<Map<string, any>> {
     const results = new Map();
 
     for (const route of routes) {
       try {
-        const filename = options.baseFilename 
-          ? `${options.baseFilename}.${route.route.replace(/[^a-zA-Z0-9]/g, '-')}.css`
-          : `${route.route.replace(/[^a-zA-Z0-9]/g, '-')}.css`;
+        const filename = options.baseFilename
+          ? `${options.baseFilename}.${route.route.replace(/[^a-zA-Z0-9]/g, "-")}.css`
+          : `${route.route.replace(/[^a-zA-Z0-9]/g, "-")}.css`;
 
         const routeResult = await this.processCriticalCss(css, {
           url: route.url,
           html: route.html,
           outputDir: options.outputDir,
-          filename
+          filename,
         });
 
         results.set(route.route, routeResult);
       } catch (error) {
-        console.warn(`Failed to process critical CSS for route ${route.route}:`, error);
+        console.warn(
+          `Failed to process critical CSS for route ${route.route}:`,
+          error,
+        );
         results.set(route.route, { error: error.message });
       }
     }
@@ -351,23 +386,23 @@ export class CriticalCssPipeline {
     head: string;
     bodyEnd: string;
   } {
-    let head = '';
-    let bodyEnd = '';
+    let head = "";
+    let bodyEnd = "";
 
     // Add resource hints to head
-    head += delivery.resourceHints.join('\n') + '\n';
+    head += delivery.resourceHints.join("\n") + "\n";
 
     // Add preload tags to head
-    head += delivery.preloadTags.join('\n') + '\n';
+    head += delivery.preloadTags.join("\n") + "\n";
 
     // Add inline CSS or async loader
     if (delivery.inlineCSS) {
       head += `<style>${delivery.inlineCSS}</style>\n`;
       if (delivery.externalCSS) {
-        bodyEnd += this.optimizer.generateAsyncLoader('/css/styles.css');
+        bodyEnd += this.optimizer.generateAsyncLoader("/css/styles.css");
       }
     } else {
-      head += delivery.preloadTags.join('\n') + '\n';
+      head += delivery.preloadTags.join("\n") + "\n";
     }
 
     return { head, bodyEnd };
@@ -377,6 +412,8 @@ export class CriticalCssPipeline {
 /**
  * Factory function to create a critical CSS extractor instance
  */
-export function createCriticalCssExtractor(config: CriticalCssConfig): CriticalCssExtractor {
+export function createCriticalCssExtractor(
+  config: CriticalCssConfig,
+): CriticalCssExtractor {
   return new CriticalCssExtractor(config);
-} 
+}
