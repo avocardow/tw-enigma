@@ -101,6 +101,9 @@ export interface CssChunk {
 
   /** Loading strategy for this chunk */
   loadingStrategy: "inline" | "preload" | "prefetch" | "lazy";
+
+  /** Additional metadata for the chunk */
+  metadata?: Record<string, unknown>;
 }
 
 /**
@@ -1079,6 +1082,11 @@ class CssChunker extends EventEmitter {
       priority: type === "critical" ? 100 : 50,
       async: type !== "critical",
       loadingStrategy: type === "critical" ? "inline" : "preload",
+      metadata: {
+        created: new Date().toISOString(),
+        chunkType: type,
+        strategy: this.config.chunking?.strategy || "size",
+      },
     };
   }
 

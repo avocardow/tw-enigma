@@ -441,6 +441,20 @@ export class CssOptimizer {
   }
 
   /**
+   * Get current optimization configuration
+   */
+  getConfig(): OptimizationConfig {
+    return { ...this.config };
+  }
+
+  /**
+   * Update optimization configuration
+   */
+  updateConfig(newConfig: OptimizationConfig): void {
+    this.config = newConfig;
+  }
+
+  /**
    * Optimize CSS content
    */
   async optimizeCss(
@@ -455,11 +469,11 @@ export class CssOptimizer {
       const plugins = this.buildPluginChain();
       const processor = postcss(plugins as any);
 
-      // Process CSS
+      // Process CSS with source maps if enabled
       const result = await processor.process(css, {
         from: filename,
         to: filename,
-        map: (this.config as any).generateSourceMaps ? { inline: false } : false,
+        map: this.config.sourceMap ? { inline: false } : false,
       });
 
       const optimizedSize = Buffer.byteLength(result.css, "utf8");
