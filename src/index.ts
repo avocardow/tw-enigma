@@ -244,4 +244,51 @@ export {
   type HMRConfig,
 } from "./integrations/core/hmrHandler.js";
 
+// CSS Output Processing exports
+export {
+  CssOutputOrchestrator,
+  createCssOutputOrchestrator,
+  createProductionOrchestrator,
+  createDevelopmentOrchestrator,
+  type CssBundle,
+  type CssOutputResult,
+  type CssOrchestrationResult,
+  type CssProcessingOptions,
+} from "./output/cssOutputOrchestrator.js";
+
+export {
+  CssOutputConfig,
+  createProductionConfig,
+  createDevelopmentConfig,
+  type CssOutputConfigSchema,
+} from "./output/cssOutputConfig.js";
+
+export {
+  CssChunker,
+  createCssChunker,
+  type CssChunk,
+} from "./output/cssChunker.js";
+
+export {
+  AssetHasher,
+  createAssetHasher,
+  createCssOptimizer,
+  createCompressionEngine,
+  createManifestGenerator,
+  type AssetHash,
+  type OptimizationResult,
+  type CompressionResult,
+  type ManifestGenerator,
+} from "./output/assetHasher.js";
+
+export {
+  CriticalCssExtractor,
+  createCriticalCssExtractor,
+} from "./output/criticalCssExtractor.js";
+
+export {
+  CssAnalyzer,
+  createCssAnalyzer,
+} from "./output/cssAnalyzer.js";
+
 // #endregion

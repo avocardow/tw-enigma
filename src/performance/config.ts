@@ -11,6 +11,7 @@
  */
 
 import { EventEmitter } from "events";
+import { cpus } from "os";
 
 /**
  * Cache strategy options
@@ -231,7 +232,7 @@ export interface PerformanceEvents extends EventEmitter {
 export const DEFAULT_PERFORMANCE_CONFIG: PerformanceConfig = {
   workers: {
     enabled: true,
-    poolSize: Math.max(2, Math.min(8, require("os").cpus().length)),
+    poolSize: Math.max(2, Math.min(8, cpus().length)),
     taskTimeout: 30000, // 30 seconds
     maxQueueSize: 1000,
     enableFallback: true,
