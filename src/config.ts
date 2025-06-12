@@ -29,6 +29,21 @@ import {
 } from "./patternValidator.js";
 import { ConfigError } from "./errors.js";
 import { createLogger } from "./logger.js";
+import { validateConfig as enhancedValidateConfig } from "./configValidator.js";
+import { createRuntimeValidator } from "./runtimeValidator.js";
+import { createConfigWatcher } from "./configWatcher.js";
+import { createConfigSafeUpdater } from "./configSafeUpdater.js";
+import type { ValidationResult } from "./configValidator.js";
+import type { RuntimeValidator } from "./runtimeValidator.js";
+import type { ConfigWatcher } from "./configWatcher.js";
+import type { ConfigSafeUpdater } from "./configSafeUpdater.js";
+import { join, resolve, isAbsolute } from 'path';
+import { existsSync } from 'fs';
+import { createConfigValidator, type ConfigValidationResult } from './configValidator.js';
+import { createConfigMigration, type ConfigMigration } from './configMigration.js';
+import { createPerformanceValidator, type PerformanceMetrics } from './performanceValidator.js';
+import { createConfigBackup, type ConfigBackup } from './configBackup.js';
+import { createConfigDefaults, type Environment } from './configDefaults.js';
 
 // Re-export ConfigError for backward compatibility
 export { ConfigError };
@@ -198,8 +213,90 @@ export const EnigmaConfigSchema = z.object({
 
   // Pattern Validator Configuration
   patternValidator: SimpleValidatorConfigSchema.optional().describe(
-    "Tailwind CSS pattern validation configuration options",
+    "Pattern validation configuration options",
   ),
+
+  // Enhanced Configuration Validation and Safety System
+  validation: z
+    .object({
+      enabled: z.boolean().default(true).describe("Enable enhanced configuration validation"),
+      validateOnLoad: z.boolean().default(true).describe("Validate configuration when loading"),
+      validateOnChange: z.boolean().default(true).describe("Validate configuration on file changes"),
+      strictMode: z.boolean().default(false).describe("Enable strict validation mode"),
+      warnOnDeprecated: z.boolean().default(true).describe("Warn about deprecated configuration options"),
+      failOnInvalid: z.boolean().default(true).describe("Fail on invalid configuration"),
+      crossFieldValidation: z.boolean().default(true).describe("Enable cross-field validation"),
+      securityValidation: z.boolean().default(true).describe("Enable security validation"),
+      performanceValidation: z.boolean().default(true).describe("Enable performance validation"),
+      customRules: z.array(z.string()).default([]).describe("Custom validation rule files"),
+    })
+    .default({})
+    .describe("Enhanced configuration validation settings"),
+
+  // Runtime Validation Configuration
+  runtime: z
+    .object({
+      enabled: z.boolean().default(false).describe("Enable runtime configuration monitoring"),
+      checkInterval: z.number().min(1000).default(5000).describe("Runtime check interval in milliseconds"),
+      resourceThresholds: z
+        .object({
+          memory: z.number().default(1024 * 1024 * 1024).describe("Memory threshold in bytes"),
+          cpu: z.number().min(0).max(100).default(80).describe("CPU threshold percentage"),
+          fileHandles: z.number().default(1000).describe("File handle threshold"),
+          diskSpace: z.number().default(100 * 1024 * 1024).describe("Disk space threshold in bytes"),
+        })
+        .default({})
+        .describe("Resource usage thresholds"),
+      autoCorrection: z
+        .object({
+          enabled: z.boolean().default(false).describe("Enable automatic configuration correction"),
+          maxAttempts: z.number().min(1).default(3).describe("Maximum correction attempts"),
+          fallbackToDefaults: z.boolean().default(true).describe("Fallback to default values on failure"),
+        })
+        .default({})
+        .describe("Automatic correction settings"),
+    })
+    .default({})
+    .describe("Runtime validation configuration"),
+
+  // File Watching Configuration
+  watcher: z
+    .object({
+      enabled: z.boolean().default(false).describe("Enable configuration file watching"),
+      debounceMs: z.number().min(100).default(300).describe("File change debounce time in milliseconds"),
+      followSymlinks: z.boolean().default(false).describe("Follow symbolic links when watching"),
+      ignoreInitial: z.boolean().default(true).describe("Ignore initial file events"),
+      validateOnChange: z.boolean().default(true).describe("Validate configuration on file changes"),
+      backupOnChange: z.boolean().default(true).describe("Create backup before applying changes"),
+      maxBackups: z.number().min(1).default(10).describe("Maximum number of backups to keep"),
+      watchPatterns: z
+        .array(z.string())
+        .default(["**/.enigmarc*", "**/enigma.config.*", "**/package.json"])
+        .describe("File patterns to watch"),
+      ignorePatterns: z
+        .array(z.string())
+        .default(["**/node_modules/**", "**/.git/**", "**/dist/**"])
+        .describe("File patterns to ignore"),
+    })
+    .default({})
+    .describe("Configuration file watching settings"),
+
+  // Safe Update Configuration
+  safeUpdates: z
+    .object({
+      enabled: z.boolean().default(true).describe("Enable safe configuration updates"),
+      validateBeforeWrite: z.boolean().default(true).describe("Validate configuration before writing"),
+      createBackup: z.boolean().default(true).describe("Create backup before updating"),
+      atomicWrite: z.boolean().default(true).describe("Use atomic write operations"),
+      verifyAfterWrite: z.boolean().default(true).describe("Verify configuration after writing"),
+      rollbackOnFailure: z.boolean().default(true).describe("Rollback on update failure"),
+      maxBackups: z.number().min(1).default(10).describe("Maximum number of backups to keep"),
+      backupDirectory: z.string().optional().describe("Custom backup directory"),
+      retryAttempts: z.number().min(0).default(3).describe("Number of retry attempts on failure"),
+      retryDelay: z.number().min(0).default(100).describe("Delay between retry attempts in milliseconds"),
+    })
+         .default({})
+     .describe("Safe configuration update settings"),
 });
 
 /**
@@ -341,6 +438,10 @@ export interface ConfigResult {
   config: EnigmaConfig;
   filepath?: string;
   isEmpty?: boolean;
+  validation?: ValidationResult;
+  runtimeValidator?: RuntimeValidator;
+  watcher?: ConfigWatcher;
+  safeUpdater?: ConfigSafeUpdater;
 }
 
 // Create a logger instance for configuration operations
@@ -854,137 +955,507 @@ function loadConfigFromFileSync(
 }
 
 /**
- * Asynchronously load and merge configuration from all sources
- * Precedence: defaults → config file → CLI arguments (CLI wins)
+ * Enhanced configuration manager with comprehensive validation
  */
-export async function loadConfig(
-  cliArgs: CliArguments = {},
-  searchFrom?: string,
-): Promise<ConfigResult> {
-  const startTime = Date.now();
-  configLogger.info("Loading configuration from all sources", {
-    hasCliArgs: Object.keys(cliArgs).length > 0,
-    searchFrom,
-    operation: "loadConfig",
-  });
+export class EnhancedConfigManager {
+  private configPath?: string;
+  private config?: EnigmaConfig;
+  private validator?: ReturnType<typeof createConfigValidator>;
+  private runtimeValidator?: ReturnType<typeof createRuntimeValidator>;
+  private watcher?: ConfigWatcher;
+  private defaultsManager?: ReturnType<typeof createConfigDefaults>;
+  private migration?: ConfigMigration;
+  private performanceValidator?: ReturnType<typeof createPerformanceValidator>;
+  private backup?: ConfigBackup;
+  private environment: Environment;
 
-  try {
-    // Step 1: Start with defaults
-    let mergedConfig = { ...DEFAULT_CONFIG };
-    configLogger.debug("Applied default configuration");
-
-    // Step 2: Load and merge config file
-    const {
-      config: fileConfig,
-      filepath,
-      isEmpty,
-    } = await loadConfigFromFile(searchFrom, cliArgs.config);
-
-    if (Object.keys(fileConfig).length > 0) {
-      mergedConfig = deepMerge(mergedConfig, fileConfig);
-      configLogger.debug("Merged file configuration", {
-        configKeys: Object.keys(fileConfig),
-      });
-    }
-
-    // Step 3: Apply CLI arguments (highest precedence)
-    const normalizedCliArgs = normalizeCliArguments(cliArgs);
-    if (Object.keys(normalizedCliArgs).length > 0) {
-      mergedConfig = deepMerge(mergedConfig, normalizedCliArgs);
-      configLogger.debug("Applied CLI arguments", {
-        cliKeys: Object.keys(normalizedCliArgs),
-      });
-    }
-
-    // Step 4: Validate final configuration
-    const validatedConfig = validateConfig(mergedConfig, filepath);
-
-    const processingTime = Date.now() - startTime;
-    configLogger.info("Configuration loaded successfully", {
-      filepath,
-      isEmpty,
-      processingTime,
-      totalConfigKeys: Object.keys(validatedConfig).length,
-    });
-
-    return {
-      config: validatedConfig,
-      filepath,
-      isEmpty,
+  constructor(
+    environment: Environment = 'development',
+    private options: {
+      enableWatching?: boolean;
+      enableBackup?: boolean;
+      enablePerformanceValidation?: boolean;
+      enableMigration?: boolean;
+      validateOnLoad?: boolean;
+      createBackupOnLoad?: boolean;
+    } = {}
+  ) {
+    this.environment = environment;
+    this.options = {
+      enableWatching: true,
+      enableBackup: true,
+      enablePerformanceValidation: true,
+      enableMigration: true,
+      validateOnLoad: true,
+      createBackupOnLoad: false,
+      ...options
     };
-  } catch (error) {
-    const processingTime = Date.now() - startTime;
+  }
 
-    if (error instanceof ConfigError) {
-      configLogger.error("Configuration loading failed", {
-        processingTime,
-        errorCode: error.code,
-      });
+  /**
+   * Load and validate configuration with comprehensive validation
+   */
+  async loadConfig(searchFrom?: string): Promise<{
+    config: EnigmaConfig;
+    validation: ConfigValidationResult;
+    runtimeValidation: RuntimeValidationResult;
+    performanceMetrics?: PerformanceMetrics;
+    migrationResult?: any;
+    backupId?: string;
+  }> {
+    try {
+      logger.info('Loading configuration with enhanced validation...');
+
+      // 1. Load configuration using cosmiconfig
+      const explorer = cosmiconfig('enigma');
+      const result = await explorer.search(searchFrom);
+
+      if (!result) {
+        logger.warn('No configuration file found, using defaults');
+        return this.createDefaultConfig();
+      }
+
+      this.configPath = result.filepath;
+      logger.info(`Found configuration at: ${this.configPath}`);
+
+      // 2. Initialize validation components
+      this.initializeValidators();
+
+      // 3. Handle migration if needed
+      let migrationResult;
+      if (this.options.enableMigration && this.migration) {
+        migrationResult = await this.handleMigration(result.config);
+        if (migrationResult.migrated) {
+          // Reload config after migration
+          const migratedResult = await explorer.load(this.configPath);
+          result.config = migratedResult?.config || result.config;
+        }
+      }
+
+      // 4. Apply defaults and validate schema
+      const configWithDefaults = this.applyDefaults(result.config);
+      const validation = await this.validateSchema(configWithDefaults);
+
+      if (!validation.isValid) {
+        throw new Error(`Configuration validation failed: ${validation.errors.join(', ')}`);
+      }
+
+      this.config = validation.config!;
+
+      // 5. Runtime validation
+      const runtimeValidation = await this.validateRuntime(this.config);
+      if (!runtimeValidation.isValid) {
+        logger.warn('Runtime validation warnings:', runtimeValidation.warnings);
+      }
+
+      // 6. Performance analysis
+      let performanceMetrics;
+      if (this.options.enablePerformanceValidation && this.performanceValidator) {
+        performanceMetrics = await this.performanceValidator.analyzePerformance();
+        this.logPerformanceInsights(performanceMetrics);
+      }
+
+      // 7. Create backup if enabled
+      let backupId;
+      if (this.options.enableBackup && this.options.createBackupOnLoad && this.backup) {
+        const backup = await this.backup.createBackup({
+          description: 'Configuration loaded',
+          tags: ['auto', 'load'],
+          isAutomatic: true
+        });
+        backupId = backup.id;
+        logger.info(`Configuration backup created: ${backupId}`);
+      }
+
+      // 8. Start file watching if enabled
+      if (this.options.enableWatching && this.configPath) {
+        await this.startWatching();
+      }
+
+      logger.info('Configuration loaded and validated successfully');
+
+      return {
+        config: this.config,
+        validation,
+        runtimeValidation,
+        performanceMetrics,
+        migrationResult,
+        backupId
+      };
+
+    } catch (error) {
+      logger.error('Failed to load configuration:', error);
       throw error;
     }
+  }
 
-    configLogger.error("Unexpected error during configuration loading", {
-      processingTime,
-      errorType: error instanceof Error ? error.constructor.name : typeof error,
-      errorMessage: error instanceof Error ? error.message : String(error),
+  /**
+   * Update configuration with validation and backup
+   */
+  async updateConfig(
+    updates: Partial<EnigmaConfig>,
+    options: {
+      createBackup?: boolean;
+      validateBeforeUpdate?: boolean;
+      description?: string;
+    } = {}
+  ): Promise<{
+    success: boolean;
+    backupId?: string;
+    validation?: ConfigValidationResult;
+    error?: string;
+  }> {
+    try {
+      if (!this.config || !this.configPath) {
+        throw new Error('No configuration loaded');
+      }
+
+      const {
+        createBackup = true,
+        validateBeforeUpdate = true,
+        description = 'Configuration update'
+      } = options;
+
+      // 1. Create backup if requested
+      let backupId;
+      if (createBackup && this.backup) {
+        const backup = await this.backup.createBackup({
+          description,
+          tags: ['manual', 'update'],
+          isAutomatic: false
+        });
+        backupId = backup.id;
+      }
+
+      // 2. Merge updates with current config
+      const updatedConfig = { ...this.config, ...updates };
+
+      // 3. Validate updated configuration
+      let validation;
+      if (validateBeforeUpdate) {
+        validation = await this.validateSchema(updatedConfig);
+        if (!validation.isValid) {
+          return {
+            success: false,
+            error: `Validation failed: ${validation.errors.join(', ')}`,
+            validation
+          };
+        }
+
+        // Runtime validation
+        const runtimeValidation = await this.validateRuntime(updatedConfig);
+        if (!runtimeValidation.isValid) {
+          logger.warn('Runtime validation warnings for update:', runtimeValidation.warnings);
+        }
+      }
+
+      // 4. Update configuration
+      this.config = updatedConfig;
+
+      logger.info('Configuration updated successfully');
+
+      return {
+        success: true,
+        backupId,
+        validation
+      };
+
+    } catch (error) {
+      logger.error('Failed to update configuration:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  }
+
+  /**
+   * Get current configuration
+   */
+  getConfig(): EnigmaConfig | undefined {
+    return this.config;
+  }
+
+  /**
+   * Get performance metrics for current configuration
+   */
+  async getPerformanceMetrics(): Promise<PerformanceMetrics | undefined> {
+    if (!this.performanceValidator || !this.config) {
+      return undefined;
+    }
+
+    return await this.performanceValidator.analyzePerformance();
+  }
+
+  /**
+   * List available backups
+   */
+  listBackups(filters?: {
+    tags?: string[];
+    isAutomatic?: boolean;
+    limit?: number;
+  }) {
+    if (!this.backup) {
+      return [];
+    }
+
+    return this.backup.listBackups(filters);
+  }
+
+  /**
+   * Restore configuration from backup
+   */
+  async restoreFromBackup(backupId: string): Promise<{
+    success: boolean;
+    error?: string;
+  }> {
+    try {
+      if (!this.backup || !this.configPath) {
+        throw new Error('Backup system not initialized or no config path');
+      }
+
+      const result = await this.backup.restoreFromBackup(backupId);
+      if (result.success) {
+        // Reload configuration after restore
+        await this.loadConfig();
+      }
+
+      return result;
+
+    } catch (error) {
+      logger.error('Failed to restore from backup:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  }
+
+  /**
+   * Stop all watchers and cleanup
+   */
+  async cleanup(): Promise<void> {
+    try {
+      if (this.watcher) {
+        await this.watcher.stop();
+      }
+
+      logger.info('Configuration manager cleaned up');
+    } catch (error) {
+      logger.error('Error during cleanup:', error);
+    }
+  }
+
+  /**
+   * Initialize all validation components
+   */
+  private initializeValidators(): void {
+    if (!this.configPath) return;
+
+    // Schema validator
+    this.validator = createConfigValidator();
+
+    // Defaults manager
+    this.defaultsManager = createConfigDefaults(this.environment);
+
+    // Migration system
+    if (this.options.enableMigration) {
+      this.migration = createConfigMigration(this.configPath);
+    }
+
+    // Backup system
+    if (this.options.enableBackup) {
+      this.backup = createConfigBackup(this.configPath);
+    }
+  }
+
+  /**
+   * Handle configuration migration
+   */
+  private async handleMigration(config: any): Promise<{
+    migrated: boolean;
+    result?: any;
+  }> {
+    if (!this.migration || !this.configPath) {
+      return { migrated: false };
+    }
+
+    try {
+      const needsMigration = this.migration.needsMigration(config);
+      if (!needsMigration) {
+        return { migrated: false };
+      }
+
+      logger.info('Configuration migration needed, starting migration...');
+
+      const result = await this.migration.migrate({
+        autoMigrate: true,
+        createBackup: true
+      });
+
+      if (result.success) {
+        logger.info(`Configuration migrated successfully: ${result.migrationsApplied.join(', ')}`);
+        return { migrated: true, result };
+      } else {
+        logger.error('Configuration migration failed:', result.errors);
+        return { migrated: false, result };
+      }
+
+    } catch (error) {
+      logger.error('Error during migration:', error);
+      return { migrated: false };
+    }
+  }
+
+  /**
+   * Apply defaults to configuration
+   */
+  private applyDefaults(config: any): EnigmaConfig {
+    if (!this.defaultsManager) {
+      return config;
+    }
+
+    return this.defaultsManager.createConfigWithDefaults(config);
+  }
+
+  /**
+   * Validate configuration schema
+   */
+  private async validateSchema(config: EnigmaConfig): Promise<ConfigValidationResult> {
+    if (!this.validator) {
+      throw new Error('Schema validator not initialized');
+    }
+
+    return await this.validator.validate(config);
+  }
+
+  /**
+   * Validate runtime constraints
+   */
+  private async validateRuntime(config: EnigmaConfig): Promise<RuntimeValidationResult> {
+    if (!this.runtimeValidator) {
+      this.runtimeValidator = createRuntimeValidator(config);
+    }
+
+    return await this.runtimeValidator.validateComplete();
+  }
+
+  /**
+   * Start file watching
+   */
+  private async startWatching(): Promise<void> {
+    if (!this.configPath) return;
+
+    this.watcher = createConfigWatcher(this.configPath, {
+      validateOnChange: true,
+      createBackupOnChange: this.options.enableBackup
     });
 
-    throw new ConfigError(
-      "Failed to load configuration",
-      undefined,
-      error as Error,
-      { operation: "loadConfig", processingTime },
-    );
+    this.watcher.on('change', async (event) => {
+      logger.info(`Configuration file changed: ${event.filepath}`);
+      
+      try {
+        // Reload and validate configuration
+        await this.loadConfig();
+        logger.info('Configuration reloaded successfully');
+      } catch (error) {
+        logger.error('Failed to reload configuration after change:', error);
+      }
+    });
+
+    this.watcher.on('validation', (event) => {
+      if (!event.validation.isValid) {
+        logger.error('Configuration validation failed after change:', event.validation.errors);
+      }
+    });
+
+    this.watcher.on('error', (error) => {
+      logger.error('Configuration watcher error:', error);
+    });
+
+    await this.watcher.start();
+    logger.info('Configuration file watching started');
+  }
+
+  /**
+   * Create default configuration when none found
+   */
+  private async createDefaultConfig(): Promise<{
+    config: EnigmaConfig;
+    validation: ConfigValidationResult;
+    runtimeValidation: RuntimeValidationResult;
+  }> {
+    this.defaultsManager = createConfigDefaults(this.environment);
+    const config = this.defaultsManager.createConfigWithDefaults({});
+
+    this.validator = createConfigValidator();
+    const validation = await this.validator.validate(config);
+
+    this.runtimeValidator = createRuntimeValidator(config);
+    const runtimeValidation = await this.runtimeValidator.validateComplete();
+
+    this.config = config;
+
+    return {
+      config,
+      validation,
+      runtimeValidation
+    };
+  }
+
+  /**
+   * Log performance insights
+   */
+  private logPerformanceInsights(metrics: PerformanceMetrics): void {
+    logger.info(`Configuration performance score: ${metrics.score}/100`);
+
+    if (metrics.warnings.length > 0) {
+      logger.warn('Performance warnings:', metrics.warnings);
+    }
+
+    if (metrics.bottlenecks.length > 0) {
+      logger.warn('Performance bottlenecks detected:', metrics.bottlenecks);
+    }
+
+    if (metrics.recommendations.length > 0) {
+      logger.info('Performance recommendations:', metrics.recommendations.map(r => r.title));
+    }
   }
 }
 
 /**
- * Synchronously load and merge configuration from all sources
- * Precedence: defaults → config file → CLI arguments (CLI wins)
+ * Create enhanced configuration manager
  */
-export function loadConfigSync(
-  cliArgs: CliArguments = {},
-  searchFrom?: string,
-): ConfigResult {
-  try {
-    // Step 1: Start with defaults
-    let mergedConfig = { ...DEFAULT_CONFIG };
-
-    // Step 2: Load and merge config file
-    const {
-      config: fileConfig,
-      filepath,
-      isEmpty,
-    } = loadConfigFromFileSync(searchFrom, cliArgs.config);
-
-    if (Object.keys(fileConfig).length > 0) {
-      mergedConfig = deepMerge(mergedConfig, fileConfig);
-    }
-
-    // Step 3: Apply CLI arguments (highest precedence)
-    const normalizedCliArgs = normalizeCliArguments(cliArgs);
-    if (Object.keys(normalizedCliArgs).length > 0) {
-      mergedConfig = deepMerge(mergedConfig, normalizedCliArgs);
-    }
-
-    // Step 4: Validate final configuration
-    const validatedConfig = validateConfig(mergedConfig, filepath);
-
-    return {
-      config: validatedConfig,
-      filepath,
-      isEmpty,
-    };
-  } catch (error) {
-    if (error instanceof ConfigError) {
-      throw error;
-    }
-    throw new ConfigError(
-      "Failed to load configuration",
-      undefined,
-      error as Error,
-    );
+export function createEnhancedConfigManager(
+  environment: Environment = 'development',
+  options?: {
+    enableWatching?: boolean;
+    enableBackup?: boolean;
+    enablePerformanceValidation?: boolean;
+    enableMigration?: boolean;
+    validateOnLoad?: boolean;
+    createBackupOnLoad?: boolean;
   }
+): EnhancedConfigManager {
+  return new EnhancedConfigManager(environment, options);
+}
+
+/**
+ * Load configuration with enhanced validation (convenience function)
+ */
+export async function loadEnhancedConfig(
+  searchFrom?: string,
+  environment: Environment = 'development'
+): Promise<EnigmaConfig> {
+  const manager = createEnhancedConfigManager(environment, {
+    enableWatching: false, // Don't start watching for one-time loads
+    createBackupOnLoad: false
+  });
+
+  const result = await manager.loadConfig(searchFrom);
+  await manager.cleanup();
+
+  return result.config;
 }
 
 /**
