@@ -9,9 +9,9 @@
 import { writeFile, readFile } from "fs/promises";
 // join, dirname, basename, extname imports removed - not used
 import { SourceMapGenerator } from "source-map";
-import type { CssOutputConfig } from "./cssOutputConfig.ts";
-import type { CssChunk } from "./cssChunker.ts";
-import type { AssetHash } from "./assetHasher.ts";
+import type { CssOutputConfig } from "./cssOutputConfig";
+import type { CssChunk } from "./cssChunker";
+import type { AssetHash } from "./assetHasher";
 // Import types from other existing modules
 export interface CssBundle {
   id: string;

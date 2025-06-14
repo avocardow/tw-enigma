@@ -6,12 +6,12 @@
  */
 
 import { z } from "zod";
-import type { HtmlClassExtractionResult } from "./htmlExtractor.ts";
+import type { HtmlClassExtractionResult } from "./htmlExtractor";
 import type {
   JsClassExtractionResult,
   SupportedFramework,
-} from "./jsExtractor.ts";
-import type { ValidationResult } from "./patternValidator.ts";
+} from "./jsExtractor";
+import type { ValidationResult } from "./patternValidator";
 
 /**
  * Configuration options for pattern analysis

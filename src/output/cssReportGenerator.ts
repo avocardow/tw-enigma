@@ -5,11 +5,11 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import type { CssChunk } from "./cssChunker.ts";
-import type { CssOutputConfig, PerformanceBudget } from "./cssOutputConfig.ts";
-import type { AssetHash } from "./assetHasher.ts";
+import type { CssChunk } from "./cssChunker";
+import type { CssOutputConfig, PerformanceBudget } from "./cssOutputConfig";
+import type { AssetHash } from "./assetHasher";
 
-import type { CriticalCssResult } from "./criticalCssExtractor.ts";
+import type { CriticalCssResult } from "./criticalCssExtractor";
 
 /**
  * Performance metrics for CSS bundles

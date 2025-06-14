@@ -20,7 +20,7 @@ import type {
   OutputPaths,
   HashAlgorithm,
 } from "./cssOutputConfig.ts";
-import type { CssChunk } from "./cssChunker.ts";
+import type { CssChunk } from "./cssChunker";
 
 // gzipAsync and brotliCompressAsync removed - not used
 

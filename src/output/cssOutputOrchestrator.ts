@@ -13,9 +13,9 @@ import type {
   // OutputStrategy - removed, not used
   // ChunkingStrategy - removed, not used
   // CriticalCssStrategy - removed, not used
-} from "./cssOutputConfig.ts";
-import { CssChunker, createCssChunker } from "./cssChunker.ts";
-import type { CssChunk } from "./cssChunker.ts";
+} from "./cssOutputConfig";
+import { CssChunker, createCssChunker } from "./cssChunker";
+import type { CssChunk } from "./cssChunker";
 import {
   AssetHasher,
   CssOptimizer,
@@ -29,12 +29,12 @@ import {
   type OptimizationResult,
   type CompressionResult,
   type AssetManifest,
-} from "./assetHasher.ts";
+} from "./assetHasher";
 import {
   CriticalCssExtractor,
   createCriticalCssExtractor,
-} from "./criticalCssExtractor.ts";
-import { CssAnalyzer, createCssAnalyzer } from "./cssAnalyzer.ts";
+} from "./criticalCssExtractor";
+import { CssAnalyzer, createCssAnalyzer } from "./cssAnalyzer";
 
 // =============================================================================
 // TYPE DEFINITIONS
@@ -326,7 +326,7 @@ export class CssOutputOrchestrator {
     const startTime = Date.now();
 
     // Step 1: Generate chunks based on strategy (move this before analysis)
-    const chunks = await this.generateChunks(bundle, _options);
+    const chunks = await this.generateChunks(bundle, options);
 
     // Step 2: Analyze chunks if needed (after chunks are created)
     // Note: CSS analysis is optional and primarily for reporting
@@ -365,7 +365,7 @@ export class CssOutputOrchestrator {
     }
 
     // Step 6: Extract critical CSS if enabled
-    const criticalCss = await this.extractCriticalCss(bundle, chunks, _options);
+    const criticalCss = await this.extractCriticalCss(bundle, chunks, options);
 
     // Step 7: Write output files
     const outputPaths = await this.writeOutputFiles(
@@ -378,7 +378,7 @@ export class CssOutputOrchestrator {
 
     // Step 8: Generate source maps if enabled
     const sourceMaps = options.sourceMaps
-      ? await this.generateSourceMaps(chunks, optimizations, _options)
+      ? await this.generateSourceMaps(chunks, optimizations, options)
       : [];
 
     // Calculate processing statistics

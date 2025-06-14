@@ -11,7 +11,7 @@
  */
 
 import { EventEmitter } from "events";
-import { createLogger } from "../../logger.ts";
+import { createLogger } from "../../logger";
 import type {
   BuildToolContext,
   BuildToolType,

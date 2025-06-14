@@ -26,7 +26,7 @@ import { PerformanceObserver } from "perf_hooks";
 import { EventEmitter } from "events";
 import v8 from "v8";
 import process from "process";
-import type { MemoryConfig } from "./config.ts";
+import type { MemoryConfig } from "./config";
 
 /**
  * Memory usage snapshot

@@ -12,8 +12,8 @@
 
 import { readFile, access } from "fs/promises";
 import { join } from "path";
-import { createLogger } from "../../logger.ts";
-import { FrameworkDetector } from "../../frameworkDetector.ts";
+import { createLogger } from "../../logger";
+import { FrameworkDetector } from "../../frameworkDetector";
 import type {
   FrameworkInfo,
 } from "../../frameworkDetector.ts";

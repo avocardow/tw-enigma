@@ -7,7 +7,7 @@
 
 import { glob, globSync } from "glob";
 import { extname } from "path";
-import type { EnigmaConfig } from "./config.ts";
+import type { EnigmaConfig } from "./config";
 
 /**
  * Supported file types for CSS optimization

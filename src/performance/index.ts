@@ -37,12 +37,12 @@
  */
 
 // Core performance components
-export { WorkerManager } from "./workerManager.ts";
+export { WorkerManager } from "./workerManager";
 export {
   CacheManager,
   createCacheManager,
   getGlobalCacheManager,
-} from "./cacheManager.ts";
+} from "./cacheManager";
 export {
   RegexOptimizer,
   getGlobalRegexOptimizer,
@@ -50,16 +50,16 @@ export {
   matchOptimized,
   replaceOptimized,
   COMMON_CSS_PATTERNS,
-} from "./regexOptimizer.ts";
-export { StreamOptimizer } from "./streamOptimizer.ts";
-export { BatchCoordinator } from "./batchCoordinator.ts";
+} from "./regexOptimizer";
+export { StreamOptimizer } from "./streamOptimizer";
+export { BatchCoordinator } from "./batchCoordinator";
 export {
   MemoryProfiler,
   getGlobalMemoryProfiler,
   getQuickMemoryStatus,
   forceGarbageCollection,
-} from "./memoryProfiler.ts";
-export { PerformanceProfiler } from "./profiler.ts";
+} from "./memoryProfiler";
+export { PerformanceProfiler } from "./profiler";
 
 // Configuration and types
 export {
@@ -79,7 +79,7 @@ export {
   ENVIRONMENT_PROFILES,
   validatePerformanceConfig,
   createEnvironmentConfig,
-} from "./config.ts";
+} from "./config";
 
 // Import for internal use
 import os from "os";
@@ -87,7 +87,7 @@ import {
   DEFAULT_PERFORMANCE_CONFIG as _DEFAULT_PERFORMANCE_CONFIG,
   type SystemResources as _SystemResources,
   type PerformanceConfig as _PerformanceConfig,
-} from "./config.ts";
+} from "./config";
 
 // Performance constants
 export const PERFORMANCE_CONSTANTS = {

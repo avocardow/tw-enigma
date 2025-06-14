@@ -11,9 +11,9 @@
  */
 
 import { EventEmitter } from "events";
-import { createLogger } from "../../logger.ts";
-import { ConfigDetector } from "./configDetector.ts";
-import { createHMRHandler } from "./hmrHandler.ts";
+import { createLogger } from "../../logger";
+import { ConfigDetector } from "./configDetector";
+import { createHMRHandler } from "./hmrHandler";
 import type {
   BuildToolPlugin,
   BuildToolPluginConfig,
@@ -25,7 +25,7 @@ import type {
 import type {
   AutoConfigResult,
 } from "./configDetector.ts";
-import type { HMRHandler } from "./hmrHandler.ts";
+import type { HMRHandler } from "./hmrHandler";
 import fs from "fs/promises";
 
 const logger = createLogger("integration-manager");

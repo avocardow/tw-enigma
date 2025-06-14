@@ -6,19 +6,19 @@
  */
 
 import { EventEmitter } from "events";
-import { createLogger, Logger } from "./logger.ts";
-import { EnigmaConfig } from "./config.ts";
-import { DevDiagnostics, DevPerformanceMetrics } from "./devDiagnostics.ts";
-import { DevDashboard } from "./devDashboard.ts";
-import { DevPreview } from "./devPreview.ts";
-import { DebugUtils, DebugSession } from "./debugUtils.ts";
-import { SourceMapGenerator } from "./sourceMapGenerator.ts";
+import { createLogger, Logger } from "./logger";
+import { EnigmaConfig } from "./config";
+import { DevDiagnostics, DevPerformanceMetrics } from "./devDiagnostics";
+import { DevDashboard } from "./devDashboard";
+import { DevPreview } from "./devPreview";
+import { DebugUtils, DebugSession } from "./debugUtils";
+import { SourceMapGenerator } from "./sourceMapGenerator";
 import { readFile, writeFile, mkdir } from "fs/promises";
 import { join, dirname } from "path";
 import { existsSync } from "fs";
-import { DevDashboardEnhanced } from "./devDashboardEnhanced.ts";
-import { DevHotReload } from "./devHotReload.ts";
-import { DevIdeIntegration } from "./devIdeIntegration.ts";
+import { DevDashboardEnhanced } from "./devDashboardEnhanced";
+import { DevHotReload } from "./devHotReload";
+import { DevIdeIntegration } from "./devIdeIntegration";
 
 /**
  * Development experience configuration

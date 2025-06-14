@@ -7,12 +7,12 @@
 
 import * as cheerio from "cheerio";
 import { z } from "zod";
-import { createLogger } from "./logger.ts";
+import { createLogger } from "./logger";
 import {
   PathUtils,
   type RelativePathResult,
   PathUtilsError,
-} from "./pathUtils.ts";
+} from "./pathUtils";
 import type { AnyNode } from "domhandler";
 
 /**

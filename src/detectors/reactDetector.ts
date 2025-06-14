@@ -14,7 +14,7 @@ import type {
   DetectionContext,
   DetectionSource,
   FrameworkType,
-} from "../frameworkDetector.ts";
+} from "../frameworkDetector";
 
 export class ReactDetector implements IFrameworkDetector {
   readonly frameworkType: FrameworkType = "react";

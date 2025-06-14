@@ -11,13 +11,13 @@
  */
 
 import { EventEmitter } from "events";
-import { createLogger } from "../logger.ts";
+import { createLogger } from "../logger";
 import {
   CircuitBreakerState,
   CircuitBreakerMetrics,
   EnhancedErrorContext,
   CircuitBreakerFallback,
-} from "./types.ts";
+} from "./types";
 
 const circuitLogger = createLogger("CircuitBreaker");
 

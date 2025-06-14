@@ -9,7 +9,7 @@ import * as cheerio from "cheerio";
 import { AnyNode } from "domhandler";
 import * as fs from "fs/promises";
 import { z } from "zod";
-import type { NameGenerationResult } from "./nameGeneration.ts";
+import type { NameGenerationResult } from "./nameGeneration";
 
 /**
  * Configuration options for HTML rewriting operations

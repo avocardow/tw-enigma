@@ -9,11 +9,11 @@ import { EventEmitter } from "events";
 import { watch, FSWatcher } from "chokidar";
 import { readFileSync, existsSync, statSync } from "fs";
 import { resolve, basename } from "path";
-import { logger } from "./logger.ts";
-import { ConfigError } from "./errors.ts";
-import { validateConfig } from "./configValidator.ts";
-import type { EnigmaConfig } from "./config.ts";
-import type { ValidationResult } from "./configValidator.ts";
+import { logger } from "./logger";
+import { ConfigError } from "./errors";
+import { validateConfig } from "./configValidator";
+import type { EnigmaConfig } from "./config";
+import type { ValidationResult } from "./configValidator";
 
 /**
  * Configuration watcher events

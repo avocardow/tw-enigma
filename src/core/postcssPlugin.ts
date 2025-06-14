@@ -12,14 +12,14 @@
 
 import type { Plugin, PluginCreator, Root } from "postcss";
 import { z } from "zod";
-import { createLogger } from "../logger.ts";
+import { createLogger } from "../logger";
 import type {
   EnigmaPlugin,
   PluginConfig,
   PluginContext,
   PluginMetrics,
   PluginResult,
-} from "../types/plugins.ts";
+} from "../types/plugins";
 
 /**
  * Plugin configuration schema

@@ -10,39 +10,39 @@ import { z } from "zod";
 import {
   HtmlExtractionOptionsSchema,
   type HtmlExtractionOptions,
-} from "./htmlExtractor.ts";
+} from "./htmlExtractor";
 import {
   JsExtractionOptionsSchema,
   type JsExtractionOptions,
-} from "./jsExtractor.ts";
+} from "./jsExtractor";
 import {
   CssInjectionOptionsSchema,
   type CssInjectionOptions,
-} from "./cssInjector.ts";
+} from "./cssInjector";
 import {
   FileIntegrityOptionsSchema,
   type FileIntegrityOptions,
-} from "./fileIntegrity.ts";
+} from "./fileIntegrity";
 import {
   SimpleValidatorConfigSchema,
   type SimpleValidatorConfig,
-} from "./patternValidator.ts";
-import { ConfigError, ValidationError } from "./errors.ts";
-import { createLogger } from "./logger.ts";
+} from "./patternValidator";
+import { ConfigError, ValidationError } from "./errors";
+import { createLogger } from "./logger";
 
 // Create a logger instance for this module
 const logger = createLogger('config');
-import { createRuntimeValidator } from "./runtimeValidator.ts";
-import { createConfigWatcher } from "./configWatcher.ts";
-import type { ValidationResult } from "./configValidator.ts";
-import type { RuntimeValidator } from "./runtimeValidator.ts";
-import type { ConfigWatcher } from "./configWatcher.ts";
-import type { ConfigSafeUpdater } from "./configSafeUpdater.ts";
-import { createConfigValidator } from './configValidator.ts';
-import { createConfigMigration, type ConfigMigration } from './configMigration.ts';
-import { createPerformanceValidator, type PerformanceMetrics } from './performanceValidator.ts';
-import { createConfigBackup, type ConfigBackup } from './configBackup.ts';
-import { createConfigDefaults, type Environment } from './configDefaults.ts';
+import { createRuntimeValidator } from "./runtimeValidator";
+import { createConfigWatcher } from "./configWatcher";
+import type { ValidationResult } from "./configValidator";
+import type { RuntimeValidator } from "./runtimeValidator";
+import type { ConfigWatcher } from "./configWatcher";
+import type { ConfigSafeUpdater } from "./configSafeUpdater";
+import { createConfigValidator } from './configValidator';
+import { createConfigMigration, type ConfigMigration } from './configMigration';
+import { createPerformanceValidator, type PerformanceMetrics } from './performanceValidator';
+import { createConfigBackup, type ConfigBackup } from './configBackup';
+import { createConfigDefaults, type Environment } from './configDefaults';
 
 // Re-export ConfigError for backward compatibility
 export { ConfigError };

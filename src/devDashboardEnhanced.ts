@@ -5,10 +5,10 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { DevDashboard, DashboardConfig, DashboardMetrics } from "./devDashboard.ts";
-import { DevHotReload, HMROptimizationResult } from "./devHotReload.ts";
-import { DevIdeIntegration } from "./devIdeIntegration.ts";
-import { createLogger, Logger } from "./logger.ts";
+import { DevDashboard, DashboardConfig, DashboardMetrics } from "./devDashboard";
+import { DevHotReload, HMROptimizationResult } from "./devHotReload";
+import { DevIdeIntegration } from "./devIdeIntegration";
+import { createLogger, Logger } from "./logger";
 import { writeFile } from "fs/promises";
 import { EventEmitter } from 'events';
 

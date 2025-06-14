@@ -11,8 +11,8 @@
  */
 
 import type { z } from "zod";
-import type { EnigmaPlugin, PluginConfig } from "../../types/plugins.ts";
-import type { FrameworkInfo } from "../../frameworkDetector.ts";
+import type { EnigmaPlugin, PluginConfig } from "../../types/plugins";
+import type { FrameworkInfo } from "../../frameworkDetector";
 
 /**
  * Build tool lifecycle phases

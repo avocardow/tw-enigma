@@ -6,8 +6,8 @@
  */
 
 import { EventEmitter } from "events";
-import { createLogger, Logger } from "./logger.ts";
-import { EnigmaConfig } from "./config.ts";
+import { createLogger, Logger } from "./logger";
+import { EnigmaConfig } from "./config";
 import { writeFile, readFile, mkdir } from "fs/promises";
 import { join, dirname } from "path";
 

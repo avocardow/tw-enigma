@@ -11,16 +11,16 @@
 export { version } from "../package.json";
 
 // Core Modules
-export * from "./config.ts";
-export * from "./fileDiscovery.ts";
-export * from "./htmlExtractor.ts";
-export * from "./jsExtractor.ts";
-export * from "./cssInjector.ts";
-export * from "./performance/index.ts";
+export * from "./config";
+export * from "./fileDiscovery";
+export * from "./htmlExtractor";
+export * from "./jsExtractor";
+export * from "./cssInjector";
+export * from "./performance/index";
 
 // Core Utilities
-export { createLogger as logger } from "./logger.ts";
-export { ErrorHandler } from "./errorHandler/errorHandler.ts";
+export { createLogger as logger } from "./logger";
+export { ErrorHandler } from "./errorHandler/errorHandler";
 
 // Explicit exports from fileIntegrity.ts to avoid conflicts
 export {
@@ -55,7 +55,7 @@ export {
   createFileIntegrityValidator,
   calculateFileChecksum,
   validateFileIntegrity,
-} from "./fileIntegrity.ts";
+} from "./fileIntegrity";
 
 // Explicit exports from htmlRewriter.ts to avoid conflicts
 export {
@@ -82,7 +82,7 @@ export {
   HtmlValidationError,
   HtmlRewriter,
   createHtmlRewriter,
-} from "./htmlRewriter.ts";
+} from "./htmlRewriter";
 
 // #endregion
 
@@ -121,7 +121,7 @@ export {
   PatternAnalysisError,
   DataAggregationError,
   FrequencyCalculationError,
-} from "./patternAnalysis.ts";
+} from "./patternAnalysis";
 
 // Name Generation exports
 export {
@@ -178,7 +178,7 @@ export {
   CollisionError,
   InvalidNameError,
   CacheError,
-} from "./nameGeneration.ts";
+} from "./nameGeneration";
 
 // Framework Detection
 export {
@@ -193,12 +193,12 @@ export {
   type DetectionSource,
   type IFrameworkDetector,
   type FrameworkDetectorOptions,
-} from "./frameworkDetector.ts";
+} from "./frameworkDetector";
 
 // Framework-specific detectors
-export { ReactDetector } from "./detectors/reactDetector.ts";
-export { NextjsDetector } from "./detectors/nextjsDetector.ts";
-export { ViteDetector } from "./detectors/viteDetector.ts";
+export { ReactDetector } from "./detectors/reactDetector";
+export { NextjsDetector } from "./detectors/nextjsDetector";
+export { ViteDetector } from "./detectors/viteDetector";
 
 // Build Tool Integrations
 export {
@@ -206,19 +206,19 @@ export {
   createIntegrationManager,
   type IntegrationManagerConfig,
   type IntegrationStatus,
-} from "./integrations/core/integrationManager.ts";
+} from "./integrations/core/integrationManager";
 
 // Build Tool Plugins
 export {
   EnigmaWebpackPlugin,
   createWebpackPlugin,
-} from "./integrations/webpack/webpackPlugin.ts";
+} from "./integrations/webpack/webpackPlugin";
 
 export {
   EnigmaVitePlugin,
   createVitePlugin,
   enigmaVite,
-} from "./integrations/vite/vitePlugin.ts";
+} from "./integrations/vite/vitePlugin";
 
 // Core Integration Types and Utilities
 export type {
@@ -230,19 +230,19 @@ export type {
   BuildToolHooks,
   OptimizationResult,
   HMRUpdate,
-} from "./integrations/core/buildToolPlugin.ts";
+} from "./integrations/core/buildToolPlugin";
 
 export {
   ConfigDetector,
   type AutoConfigResult,
   type DetectedBuildConfig,
-} from "./integrations/core/configDetector.ts";
+} from "./integrations/core/configDetector";
 
 export {
   createHMRHandler,
   type HMRHandler,
   type HMRConfig,
-} from "./integrations/core/hmrHandler.ts";
+} from "./integrations/core/hmrHandler";
 
 // CSS Output Processing exports
 export {
@@ -254,7 +254,7 @@ export {
   type CssOutputResult,
   type CssOrchestrationResult,
   type CssProcessingOptions,
-} from "./output/cssOutputOrchestrator.ts";
+} from "./output/cssOutputOrchestrator";
 
 export {
   CssOutputConfig,
@@ -262,13 +262,13 @@ export {
   createDevelopmentConfig,
   validateProductionConfig,
   type CssOutputConfigSchema,
-} from "./output/cssOutputConfig.ts";
+} from "./output/cssOutputConfig";
 
 export {
   CssChunker,
   createCssChunker,
   type CssChunk,
-} from "./output/cssChunker.ts";
+} from "./output/cssChunker";
 
 export {
   AssetHasher,
@@ -280,19 +280,19 @@ export {
   type OptimizationResult as AssetOptimizationResult,
   type CompressionResult,
   type ManifestGenerator,
-} from "./output/assetHasher.ts";
+} from "./output/assetHasher";
 
 export {
   CriticalCssExtractor,
   createCriticalCssExtractor,
-} from "./output/criticalCssExtractor.ts";
+} from "./output/criticalCssExtractor";
 
 export {
   CssAnalyzer,
   createCssAnalyzer,
-} from "./output/cssAnalyzer.ts";
+} from "./output/cssAnalyzer";
 
 // Atomic Operations exports
-export * from "./atomicOps/index.ts";
+export * from "./atomicOps/index";
 
 // #endregion

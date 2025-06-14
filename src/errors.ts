@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { logger, type ErrorContext } from "./logger.ts";
+import { logger, type ErrorContext } from "./logger";
 
 /**
  * Base error class for all Tailwind Enigma Core errors

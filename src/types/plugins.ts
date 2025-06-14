@@ -12,8 +12,8 @@
 
 import type { Result, Plugin } from "postcss";
 import type { z } from "zod";
-import type { FrequencyAnalysisResult } from "../patternAnalysis.ts";
-import type { Logger } from "../logger.ts";
+import type { FrequencyAnalysisResult } from "../patternAnalysis";
+import type { Logger } from "../logger";
 import type { PluginUtils } from "../utils/index";
 
 /**

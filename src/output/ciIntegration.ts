@@ -9,7 +9,7 @@ import type {
   CssPerformanceReport,
   // BudgetViolation - removed, not used
 } from "./cssReportGenerator.ts";
-import type { CssOutputConfig } from "./cssOutputConfig.ts";
+import type { CssOutputConfig } from "./cssOutputConfig";
 
 /**
  * CI environment detection result

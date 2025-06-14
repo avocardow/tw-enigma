@@ -11,7 +11,7 @@
  * and graceful recovery mechanisms.
  */
 
-import { ErrorContext } from "../logger.ts";
+import { ErrorContext } from "../logger";
 
 /**
  * Error severity levels for categorization and routing

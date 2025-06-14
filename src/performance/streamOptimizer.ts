@@ -17,8 +17,8 @@ import { createReadStream } from "fs";
 import { EventEmitter } from "events";
 import { performance } from "perf_hooks";
 import { promisify } from "util";
-import { createLogger } from "../logger.ts";
-import type { StreamConfig, PerformanceMetrics } from "./config.ts";
+import { createLogger } from "../logger";
+import type { StreamConfig, PerformanceMetrics } from "./config";
 
 const logger = createLogger("StreamOptimizer");
 const pipelineAsync = promisify(pipeline);

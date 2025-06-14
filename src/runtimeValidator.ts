@@ -8,10 +8,10 @@
 import { EventEmitter } from "events";
 import { dirname } from "path";
 import { existsSync } from "fs";
-import { logger } from "./logger.ts";
-import { ValidationError } from "./errors.ts";
-import type { EnigmaConfig } from "./config.ts";
-import type { ValidationResult } from "./configValidator.ts";
+import { logger } from "./logger";
+import { ValidationError } from "./errors";
+import type { EnigmaConfig } from "./config";
+import type { ValidationResult } from "./configValidator";
 
 /**
  * Runtime validation events

@@ -29,8 +29,8 @@ import {
 } from "zlib";
 import { EventEmitter } from "events";
 import { resolve, basename, extname, join } from "path";
-import { createLogger } from "./logger.ts";
-import { ConfigError } from "./errors.ts";
+import { createLogger } from "./logger";
+import { ConfigError } from "./errors";
 import os from "os";
 
 /**

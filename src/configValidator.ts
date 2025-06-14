@@ -8,9 +8,9 @@
 import { z } from "zod";
 import { resolve } from "path";
 import { existsSync, statSync, readFileSync } from "fs";
-import { logger } from "./logger.ts";
-import { ValidationError } from "./errors.ts";
-import type { EnigmaConfig } from "./config.ts";
+import { logger } from "./logger";
+import { ValidationError } from "./errors";
+import type { EnigmaConfig } from "./config";
 
 /**
  * Configuration schema version for migration support

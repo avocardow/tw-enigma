@@ -8,6 +8,24 @@
 import { z } from "zod";
 import { cosmiconfig } from "cosmiconfig";
 import path from "path";
+import { CliArguments } from "../config";
+
+// Extended CLI arguments interface for CSS output configuration
+interface CssOutputCliArguments extends CliArguments {
+  preset?: "cdn" | "serverless" | "spa" | "ssr";
+  environment?: "development" | "production" | "test";
+  strategy?: OutputStrategy;
+  compress?: boolean | CompressionType;
+  "critical-css"?: boolean;
+  "asset-hash"?: boolean;
+  "hash-length"?: number;
+  "performance-budget"?: string | number;
+  "max-critical-css"?: string | number;
+  "max-chunk-size"?: string | number;
+  "max-chunks"?: string | number;
+  "max-total-size"?: string | number;
+  "max-load-time"?: string | number;
+}
 
 // =============================================================================
 // TYPE DEFINITIONS
@@ -182,7 +200,7 @@ export const CriticalCssConfigSchema = z.object({
       width: z.number().min(320).default(1280),
       height: z.number().min(240).default(720),
     })
-    .default({}),
+    .default({ width: 1280, height: 720 }),
 
   /** Include font-face declarations in critical CSS */
   includeFonts: z.boolean().default(true),
@@ -275,7 +293,7 @@ export const DeliveryConfigSchema = z.object({
       maxAge: z.number().min(0).default(3600),
       staleWhileRevalidate: z.number().min(0).default(86400),
     })
-    .default({}),
+    .default({ strategy: "revalidate", maxAge: 3600, staleWhileRevalidate: 86400 }),
 
   /** Resource hints configuration */
   resourceHints: z
@@ -284,7 +302,7 @@ export const DeliveryConfigSchema = z.object({
       prefetch: z.boolean().default(false),
       preconnect: z.boolean().default(false),
     })
-    .default({}),
+    .default({ preload: false, prefetch: false, preconnect: false }),
 });
 
 /**
@@ -390,28 +408,28 @@ export const CssOutputConfigSchema = z.object({
     .default("production"),
 
   /** Chunking configuration */
-  chunking: ChunkingConfigSchema.default({}),
+  chunking: ChunkingConfigSchema,
 
   /** Optimization configuration */
-  optimization: OptimizationConfigSchema.default({}),
+  optimization: OptimizationConfigSchema,
 
   /** Compression configuration */
-  compression: CompressionConfigSchema.default({}),
+  compression: CompressionConfigSchema,
 
   /** Asset hashing configuration */
-  hashing: HashingConfigSchema.default({}),
+  hashing: HashingConfigSchema,
 
   /** Critical CSS configuration */
-  critical: CriticalCssConfigSchema.default({}),
+  critical: CriticalCssConfigSchema,
 
   /** Delivery optimization configuration */
-  delivery: DeliveryConfigSchema.default({}),
+  delivery: DeliveryConfigSchema,
 
   /** Output paths configuration */
-  paths: OutputPathsSchema.default({}),
+  paths: OutputPathsSchema,
 
   /** Reporting configuration */
-  reporting: ReportingConfigSchema.default({}),
+  reporting: ReportingConfigSchema,
 
   /** Enable source map generation */
   sourceMaps: z.boolean().default(false),
@@ -904,7 +922,7 @@ export class CssOutputConfigManager {
   /**
    * Create configuration from CLI arguments (public method for test compatibility)
    */
-  fromCliArgs(args: CliArgs): CssOutputConfig {
+  fromCliArgs(args: CssOutputCliArguments): CssOutputConfig {
     // Start with base config for the environment
     let baseConfig = this.getConfig();
     
@@ -942,12 +960,11 @@ export class CssOutputConfigManager {
     if (args.strategy) overrides.strategy = args.strategy;
     
     // Handle optimization settings
-    if (args.minify !== undefined || args.sourceMaps !== undefined || args.sourceMap !== undefined) {
+    if (args.minify !== undefined || args.sourceMaps !== undefined) {
       overrides.optimization = {
         ...baseConfig.optimization,
         ...(args.minify !== undefined && { minify: Boolean(args.minify) }),
         ...(args.sourceMaps !== undefined && { sourceMap: Boolean(args.sourceMaps) }),
-        ...(args.sourceMap !== undefined && { sourceMap: Boolean(args.sourceMap) }),
       };
     }
     
@@ -957,8 +974,7 @@ export class CssOutputConfigManager {
         ...baseConfig.critical,
         enabled: Boolean(args["critical-css"]),
       };
-      // For test compatibility, also set criticalCss alias
-      overrides.criticalCss = overrides.critical;
+      // Critical CSS configuration is stored in the 'critical' property
     }
     
     // Handle hashing settings
@@ -1052,12 +1068,7 @@ export class CssOutputConfigManager {
     }
     
     // Ensure proper structure and defaults
-    if (!mergedConfig.criticalCss && mergedConfig.critical) {
-      mergedConfig.criticalCss = mergedConfig.critical;
-    }
-    if (!mergedConfig.critical && mergedConfig.criticalCss) {
-      mergedConfig.critical = mergedConfig.criticalCss;
-    }
+    // The schema uses 'critical' as the main property
     
     // Apply validation and normalization
     try {
@@ -1164,7 +1175,6 @@ export function createProductionConfig(
       compression: { type: "auto" as const },
       hashing: { includeContent: true, length: 8 },
       critical: { enabled: true },
-      criticalCss: { enabled: true },
       chunking: {
         strategy: "size" as const,
         maxSize: 50 * 1024,
@@ -1304,16 +1314,9 @@ function normalizeConfig(config: any): any {
       config.performanceBudget[k] = toNum(config.performanceBudget[k]);
     }
   }
-  // Always set criticalCss alias for test compatibility
-  if (config.critical) {
-    config.criticalCss = config.critical;
-  }
-  if (config.criticalCss) {
-    config.critical = config.criticalCss;
-  }
-  // Ensure both exist with same reference
-  if (!config.critical && !config.criticalCss) {
-    config.critical = config.criticalCss = { enabled: false };
+  // Ensure critical CSS configuration is set
+  if (!config.critical) {
+    config.critical = { enabled: false };
   }
   return config;
 }
@@ -1327,7 +1330,7 @@ export function mergeCssOutputConfig(base: any, override: any): any {
 }
 
 // Exported for test compatibility: fromCliArgs as a standalone function
-export function fromCliArgs(args: CliArgs): CssOutputConfig {
+export function fromCliArgs(args: CssOutputCliArguments): CssOutputConfig {
   // Use a default config manager instance for stateless parsing
   const manager = new CssOutputConfigManager();
   return manager.fromCliArgs(args);
@@ -1352,7 +1355,7 @@ export class ProductionCssConfigManager {
   /**
    * Create configuration from CLI arguments (delegated to manager)
    */
-  fromCliArgs(args: CliArgs): CssOutputConfig {
+  fromCliArgs(args: CssOutputCliArguments): CssOutputConfig {
     return this.manager.fromCliArgs(args);
   }
 
@@ -1510,10 +1513,10 @@ export class ProductionCssConfigManager {
   /**
    * Create CI-optimized configuration
    */
-  createCIConfiguration(args: Partial<CliArgs>): CssOutputConfig {
+  createCIConfiguration(args: Partial<CssOutputCliArguments>): CssOutputConfig {
     // Always use production environment and CDN preset for CI
     const mergedArgs = { ...args, environment: "production", preset: "cdn" };
-    return this.manager.fromCliArgs(mergedArgs as CliArgs);
+    return this.manager.fromCliArgs(mergedArgs as CssOutputCliArguments);
   }
 
   /**
@@ -1653,7 +1656,7 @@ export function applyDeploymentPreset(config: any, preset: string): any {
       presetConfig = {
         hashing: { includeContent: true, length: 8 },
         compression: { type: 'auto' },
-        criticalCss: { enabled: true },
+        critical: { enabled: true },
         optimization: { minify: true },
       };
       break;
@@ -1662,20 +1665,20 @@ export function applyDeploymentPreset(config: any, preset: string): any {
         strategy: 'single',
         compression: { type: 'auto' },
         optimization: { minify: true },
-        criticalCss: { enabled: true },
+        critical: { enabled: true },
       };
       break;
     case 'spa':
       presetConfig = {
         strategy: 'chunked',
-        criticalCss: { enabled: true, strategy: 'inline' },
+        critical: { enabled: true, strategy: 'inline' },
         hashing: { includeContent: true },
       };
       break;
     case 'ssr':
       presetConfig = {
         strategy: 'modular',
-        criticalCss: { enabled: true, strategy: 'extract' },
+        critical: { enabled: true, strategy: 'extract' },
         optimization: { removeUnused: true },
       };
       break;
@@ -1737,12 +1740,12 @@ export function applyDeploymentPreset(config: any, preset: string): any {
     Object.assign(merged.compression, presetConfig.compression);
   }
   
-  if (presetConfig.criticalCss) {
-    if (!merged.criticalCss) merged.criticalCss = {};
-    Object.assign(merged.criticalCss, presetConfig.criticalCss);
+  if (presetConfig.critical) {
+    if (!merged.critical) merged.critical = {};
+    Object.assign(merged.critical, presetConfig.critical);
   }
   
-  // Always ensure performanceBudget and criticalCss are present
+  // Always ensure performanceBudget and critical are present
   if (!merged.performanceBudget) {
     merged.performanceBudget = {
       maxBundleSize: 100 * 1024,
@@ -1753,8 +1756,8 @@ export function applyDeploymentPreset(config: any, preset: string): any {
       estimatedLoadTime: 2000,
     };
   }
-  if (!merged.criticalCss) {
-    merged.criticalCss = { enabled: true };
+  if (!merged.critical) {
+    merged.critical = { enabled: true };
   }
   return merged;
 }

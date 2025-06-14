@@ -15,8 +15,8 @@ import { createContext, runInContext, Context } from "vm";
 import { EventEmitter } from "events";
 import { createHash } from "crypto";
 import { performance } from "perf_hooks";
-import { createLogger } from "../logger.ts";
-import type { EnigmaPlugin, PluginConfig } from "../types/plugins.ts";
+import { createLogger } from "../logger";
+import type { EnigmaPlugin, PluginConfig } from "../types/plugins";
 
 // const logger = createLogger("plugin-sandbox");
 
@@ -277,7 +277,7 @@ export class PluginSandbox extends EventEmitter {
       
       return result as T;
     } catch (error) {
-      this.handleSecurityViolation(context, _error);
+      this.handleSecurityViolation(context, error);
       throw error;
     }
   }

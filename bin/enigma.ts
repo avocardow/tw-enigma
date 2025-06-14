@@ -12,29 +12,29 @@ import {
   EnigmaConfigSchema,
   type CliArguments,
   ConfigError,
-} from "../src/config.ts";
+} from "../src/config";
 import {
   discoverFilesFromConfig,
   FileDiscoveryError,
-} from "../src/fileDiscovery.ts";
+} from "../src/fileDiscovery";
 import {
   Logger,
   LogLevel,
   type FileOutputOptions,
-} from "../src/logger.ts";
+} from "../src/logger";
 import {
   createProductionOrchestrator,
   createDevelopmentOrchestrator,
   type CssBundle,
   type CssProcessingOptions,
-} from "../src/output/cssOutputOrchestrator.ts";
+} from "../src/output/cssOutputOrchestrator";
 import {
   createProductionConfigManager,
   createPerformanceBudget,
   validateProductionConfig,
   generateConfigDocs,
   type PerformanceBudget,
-} from "../src/output/cssOutputConfig.ts";
+} from "../src/output/cssOutputConfig";
 
 // Get package.json for version information
 const __filename = fileURLToPath(import.meta.url);
@@ -61,7 +61,7 @@ let cliLogger = new Logger({
  */
 function updateLoggerFromArgv(argv: Record<string, unknown>): void {
   // Parse log level
-  let level = LogLevel.INFO;
+  let level: LogLevel = LogLevel.INFO;
   if (argv.logLevel) {
     switch (argv.logLevel) {
       case "trace":
@@ -95,8 +95,8 @@ function updateLoggerFromArgv(argv: Record<string, unknown>): void {
   let fileOutput: FileOutputOptions | undefined;
   if (argv.logFile) {
     fileOutput = {
-      filePath: argv.logFile,
-      format: argv.logFormat || "human",
+      filePath: argv.logFile as string,
+      format: (argv.logFormat as "human" | "json" | "csv") || "human",
       maxSize: 10 * 1024 * 1024, // 10MB
       maxFiles: 5,
       compress: true,
@@ -106,9 +106,9 @@ function updateLoggerFromArgv(argv: Record<string, unknown>): void {
   // Create new logger with updated options
   cliLogger = new Logger({
     level,
-    verbose: argv.verbose || false,
-    veryVerbose: argv.veryVerbose || false,
-    quiet: argv.quiet || false,
+    verbose: (argv.verbose as boolean) || false,
+    veryVerbose: (argv.veryVerbose as boolean) || false,
+    quiet: (argv.quiet as boolean) || false,
     colorize: process.stdout.isTTY,
     timestamp: true,
     component: "CLI",
@@ -374,13 +374,13 @@ const argv = await yargs(hideBin(process.argv))
         const validation = validateProductionConfig(config);
         if (argv.verbose) {
           console.log("Validation result:", {
-            valid: validation.valid,
+            valid: validation.isValid,
             errors: validation.errors,
             warnings: validation.warnings,
             suggestions: validation.suggestions
           });
         }
-        if (!validation.valid) {
+        if (!validation.isValid) {
           cliLogger.error("❌ Configuration validation failed");
           validation.errors.forEach((error) => cliLogger.error(`  • ${error}`));
           if (validation.suggestions.length > 0) {
@@ -395,8 +395,8 @@ const argv = await yargs(hideBin(process.argv))
           );
         }
 
-        if (validation.recommendations.length > 0) {
-          validation.recommendations.forEach((rec) =>
+        if (validation.suggestions.length > 0) {
+          validation.suggestions.forEach((rec) =>
             cliLogger.info(`💡 ${rec}`),
           );
         }
@@ -677,7 +677,7 @@ const argv = await yargs(hideBin(process.argv))
           const configData = JSON.parse(readFileSync(configPath, "utf8"));
           const validation = validateProductionConfig(configData);
 
-          if (validation.valid) {
+          if (validation.isValid) {
             cliLogger.info("✅ Configuration is valid");
           } else {
             cliLogger.error("❌ Configuration validation failed");
@@ -689,7 +689,7 @@ const argv = await yargs(hideBin(process.argv))
           validation.warnings.forEach((warning) =>
             cliLogger.warn(`⚠️  ${warning}`),
           );
-          validation.recommendations.forEach((rec) =>
+          validation.suggestions.forEach((rec) =>
             cliLogger.info(`💡 ${rec}`),
           );
 
@@ -1200,7 +1200,7 @@ const argv = await yargs(hideBin(process.argv))
               cliLogger.info("🔍 Discovering plugins");
 
               const { createPluginManager, createDefaultDiscoveryOptions } =
-                await import("../src/core/pluginManager.ts");
+                await import("../src/core/pluginManager");
               const pluginManager = createPluginManager();
 
               const options = createDefaultDiscoveryOptions();

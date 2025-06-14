@@ -14,20 +14,20 @@
 import { readdir, stat } from "fs/promises";
 import { join, dirname } from "path";
 import { pathToFileURL } from "url";
-import { createLogger } from "../logger.ts";
-import { isEnigmaPlugin, validatePluginConfig } from "./postcssPlugin.ts";
+import { createLogger } from "../logger";
+import { isEnigmaPlugin, validatePluginConfig } from "./postcssPlugin";
 import {
   PluginSandbox,
   createPluginSandbox,
   PluginPermission,
   type SandboxConfig,
-} from "../security/pluginSandbox.ts";
+} from "../security/pluginSandbox";
 import {
   PluginErrorHandler,
   createPluginErrorHandler,
   type ErrorHandlerConfig,
   type PluginHealth,
-} from "../errorHandler/pluginErrorHandler.ts";
+} from "../errorHandler/pluginErrorHandler";
 import type {
   PluginManager,
   EnigmaPlugin,
@@ -35,7 +35,7 @@ import type {
   ValidationResult,
   PluginDiscoveryOptions,
   PluginResult,
-} from "../types/plugins.ts";
+} from "../types/plugins";
 
 const logger = createLogger("plugin-manager");
 

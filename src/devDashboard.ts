@@ -7,12 +7,12 @@
 
 import { EventEmitter } from "events";
 import { createServer, Server } from "http";
-import { createLogger, Logger } from "./logger.ts";
-import { EnigmaConfig } from "./config.ts";
-import { DevDiagnostics, DevPerformanceMetrics } from "./devDiagnostics.ts";
-import { DevPreview } from "./devPreview.ts";
-import { DebugUtils } from "./debugUtils.ts";
-import { SourceMapGenerator } from "./sourceMapGenerator.ts";
+import { createLogger, Logger } from "./logger";
+import { EnigmaConfig } from "./config";
+import { DevDiagnostics, DevPerformanceMetrics } from "./devDiagnostics";
+import { DevPreview } from "./devPreview";
+import { DebugUtils } from "./debugUtils";
+import { SourceMapGenerator } from "./sourceMapGenerator";
 
 /**
  * Dashboard configuration

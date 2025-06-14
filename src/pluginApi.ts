@@ -11,15 +11,15 @@
  */
 
 import { z } from "zod";
-import { createLogger } from "./logger.ts";
-import { EnigmaPostCSSProcessor } from "./postcssIntegration.ts";
+import { createLogger } from "./logger";
+import { EnigmaPostCSSProcessor } from "./postcssIntegration";
 import {
   createPluginManager,
   createDefaultDiscoveryOptions,
-} from "./core/pluginManager.ts";
-import { createTailwindOptimizer } from "./core/plugins/tailwindOptimizer.ts";
-import { createCssMinifier } from "./core/plugins/cssMinifier.ts";
-import { createSourceMapper } from "./core/plugins/sourceMapper.ts";
+} from "./core/pluginManager";
+import { createTailwindOptimizer } from "./core/plugins/tailwindOptimizer";
+import { createCssMinifier } from "./core/plugins/cssMinifier";
+import { createSourceMapper } from "./core/plugins/sourceMapper";
 import type {
   PluginManager,
   EnigmaPlugin,
@@ -27,11 +27,11 @@ import type {
   ProcessorConfig,
   ProcessingResult,
   ValidationResult,
-} from "./types/plugins.ts";
-import type { EnigmaConfig } from "./config.ts";
+} from "./types/plugins";
+import type { EnigmaConfig } from "./config";
 import type {
   FrequencyAnalysisResult,
-} from "./patternAnalysis.ts";
+} from "./patternAnalysis";
 
 const logger = createLogger("plugin-api");
 

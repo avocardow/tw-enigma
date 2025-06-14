@@ -12,10 +12,10 @@
 
 import { z } from "zod";
 import { EventEmitter } from "events";
-import { createLogger } from "../logger.ts";
+import { createLogger } from "../logger";
 import type {
   PluginResult,
-} from "../types/plugins.ts";
+} from "../types/plugins";
 
 /**
  * Error categories for classification
