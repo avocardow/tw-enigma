@@ -116,7 +116,7 @@ export class ConfigDetector {
         await access(packageJsonPath);
         const packageContent = await readFile(packageJsonPath, "utf-8");
         JSON.parse(packageContent); // Validate JSON syntax
-      } catch (_error) {
+      } catch (_) {
         if (error instanceof SyntaxError) {
           // Invalid JSON is a critical error that should prevent initialization
           throw new Error(`Invalid JSON in package.json: ${error.message}`);
@@ -142,7 +142,7 @@ export class ConfigDetector {
             framework,
           );
           result.detected.push(...configs);
-        } catch (_error) {
+        } catch (_) {
           logger.warn(`Error detecting ${pattern.buildTool}`, { error });
           result.warnings.push(
             `Failed to detect ${pattern.buildTool}: ${error instanceof Error ? error.message : String(error)}`,
@@ -170,7 +170,7 @@ export class ConfigDetector {
         recommended: result.recommended?.buildTool,
         framework: framework?.name,
       });
-    } catch (_error) {
+    } catch (_) {
       logger.error("Configuration detection failed", { error });
       result.errors.push(
         `Configuration detection failed: ${error instanceof Error ? error.message : String(error)}`,
@@ -312,7 +312,7 @@ export class ConfigDetector {
             framework,
           });
         }
-      } catch (_error) {
+      } catch (_) {
         // Log JSON parsing errors but don't fail the entire detection
         if (error instanceof SyntaxError) {
           logger.warn(`Invalid JSON in package.json: ${error.message}`);
@@ -356,7 +356,7 @@ export class ConfigDetector {
         confidence: 0.9,
         source: "config-file",
       };
-    } catch (_error) {
+    } catch (_) {
       logger.warn("Failed to parse webpack config", { configPath, error });
       return null;
     }
@@ -392,7 +392,7 @@ export class ConfigDetector {
         confidence: 0.95,
         source: "config-file",
       };
-    } catch (_error) {
+    } catch (_) {
       logger.warn("Failed to parse vite config", { configPath, error });
       return null;
     }
@@ -423,7 +423,7 @@ export class ConfigDetector {
         confidence: 0.95,
         source: "config-file",
       };
-    } catch (_error) {
+    } catch (_) {
       logger.warn("Failed to parse next.js config", { configPath, error });
       return null;
     }
@@ -452,7 +452,7 @@ export class ConfigDetector {
         confidence: 0.85,
         source: "config-file",
       };
-    } catch (_error) {
+    } catch (_) {
       logger.warn("Failed to parse esbuild config", { configPath, error });
       return null;
     }
@@ -481,7 +481,7 @@ export class ConfigDetector {
         confidence: 0.85,
         source: "config-file",
       };
-    } catch (_error) {
+    } catch (_) {
       logger.warn("Failed to parse rollup config", { configPath, error });
       return null;
     }
@@ -510,7 +510,7 @@ export class ConfigDetector {
         confidence: 0.8,
         source: "config-file",
       };
-    } catch (_error) {
+    } catch (_) {
       logger.warn("Failed to parse parcel config", { configPath, error });
       return null;
     }

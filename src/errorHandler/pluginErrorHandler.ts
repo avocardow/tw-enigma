@@ -190,7 +190,7 @@ class PluginCircuitBreaker {
       this.recordSuccess(responseTime);
 
       return result;
-    } catch (_error) {
+    } catch (_) {
       this.recordFailure();
       throw error;
     }
@@ -328,7 +328,7 @@ export class PluginErrorHandler extends EventEmitter {
       const result = await circuitBreaker.execute(operation);
       this.recordSuccess(pluginName);
       return result;
-    } catch (_error) {
+    } catch (_) {
       const pluginError = this.createPluginError(pluginName, error, retryCount);
       this.recordError(pluginName, pluginError);
 

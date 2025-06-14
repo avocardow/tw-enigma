@@ -197,7 +197,7 @@ export class StreamOptimizer extends EventEmitter {
         data: results,
         stats,
       };
-    } catch (_error) {
+    } catch (_) {
       stats.errorCount++;
       stats.endTime = performance.now();
       this.activeStreams.delete(streamId);
@@ -285,7 +285,7 @@ export class StreamOptimizer extends EventEmitter {
             }
 
             callback(null, processed);
-          } catch (_error) {
+          } catch (_) {
             stats.errorCount++;
             callback(error instanceof Error ? error : new Error(String(error)));
           }
@@ -330,7 +330,7 @@ export class StreamOptimizer extends EventEmitter {
         data: result,
         stats,
       };
-    } catch (_error) {
+    } catch (_) {
       stats.errorCount++;
       stats.endTime = performance.now();
       this.activeStreams.delete(streamId);
@@ -419,7 +419,7 @@ export class StreamOptimizer extends EventEmitter {
             }
 
             return { success: true as const, result, filePath };
-          } catch (_error) {
+          } catch (_) {
             stats.errorCount++;
             logger.error("File processing failed in batch", {
               filePath,
@@ -448,7 +448,7 @@ export class StreamOptimizer extends EventEmitter {
           } else {
             // Promise.allSettled rejection (shouldn't happen with our error handling)
             stats.errorCount++;
-            const _error = new Error(
+            const _ = new Error(
               `Batch processing failed: ${settledResult.reason}`,
             );
             errors.push(error);
@@ -477,7 +477,7 @@ export class StreamOptimizer extends EventEmitter {
         data: results,
         stats,
       };
-    } catch (_error) {
+    } catch (_) {
       stats.errorCount++;
       stats.endTime = performance.now();
       this.activeStreams.delete(streamId);
@@ -583,7 +583,7 @@ export class StreamOptimizer extends EventEmitter {
           }
 
           callback(null, result);
-        } catch (_error) {
+        } catch (_) {
           callback(error instanceof Error ? error : new Error(String(error)));
         }
       },
@@ -635,7 +635,7 @@ export class StreamOptimizer extends EventEmitter {
           const content = Buffer.concat(chunks);
           const result = await processor(filePath, content);
           resolve(result);
-        } catch (_error) {
+        } catch (_) {
           reject(error);
         }
       });

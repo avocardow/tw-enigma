@@ -368,7 +368,7 @@ describe("StreamOptimizer", () => {
 
       try {
         await streamOptimizer.processFile("non-existent-file.txt", []);
-      } catch (_error) {
+      } catch (_) {
         // Error expected
       }
 

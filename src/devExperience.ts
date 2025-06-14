@@ -274,7 +274,7 @@ export class DevExperienceManager extends EventEmitter {
         url: this.tools.dashboard && this.enigmaConfig.dev?.dashboard ? `http://${this.enigmaConfig.dev.dashboard.host}:${this.enigmaConfig.dev.dashboard.port}` : undefined,
       });
 
-    } catch (_error) {
+    } catch (_) {
       // Reset state on failure
       this.isActive = false;
       this.state.isActive = false;
@@ -334,7 +334,7 @@ export class DevExperienceManager extends EventEmitter {
 
       this.logger.info("Development experience stopped", { tools: stoppedTools });
 
-    } catch (_error) {
+    } catch (_) {
       this.logger.error("Error stopping development experience", { error });
       throw error;
     }
@@ -540,7 +540,7 @@ export class DevExperienceManager extends EventEmitter {
       if (this.config.enableSourceMaps) {
         this.tools.sourceMap = new SourceMapGenerator();
       }
-    } catch (_error) {
+    } catch (_) {
       this.logger.warn("Some tools failed to initialize", { error });
     }
 
@@ -594,7 +594,7 @@ export class DevExperienceManager extends EventEmitter {
             },
           } as any
         );
-      } catch (_error) {
+      } catch (_) {
         this.logger.warn("Enhanced dashboard failed to initialize", { error });
       }
     }
@@ -611,7 +611,7 @@ export class DevExperienceManager extends EventEmitter {
           },
         } as any
       );
-    } catch (_error) {
+    } catch (_) {
       this.logger.warn("Hot reload failed to initialize", { error });
     }
 
@@ -627,7 +627,7 @@ export class DevExperienceManager extends EventEmitter {
           },
         } as any
       );
-    } catch (_error) {
+    } catch (_) {
       this.logger.warn("IDE integration failed to initialize", { error });
     }
 
@@ -688,7 +688,7 @@ export class DevExperienceManager extends EventEmitter {
         this.state = { ...this.state, ...savedState };
         this.logger.debug("Previous state loaded", { stateFile: this.stateFile });
       }
-    } catch (_error) {
+    } catch (_) {
       this.logger.warn("Failed to load previous state", { error, stateFile: this.stateFile });
     }
   }
@@ -701,7 +701,7 @@ export class DevExperienceManager extends EventEmitter {
       await mkdir(dirname(this.stateFile), { recursive: true });
       await writeFile(this.stateFile, JSON.stringify(this.state, null, 2));
       this.logger.debug("State saved", { stateFile: this.stateFile });
-    } catch (_error) {
+    } catch (_) {
       this.logger.warn("Failed to save state", { error, stateFile: this.stateFile });
     }
   }

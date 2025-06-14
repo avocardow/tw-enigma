@@ -219,7 +219,7 @@ export class PerformanceValidator extends EventEmitter {
       
       return metrics;
       
-    } catch (_error) {
+    } catch (_) {
       this.emit('analysis:error', error);
       logger.error('Performance analysis failed:', error instanceof Error ? { message: error.message, stack: error.stack } : { error: String(error) });
       throw error;

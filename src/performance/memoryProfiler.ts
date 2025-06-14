@@ -405,7 +405,7 @@ export class MemoryProfiler extends EventEmitter {
       const snapshot = v8.writeHeapSnapshot();
       this.emit("heapSnapshotGenerated", snapshot);
       return snapshot;
-    } catch (_error) {
+    } catch (_) {
       this.emit("error", { type: "heap_snapshot_error", error });
       throw error;
     }
@@ -502,7 +502,7 @@ export class MemoryProfiler extends EventEmitter {
       });
 
       this.gcObserver.observe({ entryTypes: ["gc"] });
-    } catch (_error) {
+    } catch (_) {
       this.emit(
         "warning",
         "GC observation not available in this Node.js version",

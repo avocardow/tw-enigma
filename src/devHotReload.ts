@@ -246,7 +246,7 @@ export class DevHotReload extends EventEmitter {
         wsUrl: this.config.notifyBrowser ? `ws://${this.config.host}:${this.config.port}` : undefined,
       });
 
-    } catch (_error) {
+    } catch (_) {
       this.logger.error("Failed to start hot reload system", { error });
       throw error;
     }
@@ -287,7 +287,7 @@ export class DevHotReload extends EventEmitter {
       for (const [clientId, client] of this.clients) {
         try {
           client.socket.close();
-        } catch (_error) {
+        } catch (_) {
           this.logger.debug("Error closing client connection", { clientId, error });
         }
       }
@@ -295,7 +295,7 @@ export class DevHotReload extends EventEmitter {
 
       this.logger.info("Hot reload system stopped");
 
-    } catch (_error) {
+    } catch (_) {
       this.logger.error("Error stopping hot reload system", { error });
       throw error;
     }
@@ -531,7 +531,7 @@ export class DevHotReload extends EventEmitter {
         default:
           this.logger.debug("Unknown client message type", { clientId, type: message.type });
       }
-    } catch (_error) {
+    } catch (_) {
       this.logger.debug("Error parsing client message", { clientId, error });
     }
   }
@@ -562,7 +562,7 @@ export class DevHotReload extends EventEmitter {
         }
         
         this.fileHashes.set(path, hash);
-      } catch (_error) {
+      } catch (_) {
         this.logger.debug("Error reading file for change detection", { path, error });
         return;
       }
@@ -705,7 +705,7 @@ export class DevHotReload extends EventEmitter {
 
       return result;
 
-    } catch (_error) {
+    } catch (_) {
       this.logger.error("Optimization failed", { files, trigger, error });
       this.emit('optimization-failed', error as Error, files);
       return null;
@@ -761,7 +761,7 @@ export class DevHotReload extends EventEmitter {
 
     try {
       client.socket.send(JSON.stringify({ type, data, timestamp: Date.now() }));
-    } catch (_error) {
+    } catch (_) {
       this.logger.debug("Error sending message to client", { clientId, error });
     }
   }
@@ -776,7 +776,7 @@ export class DevHotReload extends EventEmitter {
       if (client.socket.readyState === 1) {
         try {
           client.socket.send(message);
-        } catch (_error) {
+        } catch (_) {
           this.logger.debug("Error broadcasting to client", { clientId, error });
         }
       }

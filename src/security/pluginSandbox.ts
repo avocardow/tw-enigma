@@ -276,7 +276,7 @@ export class PluginSandbox extends EventEmitter {
       }
       
       return result as T;
-    } catch (_error) {
+    } catch (_) {
       this.handleSecurityViolation(context, _error);
       throw error;
     }
@@ -383,7 +383,7 @@ export class PluginSandbox extends EventEmitter {
         // For basic isolation, run with blocked require and fs
         return await operation();
       }
-    } catch (_error) {
+    } catch (_) {
       const err = error as Error;
       this.logger.error(`Sandbox execution failed for ${context.pluginName}`, {
         error: err.message,
@@ -431,7 +431,7 @@ export class PluginSandbox extends EventEmitter {
         this.logger.debug(
           `Closing file descriptor ${fd} for plugin ${context.pluginName}`,
         );
-      } catch (_error) {
+      } catch (_) {
         this.logger.warn(`Failed to close file descriptor ${fd}`, { error });
       }
     }
