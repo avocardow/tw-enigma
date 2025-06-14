@@ -198,7 +198,7 @@ export class EnigmaVitePlugin implements BuildToolPlugin {
     // Already handled in constructor
   }
 
-  createPlugin(_context: PluginContext): PostCSSPlugin {
+  createPlugin(context: PluginContext): PostCSSPlugin {
     const plugin = {
       postcssPlugin: this.name,
       Once: async (root: any, { result }: { result: any }) => {
@@ -602,7 +602,7 @@ if (import.meta.hot) {
       context.metrics.phaseTimings.development = performance.now();
     },
 
-    onHMRUpdate: async (update: HMRUpdate, _context: BuildToolContext) => {
+    onHMRUpdate: async (update: HMRUpdate, context: BuildToolContext) => {
       logger.debug("Vite HMR update", {
         type: update.type,
         filePath: update.filePath,

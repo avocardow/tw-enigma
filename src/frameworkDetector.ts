@@ -183,7 +183,7 @@ export class FrameworkDetector {
       // Run all detectors
       const detectionPromises = Array.from(this.detectors.values())
         .filter((detector) => detector.canDetect(context))
-        .map((detector) => this.runDetector(detector, _context));
+        .map((detector) => this.runDetector(detector, context));
 
       const detectorResults = await Promise.allSettled(detectionPromises);
 

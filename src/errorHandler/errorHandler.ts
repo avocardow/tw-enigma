@@ -180,7 +180,7 @@ export class ErrorHandler extends EventEmitter {
       // Use circuit breaker for recovery attempts
       if (recoveryStrategy) {
         await circuit.call(
-          () => this.executeRecoveryStrategy(recoveryStrategy, error, _context),
+          () => this.executeRecoveryStrategy(recoveryStrategy, error, context),
           undefined, // No fallback for recovery attempts
           context,
         );
@@ -272,10 +272,10 @@ export class ErrorHandler extends EventEmitter {
     try {
       switch (strategy.type) {
         case "retry":
-          return await this.executeRetryStrategy(strategy, error, _context);
+          return await this.executeRetryStrategy(strategy, error, context);
 
         case "fallback":
-          return await this.executeFallbackStrategy(strategy, error, _context);
+          return await this.executeFallbackStrategy(strategy, error, context);
 
         case "circuit-breaker":
           // Circuit breaker is handled at a higher level

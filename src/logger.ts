@@ -524,13 +524,13 @@ export class Logger {
       message += ` → ${details.result}`;
     }
 
-    this.trace(message, _context);
+    this.trace(message, context);
   }
 
   /**
    * Log step-by-step process details
    */
-  processStep(step: string, details?: string, _context?: ErrorContext): void {
+  processStep(step: string, details?: string, context?: ErrorContext): void {
     if (!this.verbose) return;
 
     let message = `🔄 ${step}`;
@@ -538,7 +538,7 @@ export class Logger {
       message += `: ${details}`;
     }
 
-    this.debug(message, _context);
+    this.debug(message, context);
   }
 
   /**

@@ -1229,7 +1229,7 @@ export class JSRewriter {
       matches: PatternMatch[];
       severity: "low" | "medium" | "high";
     }>,
-    _context: JSReplacementContext,
+    context: JSReplacementContext,
   ): PatternMatch[] {
     if (conflicts.length === 0) {
       return matches;
@@ -1241,11 +1241,11 @@ export class JSRewriter {
       case "priority":
         return this.resolvePriorityStrategy(matches, conflicts);
       case "merge":
-        return this.resolveMergeStrategy(matches, conflicts, _context);
+        return this.resolveMergeStrategy(matches, conflicts, context);
       case "split":
         return this.resolveSplitStrategy(matches, conflicts);
       case "auto":
-        return this.resolveAutoStrategy(matches, conflicts, _context);
+        return this.resolveAutoStrategy(matches, conflicts, context);
       default:
         return this.resolvePriorityStrategy(matches, conflicts);
     }
@@ -1308,7 +1308,7 @@ export class JSRewriter {
       matches: PatternMatch[];
       severity: "low" | "medium" | "high";
     }>,
-    _context: JSReplacementContext,
+    context: JSReplacementContext,
   ): PatternMatch[] {
     // For now, fall back to priority strategy for complex merging
     // This can be enhanced in the future with more sophisticated merging logic
@@ -1341,7 +1341,7 @@ export class JSRewriter {
       matches: PatternMatch[];
       severity: "low" | "medium" | "high";
     }>,
-    _context: JSReplacementContext,
+    context: JSReplacementContext,
   ): PatternMatch[] {
     // Auto strategy logic:
     // - Identical conflicts: Use priority
@@ -1452,7 +1452,7 @@ export class JSRewriter {
    */
   private setupErrorHandling(): void {
     if (!this.config.errorHandling.onError) {
-      this.config.errorHandling.onError = (error, _context) => {
+      this.config.errorHandling.onError = (error, context) => {
         console.error(
           `Error in ${context.phase} for ${context.filePath}:`,
           error.message,
@@ -1875,7 +1875,7 @@ export class JSRewriter {
     const originalValue = stringNode.value || "";
 
     for (const rule of this.getApplicableRules(context)) {
-      const ruleMatches = this.findPatternMatches(originalValue, rule, _context);
+      const ruleMatches = this.findPatternMatches(originalValue, rule, context);
 
       for (const match of ruleMatches) {
         if (this.validateReplacementContext(match, context, attributePath)) {
@@ -2008,7 +2008,7 @@ export class JSRewriter {
         let replacement: string;
         if (typeof rule.replacement === "function") {
           try {
-            replacement = rule.replacement(matchedText, _context);
+            replacement = rule.replacement(matchedText, context);
           } catch (error) {
             // Collect error for reporting
             if (errors) {

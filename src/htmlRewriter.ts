@@ -1683,12 +1683,12 @@ export class HtmlRewriter {
     matched: string,
     pattern: HtmlPattern,
     element: cheerio.Cheerio<any>,
-    _context: any,
+    context: any,
   ): string {
     let replacement: string;
 
     if (typeof pattern.replacement === "function") {
-      replacement = pattern.replacement(matched, element, _context);
+      replacement = pattern.replacement(matched, element, context);
     } else {
       replacement = pattern.replacement;
     }

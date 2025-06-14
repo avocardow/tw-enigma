@@ -151,7 +151,7 @@ export abstract class BaseEnigmaPlugin implements EnigmaPlugin {
 
           try {
             context.metrics.startTimer("plugin-execution");
-            await handler(root, _context);
+            await handler(root, context);
             const duration = context.metrics.endTimer("plugin-execution");
 
             if (pluginLogger) {

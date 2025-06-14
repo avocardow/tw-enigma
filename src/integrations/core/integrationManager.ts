@@ -375,7 +375,7 @@ export class IntegrationManager extends EventEmitter {
         ...options,
       };
 
-      this.activeContexts.set(buildTool, _context);
+      this.activeContexts.set(buildTool, context);
       this.emit("build-started", { context });
 
       // Execute build with relevant plugins
@@ -482,9 +482,9 @@ export class IntegrationManager extends EventEmitter {
           for (const plugin of relevantPlugins) {
             // Check for both onFileChange (test mock) and onHMRUpdate (real plugin) hooks
             if (plugin.hooks.onFileChange) {
-              await plugin.hooks.onFileChange(filePath, _context);
+              await plugin.hooks.onFileChange(filePath, context);
             } else if (plugin.hooks.onHMRUpdate) {
-              await plugin.hooks.onHMRUpdate(filePath, _context);
+              await plugin.hooks.onHMRUpdate(filePath, context);
             }
           }
 

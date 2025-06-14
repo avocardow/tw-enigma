@@ -10,6 +10,7 @@ import { z } from "zod";
 import { createHash } from "crypto";
 import {
   writeFile,
+  readFile,
   access,
   stat,
   copyFile,

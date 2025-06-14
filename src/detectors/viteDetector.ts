@@ -20,7 +20,7 @@ export class ViteDetector implements IFrameworkDetector {
   readonly frameworkType: FrameworkType = "vite";
   readonly name = "Vite Detector";
 
-  canDetect(_context: DetectionContext): boolean {
+  canDetect(context: DetectionContext): boolean {
     // Can always attempt Vite detection
     return true;
   }

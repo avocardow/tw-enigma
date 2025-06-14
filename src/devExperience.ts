@@ -657,7 +657,7 @@ export class DevExperienceManager extends EventEmitter {
     });
 
     // Handle errors
-    this.on('error-detected', (error, _context) => {
+    this.on('error-detected', (error, context) => {
       this.state.metrics.totalErrors++;
       this.sendNotification('error', `Error in ${context}: ${error.message}`, {
         error: error.message,

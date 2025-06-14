@@ -443,7 +443,7 @@ export const ErrorUtils = {
   wrapUnknownError(
     error: unknown,
     operation: string,
-    _context?: ErrorContext,
+    context?: ErrorContext,
   ): EnigmaError {
     if (error instanceof EnigmaError) {
       return error;
@@ -453,7 +453,7 @@ export const ErrorUtils = {
       return new (class UnknownError extends EnigmaError {})(
         `Unknown error in ${operation}: ${error.message}`,
         "UNKNOWN_ERROR",
-        { ..._context, operation },
+        { ...context, operation },
         error,
       );
     }
@@ -461,7 +461,7 @@ export const ErrorUtils = {
     return new (class UnknownError extends EnigmaError {})(
       `Unknown error in ${operation}: ${String(error)}`,
       "UNKNOWN_ERROR",
-      { ..._context, operation },
+      { ...context, operation },
     );
   },
 };

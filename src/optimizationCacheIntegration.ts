@@ -162,7 +162,7 @@ export class OptimizationCacheIntegration extends EventEmitter {
       bypassCache: options.bypassCache,
     };
 
-    this.activeOperations.set(operationId, _context);
+    this.activeOperations.set(operationId, context);
 
     try {
       // Check if cache should be bypassed
@@ -236,7 +236,7 @@ export class OptimizationCacheIntegration extends EventEmitter {
       startTime,
     };
 
-    this.activeOperations.set(operationId, _context);
+    this.activeOperations.set(operationId, context);
 
     try {
       // Check if cache is available

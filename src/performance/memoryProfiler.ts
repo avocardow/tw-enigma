@@ -242,8 +242,8 @@ export class MemoryProfiler extends EventEmitter {
       mallocedMemory: v8Stats.malloced_memory,
       peakMallocedMemory: v8Stats.peak_malloced_memory,
       doesZapGarbage: v8Stats.does_zap_garbage,
-      numberOfNativeContexts: v8Stats.number_of_native_contexts,
-      numberOfDetachedContexts: v8Stats.number_of_detached_contexts,
+      numberOfNativeContexts: v8Stats.number_of_nativecontexts,
+      numberOfDetachedContexts: v8Stats.number_of_detachedcontexts,
     };
   }
 

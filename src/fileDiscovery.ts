@@ -279,7 +279,7 @@ export function discoverFilesSync(
 
     // Apply file type filtering
     const filteredFiles = allFiles.filter((file) =>
-      shouldIncludeFile(file, _options),
+      shouldIncludeFile(file, options),
     );
 
     // Apply max files limit
@@ -370,7 +370,7 @@ export async function discoverFiles(
 
     // Apply file type filtering
     const filteredFiles = allFiles.filter((file) =>
-      shouldIncludeFile(file, _options),
+      shouldIncludeFile(file, options),
     );
 
     // Apply max files limit

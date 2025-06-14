@@ -99,7 +99,7 @@ export class MyCustomPlugin extends BaseEnigmaPlugin {
    * Validate plugin configuration
    * This method is called to ensure the plugin is properly configured
    */
-  async validate(_context: EnigmaPluginContext): Promise<boolean> {
+  async validate(context: EnigmaPluginContext): Promise<boolean> {
     this.logger.debug("Validating plugin configuration");
 
     // Implement validation logic here

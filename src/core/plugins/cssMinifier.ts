@@ -57,32 +57,32 @@ export class CssMinifier extends BaseEnigmaPlugin {
       try {
         // Remove comments
         if (config.removeComments) {
-          this.removeComments(root, _context);
+          this.removeComments(root, context);
         }
 
         // Optimize declarations
         if (config.optimizeDeclarations) {
-          this.optimizeDeclarations(root, _context);
+          this.optimizeDeclarations(root, context);
         }
 
         // Compress colors
         if (config.compressColors) {
-          this.compressColors(root, _context);
+          this.compressColors(root, context);
         }
 
         // Compress numbers
         if (config.compressNumbers) {
-          this.compressNumbers(root, _context);
+          this.compressNumbers(root, context);
         }
 
         // Remove empty rules
         if (config.removeEmptyRules) {
-          this.removeEmptyRules(root, _context);
+          this.removeEmptyRules(root, context);
         }
 
         // Merge duplicate rules (if enabled)
         if (config.mergeRules) {
-          this.mergeDuplicateRules(root, _context);
+          this.mergeDuplicateRules(root, context);
         }
 
         const endMemory = this.getMemoryUsage();
@@ -103,7 +103,7 @@ export class CssMinifier extends BaseEnigmaPlugin {
   /**
    * Remove comments from CSS
    */
-  private removeComments(root: Root, _context: PluginContext): void {
+  private removeComments(root: Root, context: PluginContext): void {
     let removedCount = 0;
 
     root.walkComments((comment: Comment) => {
@@ -123,7 +123,7 @@ export class CssMinifier extends BaseEnigmaPlugin {
   /**
    * Optimize CSS declarations
    */
-  private optimizeDeclarations(root: Root, _context: PluginContext): void {
+  private optimizeDeclarations(root: Root, context: PluginContext): void {
     let optimizedCount = 0;
 
     root.walkDecls((decl: Declaration) => {
@@ -165,7 +165,7 @@ export class CssMinifier extends BaseEnigmaPlugin {
   /**
    * Compress color values
    */
-  private compressColors(root: Root, _context: PluginContext): void {
+  private compressColors(root: Root, context: PluginContext): void {
     let compressedCount = 0;
 
     root.walkDecls((decl: Declaration) => {
@@ -225,7 +225,7 @@ export class CssMinifier extends BaseEnigmaPlugin {
   /**
    * Compress numeric values
    */
-  private compressNumbers(root: Root, _context: PluginContext): void {
+  private compressNumbers(root: Root, context: PluginContext): void {
     let compressedCount = 0;
 
     root.walkDecls((decl: Declaration) => {
@@ -256,7 +256,7 @@ export class CssMinifier extends BaseEnigmaPlugin {
   /**
    * Remove empty rules
    */
-  private removeEmptyRules(root: Root, _context: PluginContext): void {
+  private removeEmptyRules(root: Root, context: PluginContext): void {
     let removedCount = 0;
 
     root.walkRules((rule: Rule) => {
@@ -289,7 +289,7 @@ export class CssMinifier extends BaseEnigmaPlugin {
   /**
    * Merge duplicate rules with identical selectors
    */
-  private mergeDuplicateRules(root: Root, _context: PluginContext): void {
+  private mergeDuplicateRules(root: Root, context: PluginContext): void {
     const rulesBySelector = new Map<string, Rule[]>();
     let mergedCount = 0;
 

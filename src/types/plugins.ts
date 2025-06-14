@@ -326,14 +326,14 @@ export abstract class BaseEnigmaPlugin implements EnigmaPlugin {
   /**
    * Initialize the plugin - override in subclasses
    */
-  async initialize(_context: EnigmaPluginContext): Promise<void> {
+  async initialize(context: EnigmaPluginContext): Promise<void> {
     // Default implementation - override in subclasses
   }
 
   /**
    * Process CSS content - must be implemented by subclasses
    */
-  async processCss(css: string, _context: EnigmaPluginContext): Promise<string> {
+  async processCss(css: string, context: EnigmaPluginContext): Promise<string> {
     // Default implementation - override in subclasses
     return css;
   }
@@ -341,7 +341,7 @@ export abstract class BaseEnigmaPlugin implements EnigmaPlugin {
   /**
    * Validate plugin configuration - override in subclasses
    */
-  async validate(_context: EnigmaPluginContext): Promise<boolean> {
+  async validate(context: EnigmaPluginContext): Promise<boolean> {
     // Default implementation - override in subclasses
     return true;
   }

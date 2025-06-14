@@ -513,10 +513,10 @@ export function calculateRelativePath(
  */
 export function validatePath(
   inputPath: string,
-  _context = "path",
+  context = "path",
 ): PathValidationResult {
   const utils = createPathUtils();
-  return utils.validatePath(inputPath, _context);
+  return utils.validatePath(inputPath, context);
 }
 
 /**

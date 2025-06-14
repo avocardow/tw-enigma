@@ -20,7 +20,7 @@ export class ReactDetector implements IFrameworkDetector {
   readonly frameworkType: FrameworkType = "react";
   readonly name = "React Detector";
 
-  canDetect(_context: DetectionContext): boolean {
+  canDetect(context: DetectionContext): boolean {
     // Can always attempt React detection
     return true;
   }

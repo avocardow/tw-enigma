@@ -1248,7 +1248,7 @@ function handlePrettyNameExhaustion(
  */
 function enhanceNameAesthetics(
   name: string,
-  _options: NameGenerationOptions,
+  options: NameGenerationOptions,
 ): string {
   // Simple enhancement: try to add vowels or replace awkward combinations
   // This is a fallback, so we keep it simple
@@ -1388,7 +1388,7 @@ export function generateNextAvailableName(
 export function batchGenerateAvailableNames(
   count: number,
   cache: NameCollisionCache,
-  _options: NameGenerationOptions,
+  options: NameGenerationOptions,
 ): Array<{ name: string; index: number }> {
   if (count <= 0) {
     throw new NameGenerationError(`Invalid count: ${count}. Must be positive.`);
@@ -1398,7 +1398,7 @@ export function batchGenerateAvailableNames(
   const startTime = Date.now();
 
   for (let i = 0; i < count; i++) {
-    const result = generateNextAvailableName(cache, _options);
+    const result = generateNextAvailableName(cache, options);
     results.push(result);
 
     // Performance monitoring for large batches
@@ -1591,7 +1591,7 @@ export function createFrequencyBuckets(
     frequency: number;
     data: AggregatedClassData;
   }>,
-  _options: NameGenerationOptions,
+  options: NameGenerationOptions,
 ): FrequencyBucket[] {
   if (sortedClasses.length === 0) {
     return [];
@@ -2183,7 +2183,7 @@ function generateSequentialMapping(
   const cache = createNameCollisionCache(options);
 
   for (const className of classNames) {
-    const result = generateNextAvailableName(cache, _options);
+    const result = generateNextAvailableName(cache, options);
     nameMap.set(className, result.name);
   }
 
@@ -2198,7 +2198,7 @@ function generateHybridMapping(
   options: NameGenerationOptions,
 ): Map<string, string> {
   const nameMap = new Map<string, string>();
-  const sortedClasses = sortByFrequency(frequencyMap, _options);
+  const sortedClasses = sortByFrequency(frequencyMap, options);
 
   // Use frequency optimization for top 50%, sequential for rest
   const splitPoint = Math.floor(sortedClasses.length * 0.5);
@@ -2209,7 +2209,7 @@ function generateHybridMapping(
   const highFreqMap = new Map(
     highFrequencyClasses.map((item) => [item.name, item.data]),
   );
-  const optimizedMap = optimizeByFrequency(highFreqMap, _options);
+  const optimizedMap = optimizeByFrequency(highFreqMap, options);
 
   // Add to result
   for (const [className, optimizedName] of optimizedMap.entries()) {
@@ -2224,7 +2224,7 @@ function generateHybridMapping(
   }
 
   for (const item of lowFrequencyClasses) {
-    const result = generateNextAvailableName(cache, _options);
+    const result = generateNextAvailableName(cache, options);
     nameMap.set(item.name, result.name);
   }
 
@@ -2239,7 +2239,7 @@ function generatePrettyMapping(
   options: NameGenerationOptions,
 ): Map<string, string> {
   const nameMap = new Map<string, string>();
-  const sortedClasses = sortByFrequency(frequencyMap, _options);
+  const sortedClasses = sortByFrequency(frequencyMap, options);
 
   // Create a shared pretty name cache for efficient permutation management
   const prettyCache = createPrettyNameCache(
@@ -2285,7 +2285,7 @@ function generatePrettyMapping(
       }
 
       // Fallback to sequential generation
-      const fallbackResult = generateNextAvailableName(collisionCache, _options);
+      const fallbackResult = generateNextAvailableName(collisionCache, options);
       nameMap.set(classItem.name, fallbackResult.name);
       statistics.fallbackCount++;
       index++;

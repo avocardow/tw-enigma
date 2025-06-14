@@ -1149,7 +1149,7 @@ function convertTailwindColor(color: string): string {
 
 export function generateApplyDirective(
   classes: string[],
-  _options: CssGenerationOptions,
+  options: CssGenerationOptions,
 ): ApplyDirective {
   try {
     // Validate input
@@ -1171,7 +1171,7 @@ export function generateApplyDirective(
     const conflicts = detectClassConflicts(parsedClasses);
 
     // Optimize class order and grouping
-    const optimizedClasses = optimizeClassOrder(groupedClasses, _options);
+    const optimizedClasses = optimizeClassOrder(groupedClasses, options);
 
     // Generate the final @apply directive string
     const optimizedDirective = optimizedClasses.join(" ");
@@ -1268,7 +1268,7 @@ export function validateApplyDirective(
 
 export function optimizeApplyDirective(
   directive: ApplyDirective,
-  _options: CssGenerationOptions,
+  options: CssGenerationOptions,
 ): ApplyDirective {
   try {
     // Create optimized copy
@@ -3438,7 +3438,7 @@ export function integrateCssGeneration(
         },
       } as FrequencyAnalysisResult;
     } else {
-      // Standard format: 2 parameters (analysisResult, _options)
+      // Standard format: 2 parameters (analysisResult, options)
       analysisResult = analysisResultOrFrequencyMap as FrequencyAnalysisResult;
       options = optionsOrNameOptions as CssGenerationOptions;
     }
@@ -3489,7 +3489,7 @@ export function integrateCssGeneration(
     }
 
     // Generate CSS rules from patterns
-    const rules = generateCssRules(patterns, _options);
+    const rules = generateCssRules(patterns, options);
 
     // Sort rules according to strategy
     const sortedRules = sortCssRules(
@@ -3530,7 +3530,7 @@ export function integrateCssGeneration(
           options.commentLevel === "verbose"
             ? generateRuleComment(rule, "verbose")
             : "";
-        return ruleComment + formatCssRule(rule, _options);
+        return ruleComment + formatCssRule(rule, options);
       })
       .join("\n\n");
 
@@ -3722,7 +3722,7 @@ export function generateOptimizedCss(
     patterns = Array.from(frequencyMap.values());
     options = cssOptions;
   } else {
-    // Standard format: 2 parameters (patterns, _options)
+    // Standard format: 2 parameters (patterns, options)
     patterns = patternsOrFrequencyMap as AggregatedClassData[];
     options = (optionsOrNameOptions as Partial<CssGenerationOptions>) || {};
   }
@@ -4021,7 +4021,7 @@ export class EnhancedCSSGenerator {
    */
   private async generateBasicCSS(
     classFrequencies: Map<string, number>,
-    _options: CssGenerationOptions,
+    options: CssGenerationOptions,
   ): Promise<GeneratedCSS> {
     // Convert frequency map to patterns
     const patterns: AggregatedClassData[] = [];
@@ -4046,7 +4046,7 @@ export class EnhancedCSSGenerator {
     }
 
     // Generate CSS using existing logic
-    const result = generateOptimizedCss(patterns, _options);
+    const result = generateOptimizedCss(patterns, options);
 
     return {
       css: result.css,
@@ -4060,7 +4060,7 @@ export class EnhancedCSSGenerator {
    */
   private async processWithPostCSS(
     css: string,
-    _options: CssGenerationOptions,
+    options: CssGenerationOptions,
   ): Promise<{
     css: string;
     sourceMap?: any;
