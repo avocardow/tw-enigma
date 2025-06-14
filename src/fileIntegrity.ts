@@ -9,7 +9,6 @@
 import { z } from "zod";
 import { createHash } from "crypto";
 import {
-  readFile,
   writeFile,
   access,
   stat,
@@ -29,7 +28,7 @@ import {
   constants as zlibConstants,
 } from "zlib";
 import { EventEmitter } from "events";
-import { resolve, dirname, basename, extname, join } from "path";
+import { resolve, basename, extname, join } from "path";
 import { createLogger } from "./logger.ts";
 import { ConfigError } from "./errors.ts";
 import os from "os";
@@ -1758,7 +1757,7 @@ export class FileIntegrityValidator {
       // Check if file exists first
       try {
         await stat(resolvedPath);
-      } catch (_statError) {
+      } catch {
         const processingTime = Date.now() - startTime;
         return {
           deduplicated: false,
@@ -2030,7 +2029,7 @@ export class FileIntegrityValidator {
         chainLength: this.incrementalIndex.stats.chainLength,
         lastBackup: this.incrementalIndex.stats.lastBackupAt,
       });
-    } catch (_loadError) {
+    } catch {
       // Initialize new index if file doesn't exist
       this.incrementalIndex = {
         version: "1.0.0",
@@ -2600,12 +2599,13 @@ export class FileIntegrityValidator {
         case "mtime":
           hasChanged = fileStats.mtime > existingState.mtime;
           break;
-        case "checksum":
+        case "checksum": {
           const currentHash = await this.createContentHash(filePath);
           hasChanged =
             !existingState.contentHash ||
             currentHash !== existingState.contentHash;
           break;
+        }
         case "hybrid":
           if (fileStats.mtime > existingState.mtime) {
             const currentHash = await this.createContentHash(filePath);

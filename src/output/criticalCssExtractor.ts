@@ -5,8 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { readFile, writeFile } from "fs/promises";
-import { join, dirname, basename } from "path";
+import { writeFile } from "fs/promises";
+import { join, basename } from "path";
 import type { CssOutputConfig, CriticalCssConfig } from "./cssOutputConfig.ts";
 
 // Critical CSS Types
@@ -55,7 +55,7 @@ export class CriticalCssExtractor {
    */
   async extractCritical(
     css: string,
-    options: {
+    _options: {
       routes?: string[];
       viewport?: { width: number; height: number };
     } = {},

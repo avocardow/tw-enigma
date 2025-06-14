@@ -419,7 +419,7 @@ export class FrameworkDetector {
           // Continue on error
         }
       }
-    } catch (error) {
+    } catch {
       // Non-critical error - continue with empty patterns
     }
 
@@ -538,7 +538,7 @@ export class FrameworkDetector {
 
       // Additional detectors can be added here in the future
       // Vue, Angular, Svelte, etc.
-    } catch (_) {
+    } catch {
       // Continue without detectors if imports fail
     }
   }

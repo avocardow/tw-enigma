@@ -504,6 +504,7 @@ export class PluginMarketplace {
             return;
           }
 
+          // eslint-disable-next-line @typescript-eslint/no-require-imports
           const fileStream = require("fs").createWriteStream(targetPath);
           let downloadedSize = 0;
 
@@ -565,6 +566,7 @@ export class PluginMarketplace {
       // Clear require cache for fresh load
       delete require.cache[require.resolve(filePath)];
 
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const pluginModule = require(filePath);
       const plugin = pluginModule.default || pluginModule;
 

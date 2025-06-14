@@ -530,7 +530,7 @@ export class Logger {
   /**
    * Log step-by-step process details
    */
-  processStep(step: string, details?: string, context?: ErrorContext): void {
+  processStep(step: string, details?: string, _context?: ErrorContext): void {
     if (!this.verbose) return;
 
     let message = `🔄 ${step}`;
@@ -661,11 +661,11 @@ export class Logger {
     const context = entry.context
       ? JSON.stringify(entry.context).replace(/"/g, '""')
       : "";
-    const _ = entry.error
+    const errorMessage = entry.error
       ? `${entry.error.name}: ${entry.error.message}`.replace(/"/g, '""')
       : "";
 
-    return `"${timestamp}","${level}","${component}","${message}","${context}","${error}"`;
+    return `"${timestamp}","${level}","${component}","${message}","${context}","${errorMessage}"`;
   }
 
   /**
@@ -724,7 +724,7 @@ export class Logger {
     level: LogLevel,
     message: string,
     context?: ErrorContext,
-    error?: Error,
+    _error?: Error,
   ): void {
     if (!this.shouldLog(level)) return;
 
@@ -903,7 +903,7 @@ export const logger = new Logger({
  */
 export function createLogger(
   component: string,
-  options?: Partial<LoggerOptions>,
+  _options?: Partial<LoggerOptions>,
 ): Logger {
   return logger.child(component, _options);
 }

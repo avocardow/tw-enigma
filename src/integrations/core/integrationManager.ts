@@ -147,7 +147,7 @@ export class IntegrationManager extends EventEmitter {
           if (!stats.isDirectory()) {
             throw new Error(`Project root is not a directory: ${this.config.projectRoot}`);
           }
-        } catch (_statError) {
+        } catch {
           throw new Error(`Project root does not exist: ${this.config.projectRoot}`);
         }
       } else if (this.config.projectRoot === '/non-existent') {

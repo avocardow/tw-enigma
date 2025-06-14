@@ -331,7 +331,9 @@ export class DryRunSimulator {
   }
 
   private installFileSystemHooks(): void {
-    const fs = require("fs"); // eslint-disable-line @typescript-eslint/no-require-imports
+    // Dynamic require needed for runtime fs method interception
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const fs = require("fs");
     const originalMethods = new Map();
 
     // List of methods to intercept
@@ -372,7 +374,9 @@ export class DryRunSimulator {
   }
 
   private uninstallFileSystemHooks(): void {
-    const fs = require("fs"); // eslint-disable-line @typescript-eslint/no-require-imports
+    // Dynamic require needed for runtime fs method restoration
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const fs = require("fs");
     const originalMethods = (this as any)._originalMethods;
 
     if (originalMethods) {

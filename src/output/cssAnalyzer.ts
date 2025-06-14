@@ -203,7 +203,6 @@ export class CssAnalyzer {
       generateSourceMap?: boolean;
     } = {},
   ): Promise<CssAnalysisReport> {
-    const startTime = Date.now();
 
     // Analyze chunks
     const chunkAnalyses = await Promise.all(
@@ -324,7 +323,6 @@ export class CssAnalyzer {
 
     while ((match = selectorRegex.exec(css)) !== null) {
       const selector = match[1].trim();
-      const rules = match[2].trim();
 
       if (selector && !selector.startsWith("@")) {
         const count = selectorCounts.get(selector) || 0;
@@ -437,7 +435,7 @@ export class CssAnalyzer {
       }
     }
 
-    for (const [key, data] of ruleMap) {
+    for (const [, data] of ruleMap) {
       if (data.count > 1) {
         duplicates.push({
           selector: data.selector,
@@ -462,7 +460,7 @@ export class CssAnalyzer {
     specificity += (selector.match(/#/g) || []).length * 100;
 
     // Count classes, attributes, pseudo-classes (10 points each)
-    specificity += (selector.match(/[\.\[:](?!:)/g) || []).length * 10;
+    specificity += (selector.match(/[.\\[](?!:)/g) || []).length * 10;
 
     // Count elements and pseudo-elements (1 point each)
     specificity += (
