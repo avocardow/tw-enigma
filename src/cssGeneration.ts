@@ -1719,8 +1719,6 @@ export function classifyPattern(
 ): PatternClassification {
   try {
     // Handle different input formats
-    let _options: CssGenerationOptions;
-
     if (
       optionsOrContext &&
       typeof optionsOrContext === "object" &&
@@ -3396,7 +3394,6 @@ export function integrateCssGeneration(
 
     // Handle different input formats
     let analysisResult: FrequencyAnalysisResult;
-    let _options: CssGenerationOptions;
 
     if (cssOptions) {
       // Test format: 3 parameters (frequencyMap, nameOptions, cssOptions)
