@@ -662,6 +662,7 @@ export function calculateOptimalLength(
 
   const base = alphabet.length;
   let length = 1;
+  let totalCapacity = 0;
   const charactersPerLength: number[] = [];
 
   // Calculate capacity for each length until we can accommodate the count

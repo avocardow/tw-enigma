@@ -29,6 +29,11 @@ import type { CssChunk } from "./cssChunker";
 // =============================================================================
 
 /**
+ * Compression type options
+ */
+export type CompressionType = "gzip" | "brotli" | "auto";
+
+/**
  * Asset hash information
  */
 export interface AssetHash {

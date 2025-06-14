@@ -182,6 +182,36 @@ export const ChunkAnalysisOptionsSchema = z.object({
 
 export type ChunkAnalysisOptions = z.infer<typeof ChunkAnalysisOptionsSchema>;
 
+/**
+ * CSS chunking options
+ */
+export interface CssChunkingOptions {
+  /** Chunking strategy to use */
+  strategy: ChunkingStrategy;
+  /** Maximum chunk size in bytes */
+  maxChunkSize?: number;
+  /** Minimum chunk size in bytes */
+  minChunkSize?: number;
+  /** Enable chunk optimization */
+  optimize?: boolean;
+}
+
+/**
+ * CSS chunking result
+ */
+export interface CssChunkingResult {
+  /** Generated chunks */
+  chunks: CssChunk[];
+  /** Processing metadata */
+  metadata: {
+    totalSize: number;
+    chunkCount: number;
+    strategy: ChunkingStrategy;
+    processingTime: number;
+    averageChunkSize: number;
+  };
+}
+
 // =============================================================================
 // CSS DEPENDENCY GRAPH
 // =============================================================================
