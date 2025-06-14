@@ -1,6 +1,6 @@
 {
   "name": "tw-enigma",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A post-build optimizer for Tailwind CSS that bundles utility classes into single, obfuscated identifiers.",
   "author": "Rowan Cardow",
   "license": "MIT",
@@ -31,7 +31,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "enigma": "dist/bin/enigma.js"
+    "enigma": "dist/enigma.js"
   },
   "exports": {
     ".": {
