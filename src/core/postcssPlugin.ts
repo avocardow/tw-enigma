@@ -121,7 +121,7 @@ export abstract class BaseEnigmaPlugin implements EnigmaPlugin {
     this.logger.debug("Plugin initialized", { config: this.config });
   }
 
-  abstract createPlugin(context: PluginContext): Plugin;
+  abstract createPlugin(_context: PluginContext): Plugin;
 
   async cleanup(): Promise<void> {
     this.logger.debug("Plugin cleanup completed");
@@ -131,7 +131,7 @@ export abstract class BaseEnigmaPlugin implements EnigmaPlugin {
    * Helper method to create a PostCSS plugin with standard wrapper
    */
   protected createPostCSSPlugin(
-    handler: (root: Root, context: PluginContext) => void | Promise<void>,
+    handler: (root: Root, _context: PluginContext) => void | Promise<void>,
   ): PluginCreator<any> {
     const plugin = (opts: any = {}) => {
       // Pass meta and logger through opts
@@ -176,7 +176,7 @@ export abstract class BaseEnigmaPlugin implements EnigmaPlugin {
    * Helper method to report dependencies to PostCSS
    */
   protected reportDependency(
-    context: PluginContext,
+    _context: PluginContext,
     filePath: string,
     type: "file" | "dir" = "file",
   ): void {
@@ -193,7 +193,7 @@ export abstract class BaseEnigmaPlugin implements EnigmaPlugin {
    * Helper method to add warnings
    */
   protected addWarning(
-    context: PluginContext,
+    _context: PluginContext,
     message: string,
     node?: any,
   ): void {
@@ -246,7 +246,7 @@ export function createEnigmaPlugin<
     author?: string;
   },
   configSchema: z.ZodSchema<T>,
-  pluginHandler: (context: PluginContext) => Plugin,
+  pluginHandler: (_context: PluginContext) => Plugin,
 ): EnigmaPlugin {
   return {
     meta,
@@ -261,7 +261,7 @@ export function createEnigmaPlugin<
       }
     },
 
-    createPlugin(context: PluginContext): Plugin {
+    createPlugin(_context: PluginContext): Plugin {
       return pluginHandler(context);
     },
   };

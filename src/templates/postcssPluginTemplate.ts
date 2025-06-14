@@ -204,7 +204,7 @@ export class MyPostCSSPlugin extends BasePostCSSEnigmaPlugin {
   /**
    * Validate plugin configuration
    */
-  async validate(context: EnigmaPluginContext): Promise<boolean> {
+  async validate(_context: EnigmaPluginContext): Promise<boolean> {
     this.logger.debug("Validating PostCSS plugin configuration");
 
     try {

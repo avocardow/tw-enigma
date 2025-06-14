@@ -1308,7 +1308,7 @@ export class JSRewriter {
       matches: PatternMatch[];
       severity: "low" | "medium" | "high";
     }>,
-    context: JSReplacementContext,
+    _context: JSReplacementContext,
   ): PatternMatch[] {
     // For now, fall back to priority strategy for complex merging
     // This can be enhanced in the future with more sophisticated merging logic
@@ -1341,7 +1341,7 @@ export class JSRewriter {
       matches: PatternMatch[];
       severity: "low" | "medium" | "high";
     }>,
-    context: JSReplacementContext,
+    _context: JSReplacementContext,
   ): PatternMatch[] {
     // Auto strategy logic:
     // - Identical conflicts: Use priority

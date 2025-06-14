@@ -185,7 +185,7 @@ export class EnigmaWebpackPlugin
     // Already handled in constructor
   }
 
-  createPlugin(context: PluginContext): Plugin {
+  createPlugin(_context: PluginContext): Plugin {
     const plugin = {
       postcssPlugin: this.name,
       Once: async (root: any, { result }: { result: any }) => {
@@ -568,7 +568,7 @@ export class EnigmaWebpackPlugin
       context.metrics.phaseTimings.development = performance.now();
     },
 
-    onHMRUpdate: async (update: HMRUpdate, context: BuildToolContext) => {
+    onHMRUpdate: async (update: HMRUpdate, _context: BuildToolContext) => {
       logger.debug("Webpack HMR update", {
         type: update.type,
         filePath: update.filePath,

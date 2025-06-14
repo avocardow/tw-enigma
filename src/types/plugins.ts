@@ -121,13 +121,13 @@ export interface EnigmaPlugin {
   initialize?(config: PluginConfig | EnigmaPluginContext): Promise<void> | void;
 
   /** Create PostCSS plugin instance - for PostCSS plugins */
-  createPlugin?(context: PluginContext): Plugin;
+  createPlugin?(_context: PluginContext): Plugin;
 
   /** Process CSS content - for enhanced plugins */
-  processCss?(css: string, context: EnigmaPluginContext): Promise<string>;
+  processCss?(css: string, _context: EnigmaPluginContext): Promise<string>;
 
   /** Validate plugin configuration - for enhanced plugins */
-  validate?(context: EnigmaPluginContext): Promise<boolean>;
+  validate?(_context: EnigmaPluginContext): Promise<boolean>;
 
   /** Get plugin health status - for enhanced plugins */
   getHealth?(): Record<string, unknown>;
@@ -326,14 +326,14 @@ export abstract class BaseEnigmaPlugin implements EnigmaPlugin {
   /**
    * Initialize the plugin - override in subclasses
    */
-  async initialize(context: EnigmaPluginContext): Promise<void> {
+  async initialize(_context: EnigmaPluginContext): Promise<void> {
     // Default implementation - override in subclasses
   }
 
   /**
    * Process CSS content - must be implemented by subclasses
    */
-  async processCss(css: string, context: EnigmaPluginContext): Promise<string> {
+  async processCss(css: string, _context: EnigmaPluginContext): Promise<string> {
     // Default implementation - override in subclasses
     return css;
   }
@@ -341,7 +341,7 @@ export abstract class BaseEnigmaPlugin implements EnigmaPlugin {
   /**
    * Validate plugin configuration - override in subclasses
    */
-  async validate(context: EnigmaPluginContext): Promise<boolean> {
+  async validate(_context: EnigmaPluginContext): Promise<boolean> {
     // Default implementation - override in subclasses
     return true;
   }
@@ -377,7 +377,7 @@ export abstract class BasePostCSSEnigmaPlugin extends BaseEnigmaPlugin {
   /**
    * Process CSS using PostCSS - default implementation using createPostCSSPlugin
    */
-  async processCss(css: string, context: EnigmaPluginContext): Promise<string> {
+  async processCss(css: string, _context: EnigmaPluginContext): Promise<string> {
     // Default PostCSS processing - can be overridden
     const postcss = await import("postcss");
     const plugin = this.createPostCSSPlugin();
