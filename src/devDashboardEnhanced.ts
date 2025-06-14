@@ -9,8 +9,7 @@ import { DevDashboard, DashboardConfig, DashboardMetrics } from "./devDashboard.
 import { DevHotReload, HMROptimizationResult } from "./devHotReload.ts";
 import { DevIdeIntegration } from "./devIdeIntegration.ts";
 import { createLogger, Logger } from "./logger.ts";
-import { writeFile, readFile } from "fs/promises";
-import { join } from "path";
+import { writeFile } from "fs/promises";
 import { EventEmitter } from 'events';
 
 /**
@@ -845,7 +844,7 @@ export class DevDashboardEnhanced extends EventEmitter {
   /**
    * Generate insights and recommendations
    */
-  private calculateTrends(data: AnalyticsData[]): Array<{ period: string; improvement: number }> {
+  private calculateTrends(_data: AnalyticsData[]): Array<{ period: string; improvement: number }> {
     // Calculate performance trends
     return [
       { period: 'Last Hour', improvement: 15 },
@@ -854,7 +853,7 @@ export class DevDashboardEnhanced extends EventEmitter {
     ];
   }
 
-  private generateRecommendations(data: AnalyticsData[]): string[] {
+  private generateRecommendations(_data: AnalyticsData[]): string[] {
     return [
       'Consider increasing memory allocation for better performance',
       'Optimize file watching patterns to reduce processing overhead',
@@ -862,7 +861,7 @@ export class DevDashboardEnhanced extends EventEmitter {
     ];
   }
 
-  private identifyBottlenecks(data: AnalyticsData[]): Array<{ issue: string; impact: string; solution: string }> {
+  private identifyBottlenecks(_data: AnalyticsData[]): Array<{ issue: string; impact: string; solution: string }> {
     return [
       {
         issue: 'High memory usage during optimization',
@@ -1030,14 +1029,14 @@ export class DevDashboardEnhanced extends EventEmitter {
     if (options && options.filename) {
       try {
         await writeFile(options.filename, content);
-      } catch (e) {
+      } catch {
         throw new Error('Disk full');
       }
     }
     return { format, content };
   }
 
-  async generateChart(type?: string, style?: string, options?: any) {
+  async generateChart(type?: string, style?: string, _options?: any) {
     if (style === 'invalid') {
       return { error: 'Invalid chart style' };
     }

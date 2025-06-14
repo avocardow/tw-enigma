@@ -4,14 +4,12 @@
  * batch processing, backpressure handling, and progress tracking.
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { StreamOptimizer } from "../../src/performance/streamOptimizer.ts";
 import {
-  createWriteStream,
   existsSync,
   mkdirSync,
   writeFileSync,
-  unlinkSync,
   rmSync,
 } from "fs";
 import { join } from "path";
@@ -253,7 +251,7 @@ describe("StreamOptimizer", () => {
       let concurrentExecutions = 0;
       let maxConcurrency = 0;
 
-      const processor = async (filePath: string, content: Buffer) => {
+      const processor = async (filePath: string, _content: Buffer) => {
         concurrentExecutions++;
         maxConcurrency = Math.max(maxConcurrency, concurrentExecutions);
 
@@ -370,7 +368,7 @@ describe("StreamOptimizer", () => {
 
       try {
         await streamOptimizer.processFile("non-existent-file.txt", []);
-      } catch (error) {
+      } catch (_error) {
         // Error expected
       }
 
@@ -439,7 +437,7 @@ describe("StreamOptimizer", () => {
     });
 
     it("should handle empty file list", async () => {
-      const processor = async (filePath: string, content: Buffer) => ({
+      const processor = async (filePath: string, _content: Buffer) => ({
         path: filePath,
       });
       const result = await streamOptimizer.processBatchStream([], processor);

@@ -976,7 +976,7 @@ export class EnigmaPluginManager implements PluginManager {
   /**
    * Discover plugins from npm packages
    */
-  private async discoverFromNpm(prefixes: string[]): Promise<EnigmaPlugin[]> {
+  private async discoverFromNpm(_prefixes: string[]): Promise<EnigmaPlugin[]> {
     const plugins: EnigmaPlugin[] = [];
 
     // This would typically involve scanning node_modules for packages

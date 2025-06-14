@@ -401,6 +401,7 @@ export function createDevDiagnostics(config: EnigmaConfig): DevDiagnostics | nul
 
 // Type declarations for events
 // EventEmitter interface augmentation for DevDiagnostics
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface DevDiagnosticsEventEmitter {
   on<K extends keyof DiagnosticsEvents>(event: K, listener: DiagnosticsEvents[K]): this;
   emit<K extends keyof DiagnosticsEvents>(event: K, ...args: Parameters<DiagnosticsEvents[K]>): boolean;

@@ -20,7 +20,7 @@ export class ReactDetector implements IFrameworkDetector {
   readonly frameworkType: FrameworkType = "react";
   readonly name = "React Detector";
 
-  canDetect(context: DetectionContext): boolean {
+  canDetect(_context: DetectionContext): boolean {
     // Can always attempt React detection
     return true;
   }
@@ -373,7 +373,7 @@ export class ReactDetector implements IFrameworkDetector {
 
     // Check for Create React App specific files
     if (fileStructure.files.includes("public")) {
-      const craIndicators = ["public/index.html", "src/App.js", "src/index.js"];
+      // const _craIndicators = ["public/index.html", "src/App.js", "src/index.js"];
       // This is a simplified check - in real implementation we'd check deeper
       confidence += 0.1;
       evidence.push("Create React App structure detected");

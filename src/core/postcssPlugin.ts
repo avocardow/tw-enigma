@@ -10,7 +10,7 @@
  * Provides the main plugin factory function and base plugin class
  */
 
-import type { Plugin, PluginCreator, Root, Result } from "postcss";
+import type { Plugin, PluginCreator, Root } from "postcss";
 import { z } from "zod";
 import { createLogger } from "../logger.ts";
 import type {
@@ -140,7 +140,7 @@ export abstract class BaseEnigmaPlugin implements EnigmaPlugin {
       
       return {
         postcssPlugin: this.meta.name,
-        async Once(root: Root, helpers: any) {
+        async Once(root: Root, _helpers: any) {
           const context = (opts as any).context as PluginContext;
           const pluginMeta = (opts as any).pluginMeta || { name: 'unknown' };
           const pluginLogger = (opts as any).pluginLogger;

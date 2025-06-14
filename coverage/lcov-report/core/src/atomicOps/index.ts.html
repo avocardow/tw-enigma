@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">78.24% </span>
+                <span class="strong">77.98% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>169/216</span>
+                <span class='fraction'>170/218</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">78.24% </span>
+                <span class="strong">77.98% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>169/216</span>
+                <span class='fraction'>170/218</span>
             </div>
         
             
@@ -382,7 +382,8 @@
 <a name='L317'></a><a href='#L317'>317</a>
 <a name='L318'></a><a href='#L318'>318</a>
 <a name='L319'></a><a href='#L319'>319</a>
-<a name='L320'></a><a href='#L320'>320</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L320'></a><a href='#L320'>320</a>
+<a name='L321'></a><a href='#L321'>321</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -519,6 +520,7 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">21x</span>
 <span class="cline-any cline-yes">11x</span>
@@ -544,6 +546,7 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -581,7 +584,6 @@
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -827,7 +829,7 @@ export class AtomicOperationsSystem {
           );
           break;
 &nbsp;
-        case "read":
+        case "read": {
           const readResult = await this.fileReader.readFile(
             operation.filePath,
             operation.options,
@@ -838,6 +840,7 @@ export class AtomicOperationsSystem {
             fileContent: readResult.content,
           };
           break;
+        }
 &nbsp;
         case "write":
           if (!operation.content) <span class="branch-0 cbranch-no" title="branch not covered" >{</span>
@@ -850,7 +853,7 @@ export class AtomicOperationsSystem {
           );
           break;
 &nbsp;
-<span class="branch-0 cbranch-no" title="branch not covered" >        case "delete":</span>
+<span class="branch-0 cbranch-no" title="branch not covered" >        case "delete": {</span>
           // Create backup before deletion
 <span class="cstat-no" title="statement not covered" >          const tempInfo = await this.fileManager.createTempFile(</span>
 <span class="cstat-no" title="statement not covered" >            operation.filePath,</span>
@@ -881,6 +884,7 @@ export class AtomicOperationsSystem {
 <span class="cstat-no" title="statement not covered" >            },</span>
 <span class="cstat-no" title="statement not covered" >          };</span>
 <span class="cstat-no" title="statement not covered" >          break;</span>
+<span class="cstat-no" title="statement not covered" >        }</span>
 &nbsp;
         default:
           throw new Error(`Unsupported operation type: ${operation.type}`);
@@ -896,12 +900,11 @@ export class AtomicOperationsSystem {
 &nbsp;
       // Handle permissions if specified
       if (operation.permissions &amp;&amp; result.success) {
-        const permResult = await this.permissionManager.changePermissions(
+        await this.permissionManager.changePermissions(
           operation.filePath,
           operation.permissions,
         );
-        // Note: permResult doesn't have rollbackOperation property
-        // Permission changes would need separate rollback tracking
+        // Note: Permission changes would need separate rollback tracking
       }
 &nbsp;
       // Commit transaction
@@ -973,7 +976,7 @@ export class AtomicOperationsSystem {
 <span class="cstat-no" title="statement not covered" >            : "unhealthy";</span>
 &nbsp;
       return { status, components, metrics };
-<span class="branch-0 cbranch-no" title="branch not covered" >    } catch (error) {</span>
+<span class="branch-0 cbranch-no" title="branch not covered" >    } catch {</span>
 <span class="cstat-no" title="statement not covered" >      return {</span>
 <span class="cstat-no" title="statement not covered" >        status: "unhealthy",</span>
 <span class="cstat-no" title="statement not covered" >        components: Object.fromEntries(</span>
@@ -1027,7 +1030,7 @@ export class AtomicOperationsSystem {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-06-14T05:44:01.863Z
+                at 2025-06-14T07:38:28.861Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

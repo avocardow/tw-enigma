@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/172</span>
+                <span class='fraction'>0/166</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/172</span>
+                <span class='fraction'>0/166</span>
             </div>
         
             
@@ -380,13 +380,7 @@
 <a name='L315'></a><a href='#L315'>315</a>
 <a name='L316'></a><a href='#L316'>316</a>
 <a name='L317'></a><a href='#L317'>317</a>
-<a name='L318'></a><a href='#L318'>318</a>
-<a name='L319'></a><a href='#L319'>319</a>
-<a name='L320'></a><a href='#L320'>320</a>
-<a name='L321'></a><a href='#L321'>321</a>
-<a name='L322'></a><a href='#L322'>322</a>
-<a name='L323'></a><a href='#L323'>323</a>
-<a name='L324'></a><a href='#L324'>324</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L318'></a><a href='#L318'>318</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -471,6 +465,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -515,7 +510,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -526,7 +520,6 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -537,12 +530,8 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -607,7 +596,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -793,6 +781,7 @@
 } from "./config.ts";
 &nbsp;
 // Import for internal use
+<span class="cstat-no" title="statement not covered" >import os from "os";</span>
 <span class="cstat-no" title="statement not covered" >import {</span>
   DEFAULT_PERFORMANCE_CONFIG as _DEFAULT_PERFORMANCE_CONFIG,
   type SystemResources as _SystemResources,
@@ -838,33 +827,27 @@
 /**
  * Measure performance of a function execution
  */
-<span class="cstat-no" title="statement not covered" >export function measurePerformance&lt;T&gt;(</span>
+<span class="cstat-no" title="statement not covered" >export async function measurePerformance&lt;T&gt;(</span>
 <span class="cstat-no" title="statement not covered" >  fn: () =&gt; T | Promise&lt;T&gt;,</span>
 <span class="cstat-no" title="statement not covered" >  label?: string,</span>
 <span class="cstat-no" title="statement not covered" >): Promise&lt;{ result: T; duration: number; memoryUsed: number }&gt; {</span>
-<span class="cstat-no" title="statement not covered" >  return new Promise(async (resolve, reject) =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >    const startTime = performance.now();</span>
-<span class="cstat-no" title="statement not covered" >    const startMemory = process.memoryUsage().heapUsed;</span>
+<span class="cstat-no" title="statement not covered" >  const startTime = performance.now();</span>
+<span class="cstat-no" title="statement not covered" >  const startMemory = process.memoryUsage().heapUsed;</span>
 &nbsp;
-<span class="cstat-no" title="statement not covered" >    try {</span>
-<span class="cstat-no" title="statement not covered" >      const result = await fn();</span>
-<span class="cstat-no" title="statement not covered" >      const endTime = performance.now();</span>
-<span class="cstat-no" title="statement not covered" >      const endMemory = process.memoryUsage().heapUsed;</span>
+<span class="cstat-no" title="statement not covered" >  const result = await fn();</span>
+<span class="cstat-no" title="statement not covered" >  const endTime = performance.now();</span>
+<span class="cstat-no" title="statement not covered" >  const endMemory = process.memoryUsage().heapUsed;</span>
 &nbsp;
-<span class="cstat-no" title="statement not covered" >      const duration = endTime - startTime;</span>
-<span class="cstat-no" title="statement not covered" >      const memoryUsed = endMemory - startMemory;</span>
+<span class="cstat-no" title="statement not covered" >  const duration = endTime - startTime;</span>
+<span class="cstat-no" title="statement not covered" >  const memoryUsed = endMemory - startMemory;</span>
 &nbsp;
-<span class="cstat-no" title="statement not covered" >      if (label) {</span>
-<span class="cstat-no" title="statement not covered" >        console.log(</span>
-<span class="cstat-no" title="statement not covered" >          `[Performance] ${label}: ${duration.toFixed(2)}ms, Memory: ${formatBytes(memoryUsed)}`,</span>
-<span class="cstat-no" title="statement not covered" >        );</span>
-<span class="cstat-no" title="statement not covered" >      }</span>
+<span class="cstat-no" title="statement not covered" >  if (label) {</span>
+<span class="cstat-no" title="statement not covered" >    console.log(</span>
+<span class="cstat-no" title="statement not covered" >      `[Performance] ${label}: ${duration.toFixed(2)}ms, Memory: ${formatBytes(memoryUsed)}`,</span>
+<span class="cstat-no" title="statement not covered" >    );</span>
+<span class="cstat-no" title="statement not covered" >  }</span>
 &nbsp;
-<span class="cstat-no" title="statement not covered" >      resolve({ result, duration, memoryUsed });</span>
-<span class="cstat-no" title="statement not covered" >    } catch (error) {</span>
-<span class="cstat-no" title="statement not covered" >      reject(error);</span>
-<span class="cstat-no" title="statement not covered" >    }</span>
-<span class="cstat-no" title="statement not covered" >  });</span>
+<span class="cstat-no" title="statement not covered" >  return { result, duration, memoryUsed };</span>
 <span class="cstat-no" title="statement not covered" >}</span>
 &nbsp;
 /**
@@ -931,7 +914,6 @@
  * Get current system resource information
  */
 <span class="cstat-no" title="statement not covered" >export function getSystemResources(): _SystemResources {</span>
-<span class="cstat-no" title="statement not covered" >  const os = require("os");</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >  return {</span>
 <span class="cstat-no" title="statement not covered" >    totalMemory: os.totalmem(),</span>
@@ -1039,7 +1021,7 @@
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-06-14T05:44:02.159Z
+                at 2025-06-14T07:38:29.155Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

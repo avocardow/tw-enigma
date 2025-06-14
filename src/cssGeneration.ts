@@ -486,7 +486,7 @@ export function formatCssSelector(selector: string): string {
   }
 
   // Escape special characters
-  return selector.replace(/[^a-zA-Z0-9\-_\.]/g, "\\$&");
+  return selector.replace(/[^a-zA-Z0-9\-_.]/g, "\\$&");
 }
 
 export function formatCssDeclaration(property: string, value: string): string {
@@ -693,7 +693,7 @@ function generateCssSelector(
     case "sequential":
       return `c${Math.random().toString(36).substr(2, 9)}`; // Generate random ID since AggregatedClassData doesn't have id
 
-    case "frequency-optimized":
+    case "frequency-optimized": {
       // Use frequency to determine name length (higher frequency = shorter name)
       const frequency = pattern.totalFrequency;
       if (frequency >= CSS_PATTERN_THRESHOLDS.HIGH_FREQUENCY_THRESHOLD) {
@@ -705,6 +705,7 @@ function generateCssSelector(
       } else {
         return generateLongName(pattern);
       }
+    }
 
     case "pretty":
       return generatePrettyName(pattern);
@@ -1267,7 +1268,7 @@ export function validateApplyDirective(
 
 export function optimizeApplyDirective(
   directive: ApplyDirective,
-  options: CssGenerationOptions,
+  _options: CssGenerationOptions,
 ): ApplyDirective {
   try {
     // Create optimized copy
@@ -2065,6 +2066,7 @@ function generateRecommendedStrategy(
 /**
  * Advanced pattern analysis for better classification
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function analyzePatternCharacteristics(classes: string[]): {
   hasResponsiveVariants: boolean;
   hasInteractiveStates: boolean;
@@ -2165,10 +2167,11 @@ export function sortCssRulesAdvanced(
           case "selector":
             comparison = a.selector.localeCompare(b.selector);
             break;
-          case "patternType":
+          case "patternType": {
             const typeOrder = { atomic: 1, utility: 2, component: 3 };
             comparison = typeOrder[a.patternType] - typeOrder[b.patternType];
             break;
+          }
           case "coOccurrence":
             comparison = a.coOccurrenceStrength - b.coOccurrenceStrength;
             break;
@@ -2644,6 +2647,7 @@ function createAdvancedSortFunction(weights: {
 /**
  * Create optimized sort function for delivery
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function createDeliverySortFunction(): (a: CssRule, b: CssRule) => number {
   // Optimized for CSS delivery performance
   return createAdvancedSortFunction({
@@ -2658,6 +2662,7 @@ function createDeliverySortFunction(): (a: CssRule, b: CssRule) => number {
 /**
  * Create development-friendly sort function
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function createDevelopmentSortFunction(): (a: CssRule, b: CssRule) => number {
   // Optimized for development readability
   return createAdvancedSortFunction({
@@ -2731,6 +2736,7 @@ function validateRuleOrder(rules: CssRule[]): {
 /**
  * Generate sort function based on context and requirements
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function generateContextualSortFunction(
   context: "production" | "development" | "testing",
   requirements: {
@@ -3330,6 +3336,7 @@ function generateRuleComment(
 /**
  * Generate comprehensive CSS documentation
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function generateCssDocumentation(
   rules: CssRule[],
   statistics: CssGenerationStatistics,
@@ -3892,9 +3899,9 @@ export class EnhancedCSSGenerator {
       });
 
       // Import and create processor
-      const { EnigmaPostCSSProcessor } = await import(
-        "./postcssIntegration.js"
-      );
+      // const { EnigmaPostCSSProcessor: _EnigmaPostCSSProcessor } = await import(
+      //   "./postcssIntegration.js"
+      // );
       // Note: EnigmaPostCSSProcessor constructor signature mismatch, using fallback
       // this.postcssProcessor = new EnigmaPostCSSProcessor(
       //   configManager.getProcessorConfig(),
@@ -4053,7 +4060,7 @@ export class EnhancedCSSGenerator {
    */
   private async processWithPostCSS(
     css: string,
-    options: CssGenerationOptions,
+    _options: CssGenerationOptions,
   ): Promise<{
     css: string;
     sourceMap?: any;
@@ -4219,9 +4226,9 @@ export class EnhancedCSSGenerator {
       }
 
       // Recreate processor with new config
-      const { EnigmaPostCSSProcessor } = await import(
-        "./postcssIntegration.js"
-      );
+      // const { EnigmaPostCSSProcessor: _EnigmaPostCSSProcessor2 } = await import(
+      //   "./postcssIntegration.js"
+      // );
       // Note: EnigmaPostCSSProcessor constructor signature mismatch, using fallback
       // this.postcssProcessor = new EnigmaPostCSSProcessor(
       //   configManager.getProcessorConfig(),

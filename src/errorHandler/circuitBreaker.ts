@@ -15,11 +15,8 @@ import { createLogger } from "../logger.ts";
 import {
   CircuitBreakerState,
   CircuitBreakerMetrics,
-  ErrorHandlerConfig,
   EnhancedErrorContext,
   CircuitBreakerFallback,
-  ErrorSeverity,
-  ErrorCategory,
 } from "./types.ts";
 
 const circuitLogger = createLogger("CircuitBreaker");

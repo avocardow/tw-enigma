@@ -139,6 +139,7 @@ export class MockFileSystem implements IMockFileSystem {
 
   constructor() {
     // Store reference to original fs module for disk loading
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     this.originalFs = require("fs");
   }
 

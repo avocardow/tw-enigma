@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">84.07% </span>
+                <span class="strong">84.11% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>570/678</span>
+                <span class='fraction'>572/680</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">72.88% </span>
+                <span class="strong">73.1% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>86/118</span>
+                <span class='fraction'>87/119</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">84.07% </span>
+                <span class="strong">84.11% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>570/678</span>
+                <span class='fraction'>572/680</span>
             </div>
         
             
@@ -980,16 +980,14 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1547,7 +1545,7 @@
 <span class="cline-any cline-yes">59x</span>
 <span class="cline-any cline-yes">59x</span>
 <span class="cline-any cline-yes">59x</span>
-<span class="cline-any cline-yes">187x</span>
+<span class="cline-any cline-yes">181x</span>
 <span class="cline-any cline-yes">59x</span>
 <span class="cline-any cline-yes">59x</span>
 <span class="cline-any cline-yes">6x</span>
@@ -1857,16 +1855,18 @@
 <span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">7x</span>
@@ -1884,12 +1884,11 @@
  */
 &nbsp;
 import * as fs from "fs/promises";
-import { createWriteStream, createReadStream } from "fs";
+import type { Stats } from "fs";
+import { createWriteStream } from "fs";
 import * as path from "path";
 import { createHash } from "crypto";
 import { v4 as uuidv4 } from "uuid";
-import writeFileAtomic from "write-file-atomic";
-import { promisify } from "util";
 import { pipeline } from "stream/promises";
 &nbsp;
 import {
@@ -1900,7 +1899,6 @@ import {
   FileWriteOptions,
   TempFileInfo,
   RollbackOperation,
-  RollbackStep,
 } from "../types/atomicOps";
 &nbsp;
 /** Default options for atomic file operations */
@@ -2021,7 +2019,7 @@ export class AtomicFileWriter {
         try {
           const stats = await fs.stat(filePath);
           originalPermissions = stats.mode &amp; 0o777;
-<span class="branch-0 cbranch-no" title="branch not covered" >        } catch (error) {</span>
+<span class="branch-0 cbranch-no" title="branch not covered" >        } catch {</span>
           // If we can't read permissions, continue without preservation
 <span class="cstat-no" title="statement not covered" >        }</span>
       }
@@ -2143,7 +2141,7 @@ export class AtomicFileWriter {
       try {
         const stats = await fs.stat(filePath);
         result.fileStats = stats; // Use the full Stats object
-<span class="branch-0 cbranch-no" title="branch not covered" >      } catch (error) {</span>
+<span class="branch-0 cbranch-no" title="branch not covered" >      } catch {</span>
         // File stats are optional, don't fail the operation
 <span class="cstat-no" title="statement not covered" >      }</span>
 &nbsp;
@@ -2213,7 +2211,7 @@ export class AtomicFileWriter {
    */
   async writeJsonFile(
     filePath: string,
-    data: any,
+    data: unknown,
     options: FileWriteOptions = {},
   ): Promise&lt;AtomicOperationResult&gt; {
     try {
@@ -2456,7 +2454,7 @@ export class AtomicFileWriter {
         .map((file) =&gt; ({
           name: file,
           path: path.join(dirName, file),
-          stat: null as any,
+          stat: null as Stats | null,
         }));
 &nbsp;
       // Get stats for all backup files
@@ -2643,13 +2641,13 @@ export class AtomicFileWriter {
   private async atomicMove(
     tempPath: string,
     finalPath: string,
-    options: Required&lt;FileWriteOptions&gt;,
+    _options: Required&lt;FileWriteOptions&gt;,
   ): Promise&lt;void&gt; {
     try {
       await fs.rename(tempPath, finalPath);
-<span class="branch-0 cbranch-no" title="branch not covered" >    } catch (error: any) {</span>
+<span class="branch-0 cbranch-no" title="branch not covered" >    } catch (error: unknown) {</span>
       // If rename fails (e.g., cross-device), fall back to copy + delete
-<span class="cstat-no" title="statement not covered" >      if (error.code === "EXDEV") {</span>
+<span class="cstat-no" title="statement not covered" >      if (error &amp;&amp; typeof error === 'object' &amp;&amp; 'code' in error &amp;&amp; error.code === "EXDEV") {</span>
 <span class="cstat-no" title="statement not covered" >        await fs.copyFile(tempPath, finalPath);</span>
 <span class="cstat-no" title="statement not covered" >        await fs.unlink(tempPath);</span>
 <span class="cstat-no" title="statement not covered" >      } else {</span>
@@ -2741,8 +2739,8 @@ export class AtomicFileWriter {
     }
   }
 &nbsp;
-  private getErrorCode(error: any): string {
-    if (error.code) {
+  private getErrorCode(error: unknown): string {
+    if (error &amp;&amp; typeof error === 'object' &amp;&amp; 'code' in error &amp;&amp; typeof error.code === 'string') {
       switch (error.code) {
         case "ENOENT":
           return AtomicOperationError.FILE_NOT_FOUND;
@@ -2760,17 +2758,19 @@ export class AtomicFileWriter {
       }
     }
 &nbsp;
-    if (error.message?.includes("timeout")) <span class="branch-0 cbranch-no" title="branch not covered" >{</span>
-<span class="cstat-no" title="statement not covered" >      return AtomicOperationError.TIMEOUT;</span>
-<span class="cstat-no" title="statement not covered" >    }</span>
+    if (error &amp;&amp; typeof error === 'object' &amp;&amp; 'message' in error &amp;&amp; typeof error.message === 'string') {
+      if (error.message.includes("timeout")) <span class="branch-0 cbranch-no" title="branch not covered" >{</span>
+<span class="cstat-no" title="statement not covered" >        return AtomicOperationError.TIMEOUT;</span>
+<span class="cstat-no" title="statement not covered" >      }</span>
 &nbsp;
-    if (error.message?.includes("verification failed")) <span class="branch-0 cbranch-no" title="branch not covered" >{</span>
-<span class="cstat-no" title="statement not covered" >      return "VERIFICATION_FAILED";</span>
-<span class="cstat-no" title="statement not covered" >    }</span>
+      if (error.message.includes("verification failed")) <span class="branch-0 cbranch-no" title="branch not covered" >{</span>
+<span class="cstat-no" title="statement not covered" >        return "VERIFICATION_FAILED";</span>
+<span class="cstat-no" title="statement not covered" >      }</span>
 &nbsp;
-    if (error.message?.includes("serialize")) <span class="branch-0 cbranch-no" title="branch not covered" >{</span>
-<span class="cstat-no" title="statement not covered" >      return "SERIALIZATION_ERROR";</span>
-<span class="cstat-no" title="statement not covered" >    }</span>
+      if (error.message.includes("serialize")) <span class="branch-0 cbranch-no" title="branch not covered" >{</span>
+<span class="cstat-no" title="statement not covered" >        return "SERIALIZATION_ERROR";</span>
+<span class="cstat-no" title="statement not covered" >      }</span>
+    }
 &nbsp;
     return AtomicOperationError.INVALID_OPERATION;
   }
@@ -2782,7 +2782,7 @@ export class AtomicFileWriter {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-06-14T05:44:02.159Z
+                at 2025-06-14T07:38:29.155Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

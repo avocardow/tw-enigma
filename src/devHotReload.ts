@@ -9,8 +9,8 @@ import { EventEmitter } from "events";
 import { watch, FSWatcher } from "chokidar";
 import { createLogger, Logger } from "./logger.ts";
 import { EnigmaConfig } from "./config.ts";
-import { readFile, writeFile } from "fs/promises";
-import { join, extname, relative, dirname } from "path";
+import { readFile } from "fs/promises";
+import { extname } from "path";
 import { createHash } from "crypto";
 
 /**

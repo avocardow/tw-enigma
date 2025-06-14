@@ -91,7 +91,7 @@ export class TailwindOptimizer extends BaseEnigmaPlugin {
     root: Root,
     context: PluginContext,
   ): Promise<void> {
-    const config = context.config.options as TailwindOptimizerConfig;
+    // const _config = context.config.options as TailwindOptimizerConfig;
     const frequencyData = context.frequencyData;
 
     if (!frequencyData) return;
@@ -215,7 +215,7 @@ export class TailwindOptimizer extends BaseEnigmaPlugin {
 
           root.append(utilityRule);
           // Transformation recorded
-        } catch (error) {
+        } catch {
           this.addWarning(
             context,
             `Failed to generate utility for pattern: ${pattern.classes.join(" ")}`,

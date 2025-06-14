@@ -505,7 +505,7 @@ function analyzeChanges(operations: FileOperation[]): DryRunReport["changes"] {
         changes.created.push(operation.path);
         break;
 
-      case "write":
+      case "write": {
         const sizeBefore = operation.previousContent
           ? calculateContentSize(operation.previousContent)
           : 0;
@@ -518,6 +518,7 @@ function analyzeChanges(operations: FileOperation[]): DryRunReport["changes"] {
           sizeAfter,
         });
         break;
+      }
 
       case "delete":
         changes.deleted.push(operation.path);

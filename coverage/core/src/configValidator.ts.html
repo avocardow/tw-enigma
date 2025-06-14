@@ -1155,10 +1155,10 @@
  */
 &nbsp;
 import { z } from "zod";
-import { resolve, relative, isAbsolute } from "path";
-import { existsSync, statSync } from "fs";
+import { resolve } from "path";
+import { existsSync, statSync, readFileSync } from "fs";
 import { logger } from "./logger.ts";
-import { ConfigError, ValidationError } from "./errors.ts";
+import { ValidationError } from "./errors.ts";
 import type { EnigmaConfig } from "./config.ts";
 &nbsp;
 /**
@@ -1239,7 +1239,7 @@ export class ConfigValidator {
    */
   public async validateFile(filepath: string): Promise&lt;ValidationResult &amp; { config?: EnigmaConfig }&gt; {
     try {
-      const fileContent = require('fs').readFileSync(filepath, 'utf-8');
+      const fileContent = readFileSync(filepath, 'utf-8');
       // If the file is empty or only whitespace, treat as empty object
       const config = fileContent.trim().length === <span class="branch-0 cbranch-no" title="branch not covered" >0 ? {} : J</span>SON.parse(fileContent);
       const result = await this.validateConfiguration(config, filepath);
@@ -1530,7 +1530,7 @@ export class ConfigValidator {
   /**
    * Performance validation for optimization recommendations
    */
-  private async validatePerformance(config: EnigmaConfig, filepath?: string): Promise&lt;ValidationResult&gt; {
+  private async validatePerformance(config: EnigmaConfig, _filepath?: string): Promise&lt;ValidationResult&gt; {
     const warnings: string[] = [];
     const suggestions: string[] = [];
     let rulesApplied = 0;
@@ -1599,57 +1599,57 @@ export class ConfigValidator {
   }
 &nbsp;
   // Individual validation rule implementations
-  private <span class="fstat-no" title="function not covered" >validatePathExists(value: unknown, context: ValidationContext): ValidationResult {</span>
+  private <span class="fstat-no" title="function not covered" >validatePathExists(_value: unknown, _context: ValidationContext): ValidationResult {</span>
     // Implementation for path existence validation
 <span class="cstat-no" title="statement not covered" >    return { isValid: true, errors: [], warnings: [], suggestions: [], performance: { validationTime: 0, rulesApplied: 1 } };</span>
 <span class="cstat-no" title="statement not covered" >  }</span>
 &nbsp;
-  private <span class="fstat-no" title="function not covered" >validatePathWritable(value: unknown, context: ValidationContext): ValidationResult {</span>
+  private <span class="fstat-no" title="function not covered" >validatePathWritable(_value: unknown, _context: ValidationContext): ValidationResult {</span>
     // Implementation for path writability validation
 <span class="cstat-no" title="statement not covered" >    return { isValid: true, errors: [], warnings: [], suggestions: [], performance: { validationTime: 0, rulesApplied: 1 } };</span>
 <span class="cstat-no" title="statement not covered" >  }</span>
 &nbsp;
-  private <span class="fstat-no" title="function not covered" >validatePathsDifferent(value: unknown, context: ValidationContext): ValidationResult {</span>
+  private <span class="fstat-no" title="function not covered" >validatePathsDifferent(_value: unknown, _context: ValidationContext): ValidationResult {</span>
     // Implementation for path difference validation
 <span class="cstat-no" title="statement not covered" >    return { isValid: true, errors: [], warnings: [], suggestions: [], performance: { validationTime: 0, rulesApplied: 1 } };</span>
 <span class="cstat-no" title="statement not covered" >  }</span>
 &nbsp;
-  private <span class="fstat-no" title="function not covered" >validatePathSafe(value: unknown, context: ValidationContext): ValidationResult {</span>
+  private <span class="fstat-no" title="function not covered" >validatePathSafe(_value: unknown, _context: ValidationContext): ValidationResult {</span>
     // Implementation for path safety validation
 <span class="cstat-no" title="statement not covered" >    return { isValid: true, errors: [], warnings: [], suggestions: [], performance: { validationTime: 0, rulesApplied: 1 } };</span>
 <span class="cstat-no" title="statement not covered" >  }</span>
 &nbsp;
-  private <span class="fstat-no" title="function not covered" >validateMemoryLimits(value: unknown, context: ValidationContext): ValidationResult {</span>
+  private <span class="fstat-no" title="function not covered" >validateMemoryLimits(_value: unknown, _context: ValidationContext): ValidationResult {</span>
     // Implementation for memory limit validation
 <span class="cstat-no" title="statement not covered" >    return { isValid: true, errors: [], warnings: [], suggestions: [], performance: { validationTime: 0, rulesApplied: 1 } };</span>
 <span class="cstat-no" title="statement not covered" >  }</span>
 &nbsp;
-  private <span class="fstat-no" title="function not covered" >validateConcurrencyLimits(value: unknown, context: ValidationContext): ValidationResult {</span>
+  private <span class="fstat-no" title="function not covered" >validateConcurrencyLimits(_value: unknown, _context: ValidationContext): ValidationResult {</span>
     // Implementation for concurrency limit validation
 <span class="cstat-no" title="statement not covered" >    return { isValid: true, errors: [], warnings: [], suggestions: [], performance: { validationTime: 0, rulesApplied: 1 } };</span>
 <span class="cstat-no" title="statement not covered" >  }</span>
 &nbsp;
-  private <span class="fstat-no" title="function not covered" >validateFileSizeLimits(value: unknown, context: ValidationContext): ValidationResult {</span>
+  private <span class="fstat-no" title="function not covered" >validateFileSizeLimits(_value: unknown, _context: ValidationContext): ValidationResult {</span>
     // Implementation for file size limit validation
 <span class="cstat-no" title="statement not covered" >    return { isValid: true, errors: [], warnings: [], suggestions: [], performance: { validationTime: 0, rulesApplied: 1 } };</span>
 <span class="cstat-no" title="statement not covered" >  }</span>
 &nbsp;
-  private <span class="fstat-no" title="function not covered" >validateNoPathTraversal(value: unknown, context: ValidationContext): ValidationResult {</span>
+  private <span class="fstat-no" title="function not covered" >validateNoPathTraversal(_value: unknown, _context: ValidationContext): ValidationResult {</span>
     // Implementation for path traversal validation
 <span class="cstat-no" title="statement not covered" >    return { isValid: true, errors: [], warnings: [], suggestions: [], performance: { validationTime: 0, rulesApplied: 1 } };</span>
 <span class="cstat-no" title="statement not covered" >  }</span>
 &nbsp;
-  private <span class="fstat-no" title="function not covered" >validateFilePermissions(value: unknown, context: ValidationContext): ValidationResult {</span>
+  private <span class="fstat-no" title="function not covered" >validateFilePermissions(_value: unknown, _context: ValidationContext): ValidationResult {</span>
     // Implementation for file permission validation
 <span class="cstat-no" title="statement not covered" >    return { isValid: true, errors: [], warnings: [], suggestions: [], performance: { validationTime: 0, rulesApplied: 1 } };</span>
 <span class="cstat-no" title="statement not covered" >  }</span>
 &nbsp;
-  private <span class="fstat-no" title="function not covered" >validatePerformanceImpact(value: unknown, context: ValidationContext): ValidationResult {</span>
+  private <span class="fstat-no" title="function not covered" >validatePerformanceImpact(_value: unknown, _context: ValidationContext): ValidationResult {</span>
     // Implementation for performance impact validation
 <span class="cstat-no" title="statement not covered" >    return { isValid: true, errors: [], warnings: [], suggestions: [], performance: { validationTime: 0, rulesApplied: 1 } };</span>
 <span class="cstat-no" title="statement not covered" >  }</span>
 &nbsp;
-  private <span class="fstat-no" title="function not covered" >validateOptimizationSettings(value: unknown, context: ValidationContext): ValidationResult {</span>
+  private <span class="fstat-no" title="function not covered" >validateOptimizationSettings(_value: unknown, _context: ValidationContext): ValidationResult {</span>
     // Implementation for optimization settings validation
 <span class="cstat-no" title="statement not covered" >    return { isValid: true, errors: [], warnings: [], suggestions: [], performance: { validationTime: 0, rulesApplied: 1 } };</span>
 <span class="cstat-no" title="statement not covered" >  }</span>
@@ -1696,7 +1696,7 @@ export async function validateConfig(config: unknown, filepath?: string): Promis
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-06-14T05:44:02.159Z
+                at 2025-06-14T07:38:29.155Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

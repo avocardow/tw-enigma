@@ -6,12 +6,10 @@
  */
 
 import * as cheerio from "cheerio";
-import * as path from "path";
 import { z } from "zod";
 import { createLogger } from "./logger.ts";
 import {
   PathUtils,
-  type PathCalculationOptions,
   type RelativePathResult,
   PathUtilsError,
 } from "./pathUtils.ts";

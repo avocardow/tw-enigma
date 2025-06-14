@@ -81,7 +81,7 @@ export class SourceMapper extends BaseEnigmaPlugin {
   /**
    * Preserve original source information for all nodes
    */
-  private preserveOriginalSources(root: Root, context: PluginContext): void {
+  private preserveOriginalSources(root: Root, _context: PluginContext): void {
     let preservedCount = 0;
 
     // Walk all nodes and ensure they have source information
@@ -108,7 +108,7 @@ export class SourceMapper extends BaseEnigmaPlugin {
   /**
    * Update source mapping information during transformations
    */
-  private updateSourceMappings(root: Root, context: PluginContext): void {
+  private updateSourceMappings(root: Root, _context: PluginContext): void {
     let updatedCount = 0;
 
     // Ensure all transformations maintain source references

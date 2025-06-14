@@ -234,7 +234,7 @@ export class DryRunSimulator {
     const skipOps = this.options.skipOperations || [];
 
     // Helper function for creating mock results
-    const createMockResultForOperation = (operation: string, args: any[]): any => {
+    const createMockResultForOperation = (operation: string, _args: any[]): any => {
       // Return appropriate mock results for skipped operations
       switch (operation) {
         case "readFile":
@@ -331,7 +331,7 @@ export class DryRunSimulator {
   }
 
   private installFileSystemHooks(): void {
-    const fs = require("fs");
+    const fs = require("fs"); // eslint-disable-line @typescript-eslint/no-require-imports
     const originalMethods = new Map();
 
     // List of methods to intercept
@@ -372,7 +372,7 @@ export class DryRunSimulator {
   }
 
   private uninstallFileSystemHooks(): void {
-    const fs = require("fs");
+    const fs = require("fs"); // eslint-disable-line @typescript-eslint/no-require-imports
     const originalMethods = (this as any)._originalMethods;
 
     if (originalMethods) {
@@ -385,7 +385,7 @@ export class DryRunSimulator {
     }
   }
 
-  private createMockResult(operation: string, args: any[]): any {
+  private createMockResult(operation: string, _args: any[]): any {
     // Return appropriate mock results for skipped operations
     switch (operation) {
       case "readFile":

@@ -381,7 +381,7 @@ export class ConfigValidator {
   /**
    * Performance validation for optimization recommendations
    */
-  private async validatePerformance(config: EnigmaConfig, filepath?: string): Promise<ValidationResult> {
+  private async validatePerformance(config: EnigmaConfig, _filepath?: string): Promise<ValidationResult> {
     const warnings: string[] = [];
     const suggestions: string[] = [];
     let rulesApplied = 0;
@@ -450,57 +450,57 @@ export class ConfigValidator {
   }
 
   // Individual validation rule implementations
-  private validatePathExists(value: unknown, context: ValidationContext): ValidationResult {
+  private validatePathExists(_value: unknown, _context: ValidationContext): ValidationResult {
     // Implementation for path existence validation
     return { isValid: true, errors: [], warnings: [], suggestions: [], performance: { validationTime: 0, rulesApplied: 1 } };
   }
 
-  private validatePathWritable(value: unknown, context: ValidationContext): ValidationResult {
+  private validatePathWritable(_value: unknown, _context: ValidationContext): ValidationResult {
     // Implementation for path writability validation
     return { isValid: true, errors: [], warnings: [], suggestions: [], performance: { validationTime: 0, rulesApplied: 1 } };
   }
 
-  private validatePathsDifferent(value: unknown, context: ValidationContext): ValidationResult {
+  private validatePathsDifferent(_value: unknown, _context: ValidationContext): ValidationResult {
     // Implementation for path difference validation
     return { isValid: true, errors: [], warnings: [], suggestions: [], performance: { validationTime: 0, rulesApplied: 1 } };
   }
 
-  private validatePathSafe(value: unknown, context: ValidationContext): ValidationResult {
+  private validatePathSafe(_value: unknown, _context: ValidationContext): ValidationResult {
     // Implementation for path safety validation
     return { isValid: true, errors: [], warnings: [], suggestions: [], performance: { validationTime: 0, rulesApplied: 1 } };
   }
 
-  private validateMemoryLimits(value: unknown, context: ValidationContext): ValidationResult {
+  private validateMemoryLimits(_value: unknown, _context: ValidationContext): ValidationResult {
     // Implementation for memory limit validation
     return { isValid: true, errors: [], warnings: [], suggestions: [], performance: { validationTime: 0, rulesApplied: 1 } };
   }
 
-  private validateConcurrencyLimits(value: unknown, context: ValidationContext): ValidationResult {
+  private validateConcurrencyLimits(_value: unknown, _context: ValidationContext): ValidationResult {
     // Implementation for concurrency limit validation
     return { isValid: true, errors: [], warnings: [], suggestions: [], performance: { validationTime: 0, rulesApplied: 1 } };
   }
 
-  private validateFileSizeLimits(value: unknown, context: ValidationContext): ValidationResult {
+  private validateFileSizeLimits(_value: unknown, _context: ValidationContext): ValidationResult {
     // Implementation for file size limit validation
     return { isValid: true, errors: [], warnings: [], suggestions: [], performance: { validationTime: 0, rulesApplied: 1 } };
   }
 
-  private validateNoPathTraversal(value: unknown, context: ValidationContext): ValidationResult {
+  private validateNoPathTraversal(_value: unknown, _context: ValidationContext): ValidationResult {
     // Implementation for path traversal validation
     return { isValid: true, errors: [], warnings: [], suggestions: [], performance: { validationTime: 0, rulesApplied: 1 } };
   }
 
-  private validateFilePermissions(value: unknown, context: ValidationContext): ValidationResult {
+  private validateFilePermissions(_value: unknown, _context: ValidationContext): ValidationResult {
     // Implementation for file permission validation
     return { isValid: true, errors: [], warnings: [], suggestions: [], performance: { validationTime: 0, rulesApplied: 1 } };
   }
 
-  private validatePerformanceImpact(value: unknown, context: ValidationContext): ValidationResult {
+  private validatePerformanceImpact(_value: unknown, _context: ValidationContext): ValidationResult {
     // Implementation for performance impact validation
     return { isValid: true, errors: [], warnings: [], suggestions: [], performance: { validationTime: 0, rulesApplied: 1 } };
   }
 
-  private validateOptimizationSettings(value: unknown, context: ValidationContext): ValidationResult {
+  private validateOptimizationSettings(_value: unknown, _context: ValidationContext): ValidationResult {
     // Implementation for optimization settings validation
     return { isValid: true, errors: [], warnings: [], suggestions: [], performance: { validationTime: 0, rulesApplied: 1 } };
   }

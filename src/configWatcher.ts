@@ -8,7 +8,7 @@
 import { EventEmitter } from "events";
 import { watch, FSWatcher } from "chokidar";
 import { readFileSync, existsSync, statSync } from "fs";
-import { resolve, dirname, basename } from "path";
+import { resolve, basename } from "path";
 import { logger } from "./logger.ts";
 import { ConfigError } from "./errors.ts";
 import { validateConfig } from "./configValidator.ts";

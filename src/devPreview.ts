@@ -9,8 +9,7 @@ import { EventEmitter } from "events";
 import { watch, FSWatcher } from "chokidar";
 import { createLogger, Logger } from "./logger.ts";
 import { EnigmaConfig } from "./config.ts";
-import { readFile, writeFile } from "fs/promises";
-import { join, relative } from "path";
+import { readFile } from "fs/promises";
 
 /**
  * Preview change type for diff visualization
@@ -701,6 +700,7 @@ export function createDevPreview(config: EnigmaConfig): DevPreview | null {
 
 // Type declarations for events
 // EventEmitter interface augmentation for DevPreview
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface DevPreviewEventEmitter {
   on<K extends keyof PreviewEvents>(event: K, listener: PreviewEvents[K]): this;
   emit<K extends keyof PreviewEvents>(event: K, ...args: Parameters<PreviewEvents[K]>): boolean;

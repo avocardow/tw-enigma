@@ -10,8 +10,8 @@ import { createServer, Server } from "http";
 import { createLogger, Logger } from "./logger.ts";
 import { EnigmaConfig } from "./config.ts";
 import { DevDiagnostics, DevPerformanceMetrics } from "./devDiagnostics.ts";
-import { DevPreview, PreviewUpdate } from "./devPreview.ts";
-import { DebugUtils, ClassAnalysisResult } from "./debugUtils.ts";
+import { DevPreview } from "./devPreview.ts";
+import { DebugUtils } from "./debugUtils.ts";
 import { SourceMapGenerator } from "./sourceMapGenerator.ts";
 
 /**
@@ -776,7 +776,7 @@ export class DevDashboard extends EventEmitter {
   /**
    * Broadcast message to all connected clients
    */
-  private broadcastToClients(event: string, data: any): void {
+  private broadcastToClients(event: string, _data: any): void {
     // In a real implementation, this would send WebSocket messages
     this.logger.debug("Broadcasting to clients", { event, clientCount: this.clients.size });
   }
@@ -840,6 +840,7 @@ export function createDevDashboard(
 
 // Type declarations for events
 // EventEmitter interface augmentation for DevDashboard
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface DevDashboardEventEmitter {
   on<K extends keyof DashboardEvents>(event: K, listener: DashboardEvents[K]): this;
   emit<K extends keyof DashboardEvents>(event: K, ...args: Parameters<DashboardEvents[K]>): boolean;

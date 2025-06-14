@@ -1,0 +1,1149 @@
+
+> tw-enigma@0.1.0 lint
+> eslint .
+
+
+/Users/rowan/github/tw-enigma/core/src/atomicOps/index.ts
+  105:15  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  113:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  241:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/src/config.ts
+   729:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   734:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   742:28  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   751:24  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   759:26  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   981:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  1251:41  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  1253:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  1289:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/src/configDefaults.ts
+  488:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  491:50  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/src/configMigration.ts
+   30:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   30:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   31:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   31:39  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   32:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   94:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  144:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  166:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  188:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  216:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  236:45  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  266:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  330:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  430:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  529:41  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  558:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  592:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  592:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/src/configSafeUpdater.ts
+  499:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  499:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  499:48  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  516:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  516:48  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  516:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/src/configValidator.ts
+  104:46  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  104:71  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/src/core/pluginManager.ts
+    71:41  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   864:24  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   865:24  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   866:24  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   867:24  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  1096:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  1097:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/src/core/plugins/sourceMapper.ts
+  152:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/src/core/postcssPlugin.ts
+  135:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  136:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  143:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  144:36  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  145:39  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  146:41  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  198:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  298:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/src/cssGeneration.ts
+    23:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+    23:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+    29:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+    31:25  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   524:59  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   540:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   663:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  1718:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  2204:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  2231:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  3385:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  3390:49  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  3423:26  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  3707:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  3712:58  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  3879:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  4066:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  4069:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  4102:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  4120:85  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  4147:24  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  4154:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  4180:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  4197:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/src/debugUtils.ts
+   78:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   79:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  321:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  322:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  458:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/src/debugging/pluginDebugger.ts
+  529:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/src/detectors/nextjsDetector.ts
+  129:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  219:55  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/src/detectors/reactDetector.ts
+  125:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  227:55  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/src/detectors/viteDetector.ts
+  138:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  279:55  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/src/devDashboard.ts
+   63:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   90:24  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  216:90  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  273:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  273:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  316:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  325:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  325:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  333:46  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  352:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  371:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  371:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  757:36  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  758:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  779:52  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/src/devDashboardEnhanced.ts
+   117:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   118:15  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   159:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   212:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   351:11  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   371:76  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   751:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   824:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   834:45  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   839:65  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   877:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   886:36  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   937:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   942:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   957:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   968:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   983:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   988:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  1011:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  1018:45  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  1039:65  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/src/devDiagnostics.ts
+  203:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  204:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/src/devExperience.ts
+   93:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   98:49  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   99:59  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  409:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  412:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  438:67  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  470:49  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  501:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  509:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  595:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  609:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  612:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  625:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  628:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/src/devHotReload.ts
+  102:11  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  125:45  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  140:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  153:65  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  433:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  433:57  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  450:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  450:56  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  470:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  502:55  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  646:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  756:62  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  772:50  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  814:55  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/src/devIdeIntegration.ts
+   139:11  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   147:53  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   151:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   168:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   408:15  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   562:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   562:49  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   588:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   690:49  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   690:63  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   698:45  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   698:59  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   707:50  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   707:64  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  1134:41  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  1278:55  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/src/devPreview.ts
+  106:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/src/dryRun/dryRunSimulator.ts
+   57:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   67:11  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   68:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  237:69  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  237:77  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  269:15  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  270:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  280:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  282:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  285:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  287:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  290:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  292:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  295:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  297:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  300:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  302:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  357:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  371:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  376:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  384:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  388:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  388:62  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  429:16  error    'error' is defined but never used         @typescript-eslint/no-unused-vars
+
+/Users/rowan/github/tw-enigma/core/src/dryRun/mockFileSystem.ts
+  138:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  544:14  error    'error' is defined but never used         @typescript-eslint/no-unused-vars
+
+/Users/rowan/github/tw-enigma/core/src/errorHandler/circuitBreaker.ts
+  572:56  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  572:74  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/src/errorHandler/errorHandler.ts
+  15:34  error  'CircuitBreaker' is defined but never used  @typescript-eslint/no-unused-vars
+  28:10  error  'EnigmaError' is defined but never used     @typescript-eslint/no-unused-vars
+
+/Users/rowan/github/tw-enigma/core/src/errorHandler/pluginErrorHandler.ts
+   17:3  error  'EnigmaPlugin' is defined but never used                                  @typescript-eslint/no-unused-vars
+   18:3  error  'PluginConfig' is defined but never used                                  @typescript-eslint/no-unused-vars
+   22:7  error  'logger' is assigned a value but never used                               @typescript-eslint/no-unused-vars
+  772:5  error  'result' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/rowan/github/tw-enigma/core/src/errorHandler/types.ts
+  227:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/src/errors.ts
+  402:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/src/fileIntegrity.ts
+     8:1   error    Do not use "@ts-nocheck" because it alters compilation errors  @typescript-eslint/ban-ts-comment
+  1762:16  error    'error' is defined but never used                              @typescript-eslint/no-unused-vars
+  2034:14  error    'error' is defined but never used                              @typescript-eslint/no-unused-vars
+  2605:11  error    Unexpected lexical declaration in case block                   no-case-declarations
+  3988:40  warning  Unexpected any. Specify a different type                       @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/src/frameworkDetector.ts
+   74:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   95:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   97:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  345:26  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  346:41  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  422:14  error    'error' is defined but never used         @typescript-eslint/no-unused-vars
+  541:14  error    'error' is defined but never used         @typescript-eslint/no-unused-vars
+
+/Users/rowan/github/tw-enigma/core/src/htmlRewriter.ts
+   137:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   260:61  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   261:45  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   387:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   388:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   389:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   390:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   549:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  1381:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  1509:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  1685:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  1686:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  1744:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  1796:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  1819:60  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  1844:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  1859:52  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/src/integrations/core/buildToolPlugin.ts
+   60:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  253:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  276:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  297:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/src/integrations/core/configDetector.ts
+  14:16  error    'resolve' is defined but never used           @typescript-eslint/no-unused-vars
+  19:3   error    'DetectionResult' is defined but never used   @typescript-eslint/no-unused-vars
+  24:3   error    'BuildToolContext' is defined but never used  @typescript-eslint/no-unused-vars
+  39:26  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/src/integrations/core/hmrHandler.ts
+   16:3   error    'HMRUpdate' is defined but never used      @typescript-eslint/no-unused-vars
+  119:42  warning  Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+  369:17  error    'path' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/rowan/github/tw-enigma/core/src/integrations/core/integrationManager.ts
+   24:3   error    'createBuildToolContext' is defined but never used  @typescript-eslint/no-unused-vars
+   28:3   error    'DetectedBuildConfig' is defined but never used     @typescript-eslint/no-unused-vars
+  152:18  error    'error' is defined but never used                   @typescript-eslint/no-unused-vars
+  307:59  warning  Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+  316:53  warning  Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+  399:75  warning  Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/src/integrations/vite/vitePlugin.ts
+   45:34  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+   47:46  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+   56:40  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  152:22  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  167:17  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  201:16  error    'context' is defined but never used. Allowed unused args must match /^_/u   @typescript-eslint/no-unused-vars
+  204:26  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  204:53  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  215:16  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  375:23  error    'modules' is assigned a value but never used                                @typescript-eslint/no-unused-vars
+  457:45  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  473:23  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  498:5   error    'fileName' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  605:44  error    'context' is defined but never used. Allowed unused args must match /^_/u   @typescript-eslint/no-unused-vars
+  681:25  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/src/integrations/webpack/webpackPlugin.ts
+   27:3   error    'createBuildToolContext' is defined but never used                          @typescript-eslint/no-unused-vars
+   51:39  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  124:24  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  138:22  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  150:17  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  158:21  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  162:24  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  189:16  error    'context' is defined but never used. Allowed unused args must match /^_/u   @typescript-eslint/no-unused-vars
+  192:26  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  192:53  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  203:16  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  450:44  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  450:57  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  510:5   error    'fileName' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  572:44  error    'context' is defined but never used. Allowed unused args must match /^_/u   @typescript-eslint/no-unused-vars
+
+/Users/rowan/github/tw-enigma/core/src/jsRewriter.ts
+   224:15  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+   448:18  error    Unnecessary escape character: \<                                           no-useless-escape
+   616:32  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+   699:22  error    'options' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  1311:5   error    'context' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  1344:5   error    'context' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  1501:11  error    'generatedStrings' is assigned a value but never used                      @typescript-eslint/no-unused-vars
+  2159:41  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  2178:46  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  2178:67  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/src/logger.ts
+   16:3   error    'readdirSync' is defined but never used   @typescript-eslint/no-unused-vars
+   18:19  error    'join' is defined but never used          @typescript-eslint/no-unused-vars
+  608:25  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/src/marketplace/pluginMarketplace.ts
+  507:30  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  568:28  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+/Users/rowan/github/tw-enigma/core/src/nameGeneration.ts
+  1089:5  error  'prettyNameExhaustionStrategy' is assigned a value but never used          @typescript-eslint/no-unused-vars
+  1202:7  error  Unexpected lexical declaration in case block                               no-case-declarations
+  1229:7  error  Unexpected lexical declaration in case block                               no-case-declarations
+  1230:7  error  Unexpected lexical declaration in case block                               no-case-declarations
+  1251:3  error  'options' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  2366:5  error  'prettyNameExhaustionStrategy' is assigned a value but never used          @typescript-eslint/no-unused-vars
+
+/Users/rowan/github/tw-enigma/core/src/optimizationCache.ts
+  138:34  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+  417:14  error    'error' is defined but never used                                        @typescript-eslint/no-unused-vars
+  452:14  error    'error' is defined but never used                                        @typescript-eslint/no-unused-vars
+  476:25  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+  485:14  error    'error' is defined but never used                                        @typescript-eslint/no-unused-vars
+  492:25  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+  515:33  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+  516:25  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+  564:18  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+  606:32  error    'value' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/rowan/github/tw-enigma/core/src/optimizationCacheIntegration.ts
+  303:80  warning  Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  325:11  error    'cacheStats' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/rowan/github/tw-enigma/core/src/output/assetHasher.ts
+    11:10  error    'readFile' is defined but never used                      @typescript-eslint/no-unused-vars
+    11:20  error    'writeFile' is defined but never used                     @typescript-eslint/no-unused-vars
+    11:31  error    'stat' is defined but never used                          @typescript-eslint/no-unused-vars
+    12:10  error    'join' is defined but never used                          @typescript-eslint/no-unused-vars
+    12:16  error    'dirname' is defined but never used                       @typescript-eslint/no-unused-vars
+    12:25  error    'basename' is defined but never used                      @typescript-eslint/no-unused-vars
+    12:35  error    'extname' is defined but never used                       @typescript-eslint/no-unused-vars
+    14:15  error    'CssOutputConfig' is defined but never used               @typescript-eslint/no-unused-vars
+    25:7   error    'gzipAsync' is assigned a value but never used            @typescript-eslint/no-unused-vars
+    26:7   error    'brotliCompressAsync' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   513:39  warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+   543:44  warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+   566:53  warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+   633:47  warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+   655:46  warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+   667:21  error    'params' is assigned a value but never used               @typescript-eslint/no-unused-vars
+   674:42  warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+   689:11  error    Unexpected aliasing of 'this' to local variable           @typescript-eslint/no-this-alias
+   850:12  error    A `require()` style import is forbidden                   @typescript-eslint/no-require-imports
+   854:12  error    A `require()` style import is forbidden                   @typescript-eslint/no-require-imports
+   925:33  warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+   925:40  warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+   926:55  warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+   929:42  warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+   967:13  error    'optimization' is assigned a value but never used         @typescript-eslint/no-unused-vars
+  1053:47  warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+  1168:62  warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+  1186:47  error    Unnecessary escape character: \!                          no-useless-escape
+  1228:69  warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+  1381:14  error    'error' is defined but never used                         @typescript-eslint/no-unused-vars
+  1407:11  error    'buffer' is assigned a value but never used               @typescript-eslint/no-unused-vars
+  1418:11  error    'buffer' is assigned a value but never used               @typescript-eslint/no-unused-vars
+
+/Users/rowan/github/tw-enigma/core/src/output/ciIntegration.ts
+   10:3   error    'BudgetViolation' is defined but never used  @typescript-eslint/no-unused-vars
+  439:12  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  545:12  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/src/output/criticalCssExtractor.ts
+    8:10  error    'readFile' is defined but never used                                                @typescript-eslint/no-unused-vars
+    9:16  error    'dirname' is defined but never used                                                 @typescript-eslint/no-unused-vars
+   58:5   error    'options' is assigned a value but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  173:26  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  175:48  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  190:25  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  203:25  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  301:45  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  307:18  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  322:50  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  326:22  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  331:52  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  353:26  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/src/output/cssAnalyzer.ts
+    8:10  error    'createHash' is defined but never used                                     @typescript-eslint/no-unused-vars
+   10:10  error    'join' is defined but never used                                           @typescript-eslint/no-unused-vars
+   10:16  error    'dirname' is defined but never used                                        @typescript-eslint/no-unused-vars
+   10:25  error    'basename' is defined but never used                                       @typescript-eslint/no-unused-vars
+   10:35  error    'extname' is defined but never used                                        @typescript-eslint/no-unused-vars
+  206:11  error    'startTime' is assigned a value but never used                             @typescript-eslint/no-unused-vars
+  267:14  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  284:33  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  285:26  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  286:27  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  327:13  error    'rules' is assigned a value but never used                                 @typescript-eslint/no-unused-vars
+  440:17  error    'key' is assigned a value but never used                                   @typescript-eslint/no-unused-vars
+  465:38  error    Unnecessary escape character: \.                                           no-useless-escape
+  465:40  error    Unnecessary escape character: \[                                           no-useless-escape
+  562:19  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  563:19  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  578:40  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  581:63  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  646:5   error    'summary' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  657:44  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  732:47  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  785:11  error    'column' is assigned a value but never used                                @typescript-eslint/no-unused-vars
+  814:69  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  969:48  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/src/output/cssChunker.ts
+     9:10  error    'createHash' is defined but never used                                              @typescript-eslint/no-unused-vars
+    13:3   error    'ChunkingConfig' is defined but never used                                          @typescript-eslint/no-unused-vars
+    20:3   error    'Container' is defined but never used                                               @typescript-eslint/no-unused-vars
+   137:18  error    Unsafe declaration merging between classes and interfaces                           @typescript-eslint/no-unsafe-declaration-merging
+   337:5   error    'selector' is defined but never used. Allowed unused args must match /^_/u          @typescript-eslint/no-unused-vars
+   338:5   error    'node' is defined but never used. Allowed unused args must match /^_/u              @typescript-eslint/no-unused-vars
+   367:5   error    'selector' is defined but never used. Allowed unused args must match /^_/u          @typescript-eslint/no-unused-vars
+   368:5   error    'node' is defined but never used. Allowed unused args must match /^_/u              @typescript-eslint/no-unused-vars
+   562:5   error    'options' is assigned a value but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+   855:29  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  1191:5   error    'css' is defined but never used. Allowed unused args must match /^_/u               @typescript-eslint/no-unused-vars
+  1290:29  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  1336:24  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  1381:56  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  1406:35  error    'usageData' is defined but never used. Allowed unused args must match /^_/u         @typescript-eslint/no-unused-vars
+  1406:47  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  1418:5   error    'usageData' is defined but never used. Allowed unused args must match /^_/u         @typescript-eslint/no-unused-vars
+  1419:53  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  1419:69  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  1420:31  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  1423:36  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  1616:14  error    Unsafe declaration merging between classes and interfaces                           @typescript-eslint/no-unsafe-declaration-merging
+  1655:21  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  1918:41  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  1927:10  error    'isCssRoot' is defined but never used                                               @typescript-eslint/no-unused-vars
+  1931:15  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  1942:23  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  1951:29  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  1960:31  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  1993:29  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  2183:29  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  2229:24  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  2259:53  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  2268:30  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  2299:30  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  2308:31  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  2329:36  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  2352:42  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/src/output/cssOutputConfig.ts
+   605:21  warning  Unexpected any. Specify a different type                                                          @typescript-eslint/no-explicit-any
+   608:76  warning  Unexpected any. Specify a different type                                                          @typescript-eslint/no-explicit-any
+  1066:14  error    'error' is defined but never used                                                                 @typescript-eslint/no-unused-vars
+  1092:33  warning  Unexpected any. Specify a different type                                                          @typescript-eslint/no-explicit-any
+  1158:12  error    'error' is defined but never used                                                                 @typescript-eslint/no-unused-vars
+  1223:10  error    'deepClone' is defined but never used                                                             @typescript-eslint/no-unused-vars
+  1223:25  warning  Unexpected any. Specify a different type                                                          @typescript-eslint/no-explicit-any
+  1223:31  warning  Unexpected any. Specify a different type                                                          @typescript-eslint/no-explicit-any
+  1226:17  warning  Unexpected any. Specify a different type                                                          @typescript-eslint/no-explicit-any
+  1234:28  warning  Unexpected any. Specify a different type                                                          @typescript-eslint/no-explicit-any
+  1234:45  warning  Unexpected any. Specify a different type                                                          @typescript-eslint/no-explicit-any
+  1234:53  warning  Unexpected any. Specify a different type                                                          @typescript-eslint/no-explicit-any
+  1235:26  warning  Unexpected any. Specify a different type                                                          @typescript-eslint/no-explicit-any
+  1236:23  warning  Unexpected any. Specify a different type                                                          @typescript-eslint/no-explicit-any
+  1255:26  warning  Unexpected any. Specify a different type                                                          @typescript-eslint/no-explicit-any
+  1263:19  warning  Unexpected any. Specify a different type                                                          @typescript-eslint/no-explicit-any
+  1270:34  warning  Unexpected any. Specify a different type                                                          @typescript-eslint/no-explicit-any
+  1270:40  warning  Unexpected any. Specify a different type                                                          @typescript-eslint/no-explicit-any
+  1322:44  warning  Unexpected any. Specify a different type                                                          @typescript-eslint/no-explicit-any
+  1322:59  warning  Unexpected any. Specify a different type                                                          @typescript-eslint/no-explicit-any
+  1322:65  warning  Unexpected any. Specify a different type                                                          @typescript-eslint/no-explicit-any
+  1362:30  warning  Unexpected any. Specify a different type                                                          @typescript-eslint/no-explicit-any
+  1403:42  warning  Unexpected any. Specify a different type                                                          @typescript-eslint/no-explicit-any
+  1430:51  warning  Unexpected any. Specify a different type                                                          @typescript-eslint/no-explicit-any
+  1437:31  warning  Unexpected any. Specify a different type                                                          @typescript-eslint/no-explicit-any
+  1539:29  warning  Unexpected any. Specify a different type                                                          @typescript-eslint/no-explicit-any
+  1539:46  warning  Unexpected any. Specify a different type                                                          @typescript-eslint/no-explicit-any
+  1539:54  warning  Unexpected any. Specify a different type                                                          @typescript-eslint/no-explicit-any
+  1540:26  warning  Unexpected any. Specify a different type                                                          @typescript-eslint/no-explicit-any
+  1541:23  warning  Unexpected any. Specify a different type                                                          @typescript-eslint/no-explicit-any
+  1559:49  warning  Unexpected any. Specify a different type                                                          @typescript-eslint/no-explicit-any
+  1559:71  warning  Unexpected any. Specify a different type                                                          @typescript-eslint/no-explicit-any
+  1586:62  warning  Unexpected any. Specify a different type                                                          @typescript-eslint/no-explicit-any
+  1588:32  warning  Unexpected any. Specify a different type                                                          @typescript-eslint/no-explicit-any
+  1606:18  warning  Unexpected any. Specify a different type                                                          @typescript-eslint/no-explicit-any
+  1648:47  warning  Unexpected any. Specify a different type                                                          @typescript-eslint/no-explicit-any
+  1648:69  warning  Unexpected any. Specify a different type                                                          @typescript-eslint/no-explicit-any
+  1708:10  error    Unexpected constant binary expression. Compares constantly with the right-hand side of the `!==`  no-constant-binary-expression
+  1766:51  warning  Unexpected any. Specify a different type                                                          @typescript-eslint/no-explicit-any
+  1836:3   error    'performanceBudget' is defined but never used. Allowed unused args must match /^_/u               @typescript-eslint/no-unused-vars
+  1841:50  warning  Unexpected any. Specify a different type                                                          @typescript-eslint/no-explicit-any
+  1854:19  warning  Unexpected any. Specify a different type                                                          @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/src/output/cssOutputOrchestrator.ts
+    8:10  error    'z' is defined but never used                                              @typescript-eslint/no-unused-vars
+   13:3   error    'OutputStrategy' is defined but never used                                 @typescript-eslint/no-unused-vars
+   14:3   error    'ChunkingStrategy' is defined but never used                               @typescript-eslint/no-unused-vars
+   15:3   error    'CriticalCssStrategy' is defined but never used                            @typescript-eslint/no-unused-vars
+  333:19  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  335:7   error    'analysis' is assigned a value but never used                              @typescript-eslint/no-unused-vars
+  762:5   error    'bundles' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/rowan/github/tw-enigma/core/src/output/cssReportGenerator.ts
+  195:15  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  196:19  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  197:18  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  252:14  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  255:20  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  293:14  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  295:20  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  545:5   error    'results' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  545:14  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/src/pathUtils.ts
+  238:13  error  'errorResult' is assigned a value but never used                            @typescript-eslint/no-unused-vars
+  431:5   error  'fromPath' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  432:5   error  'toPath' is defined but never used. Allowed unused args must match /^_/u    @typescript-eslint/no-unused-vars
+
+/Users/rowan/github/tw-enigma/core/src/patternAnalysis.ts
+    78:18  error    An interface declaring no members is equivalent to its supertype           @typescript-eslint/no-empty-object-type
+   376:42  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+   397:47  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+   444:46  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+   453:47  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+   468:46  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+   488:51  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+   654:3   error    'options' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  1328:38  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/src/performance/batchCoordinator.ts
+   21:3   error  'PerformanceMetrics' is defined but never used  @typescript-eslint/no-unused-vars
+   22:3   error  'WorkerConfig' is defined but never used        @typescript-eslint/no-unused-vars
+   23:3   error  'CacheConfig' is defined but never used         @typescript-eslint/no-unused-vars
+   31:33  error  'R' is defined but never used                   @typescript-eslint/no-unused-vars
+  513:24  error  Promise executor functions should not be async  no-async-promise-executor
+
+/Users/rowan/github/tw-enigma/core/src/performance/cacheManager.ts
+   31:3   error  'CacheStrategy' is defined but never used       @typescript-eslint/no-unused-vars
+   32:3   error  'PerformanceMetrics' is defined but never used  @typescript-eslint/no-unused-vars
+  326:11  error  'now' is assigned a value but never used        @typescript-eslint/no-unused-vars
+  429:11  error  'now' is assigned a value but never used        @typescript-eslint/no-unused-vars
+
+/Users/rowan/github/tw-enigma/core/src/performance/config.ts
+   24:42  error    'R' is defined but never used             @typescript-eslint/no-unused-vars
+  398:61  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/src/performance/memoryProfiler.ts
+   25:10  error    'performance' is defined but never used   @typescript-eslint/no-unused-vars
+   99:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  139:61  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  378:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  505:14  error    'error' is defined but never used         @typescript-eslint/no-unused-vars
+
+/Users/rowan/github/tw-enigma/core/src/performance/profiler.ts
+   19:10  error    'execSync' is defined but never used            @typescript-eslint/no-unused-vars
+   23:32  error    'PerformanceMetrics' is defined but never used  @typescript-eslint/no-unused-vars
+  252:11  error    'sessionId' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  402:14  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  417:16  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  430:16  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  902:18  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  903:13  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/src/performance/regexOptimizer.ts
+  127:8   error    Unnecessary escape character: \!          no-useless-escape
+  348:53  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  365:58  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  425:23  error    Unnecessary escape character: \=          no-useless-escape
+  425:30  error    Unnecessary escape character: \!          no-useless-escape
+  672:38  error    Unnecessary escape character: \$          no-useless-escape
+
+/Users/rowan/github/tw-enigma/core/src/performance/streamOptimizer.ts
+   15:51  error    'PassThrough' is defined but never used                                       @typescript-eslint/no-unused-vars
+   16:28  error    'createWriteStream' is defined but never used                                 @typescript-eslint/no-unused-vars
+  392:58  error    'batchIndex' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  435:46  error    'batchIndex' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  510:11  error    'totalBytes' is assigned a value but never used                               @typescript-eslint/no-unused-vars
+  559:31  warning  Unexpected any. Specify a different type                                      @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/src/performance/workerManager.ts
+   18:3   error    'MessageChannel' is defined but never used      @typescript-eslint/no-unused-vars
+   19:3   error    'MessagePort' is defined but never used         @typescript-eslint/no-unused-vars
+   25:41  error    'PerformanceMetrics' is defined but never used  @typescript-eslint/no-unused-vars
+  444:66  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  460:13  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  461:12  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/src/performanceValidator.ts
+    3:10  error    'statSync' is defined but never used                                        @typescript-eslint/no-unused-vars
+    4:10  error    'join' is defined but never used                                            @typescript-eslint/no-unused-vars
+  140:7   error    'includeSystemAnalysis' is assigned a value but never used                  @typescript-eslint/no-unused-vars
+  490:44  error    'analyses' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  490:54  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/src/pluginApi.ts
+  203:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  291:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  340:50  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/src/pluginConfig.ts
+   17:7   error    'logger' is assigned a value but never used                                     @typescript-eslint/no-unused-vars
+  285:36  warning  Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+  422:27  error    'enigmaConfig' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/rowan/github/tw-enigma/core/src/postcssIntegration.ts
+   13:24  error    'Root' is defined but never used          @typescript-eslint/no-unused-vars
+   20:3   error    'PluginConfig' is defined but never used  @typescript-eslint/no-unused-vars
+   23:3   error    'EnigmaPlugin' is defined but never used  @typescript-eslint/no-unused-vars
+   52:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  224:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  256:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  332:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  344:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/src/registry/pluginRegistry.ts
+  536:17  error  'name' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  584:26  error  A `require()` style import is forbidden    @typescript-eslint/no-require-imports
+
+/Users/rowan/github/tw-enigma/core/src/runtimeValidator.ts
+  296:14   error    A `require()` style import is forbidden                                        @typescript-eslint/no-require-imports
+  303:27   error    A `require()` style import is forbidden                                        @typescript-eslint/no-require-imports
+  304:14   error    A `require()` style import is forbidden                                        @typescript-eslint/no-require-imports
+  394:34   warning  Unexpected any. Specify a different type                                       @typescript-eslint/no-explicit-any
+  395:35   warning  Unexpected any. Specify a different type                                       @typescript-eslint/no-explicit-any
+  586:81   error    'warnings' is defined but never used. Allowed unused args must match /^_/u     @typescript-eslint/no-unused-vars
+  586:101  error    'suggestions' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  605:140  error    'warnings' is defined but never used. Allowed unused args must match /^_/u     @typescript-eslint/no-unused-vars
+  605:160  error    'suggestions' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/rowan/github/tw-enigma/core/src/security/pluginSandbox.ts
+   21:7   error    'logger' is assigned a value but never used                                                                              @typescript-eslint/no-unused-vars
+  125:48  warning  Unexpected any. Specify a different type                                                                                 @typescript-eslint/no-explicit-any
+  330:20  error    A `require()` style import is forbidden                                                                                  @typescript-eslint/no-require-imports
+  331:16  error    A `require()` style import is forbidden                                                                                  @typescript-eslint/no-require-imports
+  335:38  warning  Unexpected any. Specify a different type                                                                                 @typescript-eslint/no-explicit-any
+  336:37  warning  Unexpected any. Specify a different type                                                                                 @typescript-eslint/no-explicit-any
+  356:18  warning  Unexpected any. Specify a different type                                                                                 @typescript-eslint/no-explicit-any
+  357:18  warning  Unexpected any. Specify a different type                                                                                 @typescript-eslint/no-explicit-any
+  399:18  warning  Unexpected any. Specify a different type                                                                                 @typescript-eslint/no-explicit-any
+  400:18  warning  Unexpected any. Specify a different type                                                                                 @typescript-eslint/no-explicit-any
+  509:5   error    'config' is defined but never used. Allowed unused args must match /^_/u                                                 @typescript-eslint/no-unused-vars
+  575:30  error    The `Function` type accepts any function-like value.
+Prefer explicitly defining any function parameters and return type  @typescript-eslint/no-unsafe-function-type
+  707:11  error    'violation' is assigned a value but never used                                                                           @typescript-eslint/no-unused-vars
+  735:31  error    'context' is defined but never used. Allowed unused args must match /^_/u                                                @typescript-eslint/no-unused-vars
+  766:5   error    'context' is defined but never used. Allowed unused args must match /^_/u                                                @typescript-eslint/no-unused-vars
+  767:5   error    'error' is defined but never used. Allowed unused args must match /^_/u                                                  @typescript-eslint/no-unused-vars
+
+/Users/rowan/github/tw-enigma/core/src/sourceMapGenerator.ts
+  135:58  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  466:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/src/tailwindPlugin.js
+  356:36  error  'addUtilities' is defined but never used. Allowed unused args must match /^_/u    @typescript-eslint/no-unused-vars
+  411:5   error  'addComponents' is defined but never used. Allowed unused args must match /^_/u   @typescript-eslint/no-unused-vars
+  412:5   error  'addBase' is defined but never used. Allowed unused args must match /^_/u         @typescript-eslint/no-unused-vars
+  413:5   error  'theme' is defined but never used. Allowed unused args must match /^_/u           @typescript-eslint/no-unused-vars
+  414:5   error  'variants' is defined but never used. Allowed unused args must match /^_/u        @typescript-eslint/no-unused-vars
+  415:5   error  'e' is defined but never used. Allowed unused args must match /^_/u               @typescript-eslint/no-unused-vars
+  416:13  error  'tailwindConfig' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/rowan/github/tw-enigma/core/src/templates/pluginTemplate.ts
+  102:18  error  'context' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/rowan/github/tw-enigma/core/src/templates/postcssPluginTemplate.ts
+  207:18  error  'context' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/rowan/github/tw-enigma/core/src/types/atomicOps.ts
+  145:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  348:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/src/types/plugins.ts
+   13:15  error    'Root' is defined but never used                                           @typescript-eslint/no-unused-vars
+   13:37  error    'PluginCreator' is defined but never used                                  @typescript-eslint/no-unused-vars
+  179:14  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  183:40  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  186:25  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  198:38  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  329:20  error    'context' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  336:33  error    'context' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  344:18  error    'context' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  375:35  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/src/workers/batchWorker.ts
+   15:22  error    'workerData' is defined but never used                                     @typescript-eslint/no-unused-vars
+  112:18  error    'error' is defined but never used                                          @typescript-eslint/no-unused-vars
+  253:20  error    'error' is defined but never used                                          @typescript-eslint/no-unused-vars
+  283:44  error    'options' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  309:43  error    'options' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  363:54  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/tests/atomicOps/AtomicFileCreator.test.ts
+   14:3   error    'vi' is defined but never used                       @typescript-eslint/no-unused-vars
+   18:10  error    'constants' is defined but never used                @typescript-eslint/no-unused-vars
+   21:3   error    'AtomicOperationResult' is defined but never used    @typescript-eslint/no-unused-vars
+   22:3   error    'FileCreationOptions' is defined but never used      @typescript-eslint/no-unused-vars
+  333:44  warning  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+  455:13  error    'testFile' is assigned a value but never used        @typescript-eslint/no-unused-vars
+  612:13  error    'initialMetrics' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/rowan/github/tw-enigma/core/tests/atomicOps/AtomicFileReader.test.ts
+   20:3   error    'AtomicOperationResult' is defined but never used  @typescript-eslint/no-unused-vars
+   74:16  error    'error' is defined but never used                  @typescript-eslint/no-unused-vars
+  160:33  warning  Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+  177:33  warning  Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+  420:18  error    'error' is defined but never used                  @typescript-eslint/no-unused-vars
+
+/Users/rowan/github/tw-enigma/core/tests/atomicOps/AtomicFileWriter.test.ts
+   17:10  error    'createHash' is defined but never used                               @typescript-eslint/no-unused-vars
+   20:3   error    'AtomicOperationResult' is defined but never used                    @typescript-eslint/no-unused-vars
+   21:3   error    'FileWriteOptions' is defined but never used                         @typescript-eslint/no-unused-vars
+   22:3   error    'AtomicOperationError' is defined but never used                     @typescript-eslint/no-unused-vars
+   79:16  error    'error' is defined but never used                                    @typescript-eslint/no-unused-vars
+   92:14  error    'error' is defined but never used                                    @typescript-eslint/no-unused-vars
+  261:24  warning  Unexpected any. Specify a different type                             @typescript-eslint/no-explicit-any
+  458:32  error    'i' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/rowan/github/tw-enigma/core/tests/atomicOps/AtomicOperationsSystem.test.ts
+  233:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/tests/atomicOps/AtomicRollbackManager.test.ts
+  56:13  error  'transactionId' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/rowan/github/tw-enigma/core/tests/configValidation.test.ts
+    8:57  error  'vi' is defined but never used                         @typescript-eslint/no-unused-vars
+   10:16  error  'dirname' is defined but never used                    @typescript-eslint/no-unused-vars
+   16:10  error  'createConfigWatcher' is defined but never used        @typescript-eslint/no-unused-vars
+  433:13  error  'needsMigration' is assigned a value but never used    @typescript-eslint/no-unused-vars
+  780:13  error  'result' is assigned a value but never used            @typescript-eslint/no-unused-vars
+  818:13  error  'runtimeValidator' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  820:13  error  'backupManager' is assigned a value but never used     @typescript-eslint/no-unused-vars
+
+/Users/rowan/github/tw-enigma/core/tests/cssGeneration.test.ts
+  31:8  error  'PatternClassification' is defined but never used  @typescript-eslint/no-unused-vars
+  32:8  error  'CssGenerationResult' is defined but never used    @typescript-eslint/no-unused-vars
+
+/Users/rowan/github/tw-enigma/core/tests/devDashboardEnhanced.test.ts
+   12:13  error    'http' is defined but never used          @typescript-eslint/no-unused-vars
+  523:24  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  632:24  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/tests/devExperience.test.ts
+    8:55  error  'vi' is defined but never used                   @typescript-eslint/no-unused-vars
+  404:7   error  'mockConfig' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  663:13  error  'files' is assigned a value but never used       @typescript-eslint/no-unused-vars
+
+/Users/rowan/github/tw-enigma/core/tests/devHotReload.test.ts
+  203:56  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  326:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  342:56  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/tests/devIdeIntegration.test.ts
+  179:24  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  210:24  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  290:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  306:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  314:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  415:24  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/tests/devTools.test.ts
+   8:59  error  'Mock' is defined but never used                                            @typescript-eslint/no-unused-vars
+  10:22  error  'fs' is defined but never used                                              @typescript-eslint/no-unused-vars
+  43:40  error  'patterns' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  43:50  error  'options' is defined but never used. Allowed unused args must match /^_/u   @typescript-eslint/no-unused-vars
+  48:38  error  'patterns' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  48:48  error  'options' is defined but never used. Allowed unused args must match /^_/u   @typescript-eslint/no-unused-vars
+
+/Users/rowan/github/tw-enigma/core/tests/dryRun/dryRunIntegration.test.ts
+   17:15  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   35:18  error    A `require()` style import is forbidden   @typescript-eslint/no-require-imports
+   57:20  error    A `require()` style import is forbidden   @typescript-eslint/no-require-imports
+   89:20  error    A `require()` style import is forbidden   @typescript-eslint/no-require-imports
+  121:18  error    A `require()` style import is forbidden   @typescript-eslint/no-require-imports
+  129:16  error    'error' is defined but never used         @typescript-eslint/no-unused-vars
+  144:20  error    A `require()` style import is forbidden   @typescript-eslint/no-require-imports
+  171:20  error    A `require()` style import is forbidden   @typescript-eslint/no-require-imports
+
+/Users/rowan/github/tw-enigma/core/tests/errorHandler.test.ts
+    6:59  error    'Mock' is defined but never used               @typescript-eslint/no-unused-vars
+    7:10  error    'EventEmitter' is defined but never used       @typescript-eslint/no-unused-vars
+   83:57  warning  Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+  307:11  error    'circuit1' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/rowan/github/tw-enigma/core/tests/fileIntegrity.test.ts
+     7:3   error    'unlink' is defined but never used                                          @typescript-eslint/no-unused-vars
+    13:24  error    'createInflate' is defined but never used                                   @typescript-eslint/no-unused-vars
+    13:39  error    'createBrotliDecompress' is defined but never used                          @typescript-eslint/no-unused-vars
+    16:10  error    'createHash' is defined but never used                                      @typescript-eslint/no-unused-vars
+    28:8   error    'FileIntegrityOptions' is defined but never used                            @typescript-eslint/no-unused-vars
+    61:14  error    'error' is defined but never used                                           @typescript-eslint/no-unused-vars
+   548:62  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+   618:13  error    'result' is assigned a value but never used                                 @typescript-eslint/no-unused-vars
+  1842:16  error    'error' is defined but never used                                           @typescript-eslint/no-unused-vars
+  1863:16  error    'error' is defined but never used                                           @typescript-eslint/no-unused-vars
+  1932:18  error    'error' is defined but never used                                           @typescript-eslint/no-unused-vars
+  1964:18  error    'error' is defined but never used                                           @typescript-eslint/no-unused-vars
+  2006:18  error    'error' is defined but never used                                           @typescript-eslint/no-unused-vars
+  2056:18  error    'error' is defined but never used                                           @typescript-eslint/no-unused-vars
+  2088:18  error    'error' is defined but never used                                           @typescript-eslint/no-unused-vars
+  2125:18  error    'error' is defined but never used                                           @typescript-eslint/no-unused-vars
+  2185:18  error    'error' is defined but never used                                           @typescript-eslint/no-unused-vars
+  2267:18  error    'error' is defined but never used                                           @typescript-eslint/no-unused-vars
+  2316:18  error    'error' is defined but never used                                           @typescript-eslint/no-unused-vars
+  2357:18  error    'error' is defined but never used                                           @typescript-eslint/no-unused-vars
+  2398:18  error    'error' is defined but never used                                           @typescript-eslint/no-unused-vars
+  2431:18  error    'error' is defined but never used                                           @typescript-eslint/no-unused-vars
+  2439:15  error    'fullResult' is assigned a value but never used                             @typescript-eslint/no-unused-vars
+  2493:32  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  2494:45  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  2623:31  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  2673:31  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  2770:53  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  2803:28  error    'error' is defined but never used. Allowed unused args must match /^_/u     @typescript-eslint/no-unused-vars
+  2803:35  error    'filePath' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  2916:24  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  2997:31  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/tests/fixtures/nextjs/edge-cases/pages/conditional.tsx
+  14:26  error  'setUserPreference' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  17:9   error  'router' is assigned a value but never used             @typescript-eslint/no-unused-vars
+
+/Users/rowan/github/tw-enigma/core/tests/fixtures/react/complex/src/Dashboard.tsx
+  21:21  error  'setIsLoading' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/rowan/github/tw-enigma/core/tests/fixtures/react/edge-cases/src/ConditionalClasses.tsx
+  263:65  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/tests/frameworkDetector/frameworkDetector.test.ts
+   13:8   error  'DetectionResult' is defined but never used  @typescript-eslint/no-unused-vars
+   14:8   error  'FrameworkType' is defined but never used    @typescript-eslint/no-unused-vars
+  342:16  error  'error' is defined but never used            @typescript-eslint/no-unused-vars
+
+/Users/rowan/github/tw-enigma/core/tests/htmlRewriter.test.ts
+  2313:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/tests/integration/optimization-pipeline.test.ts
+   10:16  error  'resolve' is defined but never used             @typescript-eslint/no-unused-vars
+   16:3   error  'PerformanceMonitor' is defined but never used  @typescript-eslint/no-unused-vars
+  311:53  error  Unnecessary escape character: \/                no-useless-escape
+  311:55  error  Unnecessary escape character: \[                no-useless-escape
+  311:60  error  Unnecessary escape character: \.                no-useless-escape
+  491:48  error  Unnecessary escape character: \/                no-useless-escape
+  491:50  error  Unnecessary escape character: \[                no-useless-escape
+  491:55  error  Unnecessary escape character: \.                no-useless-escape
+
+/Users/rowan/github/tw-enigma/core/tests/integration/reporter.test.ts
+  445:78  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/tests/integration/tailwind.test.ts
+  376:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  383:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/tests/integrations/integrationManager.test.ts
+   29:3   error    'BuildToolPlugin' is defined but never used   @typescript-eslint/no-unused-vars
+   31:3   error    'BuildToolContext' is defined but never used  @typescript-eslint/no-unused-vars
+  211:21  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  218:38  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  227:26  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  231:12  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  277:28  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  279:57  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  287:21  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  293:38  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  313:12  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  361:24  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  409:21  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  415:38  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  423:26  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  427:12  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  534:12  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  545:16  error    'error' is defined but never used             @typescript-eslint/no-unused-vars
+  571:26  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  574:12  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  607:33  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  616:16  error    'error' is defined but never used             @typescript-eslint/no-unused-vars
+  636:26  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  639:12  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/tests/jsRewriter.test.ts
+   11:44  error    'afterEach' is defined but never used                                      @typescript-eslint/no-unused-vars
+   12:8   error    'fs' is defined but never used                                             @typescript-eslint/no-unused-vars
+   13:8   error    'path' is defined but never used                                           @typescript-eslint/no-unused-vars
+   21:3   error    'JSReplacementResult' is defined but never used                            @typescript-eslint/no-unused-vars
+   22:3   error    'JavaScriptFileType' is defined but never used                             @typescript-eslint/no-unused-vars
+   80:14  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  279:25  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  466:45  error    'context' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  499:26  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  979:34  error    'context' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/rowan/github/tw-enigma/core/tests/logger.test.ts
+    1:59  error    'Mock' is defined but never used          @typescript-eslint/no-unused-vars
+    6:3   error    'logger' is defined but never used        @typescript-eslint/no-unused-vars
+  399:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  509:14  error    'error' is defined but never used         @typescript-eslint/no-unused-vars
+  902:13  error    'fs' is assigned a value but never used   @typescript-eslint/no-unused-vars
+
+/Users/rowan/github/tw-enigma/core/tests/nameGeneration.test.ts
+  55:8  error  'PrettyNameCache' is defined but never used   @typescript-eslint/no-unused-vars
+  56:8  error  'PrettyNameResult' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/rowan/github/tw-enigma/core/tests/optimizationCache.test.ts
+   10:8   error  'path' is defined but never used             @typescript-eslint/no-unused-vars
+  436:13  error  'result' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/rowan/github/tw-enigma/core/tests/optimizationCacheIntegration.test.ts
+   15:26  warning  Unexpected any. Specify a different type                                      @typescript-eslint/no-explicit-any
+   16:7   error    'OptimizationCacheIntegration' is assigned a value but never used             @typescript-eslint/no-unused-vars
+   16:37  warning  Unexpected any. Specify a different type                                      @typescript-eslint/no-explicit-any
+   17:43  warning  Unexpected any. Specify a different type                                      @typescript-eslint/no-explicit-any
+   18:40  warning  Unexpected any. Specify a different type                                      @typescript-eslint/no-explicit-any
+   20:18  warning  Unexpected any. Specify a different type                                      @typescript-eslint/no-explicit-any
+   28:46  error    'inputFiles' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+   28:58  error    'config' is defined but never used. Allowed unused args must match /^_/u      @typescript-eslint/no-unused-vars
+   28:66  error    'framework' is defined but never used. Allowed unused args must match /^_/u   @typescript-eslint/no-unused-vars
+   38:74  error    'framework' is defined but never used. Allowed unused args must match /^_/u   @typescript-eslint/no-unused-vars
+  270:35  warning  Unexpected any. Specify a different type                                      @typescript-eslint/no-explicit-any
+  271:35  warning  Unexpected any. Specify a different type                                      @typescript-eslint/no-explicit-any
+  293:27  warning  Unexpected any. Specify a different type                                      @typescript-eslint/no-explicit-any
+  311:23  warning  Unexpected any. Specify a different type                                      @typescript-eslint/no-explicit-any
+  312:23  warning  Unexpected any. Specify a different type                                      @typescript-eslint/no-explicit-any
+  327:23  warning  Unexpected any. Specify a different type                                      @typescript-eslint/no-explicit-any
+  352:38  warning  Unexpected any. Specify a different type                                      @typescript-eslint/no-explicit-any
+  630:43  warning  Unexpected any. Specify a different type                                      @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/tests/output/assetHasher.test.ts
+    15:3   error    'CompressedAsset' is defined but never used   @typescript-eslint/no-unused-vars
+   173:51  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+   311:28  error    A `require()` style import is forbidden       @typescript-eslint/no-require-imports
+   433:28  error    A `require()` style import is forbidden       @typescript-eslint/no-require-imports
+   434:7   error    A `require()` style import is forbidden       @typescript-eslint/no-require-imports
+   447:7   error    A `require()` style import is forbidden       @typescript-eslint/no-require-imports
+  1041:17  error    'chunkId' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/rowan/github/tw-enigma/core/tests/output/cssChunker.test.ts
+  439:72  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  726:74  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  748:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/tests/output/cssOptimizationCli.test.ts
+    8:55  error    'vi' is defined but never used               @typescript-eslint/no-unused-vars
+    9:10  error    'spawn' is defined but never used            @typescript-eslint/no-unused-vars
+   11:47  error    'mkdir' is defined but never used            @typescript-eslint/no-unused-vars
+  128:14  error    'error' is defined but never used            @typescript-eslint/no-unused-vars
+  162:25  error    'stderr' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  178:25  error    'stderr' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  194:25  error    'stderr' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  210:25  error    'stderr' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  229:25  error    'stderr' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  245:25  error    'stderr' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  266:25  error    'stderr' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  282:25  error    'stderr' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  303:25  error    'stderr' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  325:25  error    'stderr' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  348:25  error    'stderr' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  378:25  error    'stderr' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  392:25  error    'stderr' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  408:25  error    'stderr' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  426:25  error    'stderr' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  442:25  error    'stderr' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  457:25  error    'stderr' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  471:25  error    'stderr' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  488:25  error    'stderr' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  505:25  error    'stderr' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  521:25  error    'stderr' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  536:25  error    'stderr' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  551:17  error    'stdout' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  554:23  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  565:17  error    'stdout' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  579:17  error    'stdout' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  593:17  error    'stdout' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  593:25  error    'stderr' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  613:17  error    'stdout' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  613:25  error    'stderr' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  687:12  error    'error' is defined but never used            @typescript-eslint/no-unused-vars
+
+/Users/rowan/github/tw-enigma/core/tests/output/cssOutputConfig.test.ts
+  196:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  227:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  391:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/tests/output/cssReportGenerator.test.ts
+  588:53  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/tests/output/productionCssConfigManager.test.ts
+    8:55  error    'vi' is defined but never used                       @typescript-eslint/no-unused-vars
+    9:10  error    'writeFile' is defined but never used                @typescript-eslint/no-unused-vars
+   20:8   error    'DeploymentPreset' is defined but never used         @typescript-eslint/no-unused-vars
+   22:3   error    'createDevelopmentConfig' is defined but never used  @typescript-eslint/no-unused-vars
+   69:14  error    'error' is defined but never used                    @typescript-eslint/no-unused-vars
+  386:35  warning  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+  387:35  warning  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+  588:41  warning  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+  589:55  warning  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+  609:66  warning  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/tests/pathUtils.test.ts
+    2:8   error    'path' is defined but never used                  @typescript-eslint/no-unused-vars
+   16:8   error    'PathValidationResult' is defined but never used  @typescript-eslint/no-unused-vars
+   17:8   error    'RelativePathResult' is defined but never used    @typescript-eslint/no-unused-vars
+  243:55  warning  Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/tests/patternAnalysis.test.ts
+   18:3   error    'PatternAnalysisError' is defined but never used       @typescript-eslint/no-unused-vars
+   19:3   error    'DataAggregationError' is defined but never used       @typescript-eslint/no-unused-vars
+   20:3   error    'FrequencyCalculationError' is defined but never used  @typescript-eslint/no-unused-vars
+   25:8   error    'PatternFrequencyMap' is defined but never used        @typescript-eslint/no-unused-vars
+   26:8   error    'FrequencyAnalysisResult' is defined but never used    @typescript-eslint/no-unused-vars
+  566:61  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+  575:60  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/tests/performance/streamOptimizer.test.ts
+  120:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  321:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  371:16  error    '_error' is defined but never used        @typescript-eslint/no-unused-vars
+
+/Users/rowan/github/tw-enigma/core/tests/plugin-system.test.ts
+  304:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  325:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  347:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  370:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  429:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  451:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  487:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  522:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  566:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  620:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/tests/reporter.test.ts
+   13:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  436:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  502:67  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  541:26  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/tests/tailwindPlugin.test.ts
+   36:25  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   37:26  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   38:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  211:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/tests/utils/fixture-loader.ts
+  11:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/tests/utils/performance-monitor.ts
+   19:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   79:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  113:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  113:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  117:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  229:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  242:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  243:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  244:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  390:45  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  392:41  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  399:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  473:39  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  473:49  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/rowan/github/tw-enigma/core/types/tailwind-enigma.d.ts
+  181:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  213:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+✖ 901 problems (352 errors, 549 warnings)
+

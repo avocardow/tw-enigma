@@ -8,7 +8,7 @@
 import { createLogger, Logger } from "./logger.ts";
 import { EnigmaConfig } from "./config.ts";
 import { readFile, writeFile } from "fs/promises";
-import { join, relative, extname } from "path";
+import { join, extname } from "path";
 
 /**
  * CSS class pattern information

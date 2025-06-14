@@ -8,9 +8,8 @@
 import { EventEmitter } from "events";
 import { createLogger, Logger } from "./logger.ts";
 import { EnigmaConfig } from "./config.ts";
-import { writeFile, readFile, mkdir, access, constants } from "fs/promises";
-import { join, dirname, resolve } from "path";
-import { execSync } from "child_process";
+import { writeFile, readFile, mkdir } from "fs/promises";
+import { join, dirname } from "path";
 
 /**
  * IDE integration configuration
@@ -157,6 +156,7 @@ export interface IdeIntegrationEvents {
  * Enhanced IDE Integration System
  * Provides comprehensive IDE support with language server, autocomplete, and diagnostics
  */
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export class DevIdeIntegration extends EventEmitter {
   private config: IdeIntegrationConfig;
   private logger: Logger;
@@ -695,7 +695,7 @@ export class DevIdeIntegration extends EventEmitter {
     };
   }
 
-  private async handleHoverRequest(params: any): Promise<any> {
+  private async handleHoverRequest(_params: any): Promise<any> {
     return {
       contents: {
         kind: 'markdown',
@@ -704,7 +704,7 @@ export class DevIdeIntegration extends EventEmitter {
     };
   }
 
-  private async handleDefinitionRequest(params: any): Promise<any> {
+  private async handleDefinitionRequest(_params: any): Promise<any> {
     return null;
   }
 
@@ -1134,7 +1134,7 @@ nnoremap <leader>ew :EnigmaWatch<CR>`;
     const allSnippets = new Map<string, any>();
 
     // Collect all snippets by scope
-    for (const [framework, snippets] of this.codeSnippets) {
+    for (const [, snippets] of this.codeSnippets) {
       for (const snippet of snippets) {
         for (const scope of snippet.scope) {
           if (!allSnippets.has(scope)) {
@@ -1161,7 +1161,7 @@ nnoremap <leader>ew :EnigmaWatch<CR>`;
   /**
    * Validate CSS classes in content
    */
-  private async validateClasses(content: string, framework?: string): Promise<DiagnosticItem[]> {
+  private async validateClasses(content: string, _framework?: string): Promise<DiagnosticItem[]> {
     const diagnostics: DiagnosticItem[] = [];
     
     // Simple validation - check for unknown Tailwind classes
@@ -1223,7 +1223,7 @@ nnoremap <leader>ew :EnigmaWatch<CR>`;
         });
       }
       
-    } catch (error) {
+    } catch {
       diagnostics.push({
         range: { start: { line: 0, character: 0 }, end: { line: 0, character: 0 } },
         severity: 'error',
@@ -1303,6 +1303,7 @@ export function createDevIdeIntegration(
 /**
  * Type-safe event emitter interface
  */
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export declare interface DevIdeIntegration {
   on<K extends keyof IdeIntegrationEvents>(event: K, listener: IdeIntegrationEvents[K]): this;
   emit<K extends keyof IdeIntegrationEvents>(event: K, ...args: Parameters<IdeIntegrationEvents[K]>): boolean;

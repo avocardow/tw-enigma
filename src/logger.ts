@@ -272,6 +272,7 @@ export class Logger {
         } else {
           // Rename to next number
           unlinkSync(newPath); // Remove if exists
+          // eslint-disable-next-line @typescript-eslint/no-require-imports
           require("fs").renameSync(oldPath, newPath);
         }
       }
@@ -282,11 +283,14 @@ export class Logger {
       const rotatedPath = `${basePath}.1`;
       if (compress) {
         // Compress and save
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
         const content = require("fs").readFileSync(basePath);
         const compressed = gzipSync(content);
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
         require("fs").writeFileSync(`${rotatedPath}.gz`, compressed);
         unlinkSync(basePath);
       } else {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
         require("fs").renameSync(basePath, rotatedPath);
       }
     }

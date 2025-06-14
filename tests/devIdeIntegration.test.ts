@@ -9,7 +9,6 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { DevIdeIntegration } from '../src/devIdeIntegration.js';
 import { EnigmaConfig } from '../src/config.js';
 import * as fs from 'fs/promises';
-import * as path from 'path';
 
 // Mock file system operations
 vi.mock('fs/promises', () => ({

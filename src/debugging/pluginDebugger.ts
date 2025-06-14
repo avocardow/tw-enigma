@@ -2,7 +2,6 @@ import { createLogger } from "../logger";
 import {
   EnigmaPlugin,
   EnigmaPluginContext,
-  PluginConfig,
 } from "../types/plugins";
 import { performance } from "perf_hooks";
 import * as fs from "fs/promises";
