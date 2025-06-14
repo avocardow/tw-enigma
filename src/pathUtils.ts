@@ -235,20 +235,6 @@ export class PathUtils {
       this.cacheResult(cacheKey, result);
       return result;
     } catch (error) {
-      const _errorResult: RelativePathResult = {
-        relativePath: "",
-        isValid: false,
-        normalizedPath: "",
-        metadata: {
-          fromPath,
-          toPath,
-          basePath: mergedOptions.basePath,
-          platformSeparators: path.sep,
-          webPath: "",
-          depth: 0,
-        },
-      };
-
       // Don't cache error results
       throw new PathUtilsError(
         `Failed to calculate relative path: ${error instanceof Error ? error.message : String(error)}`,

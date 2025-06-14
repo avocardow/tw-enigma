@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events';
 import { cpus, totalmem, freemem } from 'os';
-import { statSync } from 'fs';
-import { join } from 'path';
+// import { statSync } from 'fs';
+// import { join } from 'path';
 import { createLogger } from './logger.ts';
 import { type EnigmaConfig } from './config.ts';
 
@@ -137,7 +137,7 @@ export class PerformanceValidator extends EventEmitter {
    */
   public async analyzePerformance(options: PerformanceValidationOptions = {}): Promise<PerformanceMetrics> {
     const {
-      includeSystemAnalysis = true,
+      // includeSystemAnalysis = true,
       runBenchmarks = false,
       analyzeFileSystem = true,
       checkNetworkImpact = false,
@@ -487,7 +487,7 @@ export class PerformanceValidator extends EventEmitter {
   /**
    * Generate performance recommendations
    */
-  private async generateRecommendations(...analyses: any[]): Promise<PerformanceRecommendation[]> {
+  private async generateRecommendations(..._analyses: any[]): Promise<PerformanceRecommendation[]> {
     const recommendations: PerformanceRecommendation[] = [];
     
     // Memory optimization recommendations

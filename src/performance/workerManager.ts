@@ -362,7 +362,7 @@ export class WorkerManager extends EventEmitter {
         this.handleWorkerMessage(workerState, result);
       });
 
-      worker.on("error", (error) => {
+      worker.on("error", (_error) => {
         this.handleWorkerError(workerState, _error);
       });
 

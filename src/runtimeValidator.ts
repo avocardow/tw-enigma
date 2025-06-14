@@ -293,6 +293,7 @@ export class RuntimeValidator extends EventEmitter {
     try {
       // Validate input path
       if (this.config.input) {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
         if (!require('fs').existsSync(this.config.input)) {
           errors.push(`Input path does not exist: ${this.config.input}`);
         }
@@ -583,7 +584,7 @@ export class RuntimeValidator extends EventEmitter {
     }
   }
 
-  private validatePath(field: string, value: string, errors: ValidationError[], warnings: string[], suggestions: string[]): void {
+  private validatePath(field: string, value: string, errors: ValidationError[], _warnings: string[], _suggestions: string[]): void {
     if (value.includes("../") || value.includes("..\\")) {
       errors.push(new ValidationError(
         "Path traversal detected",

@@ -75,7 +75,9 @@ export interface AggregatedClassData {
 /**
  * Pattern frequency map interface
  */
-export interface PatternFrequencyMap extends Map<string, AggregatedClassData> {}
+export interface PatternFrequencyMap extends Map<string, AggregatedClassData> {
+  // Extending Map with additional pattern-specific functionality
+}
 
 /**
  * Pattern grouping result for related classes

@@ -32,6 +32,7 @@ describe("DryRun Integration Tests", () => {
 
     // Simulate some file operations
     const { dryRunResult } = await simulator.executeInDryRun(async () => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const fs = require("fs");
 
       // These operations should be intercepted and simulated
@@ -54,7 +55,8 @@ describe("DryRun Integration Tests", () => {
   it("should generate comprehensive reports in different formats", async () => {
     const { dryRunResult } = await simulateDryRun(
       async () => {
-        const fs = require("fs");
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const fs = require("fs");
         fs.writeFileSync("input.css", ".test { color: red; }");
         fs.writeFileSync("output.css", ".test{color:red}");
         return { processed: true };
@@ -86,7 +88,8 @@ describe("DryRun Integration Tests", () => {
   it("should provide accurate statistics and performance metrics", async () => {
     const { dryRunResult } = await simulateDryRun(
       async () => {
-        const fs = require("fs");
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const fs = require("fs");
 
         // Create various operations for statistics
         fs.writeFileSync("large.css", "a".repeat(10000)); // Large file
@@ -118,6 +121,7 @@ describe("DryRun Integration Tests", () => {
 
   it("should handle errors gracefully in dry run mode", async () => {
     const { dryRunResult } = await simulateDryRun(async () => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const fs = require("fs");
 
       // This should work fine in dry run
@@ -141,7 +145,8 @@ describe("DryRun Integration Tests", () => {
   it("should support content previews and diffs", async () => {
     const { dryRunResult } = await simulateDryRun(
       async () => {
-        const fs = require("fs");
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const fs = require("fs");
 
         // Create a file and then modify it
         fs.writeFileSync("style.css", ".original { color: red; }");
@@ -168,7 +173,8 @@ describe("DryRun Integration Tests", () => {
   it("should provide optimization recommendations", async () => {
     const { dryRunResult } = await simulateDryRun(
       async () => {
-        const fs = require("fs");
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const fs = require("fs");
 
         // Create many operations to trigger recommendations
         for (let i = 0; i < 50; i++) {

@@ -18,7 +18,7 @@ import { performance } from "perf_hooks";
 import { createLogger } from "../logger.ts";
 import type { EnigmaPlugin, PluginConfig } from "../types/plugins.ts";
 
-const logger = createLogger("plugin-sandbox");
+// const logger = createLogger("plugin-sandbox");
 
 /**
  * Plugin permission levels
@@ -327,7 +327,9 @@ export class PluginSandbox extends EventEmitter {
     };
 
     // Get the fs module to override - need to handle both require('fs') and import fs
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const Module = require('module');
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const fs = require('fs');
     
     // Store originals to restore later

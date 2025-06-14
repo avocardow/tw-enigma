@@ -10,7 +10,7 @@
  * Defines the API contracts for the plugin system integration
  */
 
-import type { Root, Result, Plugin, PluginCreator } from "postcss";
+import type { Result, Plugin } from "postcss";
 import type { z } from "zod";
 import type { FrequencyAnalysisResult } from "../patternAnalysis.ts";
 import type { Logger } from "../logger.ts";

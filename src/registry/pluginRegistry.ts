@@ -533,7 +533,7 @@ export class PluginRegistry extends EventEmitter {
     this.dependencyGraph.set(pluginName, new Set(dependencies));
 
     // Update dependents
-    for (const [name, versions] of this.plugins) {
+    for (const [, versions] of this.plugins) {
       for (const entry of versions.values()) {
         if (entry.dependencies.includes(pluginName)) {
           entry.dependents.push(pluginName);
@@ -579,8 +579,10 @@ export class PluginRegistry extends EventEmitter {
    */
   private async loadPluginFromFile(filePath: string): Promise<EnigmaPlugin> {
     // Clear require cache for hot-reload
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     delete require.cache[require.resolve(filePath)];
 
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const pluginModule = require(filePath);
     const plugin = pluginModule.default || pluginModule;
 

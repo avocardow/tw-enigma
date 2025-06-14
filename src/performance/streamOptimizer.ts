@@ -12,8 +12,8 @@
  * transform stream chaining, and progress tracking for long operations.
  */
 
-import { Transform, Readable, Writable, pipeline, PassThrough } from "stream";
-import { createReadStream, createWriteStream } from "fs";
+import { Transform, Readable, Writable, pipeline } from "stream";
+import { createReadStream } from "fs";
 import { EventEmitter } from "events";
 import { performance } from "perf_hooks";
 import { promisify } from "util";
@@ -389,7 +389,7 @@ export class StreamOptimizer extends EventEmitter {
       // Process files with concurrency limit using Promise.allSettled in batches
       for (let i = 0; i < filePaths.length; i += concurrency) {
         const batch = filePaths.slice(i, i + concurrency);
-        const batchPromises = batch.map(async (filePath, batchIndex) => {
+        const batchPromises = batch.map(async (filePath, _batchIndex) => {
           try {
             const result = await this.processFileWithLimiter(
               filePath,
@@ -432,7 +432,7 @@ export class StreamOptimizer extends EventEmitter {
         const batchResults = await Promise.allSettled(batchPromises);
 
         // Process batch results
-        batchResults.forEach((settledResult, batchIndex) => {
+        batchResults.forEach((settledResult, _batchIndex) => {
           if (settledResult.status === "fulfilled") {
             const value = settledResult.value;
             if (value.success) {
@@ -448,7 +448,7 @@ export class StreamOptimizer extends EventEmitter {
           } else {
             // Promise.allSettled rejection (shouldn't happen with our error handling)
             stats.errorCount++;
-            const _ = new Error(
+            const error = new Error(
               `Batch processing failed: ${settledResult.reason}`,
             );
             errors.push(error);
@@ -507,10 +507,6 @@ export class StreamOptimizer extends EventEmitter {
    */
   getOverallMetrics(): PerformanceMetrics {
     const allStats = Array.from(this.activeStreams.values());
-    const totalBytes = allStats.reduce(
-      (sum, stat) => sum + stat.bytesProcessed,
-      0,
-    );
     const totalItems = allStats.reduce(
       (sum, stat) => sum + stat.itemsProcessed,
       0,

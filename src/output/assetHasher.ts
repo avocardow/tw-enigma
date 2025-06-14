@@ -663,7 +663,7 @@ export class CssOptimizer {
         });
 
         // Merge duplicate media queries
-        for (const [params, rules] of mediaQueries) {
+        for (const [_params, rules] of mediaQueries) {
           if (rules.length > 1) {
             const firstRule = rules[0];
 
@@ -685,6 +685,7 @@ export class CssOptimizer {
    * Create font optimization plugin
    */
   private createFontOptimizationPlugin(): Plugin {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this;
     return {
       postcssPlugin: "optimize-fonts",
@@ -846,10 +847,12 @@ export class CompressionEngine {
       // brotli
       compressed = await this.brotliAsync(content, {
         params: {
+          // eslint-disable-next-line @typescript-eslint/no-require-imports
           [require("zlib").constants.BROTLI_PARAM_QUALITY]: Math.min(
             this.config.level,
             11,
           ),
+          // eslint-disable-next-line @typescript-eslint/no-require-imports
           [require("zlib").constants.BROTLI_PARAM_SIZE_HINT]: content.length,
         },
       });
@@ -963,7 +966,7 @@ export class ManifestGenerator {
 
     for (const chunk of chunks) {
       const hashObj = hashes.get(chunk.id);
-      const optimization = actualOptimizations.get(chunk.id);
+      // const optimization = actualOptimizations.get(chunk.id);
       const compression = actualCompressions?.get(chunk.id) || [];
 
       if (!hashObj) continue;

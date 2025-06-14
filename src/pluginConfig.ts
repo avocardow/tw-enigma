@@ -14,7 +14,7 @@ import { z } from "zod";
 import { createLogger } from "./logger.ts";
 import type { EnigmaConfig } from "./config.ts";
 
-const logger = createLogger("plugin-config");
+// const logger = createLogger("plugin-config");
 
 /**
  * Core plugin configuration schema
@@ -419,7 +419,7 @@ export class PluginConfigManager {
   /**
    * Create configuration from main Enigma config
    */
-  static fromEnigmaConfig(enigmaConfig: EnigmaConfig): PluginConfigManager {
+  static fromEnigmaConfig(_enigmaConfig: EnigmaConfig): PluginConfigManager {
     // Extract PostCSS-related configuration from the main config
     const postcssConfig: Partial<PostCSSIntegrationConfig> = {
       processor: {

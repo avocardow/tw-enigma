@@ -17,7 +17,7 @@ import * as path from "path";
 import { createHash } from "crypto";
 import { AtomicFileReader } from "../../src/atomicOps/AtomicFileReader";
 import {
-  AtomicOperationResult,
+  // AtomicOperationResult,
   FileReadOptions,
   AtomicOperationError,
 } from "../../src/types/atomicOps";
@@ -71,7 +71,7 @@ describe("AtomicFileReader", () => {
     for (const file of filesToClean) {
       try {
         await fs.unlink(file);
-      } catch (error) {
+      } catch {
         // Ignore errors - file might not exist
       }
     }

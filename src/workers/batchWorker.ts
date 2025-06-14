@@ -12,7 +12,7 @@
  * including CSS parsing, file analysis, and batch processing operations.
  */
 
-import { parentPort, workerData } from "worker_threads";
+import { parentPort } from "worker_threads";
 import { performance } from "perf_hooks";
 
 /**
@@ -109,7 +109,7 @@ const taskHandlers = {
             .map((match) => match[0])
             .filter((match, index, array) => array.indexOf(match) === index);
           results[pattern] = matches;
-        } catch (_) {
+        } catch {
           // Invalid regex, skip
           results[pattern] = [];
         }
@@ -250,7 +250,7 @@ const taskHandlers = {
             result = data.input.filter(
               (item) => typeof item === "string" && item.includes(condition),
             );
-          } catch (_) {
+          } catch {
             result = { error: "Invalid filter condition" };
           }
         } else {
@@ -280,7 +280,7 @@ const taskHandlers = {
 /**
  * Helper functions for batch processing
  */
-async function validateItem(item: unknown, options?: Record<string, unknown>) {
+async function validateItem(item: unknown, _options?: Record<string, unknown>) {
   // Basic validation logic
   if (typeof item === "string" && item.length > 0) {
     return { valid: true, item };
@@ -306,7 +306,7 @@ async function transformItem(item: unknown, options?: Record<string, unknown>) {
   return { error: "Can only transform strings" };
 }
 
-async function analyzeItem(item: unknown, options?: Record<string, unknown>) {
+async function analyzeItem(item: unknown, _options?: Record<string, unknown>) {
   // Basic analysis logic
   if (typeof item === "string") {
     return {

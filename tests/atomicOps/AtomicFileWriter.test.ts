@@ -17,7 +17,7 @@ import * as path from "path";
 import { createHash } from "crypto";
 import { AtomicFileWriter } from "../../src/atomicOps/AtomicFileWriter";
 import {
-  AtomicOperationResult,
+  // AtomicOperationResult,
   FileWriteOptions,
   AtomicOperationError,
 } from "../../src/types/atomicOps";

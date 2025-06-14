@@ -353,7 +353,7 @@ function generateAutocompleteConfig(utilities, config, patterns, frequencies) {
 /**
  * Set up file watching for hot reloading
  */
-function setupHotReloading(config, addUtilities) {
+function setupHotReloading(config, _addUtilities) {
   if (!config.development.hotReload) return;
 
   const watchPaths = [
@@ -408,12 +408,12 @@ function setupHotReloading(config, addUtilities) {
 const tailwindEnigmaPlugin = plugin.withOptions((options = {}) => {
   return ({
     addUtilities,
-    addComponents,
-    addBase,
-    theme,
-    variants,
-    e,
-    config: tailwindConfig,
+    addComponents: _addComponents,
+    addBase: _addBase,
+    theme: _theme,
+    variants: _variants,
+    e: _e,
+    config: _tailwindConfig,
   }) => {
     // Merge user options with defaults
     const config = {

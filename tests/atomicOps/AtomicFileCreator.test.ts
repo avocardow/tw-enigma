@@ -11,14 +11,14 @@ import {
   afterEach,
   beforeAll,
   afterAll,
-  vi,
+  // vi,
 } from "vitest";
 import * as fs from "fs/promises";
 import * as path from "path";
-import { constants } from "fs";
+// import { constants } from "fs";
 import { AtomicFileCreator } from "../../src/atomicOps/AtomicFileCreator";
 import {
-  AtomicOperationResult,
+  // AtomicOperationResult,
   FileCreationOptions,
   AtomicOperationError,
 } from "../../src/types/atomicOps";
