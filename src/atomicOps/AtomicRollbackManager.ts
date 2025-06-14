@@ -11,7 +11,6 @@
  */
 
 import * as fs from "fs/promises";
-import * as path from "path";
 import { v4 as uuidv4 } from "uuid";
 
 import {
@@ -105,7 +104,7 @@ export class AtomicRollbackManager {
     transactionId: string,
     operation: RollbackOperation,
   ): void {
-    let transaction = this.activeTransactions.get(transactionId);
+    const transaction = this.activeTransactions.get(transactionId);
     
     // If not in active transactions, check committed transactions for better error message
     if (!transaction) {
@@ -330,7 +329,7 @@ export class AtomicRollbackManager {
         try {
           await fs.unlink(operation.filePath);
         } catch (error) {
-          if ((error as any).code !== "ENOENT") {
+          if (!(error && typeof error === 'object' && 'code' in error && error.code === "ENOENT")) {
             throw error;
           }
         }
@@ -376,7 +375,7 @@ export class AtomicRollbackManager {
         try {
           await fs.rmdir(operation.filePath);
         } catch (error) {
-          if ((error as any).code !== "ENOENT") {
+          if (!(error && typeof error === 'object' && 'code' in error && error.code === "ENOENT")) {
             throw error;
           }
         }
@@ -391,7 +390,7 @@ export class AtomicRollbackManager {
 
       default:
         throw new Error(
-          `Unknown rollback operation type: ${(operation as any).type}`,
+          `Unknown rollback operation type: ${operation && typeof operation === 'object' && 'type' in operation ? operation.type : 'unknown'}`,
         );
     }
   }

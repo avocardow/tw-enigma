@@ -13,9 +13,7 @@
 import { promises as fs } from "fs";
 import type { Stats } from "fs";
 import { createReadStream } from "fs";
-import * as path from "path";
 import { createHash } from "crypto";
-import { promisify } from "util";
 import { pipeline } from "stream/promises";
 
 import {
@@ -210,7 +208,7 @@ export class AtomicFileReader {
   async readJsonFile(
     filePath: string,
     options: FileReadOptions = {},
-  ): Promise<AtomicOperationResult & { content?: any }> {
+  ): Promise<AtomicOperationResult & { content?: unknown }> {
     const readResult = await this.readFile(filePath, {
       ...options,
       encoding: "utf8",
@@ -399,8 +397,8 @@ export class AtomicFileReader {
   private async getFileStats(filePath: string): Promise<Stats> {
     try {
       return await fs.stat(filePath);
-    } catch (error: any) {
-      if (error.code === "ENOENT") {
+    } catch (error: unknown) {
+      if (error && typeof error === 'object' && 'code' in error && error.code === "ENOENT") {
         throw new Error(`File not found: ${filePath}`);
       }
       throw error;
@@ -449,16 +447,12 @@ export class AtomicFileReader {
       highWaterMark: options.bufferSize,
     });
 
-    try {
-      await pipeline(readStream, async function* (source) {
-        for await (const chunk of source) {
-          chunks.push(chunk);
-          yield chunk;
-        }
-      });
-    } catch (error) {
-      throw error;
-    }
+    await pipeline(readStream, async function* (source) {
+      for await (const chunk of source) {
+        chunks.push(chunk);
+        yield chunk;
+      }
+    });
 
     const buffer = Buffer.concat(chunks);
 
@@ -538,8 +532,8 @@ export class AtomicFileReader {
     }
   }
 
-  private getErrorCode(error: any): string {
-    if (error.code) {
+  private getErrorCode(error: unknown): string {
+    if (error && typeof error === 'object' && 'code' in error && typeof error.code === 'string') {
       switch (error.code) {
         case "ENOENT":
           return AtomicOperationError.FILE_NOT_FOUND;
@@ -555,20 +549,22 @@ export class AtomicFileReader {
       }
     }
 
-    if (error.message?.includes("File not found")) {
-      return AtomicOperationError.FILE_NOT_FOUND;
-    }
+    if (error && typeof error === 'object' && 'message' in error && typeof error.message === 'string') {
+      if (error.message.includes("File not found")) {
+        return AtomicOperationError.FILE_NOT_FOUND;
+      }
 
-    if (error.message?.includes("timeout")) {
-      return AtomicOperationError.TIMEOUT;
-    }
+      if (error.message.includes("timeout")) {
+        return AtomicOperationError.TIMEOUT;
+      }
 
-    if (error.message?.includes("Checksum")) {
-      return "CHECKSUM_MISMATCH";
-    }
+      if (error.message.includes("Checksum")) {
+        return "CHECKSUM_MISMATCH";
+      }
 
-    if (error.message?.includes("Schema validation")) {
-      return "SCHEMA_VALIDATION_ERROR";
+      if (error.message.includes("Schema validation")) {
+        return "SCHEMA_VALIDATION_ERROR";
+      }
     }
 
     return AtomicOperationError.INVALID_OPERATION;

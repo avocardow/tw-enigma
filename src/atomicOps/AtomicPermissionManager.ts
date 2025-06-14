@@ -11,7 +11,6 @@
  */
 
 import * as fs from "fs/promises";
-import * as path from "path";
 
 import {
   AtomicFileOptions,
@@ -190,7 +189,6 @@ export class AtomicPermissionManager {
     try {
       // Get current file stats
       const stats = await fs.stat(filePath);
-      const oldOwnership = { uid: stats.uid, gid: stats.gid };
 
       // Validate ownership values
       this.validateOwnership(uid, gid);

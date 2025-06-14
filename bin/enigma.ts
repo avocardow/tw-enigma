@@ -15,7 +15,6 @@ import {
 } from "../src/config.ts";
 import {
   discoverFilesFromConfig,
-  type FileDiscoveryOptions,
   FileDiscoveryError,
 } from "../src/fileDiscovery.ts";
 import {
@@ -24,7 +23,6 @@ import {
   type FileOutputOptions,
 } from "../src/logger.ts";
 import {
-  createCssOutputOrchestrator,
   createProductionOrchestrator,
   createDevelopmentOrchestrator,
   type CssBundle,
@@ -32,11 +30,9 @@ import {
 } from "../src/output/cssOutputOrchestrator.ts";
 import {
   createProductionConfigManager,
-  parseCliArgs,
   createPerformanceBudget,
   validateProductionConfig,
   generateConfigDocs,
-  type CliArgs,
   type PerformanceBudget,
 } from "../src/output/cssOutputConfig.ts";
 
@@ -63,7 +59,7 @@ let cliLogger = new Logger({
 /**
  * Update logger configuration based on CLI arguments
  */
-function updateLoggerFromArgv(argv: any): void {
+function updateLoggerFromArgv(argv: Record<string, unknown>): void {
   // Parse log level
   let level = LogLevel.INFO;
   if (argv.logLevel) {
@@ -450,7 +446,7 @@ const argv = await yargs(hideBin(process.argv))
         // Ensure output directory exists
         try {
           mkdirSync(options.outputDir, { recursive: true });
-        } catch (error) {
+        } catch {
           // Ignore if directory already exists
         }
 
@@ -474,7 +470,7 @@ const argv = await yargs(hideBin(process.argv))
           );
 
           // Execute the CSS optimization in dry run simulation
-          const { result, dryRunResult } = await simulateDryRun(
+          const { dryRunResult } = await simulateDryRun(
             async () => {
               return await orchestrator.orchestrate(bundles, options);
             },
@@ -491,7 +487,7 @@ const argv = await yargs(hideBin(process.argv))
           const reportFormat = argv.verbose ? "markdown" : "text";
           const reportOutput = exportReport(
             dryRunResult.report,
-            reportFormat as any,
+            reportFormat as "markdown" | "text",
           );
 
           if (argv.verbose) {
@@ -517,11 +513,10 @@ const argv = await yargs(hideBin(process.argv))
           // Save detailed report to file if requested
           if (argv.report) {
             const reportPath = resolve(options.outputDir, "dry-run-report.md");
-            const fs = require("fs");
 
             // Use actual filesystem for report since this is informational
             const fullReport = exportReport(dryRunResult.report, "markdown");
-            fs.writeFileSync(reportPath, fullReport);
+            writeFileSync(reportPath, fullReport);
             cliLogger.info("📋 Dry run report saved", { path: reportPath });
           }
 
@@ -1046,7 +1041,7 @@ const argv = await yargs(hideBin(process.argv))
 
                 if (argv.verbose && health.recentErrors.length > 0) {
                   console.log(`   Recent Errors:`);
-                  health.recentErrors.slice(0, 3).forEach((error: any, i: number) => {
+                  health.recentErrors.slice(0, 3).forEach((error: { message: string; category: string }, i: number) => {
                     console.log(
                       `     ${i + 1}. ${error.message} (${error.category})`,
                     );
@@ -1664,7 +1659,7 @@ const argv = await yargs(hideBin(process.argv))
                   );
 
                   try {
-                    const updated = await marketplace.updatePlugin(
+                    await marketplace.updatePlugin(
                       plugin.meta.name,
                     );
                     console.log(`   ✅ Updated successfully`);
@@ -1688,7 +1683,7 @@ const argv = await yargs(hideBin(process.argv))
           "list",
           "List installed plugins with marketplace info",
           {},
-          async (argv) => {
+          async (_argv) => {
             try {
               cliLogger.info("📋 Listing installed plugins");
 
@@ -2001,7 +1996,7 @@ try {
     
     // Try to get a default config and continue
     try {
-      const defaultConfig = EnigmaConfigSchema.parse({});
+      EnigmaConfigSchema.parse({});
       cliLogger.info("Configuration loaded successfully");
       cliLogger.info("Tailwind Enigma is ready to optimize your CSS!");
       
@@ -2011,9 +2006,9 @@ try {
           "Tip: Run 'enigma init-config' to create a sample configuration file",
         );
       }
-    } catch (defaultError) {
-      cliLogger.fatal("Failed to create default configuration", {
-        message: defaultError instanceof Error ? defaultError.message : String(defaultError),
+                  } catch (defaultError) {
+        cliLogger.fatal("Failed to create default configuration", {
+          message: defaultError instanceof Error ? defaultError.message : String(defaultError),
       });
       process.exit(1);
     }

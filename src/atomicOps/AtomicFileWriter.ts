@@ -11,12 +11,11 @@
  */
 
 import * as fs from "fs/promises";
-import { createWriteStream, createReadStream } from "fs";
+import type { Stats } from "fs";
+import { createWriteStream } from "fs";
 import * as path from "path";
 import { createHash } from "crypto";
 import { v4 as uuidv4 } from "uuid";
-import writeFileAtomic from "write-file-atomic";
-import { promisify } from "util";
 import { pipeline } from "stream/promises";
 
 import {
@@ -27,7 +26,6 @@ import {
   FileWriteOptions,
   TempFileInfo,
   RollbackOperation,
-  RollbackStep,
 } from "../types/atomicOps";
 
 /** Default options for atomic file operations */
@@ -148,7 +146,7 @@ export class AtomicFileWriter {
         try {
           const stats = await fs.stat(filePath);
           originalPermissions = stats.mode & 0o777;
-        } catch (error) {
+        } catch {
           // If we can't read permissions, continue without preservation
         }
       }
@@ -270,7 +268,7 @@ export class AtomicFileWriter {
       try {
         const stats = await fs.stat(filePath);
         result.fileStats = stats; // Use the full Stats object
-      } catch (error) {
+      } catch {
         // File stats are optional, don't fail the operation
       }
 
@@ -340,7 +338,7 @@ export class AtomicFileWriter {
    */
   async writeJsonFile(
     filePath: string,
-    data: any,
+    data: unknown,
     options: FileWriteOptions = {},
   ): Promise<AtomicOperationResult> {
     try {
@@ -583,7 +581,7 @@ export class AtomicFileWriter {
         .map((file) => ({
           name: file,
           path: path.join(dirName, file),
-          stat: null as any,
+          stat: null as Stats | null,
         }));
 
       // Get stats for all backup files
@@ -770,13 +768,13 @@ export class AtomicFileWriter {
   private async atomicMove(
     tempPath: string,
     finalPath: string,
-    options: Required<FileWriteOptions>,
+    _options: Required<FileWriteOptions>,
   ): Promise<void> {
     try {
       await fs.rename(tempPath, finalPath);
-    } catch (error: any) {
+    } catch (error: unknown) {
       // If rename fails (e.g., cross-device), fall back to copy + delete
-      if (error.code === "EXDEV") {
+      if (error && typeof error === 'object' && 'code' in error && error.code === "EXDEV") {
         await fs.copyFile(tempPath, finalPath);
         await fs.unlink(tempPath);
       } else {
@@ -868,8 +866,8 @@ export class AtomicFileWriter {
     }
   }
 
-  private getErrorCode(error: any): string {
-    if (error.code) {
+  private getErrorCode(error: unknown): string {
+    if (error && typeof error === 'object' && 'code' in error && typeof error.code === 'string') {
       switch (error.code) {
         case "ENOENT":
           return AtomicOperationError.FILE_NOT_FOUND;
@@ -887,16 +885,18 @@ export class AtomicFileWriter {
       }
     }
 
-    if (error.message?.includes("timeout")) {
-      return AtomicOperationError.TIMEOUT;
-    }
+    if (error && typeof error === 'object' && 'message' in error && typeof error.message === 'string') {
+      if (error.message.includes("timeout")) {
+        return AtomicOperationError.TIMEOUT;
+      }
 
-    if (error.message?.includes("verification failed")) {
-      return "VERIFICATION_FAILED";
-    }
+      if (error.message.includes("verification failed")) {
+        return "VERIFICATION_FAILED";
+      }
 
-    if (error.message?.includes("serialize")) {
-      return "SERIALIZATION_ERROR";
+      if (error.message.includes("serialize")) {
+        return "SERIALIZATION_ERROR";
+      }
     }
 
     return AtomicOperationError.INVALID_OPERATION;

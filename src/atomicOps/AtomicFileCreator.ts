@@ -15,7 +15,6 @@ import { createWriteStream, createReadStream, constants } from "fs";
 import * as path from "path";
 import { v4 as uuidv4 } from "uuid";
 import writeFileAtomic from "write-file-atomic";
-import { promisify } from "util";
 import { pipeline } from "stream/promises";
 
 import {
@@ -300,7 +299,7 @@ export class AtomicFileCreator {
    */
   async createJsonFile(
     filePath: string,
-    data: any,
+    data: unknown,
     options: FileCreationOptions = {},
   ): Promise<AtomicOperationResult> {
     try {
@@ -515,8 +514,8 @@ export class AtomicFileCreator {
   private async ensureDirectoryExists(dirPath: string): Promise<void> {
     try {
       await fs.mkdir(dirPath, { recursive: true });
-    } catch (error: any) {
-      if (error.code !== "EEXIST") {
+    } catch (error: unknown) {
+      if (error && typeof error === 'object' && 'code' in error && error.code !== "EEXIST") {
         throw error;
       }
     }
@@ -550,7 +549,10 @@ export class AtomicFileCreator {
   ): Promise<void> {
     if (options.enableFsync) {
       // Use write-file-atomic for fsync support
-      const atomicOptions: any = {
+      const atomicOptions: {
+        encoding?: string;
+        mode: number;
+      } = {
         encoding: options.encoding === "utf8" ? "utf8" : undefined,
         mode: options.mode,
       };
@@ -569,7 +571,7 @@ export class AtomicFileCreator {
         mode: options.mode,
       };
       if (options.encoding) {
-        (writeOptions as any).encoding = options.encoding;
+        (writeOptions as { encoding?: string }).encoding = options.encoding;
       }
       await fs.writeFile(tempPath, content, writeOptions);
     }
@@ -582,9 +584,9 @@ export class AtomicFileCreator {
   ): Promise<void> {
     try {
       await fs.rename(sourcePath, targetPath);
-    } catch (error: any) {
+    } catch (error: unknown) {
       // If rename fails (e.g., cross-device), fall back to copy + delete
-      if (error.code === "EXDEV") {
+      if (error && typeof error === 'object' && 'code' in error && error.code === "EXDEV") {
         await this.copyFile(sourcePath, targetPath, options);
         await fs.unlink(sourcePath);
       } else {
@@ -626,10 +628,11 @@ export class AtomicFileCreator {
   private async cleanupTempFile(filePath: string): Promise<void> {
     try {
       await fs.unlink(filePath);
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Ignore if file doesn't exist
-      if (error.code !== "ENOENT") {
-        console.warn(`Failed to cleanup temp file ${filePath}:`, error.message);
+      if (error && typeof error === 'object' && 'code' in error && error.code !== "ENOENT") {
+        const message = error && typeof error === 'object' && 'message' in error ? error.message : String(error);
+        console.warn(`Failed to cleanup temp file ${filePath}:`, message);
       }
     }
   }
@@ -673,7 +676,7 @@ export class AtomicFileCreator {
     const rollbackPromises = filePaths.map((filePath) =>
       fs.unlink(filePath).catch((error) => {
         // Only log error if it's not "file not found" (ENOENT)
-        if (error.code !== "ENOENT") {
+        if (!(error && typeof error === 'object' && 'code' in error && error.code === "ENOENT")) {
           console.error(`Failed to rollback file ${filePath}:`, error);
         }
       }),
@@ -718,8 +721,8 @@ export class AtomicFileCreator {
       1000;
   }
 
-  private getErrorCode(error: any): string {
-    if (error.code) {
+  private getErrorCode(error: unknown): string {
+    if (error && typeof error === 'object' && 'code' in error && typeof error.code === 'string') {
       switch (error.code) {
         case "ENOENT":
           return AtomicOperationError.FILE_NOT_FOUND;
@@ -735,7 +738,7 @@ export class AtomicFileCreator {
       }
     }
 
-    if (error.message?.includes("timeout")) {
+    if (error && typeof error === 'object' && 'message' in error && typeof error.message === 'string' && error.message.includes("timeout")) {
       return AtomicOperationError.TIMEOUT;
     }
 

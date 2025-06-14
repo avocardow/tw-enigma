@@ -65,7 +65,7 @@ function minifyContent(css) {
   let processed = css;
 
   // Remove comments
-  processed = processed.replace(/\/\*(?!\!)[\s\S]*?\*\//g, '');
+  processed = processed.replace(/\/\*(?![!])[\s\S]*?\*\//g, '');
 
   // Remove empty rules
   processed = processed.replace(/[^{}]*\{\s*\}/g, '');

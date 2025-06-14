@@ -8,7 +8,9 @@ async function debugTest() {
   // Clean up and create test directory
   try {
     await fs.rm(testDir, { recursive: true, force: true });
-  } catch {}
+  } catch {
+    // Ignore errors when removing test directory
+  }
   await fs.mkdir(testDir, { recursive: true });
   
   const creator = new AtomicFileCreator();
@@ -50,7 +52,9 @@ async function debugTest() {
   // Clean up
   try {
     await fs.rm(testDir, { recursive: true, force: true });
-  } catch {}
+  } catch {
+    // Ignore errors when cleaning up test directory
+  }
 }
 
 debugTest().catch(console.error); 

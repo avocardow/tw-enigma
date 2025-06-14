@@ -13,7 +13,6 @@
 import * as fs from "fs/promises";
 import * as path from "path";
 import { v4 as uuidv4 } from "uuid";
-import { promisify } from "util";
 
 import {
   AtomicFileOptions,
@@ -306,7 +305,7 @@ export class AtomicFileManager {
           }
         } catch (error) {
           // Skip files that can't be accessed or are already deleted
-          if ((error as any).code !== "ENOENT") {
+          if (!(error && typeof error === 'object' && 'code' in error && error.code === "ENOENT")) {
             console.warn(`Failed to clean stale temp file ${filePath}:`, error);
           }
         }
