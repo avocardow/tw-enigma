@@ -124,7 +124,7 @@ const COMMON_CSS_PATTERNS = {
  */
 const DANGEROUS_PATTERNS = [
   /(\.\*\+)|\(\.\*\?\+\)/g, // Catastrophic backtracking patterns
-  /\(\?\!\.\*\)\.\*/g, // Negative lookahead with .*
+  /\(\?!\.\*\)\.\*/g, // Negative lookahead with .*
   /\(\.\+\)\+/g, // Nested quantifiers
   /\(\[\^\]\*\)\+/g, // Character class with nested quantifiers
 ];
@@ -422,7 +422,7 @@ export class RegexOptimizer extends EventEmitter {
     const complexityIndicators = [
       { pattern: /\.\*.*\.\*/, weight: 15, issue: "Multiple .* patterns" },
       {
-        pattern: /\(\?\=|\(\?\!/,
+        pattern: /\(\?=|\(\?!/,
         weight: 10,
         issue: "Lookahead/lookbehind assertions",
       },
@@ -669,7 +669,7 @@ export class RegexOptimizer extends EventEmitter {
     }
 
     // Check for anchor optimization
-    if (!/^[\^]/.test(pattern) && !/[\$]$/.test(pattern)) {
+    if (!/^[\^]/.test(pattern) && !/[$]$/.test(pattern)) {
       analysis.recommendations.push(
         "Consider using anchors (^ or $) if pattern should match at specific positions",
       );

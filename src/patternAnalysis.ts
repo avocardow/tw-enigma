@@ -77,6 +77,7 @@ export interface AggregatedClassData {
  */
 export interface PatternFrequencyMap extends Map<string, AggregatedClassData> {
   // Extending Map with additional pattern-specific functionality
+  readonly __patternFrequencyMapBrand?: unique symbol;
 }
 
 /**
@@ -653,7 +654,7 @@ export function generatePatternGroups(
  */
 function generateCoOccurrencePatterns(
   frequencyMap: PatternFrequencyMap,
-  options: PatternAnalysisOptions,
+  _options: PatternAnalysisOptions,
 ): void {
   try {
     // Analyze HTML contexts for co-occurrences
@@ -1372,7 +1373,7 @@ export function quickFrequencyAnalysis(
     validationOptions: undefined,
   };
 
-  const frequencyMap = generateFrequencyMap(input, _options);
+  const frequencyMap = generateFrequencyMap(input, options);
   const result = new Map<string, number>();
 
   for (const [className, data] of frequencyMap) {

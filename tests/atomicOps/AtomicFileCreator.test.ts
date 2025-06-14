@@ -451,7 +451,6 @@ describe("AtomicFileCreator", () => {
     it("should rollback on temp file write failure", async () => {
       // Use a unique test directory to isolate this test
       const uniqueTestDir = path.join(TEST_DIR, `rollback-write-test-${Date.now()}`);
-      const _testFile = path.join(uniqueTestDir, "write-fail-test.txt");
       
       await fs.mkdir(uniqueTestDir, { recursive: true });
 
@@ -608,8 +607,6 @@ describe("AtomicFileCreator", () => {
     });
 
     it("should track error statistics", async () => {
-      const _initialMetrics = creator.getMetrics();
-
       // Create existing file to trigger error
       await fs.writeFile(TEST_FILE, "existing");
 

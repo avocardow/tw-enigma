@@ -330,9 +330,8 @@ export class CssOutputOrchestrator {
 
     // Step 2: Analyze chunks if needed (after chunks are created)
     // Note: CSS analysis is optional and primarily for reporting
-    let analysis: any = null;
     try {
-      analysis = await this.analyzer.analyzeCss(chunks, [], {
+      await this.analyzer.analyzeCss(chunks, [], {
         analyzeSelectors: true,
         analyzeMediaQueries: true,
         analyzeDuplicates: true,
@@ -759,7 +758,7 @@ export class CssOutputOrchestrator {
    */
   private calculatePerformanceMetrics(
     results: Map<string, CssOutputResult>,
-    bundles: CssBundle[],
+    _bundles: CssBundle[],
   ): CssOrchestrationResult["performanceMetrics"] {
     let criticalCssSize = 0;
     let nonCriticalCssSize = 0;

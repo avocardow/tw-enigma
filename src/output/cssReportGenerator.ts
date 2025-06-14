@@ -542,7 +542,7 @@ export class CssReportGenerator {
    */
   private generateRecommendations(
     metrics: GlobalPerformanceMetrics,
-    results: any,
+    _results: any,
   ): OptimizationRecommendation[] {
     const recommendations: OptimizationRecommendation[] = [];
 

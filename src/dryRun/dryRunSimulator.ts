@@ -430,7 +430,7 @@ export class DryRunSimulator {
         if (this.options.verbose) {
           console.log(`📂 Pre-loaded: ${path}`);
         }
-      } catch (_) {
+      } catch {
         if (this.options.verbose) {
           console.warn(`⚠️  Could not pre-load: ${path}`);
         }

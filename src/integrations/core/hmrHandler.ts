@@ -365,7 +365,7 @@ export class HMRHandler extends EventEmitter {
    * Stop file watching
    */
   async stopWatching(): Promise<void> {
-    for (const [_path, watcher] of Array.from(this.fileWatchers)) {
+    for (const [, watcher] of Array.from(this.fileWatchers)) {
       if (watcher && typeof watcher.close === "function") {
         await watcher.close();
       }

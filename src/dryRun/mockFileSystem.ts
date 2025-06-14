@@ -542,7 +542,7 @@ export class MockFileSystem implements IMockFileSystem {
 
         this.files.set(normalized, entry);
       }
-    } catch (_) {
+    } catch {
       // File doesn't exist on disk, that's fine
     }
   }

@@ -323,7 +323,6 @@ export class CacheManager<T = unknown> extends EventEmitter {
    * Cleanup expired entries
    */
   private async cleanup(): Promise<void> {
-    const now = Date.now();
     const expiredKeys: string[] = [];
 
     for (const [key, entry] of this.cache.entries()) {
@@ -426,8 +425,6 @@ export class CacheManager<T = unknown> extends EventEmitter {
    * TTL eviction candidate selection
    */
   private selectTTLCandidate(): string | null {
-    const now = Date.now();
-
     // First, find expired entries
     for (const [key, entry] of this.cache.entries()) {
       if (this.isExpired(entry)) {

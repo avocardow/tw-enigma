@@ -414,7 +414,7 @@ export class OptimizationCache extends EventEmitter {
     const keyString = JSON.stringify(keyComponents);
     try {
       return createHash('sha256').update(keyString).digest('hex');
-    } catch (_) {
+    } catch {
       // Fallback for test environments or crypto issues
       // Use a simple hash of the keyString for deterministic results
       let hash = 0;
@@ -449,7 +449,7 @@ export class OptimizationCache extends EventEmitter {
       }
 
       return hash.digest('hex');
-    } catch (_) {
+    } catch {
       // Fallback if crypto operations fail (e.g., in tests)
       const content = files.join('-');
       let hash = 0;
@@ -482,7 +482,7 @@ export class OptimizationCache extends EventEmitter {
         return value;
       });
       return createHash('sha256').update(configString).digest('hex');
-    } catch (_) {
+    } catch {
       // Fallback for test environments or crypto issues
       const relevantConfig = this.extractRelevantConfig(config);
       

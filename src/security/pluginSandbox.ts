@@ -508,7 +508,7 @@ export class PluginSandbox extends EventEmitter {
    */
   private generateSandboxId(
     plugin: EnigmaPlugin,
-    config: PluginConfig,
+    _config: PluginConfig,
   ): string {
     const name = plugin.meta?.name || "unknown-plugin";
     const version = plugin.meta?.version || "0.0.0";
@@ -574,7 +574,7 @@ export class PluginSandbox extends EventEmitter {
             message: args.map(String).join(" "),
           }),
       },
-      setTimeout: (callback: Function, delay: number) => {
+      setTimeout: (callback: () => void, delay: number) => {
         if (delay > 5000) {
           throw new SecurityViolationError(
             SecurityViolationType.RESOURCE_EXCEEDED,
@@ -705,12 +705,6 @@ export class PluginSandbox extends EventEmitter {
     details: string,
   ): void {
     context.isTerminated = true;
-
-    const violation = new SecurityViolationError(
-      type,
-      context.pluginName,
-      details,
-    );
 
     this.emit("securityViolation", {
       type,

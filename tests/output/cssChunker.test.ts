@@ -156,10 +156,10 @@ const mockUsageData = {
 // =============================================================================
 
 describe("DependencyGraph", () => {
-  let graph: DependencyGraph;
+  let graph: TestDependencyGraph;
 
   beforeEach(() => {
-    graph = new DependencyGraph();
+    graph = new TestDependencyGraph();
   });
 
   describe("constructor", () => {

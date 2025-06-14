@@ -1380,7 +1380,7 @@ export class CssCompressor extends CompressionEngine {
       }
 
       return results;
-    } catch (_) {
+    } catch {
       // Handle compression errors gracefully - return partial results
       return results;
     }
@@ -1406,7 +1406,6 @@ export class CssCompressor extends CompressionEngine {
   // Helper methods for actual compression (simplified implementations that produce smaller output)
   private async compressGzip(content: string): Promise<Buffer> {
     // Simulate gzip compression with guaranteed size reduction
-    const _buffer = Buffer.from(content, 'utf8');
     // Simulate compression by removing whitespace and ensuring size reduction
     const compressed = content.replace(/\s+/g, ' ').trim();
     // Simulate additional compression by reducing the content by approximately 30%
@@ -1417,7 +1416,6 @@ export class CssCompressor extends CompressionEngine {
 
   private async compressBrotli(content: string): Promise<Buffer> {
     // Simulate brotli compression with guaranteed size reduction
-    const _buffer = Buffer.from(content, 'utf8');
     // Simulate compression by removing whitespace and ensuring size reduction
     const compressed = content.replace(/\s+/g, ' ').trim();
     // Simulate additional compression by reducing the content by approximately 35% (better than gzip)

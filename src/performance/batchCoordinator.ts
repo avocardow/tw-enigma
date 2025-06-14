@@ -510,7 +510,7 @@ export class BatchCoordinator extends EventEmitter {
     processor: JobProcessor<T, R>,
     startTime: number,
   ): Promise<BatchResult<R>> {
-    return new Promise(async (resolve) => {
+    return new Promise((resolve) => {
       const timeout = setTimeout(() => {
         const duration = (performance.now() - startTime) / 1000;
         resolve({
@@ -522,31 +522,34 @@ export class BatchCoordinator extends EventEmitter {
         });
       }, job.timeout || this.config.queueTimeout);
 
-      try {
-        const result = await processor(job.input, job);
-        const duration = (performance.now() - startTime) / 1000;
+      // Execute the processor asynchronously
+      (async () => {
+        try {
+          const result = await processor(job.input, job);
+          const duration = (performance.now() - startTime) / 1000;
 
-        clearTimeout(timeout);
-        resolve({
-          jobId: job.id,
-          success: true,
-          result,
-          duration,
-          retryCount: job.retryCount || 0,
-          metadata: job.metadata,
-        });
-      } catch (error) {
-        clearTimeout(timeout);
-        const duration = (performance.now() - startTime) / 1000;
+          clearTimeout(timeout);
+          resolve({
+            jobId: job.id,
+            success: true,
+            result,
+            duration,
+            retryCount: job.retryCount || 0,
+            metadata: job.metadata,
+          });
+        } catch (error) {
+          clearTimeout(timeout);
+          const duration = (performance.now() - startTime) / 1000;
 
-        resolve({
-          jobId: job.id,
-          success: false,
-          error: error instanceof Error ? error : new Error(String(error)),
-          duration,
-          retryCount: job.retryCount || 0,
-        });
-      }
+          resolve({
+            jobId: job.id,
+            success: false,
+            error: error instanceof Error ? error : new Error(String(error)),
+            duration,
+            retryCount: job.retryCount || 0,
+          });
+        }
+      })();
     });
   }
 

@@ -641,7 +641,7 @@ export class CssAnalyzer {
   private generateOptimizationSuggestions(
     chunkAnalyses: ChunkAnalysis[],
     assetAnalyses: AssetAnalysis[],
-    summary: AnalysisSummary,
+    _summary: AnalysisSummary,
   ): OptimizationSuggestions {
     const suggestions: OptimizationSuggestions = {
       critical: [],
@@ -780,7 +780,6 @@ export class CssAnalyzer {
     });
 
     let line = 1;
-    const column = 0;
 
     for (const chunk of chunks) {
       const lines = chunk.content.split("\n");

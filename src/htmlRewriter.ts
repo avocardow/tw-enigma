@@ -1683,7 +1683,7 @@ export class HtmlRewriter {
     matched: string,
     pattern: HtmlPattern,
     element: cheerio.Cheerio<any>,
-    context: any,
+    _context: any,
   ): string {
     let replacement: string;
 
@@ -2603,7 +2603,7 @@ export class HtmlRewriter {
 
     const files =
       await this.integration.fileDiscovery.findFiles(discoveryOptions);
-    return this.processBatch(files, _options);
+    return this.processBatch(files, options);
   }
 
   /**

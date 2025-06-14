@@ -827,5 +827,5 @@ export function createCiIntegration(
   config: CssOutputConfig,
   options?: CiIntegrationOptions,
 ): CiIntegration {
-  return new CiIntegration(config, _options);
+  return new CiIntegration(config, options);
 }

@@ -417,7 +417,7 @@ describe("AtomicFileReader", () => {
         try {
           await fs.chmod(restrictedFile, 0o644);
           await fs.unlink(restrictedFile);
-        } catch (error) {
+        } catch {
           // Cleanup error
         }
       }

@@ -322,8 +322,6 @@ export class OptimizationCacheIntegration extends EventEmitter {
    * Get comprehensive cache statistics
    */
   getStats(): StorageRetrievalStats {
-    const _cacheStats = this.cache.getAnalytics();
-    
     return {
       ...this.stats,
       hitRate: this.stats.getOperations > 0 

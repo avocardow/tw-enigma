@@ -18,7 +18,6 @@ import postcss, {
   AtRule,
   Root,
   // Container - removed, not used
-  Root as PostCssRoot,
 } from "postcss";
 
 // =============================================================================
@@ -334,8 +333,8 @@ export class CssDependencyGraph {
    * Detect custom property (CSS variable) dependencies
    */
   private detectCustomPropertyDependencies(
-    selector: string,
-    node: CssRuleDependency,
+    _selector: string,
+    _node: CssRuleDependency,
   ): void {
     // This would require analyzing the actual CSS content for var() usage
     // For now, we'll implement a basic version
@@ -364,8 +363,8 @@ export class CssDependencyGraph {
    * Detect composition dependencies (@apply, mixins, etc.)
    */
   private detectCompositionDependencies(
-    selector: string,
-    node: CssRuleDependency,
+    _selector: string,
+    _node: CssRuleDependency,
   ): void {
     // This would analyze @apply directives and similar composition patterns
     // Implementation would depend on the specific CSS framework being used
@@ -559,7 +558,7 @@ export class UsagePatternAnalyzer {
   analyzeStaticUsage(
     css: Root,
     sourceFiles: Map<string, string>,
-    options: ChunkAnalysisOptions = {},
+    _options: ChunkAnalysisOptions = {},
   ): Map<string, UsagePattern> {
     this.usageData.clear();
 
@@ -1188,7 +1187,7 @@ class CssChunker extends EventEmitter {
   private addRuleToChunk(
     chunk: CssChunk,
     rule: CssRuleDependency,
-    css: Root,
+    _css: Root,
   ): void {
     chunk.rules.push(rule);
     chunk.size += rule.size;
@@ -1403,7 +1402,7 @@ class CssChunker extends EventEmitter {
   /**
    * Public wrapper for hybrid chunking strategy
    */
-  chunkHybrid(cssContent: string, usageData?: any): CssChunk[] {
+  chunkHybrid(cssContent: string, _usageData?: any): CssChunk[] {
     // Parse CSS content using PostCSS
     const css = postcss().process(cssContent, { from: undefined }).root;
 
@@ -1415,7 +1414,7 @@ class CssChunker extends EventEmitter {
    */
   processChunks(
     cssContent: string,
-    usageData?: TestUsageData,
+    _usageData?: TestUsageData,
   ): { chunks: CssChunk[]; manifest: Record<string, any>; metadata: any } {
     const strategy = (this as any).config?.chunking?.strategy ?? "size";
     const result = this.processCSS(cssContent, { strategy });
@@ -1435,7 +1434,7 @@ class CssChunker extends EventEmitter {
   processCSS(cssContent: string, options: CssChunkingOptions): CssChunkingResult {
     const startTime = Date.now();
     
-    const chunks = this.chunkCSS(cssContent, _options);
+    const chunks = this.chunkCSS(cssContent, options);
     
     const endTime = Date.now();
     const processingTime = Math.max(1, endTime - startTime); // Ensure minimum 1ms
@@ -1473,16 +1472,16 @@ class CssChunker extends EventEmitter {
     
     switch (options.strategy) {
       case 'size':
-        chunks = this.chunkBySize(cssContent, _options);
+        chunks = this.chunkBySize(cssContent);
         break;
       case 'route':
-        chunks = this.chunkByRoute(cssContent, _options);
+        chunks = this.chunkByRoute(cssContent);
         break;
       case 'component':
-        chunks = this.chunkByComponent(cssContent, _options);
+        chunks = this.chunkByComponent(cssContent);
         break;
       case 'hybrid':
-        chunks = this.chunkHybrid(cssContent, _options);
+        chunks = this.chunkHybrid(cssContent);
         break;
       default:
         throw new Error(`Unknown chunking strategy: ${options.strategy}`);
@@ -1613,7 +1612,7 @@ interface TestGraphEdge {
  * behaviour that the tests assert against (mostly correctness of bookkeeping
  * and Tarjan/Kahn algorithms for SCC + topological ordering).
  */
-export class DependencyGraph {
+export class TestDependencyGraph {
   private graphNodes: Map<string, TestGraphNode> = new Map();
   private graphEdges: Map<string, TestGraphEdge> = new Map();
 
@@ -1924,13 +1923,7 @@ if (!_proto.analyzeUsage) {
     UsagePatternAnalyzerCompat.prototype.getRouteSpecificClasses;
 }
 
-function isCssRoot(input: unknown): input is PostCssRoot {
-  return (
-    typeof input === "object" &&
-    input !== null &&
-    (input as any).type === "root"
-  );
-}
+
 
 // ---------------------------------------------------------------------------
 // Patched CssChunker compatible with test expectations

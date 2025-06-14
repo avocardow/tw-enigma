@@ -198,7 +198,7 @@ export class EnigmaVitePlugin implements BuildToolPlugin {
     // Already handled in constructor
   }
 
-  createPlugin(context: PluginContext): PostCSSPlugin {
+  createPlugin(_context: PluginContext): PostCSSPlugin {
     const plugin = {
       postcssPlugin: this.name,
       Once: async (root: any, { result }: { result: any }) => {
@@ -372,7 +372,7 @@ export class EnigmaVitePlugin implements BuildToolPlugin {
           return;
         }
 
-        const { file, modules } = ctx;
+        const { file } = ctx;
 
         // Handle CSS file updates
         if (this.isCSSFile(file)) {
@@ -495,7 +495,7 @@ export class EnigmaVitePlugin implements BuildToolPlugin {
    */
   private async optimizeCSS(
     css: string,
-    fileName: string,
+    _fileName: string,
   ): Promise<OptimizationResult> {
     const startTime = performance.now();
 
@@ -602,7 +602,7 @@ if (import.meta.hot) {
       context.metrics.phaseTimings.development = performance.now();
     },
 
-    onHMRUpdate: async (update: HMRUpdate, context: BuildToolContext) => {
+    onHMRUpdate: async (update: HMRUpdate, _context: BuildToolContext) => {
       logger.debug("Vite HMR update", {
         type: update.type,
         filePath: update.filePath,
@@ -672,7 +672,7 @@ if (import.meta.hot) {
    * Handle HMR updates
    */
   async handleHMR(update: HMRUpdate, context: BuildToolContext): Promise<void> {
-    await this.hooks.onHMRUpdate?.(update, _context);
+    await this.hooks.onHMRUpdate?.(update, context);
   }
 
   /**

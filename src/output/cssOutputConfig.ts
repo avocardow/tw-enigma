@@ -1063,7 +1063,7 @@ export class CssOutputConfigManager {
     try {
       const result = validateCssOutputConfig(mergedConfig);
       return result;
-    } catch (_) {
+    } catch {
       // Fallback to basic structure if validation fails
       return mergedConfig as CssOutputConfig;
     }
@@ -1155,7 +1155,7 @@ export function createProductionConfig(
   // Don't validate strictly - let validateProductionConfig handle validation
   try {
     return manager.applyPreset("production", overrides);
-  } catch (_) {
+  } catch {
     // If validation fails, create a basic config with the overrides applied
     // This allows invalid configs to be created for testing validation
     const baseConfig = {
@@ -1219,16 +1219,16 @@ export function createDevelopmentConfig(
   return manager.applyPreset("development", overrides);
 }
 
-// Deep clone utility for config objects
-function deepClone(obj: any): any {
-  if (obj === null || typeof obj !== 'object') return obj;
-  if (Array.isArray(obj)) return obj.map(deepClone);
-  const cloned: any = {};
-  for (const key of Object.keys(obj)) {
-    cloned[key] = deepClone(obj[key]);
-  }
-  return cloned;
-}
+// Deep clone utility for config objects (unused - can be removed)
+// function deepClone(obj: any): any {
+//   if (obj === null || typeof obj !== 'object') return obj;
+//   if (Array.isArray(obj)) return obj.map(deepClone);
+//   const cloned: any = {};
+//   for (const key of Object.keys(obj)) {
+//     cloned[key] = deepClone(obj[key]);
+//   }
+//   return cloned;
+// }
 
 // Improved deep merge utility for config objects
 function deepMerge(target: any, ...sources: any[]): any {
@@ -1705,7 +1705,7 @@ export function applyDeploymentPreset(config: any, preset: string): any {
     if (!merged.optimization) merged.optimization = {};
     // Only override minify if it wasn't explicitly customized
     if (presetConfig.optimization.minify !== undefined &&
-        (!config.optimization?.minify !== undefined || 
+        (config.optimization?.minify === undefined || 
          config.optimization?.minify === PRODUCTION_DEFAULTS.optimization.minify)) {
       merged.optimization.minify = presetConfig.optimization.minify;
     }
@@ -1833,7 +1833,7 @@ export function createPerformanceBudget(params: {
  */
 export function createProductionConfigManager(
   initialConfig?: Partial<CssOutputConfig>,
-  performanceBudget?: PerformanceBudget
+  _performanceBudget?: PerformanceBudget
 ): ProductionCssConfigManager {
   return new ProductionCssConfigManager(initialConfig);
 }
