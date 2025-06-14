@@ -322,7 +322,7 @@ describe("CSS Optimization CLI Commands", () => {
       const command = `node ${cliPath} css-config --output=${configFile}`;
 
       try {
-        const { stdout, stderr } = await execAsync(command);
+        const { stdout } = await execAsync(command);
 
         expect(stdout).toContain("Configuration generated");
 
@@ -345,7 +345,7 @@ describe("CSS Optimization CLI Commands", () => {
       const command = `node ${cliPath} css-config --preset=spa --output=${configFile}`;
 
       try {
-        const { stdout, stderr } = await execAsync(command);
+        const { stdout } = await execAsync(command);
 
         expect(stdout).toContain("SPA");
         expect(stdout).toContain("preset");
@@ -375,7 +375,7 @@ describe("CSS Optimization CLI Commands", () => {
       const command = `node ${cliPath} css-config --validate=${configFile}`;
 
       try {
-        const { stdout, stderr } = await execAsync(command);
+        const { stdout } = await execAsync(command);
 
         expect(stdout).toContain("valid");
         expect(stdout).toContain("Configuration");
@@ -389,7 +389,7 @@ describe("CSS Optimization CLI Commands", () => {
       const command = `node ${cliPath} css-config --docs`;
 
       try {
-        const { stdout, stderr } = await execAsync(command);
+        const { stdout } = await execAsync(command);
 
         expect(stdout).toContain("CSS Output Configuration");
         expect(stdout).toContain("--environment");
@@ -405,7 +405,7 @@ describe("CSS Optimization CLI Commands", () => {
       const command = `node ${cliPath} css-config --list-presets`;
 
       try {
-        const { stdout, stderr } = await execAsync(command);
+        const { stdout } = await execAsync(command);
 
         expect(stdout).toContain("cdn");
         expect(stdout).toContain("serverless");
@@ -423,7 +423,7 @@ describe("CSS Optimization CLI Commands", () => {
       const command = `node ${cliPath} css-analyze ${sampleCssFile}`;
 
       try {
-        const { stdout, stderr } = await execAsync(command);
+        const { stdout } = await execAsync(command);
 
         expect(stdout).toContain("Analysis");
         expect(stdout).toContain("size");
@@ -439,7 +439,7 @@ describe("CSS Optimization CLI Commands", () => {
       const command = `node ${cliPath} css-analyze ${sampleCssFile} --recommendations`;
 
       try {
-        const { stdout, stderr } = await execAsync(command);
+        const { stdout } = await execAsync(command);
 
         expect(stdout).toContain("recommend");
         expect(stdout).toContain("optimization");
@@ -454,7 +454,7 @@ describe("CSS Optimization CLI Commands", () => {
       const command = `node ${cliPath} css-analyze ${sampleCssFile} --performance-budget=10KB`;
 
       try {
-        const { stdout, stderr } = await execAsync(command);
+        const { stdout } = await execAsync(command);
 
         expect(stdout).toContain("budget");
         expect(stdout).toContain("10KB");
@@ -468,7 +468,7 @@ describe("CSS Optimization CLI Commands", () => {
       const command = `node ${cliPath} css-analyze ${sampleCssFile} --format=json`;
 
       try {
-        const { stdout, stderr } = await execAsync(command);
+        const { stdout } = await execAsync(command);
 
         // Should be valid JSON
         const analysis = JSON.parse(stdout);
@@ -485,7 +485,7 @@ describe("CSS Optimization CLI Commands", () => {
       const command = `node ${cliPath} css-analyze ${sampleCssFile} --html=${sampleHtmlFile}`;
 
       try {
-        const { stdout, stderr } = await execAsync(command);
+        const { stdout } = await execAsync(command);
 
         expect(stdout).toContain("unused");
         expect(stdout).toContain("utilization");
@@ -548,13 +548,14 @@ describe("CSS Optimization CLI Commands", () => {
       const command = `node ${cliPath} css-optimize /nonexistent/file.css`;
 
       try {
-        const { stdout, stderr } = await execAsync(command);
+        const { stderr } = await execAsync(command);
 
         expect(stderr).toContain("not found");
-      } catch (error: any) {
+      } catch (error: unknown) {
         // When the CLI exits with non-zero code, execAsync throws an error
         // The stderr output is available in error.stderr
-        expect(error.stderr || error.message).toContain("not found");
+        const errorObj = error as { stderr?: string; message?: string };
+        expect(errorObj.stderr || errorObj.message).toContain("not found");
       }
     }, 30000);
 
@@ -575,7 +576,7 @@ describe("CSS Optimization CLI Commands", () => {
       const command = `node ${cliPath} css-optimize ${sampleCssFile} --performance-budget=invalid`;
 
       try {
-        const { stdout, stderr } = await execAsync(command);
+        const { stderr } = await execAsync(command);
 
         expect(stderr).toContain("invalid");
       } catch (error) {
