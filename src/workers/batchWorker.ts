@@ -207,7 +207,7 @@ const taskHandlers = {
         }
 
         results.push(result);
-      } catch (_) {
+      } catch (error) {
         results.push({
           error: error instanceof Error ? error.message : String(error),
         });
@@ -374,7 +374,7 @@ if (parentPort) {
 
         parentPort!.postMessage(response);
       }
-    } catch (_) {
+    } catch (error) {
       const executionTime = performance.now() - startTime;
       const memoryUsage = getMemoryUsage() - startMemory;
 

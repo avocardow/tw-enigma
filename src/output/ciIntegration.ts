@@ -626,7 +626,7 @@ export class CiIntegration {
         this.options.baselinePath,
         JSON.stringify(report, null, 2),
       );
-    } catch (_) {
+    } catch (error) {
       console.warn("Failed to save baseline report:", error);
     }
   }
@@ -676,7 +676,7 @@ export class CiIntegration {
       }
 
       console.log(`📊 CSS performance reports saved to ${outputDir}`);
-    } catch (_) {
+    } catch (error) {
       console.warn("Failed to generate CI outputs:", error);
     }
   }
@@ -764,7 +764,7 @@ export class CiIntegration {
         const path = await import("path");
         const commentPath = path.join(this.options.outputDir, "pr-comment.md");
         await fs.writeFile(commentPath, comment);
-      } catch (_) {
+      } catch (error) {
         console.warn("Failed to save PR comment:", error);
       }
     }
@@ -807,7 +807,7 @@ export class CiIntegration {
       if (!response.ok) {
         console.warn(`Webhook notification failed: ${response.status}`);
       }
-    } catch (_) {
+    } catch (error) {
       console.warn("Failed to send webhook notification:", error);
     }
   }

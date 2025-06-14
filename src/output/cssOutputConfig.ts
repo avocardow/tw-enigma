@@ -632,7 +632,7 @@ export class CssOutputConfigManager {
 
       // Return default configuration if no file found
       return this.config;
-    } catch (_) {
+    } catch (error) {
       throw new Error(
         `Failed to load CSS output configuration: ${error instanceof Error ? error.message : "Unknown error"}`,
       );
@@ -652,7 +652,7 @@ export class CssOutputConfigManager {
       }
 
       throw new Error(`No configuration found in ${filePath}`);
-    } catch (_) {
+    } catch (error) {
       throw new Error(
         `Failed to load CSS output configuration from ${filePath}: ${error instanceof Error ? error.message : "Unknown error"}`,
       );
@@ -728,7 +728,7 @@ export class CssOutputConfigManager {
       const defaultConfig = this.validateAndMergeConfig({ strategy: "single" });
       this.configCache = { config: defaultConfig };
       return this.configCache;
-    } catch (_) {
+    } catch (error) {
       // Re-throw validation errors as-is so tests can catch them
       if (error instanceof Error && error.message.includes('Invalid CSS output configuration')) {
         throw error;
@@ -756,7 +756,7 @@ export class CssOutputConfigManager {
       }
 
       throw new Error("Configuration file not found");
-    } catch (_) {
+    } catch (error) {
       if (error instanceof Error && error.message === "Configuration file not found") {
         throw error;
       }
@@ -843,7 +843,7 @@ export class CssOutputConfigManager {
       }
 
       return { valid: errors.length === 0, errors };
-    } catch (_) {
+    } catch (error) {
       errors.push(
         `Configuration validation error: ${error instanceof Error ? error.message : "Unknown error"}`,
       );
@@ -887,7 +887,7 @@ export class CssOutputConfigManager {
       }
 
       return validatedConfig;
-    } catch (_) {
+    } catch (error) {
       if (error instanceof z.ZodError) {
         const issues = error.issues
           .map((issue) => `${issue.path.join(".")}: ${issue.message}`)
@@ -1132,7 +1132,7 @@ export function validateCssOutputConfig(config: unknown): CssOutputConfig {
     
     // Apply normalization after validation to ensure aliases are set
     return normalizeConfig(validated) as CssOutputConfig;
-  } catch (_) {
+  } catch (error) {
     if (error instanceof z.ZodError) {
       const issues = error.issues
         .map((issue) => `${issue.path.join(".")}: ${issue.message}`)

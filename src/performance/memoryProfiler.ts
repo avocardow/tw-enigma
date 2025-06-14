@@ -405,7 +405,7 @@ export class MemoryProfiler extends EventEmitter {
       const snapshot = v8.writeHeapSnapshot();
       this.emit("heapSnapshotGenerated", snapshot);
       return snapshot;
-    } catch (_) {
+    } catch (error) {
       this.emit("error", { type: "heap_snapshot_error", error });
       throw error;
     }

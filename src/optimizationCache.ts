@@ -236,7 +236,7 @@ export class OptimizationCache extends EventEmitter {
       this.emit('cache-miss', { cacheKey, inputFiles });
 
       return null;
-    } catch (_) {
+    } catch (error) {
       this.emit('error', error);
       return null;
     }
@@ -279,7 +279,7 @@ export class OptimizationCache extends EventEmitter {
       }
 
       return success;
-    } catch (_) {
+    } catch (error) {
       this.emit('error', error);
       return false;
     }
@@ -314,7 +314,7 @@ export class OptimizationCache extends EventEmitter {
       }
 
       return invalidatedCount;
-    } catch (_) {
+    } catch (error) {
       this.emit('error', error);
       return 0;
     }
@@ -345,7 +345,7 @@ export class OptimizationCache extends EventEmitter {
       }
 
       return invalidatedCount;
-    } catch (_) {
+    } catch (error) {
       this.emit('error', error);
       return 0;
     }
@@ -442,7 +442,7 @@ export class OptimizationCache extends EventEmitter {
           const content = await fs.readFile(file, 'utf8');
           hash.update(file); // Include file path
           hash.update(content); // Include file content
-        } catch (_) {
+        } catch (error) {
           // If file can't be read, include error in hash
           hash.update(`ERROR:${file}:${error}`);
         }

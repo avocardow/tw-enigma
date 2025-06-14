@@ -234,7 +234,7 @@ export class CssOutputOrchestrator {
     try {
       await this.ensureOutputDirectory(options.outputDir);
       outputDirectories.push(options.outputDir);
-    } catch (_) {
+    } catch (error) {
       outputDirAvailable = false;
       warnings.push(
         `Failed to create output directory ${options.outputDir}: ${error instanceof Error ? error.message : String(error)}. File outputs will be skipped.`,
@@ -253,7 +253,7 @@ export class CssOutputOrchestrator {
 
         // Collect warnings
         warnings.push(...this.validateBundleResult(result));
-      } catch (_) {
+      } catch (error) {
         warnings.push(
           `Failed to process bundle ${bundle.id}: ${error instanceof Error ? error.message : String(error)}`,
         );
@@ -287,7 +287,7 @@ export class CssOutputOrchestrator {
       try {
         const manifestPath = path.join(options.outputDir, "css-manifest.json");
         await this.manifestGenerator.saveManifest(manifest, manifestPath);
-      } catch (_) {
+      } catch (error) {
         warnings.push(
           `Failed to save manifest: ${error instanceof Error ? error.message : String(error)}`,
         );
@@ -337,7 +337,7 @@ export class CssOutputOrchestrator {
         analyzeMediaQueries: true,
         analyzeDuplicates: true,
       });
-    } catch (_) {
+    } catch (error) {
       console.warn('CSS analysis failed:', error instanceof Error ? error.message : String(error));
       // Continue without analysis - it's not critical for processing
     }
@@ -513,7 +513,7 @@ export class CssOutputOrchestrator {
       }
 
       return chunks;
-    } catch (_) {
+    } catch (error) {
       console.warn(`Chunking failed for strategy ${strategy}:`, error);
       // Fallback to single chunk on error
       return [
@@ -889,7 +889,7 @@ export class CssOutputOrchestrator {
   private async ensureOutputDirectory(dir: string): Promise<void> {
     try {
       await mkdir(dir, { recursive: true });
-    } catch (_) {
+    } catch (error) {
       if (error instanceof Error) {
         // Handle permission errors gracefully for test scenarios
         if (error.code === 'EACCES' || error.code === 'EPERM') {

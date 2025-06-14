@@ -367,7 +367,7 @@ export class CriticalCssPipeline {
         });
 
         results.set(route.route, routeResult);
-      } catch (_) {
+      } catch (error) {
         console.warn(
           `Failed to process critical CSS for route ${route.route}:`,
           error,

@@ -160,7 +160,7 @@ export abstract class BaseEnigmaPlugin implements EnigmaPlugin {
                 transformations: context.metrics.getMetrics().transformations,
               });
             }
-          } catch (_) {
+          } catch (error) {
             context.metrics.addWarning(
               `Plugin error: ${error instanceof Error ? error.message : String(error)}`,
             );

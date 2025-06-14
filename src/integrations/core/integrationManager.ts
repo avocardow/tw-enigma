@@ -179,7 +179,7 @@ export class IntegrationManager extends EventEmitter {
         detectedTools: this.status.detectedTools,
         activePlugins: this.status.activePlugins.length,
       });
-    } catch (_) {
+    } catch (error) {
       this.status.errors++;
       logger.error("Failed to initialize integration manager", { error });
       throw error;
@@ -224,7 +224,7 @@ export class IntegrationManager extends EventEmitter {
       for (const error of result.errors) {
         logger.error("Detection error", { error });
       }
-    } catch (_) {
+    } catch (error) {
       logger.error("Build tool detection failed", { error });
       throw error;
     }
@@ -279,7 +279,7 @@ export class IntegrationManager extends EventEmitter {
       this.emit("plugin-loaded", { name, buildTool: config.buildTool.type });
 
       logger.debug(`Plugin loaded successfully: ${name}`);
-    } catch (_) {
+    } catch (error) {
       this.status.errors++;
       logger.error(`Failed to load plugin: ${name}`, { error });
       this.emit("plugin-error", { name, error: error as Error });
@@ -338,7 +338,7 @@ export class IntegrationManager extends EventEmitter {
           logger.warn(`Unknown build tool type: ${buildTool}`);
           return null;
       }
-    } catch (_) {
+    } catch (error) {
       logger.error(`Failed to create plugin for ${buildTool}`, { error });
       return null;
     }
@@ -413,7 +413,7 @@ export class IntegrationManager extends EventEmitter {
           if (pluginResult.optimization) {
             result.optimization = pluginResult.optimization;
           }
-        } catch (_) {
+        } catch (error) {
           this.status.errors++;
           logger.error(
             `Plugin error during build: ${plugin.constructor.name}`,
@@ -438,7 +438,7 @@ export class IntegrationManager extends EventEmitter {
       });
 
       return result;
-    } catch (_) {
+    } catch (error) {
       this.status.errors++;
       logger.error(`Build failed for ${buildTool}`, { error });
 
@@ -493,7 +493,7 @@ export class IntegrationManager extends EventEmitter {
           this.emit("hmr-update", { filePath, buildTool });
         }
       }
-    } catch (_) {
+    } catch (error) {
       logger.error("Error handling file change", { filePath, error });
     }
   }
@@ -539,7 +539,7 @@ export class IntegrationManager extends EventEmitter {
         name,
         buildTool: plugin.supportedBuildTools[0] || "custom",
       });
-    } catch (_) {
+    } catch (error) {
       this.status.errors++;
       logger.error(`Failed to register plugin: ${name}`, { error });
       this.emit("plugin-error", { name, error: error as Error });
@@ -608,7 +608,7 @@ export class IntegrationManager extends EventEmitter {
       this.status.lastUpdate = Date.now();
 
       logger.info("Integration manager shutdown completed");
-    } catch (_) {
+    } catch (error) {
       logger.error("Error during shutdown", { error });
       throw error;
     }

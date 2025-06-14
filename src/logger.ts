@@ -222,7 +222,7 @@ export class Logger {
         console.error(`Logger file stream error: ${error.message}`);
         this.fileStream = undefined;
       });
-    } catch (_) {
+    } catch (error) {
       console.error(
         `Failed to initialize file output: ${error instanceof Error ? error.message : String(error)}`,
       );
@@ -710,7 +710,7 @@ export class Logger {
 
         // Check if rotation is needed after write
         this.rotateLogsIfNeeded();
-      } catch (_) {
+      } catch (error) {
         console.error(
           `Failed to write to log file: ${error instanceof Error ? error.message : String(error)}`,
         );

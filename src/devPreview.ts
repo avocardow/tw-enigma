@@ -236,7 +236,7 @@ export class DevPreview extends EventEmitter {
             totalSavings += diff.stats.savings;
             totalChanges += diff.stats.totalChanges;
           }
-        } catch (_) {
+        } catch (error) {
           this.logger.warn("Failed to process file for preview", {
             file,
             error: error instanceof Error ? error.message : String(error),
@@ -273,7 +273,7 @@ export class DevPreview extends EventEmitter {
       });
 
       return update;
-    } catch (_) {
+    } catch (error) {
       const processingTime = Date.now() - startTime;
       this.emit('refresh-complete', processingTime);
       this.emit('error', error as Error, { trigger });
@@ -294,7 +294,7 @@ export class DevPreview extends EventEmitter {
   async getFilePreview(filePath: string): Promise<FileDiff | null> {
     try {
       return await this.processFile(filePath);
-    } catch (_) {
+    } catch (error) {
       this.logger.error("Failed to get file preview", {
         filePath,
         error: error instanceof Error ? error.message : String(error),
@@ -461,7 +461,7 @@ export class DevPreview extends EventEmitter {
           throw new Error("Failed to create file watcher");
         }
       }
-    } catch (_) {
+    } catch (error) {
       this.logger.error("Failed to start file watching", { error });
       throw error;
     }
@@ -562,7 +562,7 @@ export class DevPreview extends EventEmitter {
         changes,
         stats,
       };
-    } catch (_) {
+    } catch (error) {
       this.logger.error("Failed to process file", {
         filePath,
         error: error instanceof Error ? error.message : String(error),

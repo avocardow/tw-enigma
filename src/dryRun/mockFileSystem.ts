@@ -660,7 +660,7 @@ export class MockFileSystem implements IMockFileSystem {
       });
 
       return result;
-    } catch (_) {
+    } catch (error) {
       this.recordOperation({
         type,
         path,

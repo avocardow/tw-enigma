@@ -231,7 +231,7 @@ export class FrameworkDetector {
       }
 
       return result;
-    } catch (_) {
+    } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
       throw new FrameworkDetectionError(
@@ -308,7 +308,7 @@ export class FrameworkDetector {
 
       // Analyze file structure
       context.fileStructure = await this.analyzeFileStructure(rootPath);
-    } catch (_) {
+    } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
       throw new FrameworkDetectionError(
@@ -330,7 +330,7 @@ export class FrameworkDetector {
   ): Promise<FrameworkInfo | null> {
     try {
       return await detector.detect(context);
-    } catch (_) {
+    } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
       throw new Error(`${detector.name} detector failed: ${errorMessage}`);
@@ -419,7 +419,7 @@ export class FrameworkDetector {
           // Continue on error
         }
       }
-    } catch (_) {
+    } catch (error) {
       // Non-critical error - continue with empty patterns
     }
 

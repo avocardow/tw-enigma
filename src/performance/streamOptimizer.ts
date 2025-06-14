@@ -197,7 +197,7 @@ export class StreamOptimizer extends EventEmitter {
         data: results,
         stats,
       };
-    } catch (_) {
+    } catch (error) {
       stats.errorCount++;
       stats.endTime = performance.now();
       this.activeStreams.delete(streamId);
@@ -285,7 +285,7 @@ export class StreamOptimizer extends EventEmitter {
             }
 
             callback(null, processed);
-          } catch (_) {
+          } catch (error) {
             stats.errorCount++;
             callback(error instanceof Error ? error : new Error(String(error)));
           }
@@ -330,7 +330,7 @@ export class StreamOptimizer extends EventEmitter {
         data: result,
         stats,
       };
-    } catch (_) {
+    } catch (error) {
       stats.errorCount++;
       stats.endTime = performance.now();
       this.activeStreams.delete(streamId);
@@ -419,7 +419,7 @@ export class StreamOptimizer extends EventEmitter {
             }
 
             return { success: true as const, result, filePath };
-          } catch (_) {
+          } catch (error) {
             stats.errorCount++;
             logger.error("File processing failed in batch", {
               filePath,
@@ -477,7 +477,7 @@ export class StreamOptimizer extends EventEmitter {
         data: results,
         stats,
       };
-    } catch (_) {
+    } catch (error) {
       stats.errorCount++;
       stats.endTime = performance.now();
       this.activeStreams.delete(streamId);
@@ -583,7 +583,7 @@ export class StreamOptimizer extends EventEmitter {
           }
 
           callback(null, result);
-        } catch (_) {
+        } catch (error) {
           callback(error instanceof Error ? error : new Error(String(error)));
         }
       },
@@ -635,7 +635,7 @@ export class StreamOptimizer extends EventEmitter {
           const content = Buffer.concat(chunks);
           const result = await processor(filePath, content);
           resolve(result);
-        } catch (_) {
+        } catch (error) {
           reject(error);
         }
       });

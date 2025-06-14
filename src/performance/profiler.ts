@@ -316,7 +316,7 @@ export class PerformanceProfiler extends EventEmitter {
 
         return perfMeasurement;
       }
-    } catch (_) {
+    } catch (error) {
       logger.warn("Failed to create performance measurement", {
         name,
         error: error instanceof Error ? error.message : String(error),
@@ -947,7 +947,7 @@ export class PerformanceProfiler extends EventEmitter {
     try {
       writeFileSync(reportPath, JSON.stringify(analysis, null, 2));
       logger.info("Analysis report saved", { reportPath });
-    } catch (_) {
+    } catch (error) {
       logger.error("Failed to save analysis report", {
         reportPath,
         error: error instanceof Error ? error.message : String(error),

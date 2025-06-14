@@ -54,6 +54,10 @@
 /Users/rowan/github/tw-enigma/core/src/configValidator.ts
   104:46  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
   104:71  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  106:14  error    '_' is defined but never used             @typescript-eslint/no-unused-vars
+  186:14  error    '_' is defined but never used             @typescript-eslint/no-unused-vars
+  228:14  error    '_' is defined but never used             @typescript-eslint/no-unused-vars
+  366:16  error    '_' is defined but never used             @typescript-eslint/no-unused-vars
 
 /Users/rowan/github/tw-enigma/core/src/core/pluginManager.ts
     71:41  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
@@ -74,34 +78,56 @@
   144:36  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
   145:39  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
   146:41  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  163:20  error    '_' is defined but never used             @typescript-eslint/no-unused-vars
   198:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
   298:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
 
 /Users/rowan/github/tw-enigma/core/src/cssGeneration.ts
-    23:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-    23:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-    29:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-    31:25  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   524:59  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   540:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   663:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1718:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  2204:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  2231:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  3385:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  3390:49  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  3423:26  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  3707:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  3712:58  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  3879:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  4066:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  4069:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  4102:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  4120:85  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  4147:24  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  4154:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  4180:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  4197:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+    23:17  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+    23:31  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+    29:13  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+    31:25  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+   299:12  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
+   311:12  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
+   524:59  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+   540:35  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+   663:35  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+   670:12  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
+  1152:3   error    'options' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  1193:12  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
+  1259:12  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
+  1301:12  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
+  1718:44  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  1781:12  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
+  2193:12  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
+  2204:44  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  2231:43  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  2356:12  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
+  2444:12  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
+  2918:12  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
+  3385:16  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  3390:49  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  3423:26  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  3622:12  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
+  3707:16  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  3712:58  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  3794:12  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
+  3842:12  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
+  3879:12  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  3912:14  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
+  3986:14  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
+  4024:5   error    'options' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  4066:17  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  4069:21  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  4102:16  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  4120:85  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  4135:14  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
+  4147:24  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  4154:22  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  4164:14  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
+  4180:42  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  4197:14  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  4239:14  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
 
 /Users/rowan/github/tw-enigma/core/src/debugUtils.ts
    78:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
@@ -111,7 +137,9 @@
   458:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
 
 /Users/rowan/github/tw-enigma/core/src/debugging/pluginDebugger.ts
-  529:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  260:5   error    'context' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  525:9   error    'context' is assigned a value but never used                               @typescript-eslint/no-unused-vars
+  529:18  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
 
 /Users/rowan/github/tw-enigma/core/src/detectors/nextjsDetector.ts
   129:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
@@ -131,6 +159,7 @@
   216:90  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
   273:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
   273:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  306:14  error    '_' is defined but never used             @typescript-eslint/no-unused-vars
   316:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
   325:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
   325:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
@@ -173,32 +202,48 @@
    93:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
    98:49  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
    99:59  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  277:14  error    '_' is defined but never used             @typescript-eslint/no-unused-vars
+  337:14  error    '_' is defined but never used             @typescript-eslint/no-unused-vars
   409:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
   412:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
   438:67  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
   470:49  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
   501:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
   509:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  543:14  error    '_' is defined but never used             @typescript-eslint/no-unused-vars
   595:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  597:16  error    '_' is defined but never used             @typescript-eslint/no-unused-vars
   609:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
   612:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  614:14  error    '_' is defined but never used             @typescript-eslint/no-unused-vars
   625:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
   628:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  630:14  error    '_' is defined but never used             @typescript-eslint/no-unused-vars
+  691:14  error    '_' is defined but never used             @typescript-eslint/no-unused-vars
+  704:14  error    '_' is defined but never used             @typescript-eslint/no-unused-vars
 
 /Users/rowan/github/tw-enigma/core/src/devHotReload.ts
   102:11  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
   125:45  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
   140:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
   153:65  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  249:14  error    '_' is defined but never used             @typescript-eslint/no-unused-vars
+  290:18  error    '_' is defined but never used             @typescript-eslint/no-unused-vars
+  298:14  error    '_' is defined but never used             @typescript-eslint/no-unused-vars
   433:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
   433:57  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
   450:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
   450:56  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
   470:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
   502:55  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  534:14  error    '_' is defined but never used             @typescript-eslint/no-unused-vars
+  565:16  error    '_' is defined but never used             @typescript-eslint/no-unused-vars
   646:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  708:14  error    '_' is defined but never used             @typescript-eslint/no-unused-vars
   756:62  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  764:14  error    '_' is defined but never used             @typescript-eslint/no-unused-vars
   772:50  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  779:18  error    '_' is defined but never used             @typescript-eslint/no-unused-vars
   814:55  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
 
 /Users/rowan/github/tw-enigma/core/src/devIdeIntegration.ts
@@ -221,11 +266,17 @@
 
 /Users/rowan/github/tw-enigma/core/src/devPreview.ts
   106:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  239:18  error    '_' is defined but never used             @typescript-eslint/no-unused-vars
+  276:14  error    '_' is defined but never used             @typescript-eslint/no-unused-vars
+  297:14  error    '_' is defined but never used             @typescript-eslint/no-unused-vars
+  464:14  error    '_' is defined but never used             @typescript-eslint/no-unused-vars
+  565:14  error    '_' is defined but never used             @typescript-eslint/no-unused-vars
 
 /Users/rowan/github/tw-enigma/core/src/dryRun/dryRunSimulator.ts
    57:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
    67:11  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
    68:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  189:14  error    '_' is defined but never used             @typescript-eslint/no-unused-vars
   237:69  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
   237:77  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
   269:15  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
@@ -246,13 +297,15 @@
   384:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
   388:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
   388:62  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  429:16  error    'error' is defined but never used         @typescript-eslint/no-unused-vars
+  429:16  error    '_' is defined but never used             @typescript-eslint/no-unused-vars
 
 /Users/rowan/github/tw-enigma/core/src/dryRun/mockFileSystem.ts
   138:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  544:14  error    'error' is defined but never used         @typescript-eslint/no-unused-vars
+  544:14  error    '_' is defined but never used             @typescript-eslint/no-unused-vars
+  663:14  error    '_' is defined but never used             @typescript-eslint/no-unused-vars
 
 /Users/rowan/github/tw-enigma/core/src/errorHandler/circuitBreaker.ts
+  147:13  error    '_' is assigned a value but never used    @typescript-eslint/no-unused-vars
   572:56  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
   572:74  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
 
@@ -261,10 +314,12 @@
   28:10  error  'EnigmaError' is defined but never used     @typescript-eslint/no-unused-vars
 
 /Users/rowan/github/tw-enigma/core/src/errorHandler/pluginErrorHandler.ts
-   17:3  error  'EnigmaPlugin' is defined but never used                                  @typescript-eslint/no-unused-vars
-   18:3  error  'PluginConfig' is defined but never used                                  @typescript-eslint/no-unused-vars
-   22:7  error  'logger' is assigned a value but never used                               @typescript-eslint/no-unused-vars
-  772:5  error  'result' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+   17:3   error  'EnigmaPlugin' is defined but never used                                  @typescript-eslint/no-unused-vars
+   18:3   error  'PluginConfig' is defined but never used                                  @typescript-eslint/no-unused-vars
+   22:7   error  'logger' is assigned a value but never used                               @typescript-eslint/no-unused-vars
+  193:14  error  '_' is defined but never used                                             @typescript-eslint/no-unused-vars
+  331:14  error  '_' is defined but never used                                             @typescript-eslint/no-unused-vars
+  772:5   error  'result' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
 
 /Users/rowan/github/tw-enigma/core/src/errorHandler/types.ts
   227:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
@@ -274,38 +329,85 @@
 
 /Users/rowan/github/tw-enigma/core/src/fileIntegrity.ts
      8:1   error    Do not use "@ts-nocheck" because it alters compilation errors  @typescript-eslint/ban-ts-comment
-  1762:16  error    'error' is defined but never used                              @typescript-eslint/no-unused-vars
-  2034:14  error    'error' is defined but never used                              @typescript-eslint/no-unused-vars
+   831:14  error    '_' is defined but never used                                  @typescript-eslint/no-unused-vars
+  1012:14  error    '_' is defined but never used                                  @typescript-eslint/no-unused-vars
+  1103:14  error    '_' is defined but never used                                  @typescript-eslint/no-unused-vars
+  1225:14  error    '_' is defined but never used                                  @typescript-eslint/no-unused-vars
+  1310:14  error    '_' is defined but never used                                  @typescript-eslint/no-unused-vars
+  1369:14  error    '_' is defined but never used                                  @typescript-eslint/no-unused-vars
+  1417:14  error    '_' is defined but never used                                  @typescript-eslint/no-unused-vars
+  1608:14  error    '_' is defined but never used                                  @typescript-eslint/no-unused-vars
+  1714:14  error    '_' is defined but never used                                  @typescript-eslint/no-unused-vars
+  1762:16  error    '_' is defined but never used                                  @typescript-eslint/no-unused-vars
+  1816:20  error    '_' is defined but never used                                  @typescript-eslint/no-unused-vars
+  1895:22  error    '_' is defined but never used                                  @typescript-eslint/no-unused-vars
+  1933:14  error    '_' is defined but never used                                  @typescript-eslint/no-unused-vars
+  2034:14  error    '_' is defined but never used                                  @typescript-eslint/no-unused-vars
+  2091:14  error    '_' is defined but never used                                  @typescript-eslint/no-unused-vars
+  2166:14  error    '_' is defined but never used                                  @typescript-eslint/no-unused-vars
+  2375:14  error    '_' is defined but never used                                  @typescript-eslint/no-unused-vars
+  2525:14  error    '_' is defined but never used                                  @typescript-eslint/no-unused-vars
+  2553:14  error    '_' is defined but never used                                  @typescript-eslint/no-unused-vars
   2605:11  error    Unexpected lexical declaration in case block                   no-case-declarations
+  2931:14  error    '_' is defined but never used                                  @typescript-eslint/no-unused-vars
+  3287:22  error    '_' is defined but never used                                  @typescript-eslint/no-unused-vars
+  3302:22  error    '_' is defined but never used                                  @typescript-eslint/no-unused-vars
+  3412:14  error    '_' is defined but never used                                  @typescript-eslint/no-unused-vars
+  3588:14  error    '_' is defined but never used                                  @typescript-eslint/no-unused-vars
+  3628:14  error    '_' is defined but never used                                  @typescript-eslint/no-unused-vars
+  3675:14  error    '_' is defined but never used                                  @typescript-eslint/no-unused-vars
+  3730:18  error    '_' is defined but never used                                  @typescript-eslint/no-unused-vars
+  3802:18  error    '_' is defined but never used                                  @typescript-eslint/no-unused-vars
+  3837:14  error    '_' is defined but never used                                  @typescript-eslint/no-unused-vars
+  3924:18  error    '_' is defined but never used                                  @typescript-eslint/no-unused-vars
+  3941:14  error    '_' is defined but never used                                  @typescript-eslint/no-unused-vars
   3988:40  warning  Unexpected any. Specify a different type                       @typescript-eslint/no-explicit-any
+  4108:14  error    '_' is defined but never used                                  @typescript-eslint/no-unused-vars
 
 /Users/rowan/github/tw-enigma/core/src/frameworkDetector.ts
    74:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
    95:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
    97:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  234:14  error    '_' is defined but never used             @typescript-eslint/no-unused-vars
+  311:14  error    '_' is defined but never used             @typescript-eslint/no-unused-vars
+  333:14  error    '_' is defined but never used             @typescript-eslint/no-unused-vars
   345:26  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
   346:41  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  422:14  error    'error' is defined but never used         @typescript-eslint/no-unused-vars
-  541:14  error    'error' is defined but never used         @typescript-eslint/no-unused-vars
+  422:14  error    '_' is defined but never used             @typescript-eslint/no-unused-vars
+  541:14  error    '_' is defined but never used             @typescript-eslint/no-unused-vars
 
 /Users/rowan/github/tw-enigma/core/src/htmlRewriter.ts
-   137:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   260:61  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   261:45  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   387:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   388:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   389:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   390:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   549:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1381:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1509:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1685:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1686:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1744:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1796:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1819:60  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1844:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  1859:52  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   137:18  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+   260:61  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+   261:45  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+   387:19  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+   388:20  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+   389:19  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+   390:12  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+   549:37  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+   628:14  error    '_' is defined but never used                                                       @typescript-eslint/no-unused-vars
+   683:14  error    '_' is defined but never used                                                       @typescript-eslint/no-unused-vars
+   754:16  error    '_' is defined but never used                                                       @typescript-eslint/no-unused-vars
+  1141:14  error    '_' is defined but never used                                                       @typescript-eslint/no-unused-vars
+  1151:16  error    '_' is defined but never used                                                       @typescript-eslint/no-unused-vars
+  1172:14  error    '_' is defined but never used                                                       @typescript-eslint/no-unused-vars
+  1190:14  error    '_' is defined but never used                                                       @typescript-eslint/no-unused-vars
+  1347:16  error    '_' is defined but never used                                                       @typescript-eslint/no-unused-vars
+  1381:31  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  1509:30  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  1685:30  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  1686:5   error    'context' is defined but never used. Allowed unused args must match /^_/u           @typescript-eslint/no-unused-vars
+  1686:14  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  1744:30  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  1796:30  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  1819:60  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  1844:30  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  1859:52  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  2587:5   error    'options' is assigned a value but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  2676:18  error    '_' is defined but never used                                                       @typescript-eslint/no-unused-vars
+  2788:14  error    '_' is defined but never used                                                       @typescript-eslint/no-unused-vars
+  2858:14  error    '_' is defined but never used                                                       @typescript-eslint/no-unused-vars
+  2881:14  error    '_' is defined but never used                                                       @typescript-eslint/no-unused-vars
 
 /Users/rowan/github/tw-enigma/core/src/integrations/core/buildToolPlugin.ts
    60:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
@@ -314,23 +416,45 @@
   297:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
 
 /Users/rowan/github/tw-enigma/core/src/integrations/core/configDetector.ts
-  14:16  error    'resolve' is defined but never used           @typescript-eslint/no-unused-vars
-  19:3   error    'DetectionResult' is defined but never used   @typescript-eslint/no-unused-vars
-  24:3   error    'BuildToolContext' is defined but never used  @typescript-eslint/no-unused-vars
-  39:26  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+   14:16  error    'resolve' is defined but never used           @typescript-eslint/no-unused-vars
+   19:3   error    'DetectionResult' is defined but never used   @typescript-eslint/no-unused-vars
+   24:3   error    'BuildToolContext' is defined but never used  @typescript-eslint/no-unused-vars
+   39:26  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  119:16  error    '_' is defined but never used                 @typescript-eslint/no-unused-vars
+  145:18  error    '_' is defined but never used                 @typescript-eslint/no-unused-vars
+  173:14  error    '_' is defined but never used                 @typescript-eslint/no-unused-vars
+  315:16  error    '_' is defined but never used                 @typescript-eslint/no-unused-vars
+  359:14  error    '_' is defined but never used                 @typescript-eslint/no-unused-vars
+  395:14  error    '_' is defined but never used                 @typescript-eslint/no-unused-vars
+  426:14  error    '_' is defined but never used                 @typescript-eslint/no-unused-vars
+  455:14  error    '_' is defined but never used                 @typescript-eslint/no-unused-vars
+  484:14  error    '_' is defined but never used                 @typescript-eslint/no-unused-vars
+  513:14  error    '_' is defined but never used                 @typescript-eslint/no-unused-vars
 
 /Users/rowan/github/tw-enigma/core/src/integrations/core/hmrHandler.ts
    16:3   error    'HMRUpdate' is defined but never used      @typescript-eslint/no-unused-vars
   119:42  warning  Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+  166:14  error    '_' is defined but never used              @typescript-eslint/no-unused-vars
+  289:16  error    '_' is defined but never used              @typescript-eslint/no-unused-vars
   369:17  error    'path' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  395:16  error    '_' is defined but never used              @typescript-eslint/no-unused-vars
 
 /Users/rowan/github/tw-enigma/core/src/integrations/core/integrationManager.ts
    24:3   error    'createBuildToolContext' is defined but never used  @typescript-eslint/no-unused-vars
    28:3   error    'DetectedBuildConfig' is defined but never used     @typescript-eslint/no-unused-vars
-  152:18  error    'error' is defined but never used                   @typescript-eslint/no-unused-vars
+  152:18  error    '_' is defined but never used                       @typescript-eslint/no-unused-vars
+  182:14  error    '_' is defined but never used                       @typescript-eslint/no-unused-vars
+  227:14  error    '_' is defined but never used                       @typescript-eslint/no-unused-vars
+  282:14  error    '_' is defined but never used                       @typescript-eslint/no-unused-vars
   307:59  warning  Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
   316:53  warning  Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+  341:14  error    '_' is defined but never used                       @typescript-eslint/no-unused-vars
   399:75  warning  Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+  416:18  error    '_' is defined but never used                       @typescript-eslint/no-unused-vars
+  441:14  error    '_' is defined but never used                       @typescript-eslint/no-unused-vars
+  496:14  error    '_' is defined but never used                       @typescript-eslint/no-unused-vars
+  542:14  error    '_' is defined but never used                       @typescript-eslint/no-unused-vars
+  611:14  error    '_' is defined but never used                       @typescript-eslint/no-unused-vars
 
 /Users/rowan/github/tw-enigma/core/src/integrations/vite/vitePlugin.ts
    45:34  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
@@ -343,10 +467,14 @@
   204:53  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
   215:16  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
   375:23  error    'modules' is assigned a value but never used                                @typescript-eslint/no-unused-vars
+  397:20  error    '_' is defined but never used                                               @typescript-eslint/no-unused-vars
   457:45  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
   473:23  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  484:18  error    '_' is defined but never used                                               @typescript-eslint/no-unused-vars
   498:5   error    'fileName' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
   605:44  error    'context' is defined but never used. Allowed unused args must match /^_/u   @typescript-eslint/no-unused-vars
+  658:14  error    '_' is defined but never used                                               @typescript-eslint/no-unused-vars
+  674:38  error    'context' is defined but never used. Allowed unused args must match /^_/u   @typescript-eslint/no-unused-vars
   681:25  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
 
 /Users/rowan/github/tw-enigma/core/src/integrations/webpack/webpackPlugin.ts
@@ -361,27 +489,54 @@
   192:26  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
   192:53  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
   203:16  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  339:18  error    '_' is defined but never used                                               @typescript-eslint/no-unused-vars
+  364:22  error    '_' is defined but never used                                               @typescript-eslint/no-unused-vars
+  370:16  error    '_' is defined but never used                                               @typescript-eslint/no-unused-vars
+  385:18  error    '_' is defined but never used                                               @typescript-eslint/no-unused-vars
+  406:16  error    '_' is defined but never used                                               @typescript-eslint/no-unused-vars
+  434:20  error    '_' is defined but never used                                               @typescript-eslint/no-unused-vars
+  442:14  error    '_' is defined but never used                                               @typescript-eslint/no-unused-vars
   450:44  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
   450:57  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+  499:16  error    '_' is defined but never used                                               @typescript-eslint/no-unused-vars
   510:5   error    'fileName' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
   572:44  error    'context' is defined but never used. Allowed unused args must match /^_/u   @typescript-eslint/no-unused-vars
+  625:14  error    '_' is defined but never used                                               @typescript-eslint/no-unused-vars
+  641:38  error    'context' is defined but never used. Allowed unused args must match /^_/u   @typescript-eslint/no-unused-vars
 
 /Users/rowan/github/tw-enigma/core/src/jsRewriter.ts
    224:15  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
    448:18  error    Unnecessary escape character: \<                                           no-useless-escape
+   480:14  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
    616:32  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+   673:14  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
    699:22  error    'options' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+   751:14  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
+   815:18  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
+   841:18  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
+   867:18  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
+   894:18  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
+   939:14  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
+  1232:5   error    'context' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
   1311:5   error    'context' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
   1344:5   error    'context' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
   1501:11  error    'generatedStrings' is assigned a value but never used                      @typescript-eslint/no-unused-vars
+  2013:20  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
+  2050:14  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
   2159:41  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
   2178:46  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
   2178:67  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
 
 /Users/rowan/github/tw-enigma/core/src/logger.ts
-   16:3   error    'readdirSync' is defined but never used   @typescript-eslint/no-unused-vars
-   18:19  error    'join' is defined but never used          @typescript-eslint/no-unused-vars
-  608:25  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   16:3   error    'readdirSync' is defined but never used                                    @typescript-eslint/no-unused-vars
+   18:19  error    'join' is defined but never used                                           @typescript-eslint/no-unused-vars
+  225:14  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
+  534:47  error    'context' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  608:25  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  665:11  error    '_' is assigned a value but never used                                     @typescript-eslint/no-unused-vars
+  713:16  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
+  728:5   error    'error' is defined but never used. Allowed unused args must match /^_/u    @typescript-eslint/no-unused-vars
+  907:3   error    'options' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
 
 /Users/rowan/github/tw-enigma/core/src/marketplace/pluginMarketplace.ts
   507:30  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
@@ -393,14 +548,20 @@
   1229:7  error  Unexpected lexical declaration in case block                               no-case-declarations
   1230:7  error  Unexpected lexical declaration in case block                               no-case-declarations
   1251:3  error  'options' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  1391:3  error  'options' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
   2366:5  error  'prettyNameExhaustionStrategy' is assigned a value but never used          @typescript-eslint/no-unused-vars
 
 /Users/rowan/github/tw-enigma/core/src/optimizationCache.ts
   138:34  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
-  417:14  error    'error' is defined but never used                                        @typescript-eslint/no-unused-vars
-  452:14  error    'error' is defined but never used                                        @typescript-eslint/no-unused-vars
+  239:14  error    '_' is defined but never used                                            @typescript-eslint/no-unused-vars
+  282:14  error    '_' is defined but never used                                            @typescript-eslint/no-unused-vars
+  317:14  error    '_' is defined but never used                                            @typescript-eslint/no-unused-vars
+  348:14  error    '_' is defined but never used                                            @typescript-eslint/no-unused-vars
+  417:14  error    '_' is defined but never used                                            @typescript-eslint/no-unused-vars
+  445:18  error    '_' is defined but never used                                            @typescript-eslint/no-unused-vars
+  452:14  error    '_' is defined but never used                                            @typescript-eslint/no-unused-vars
   476:25  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
-  485:14  error    'error' is defined but never used                                        @typescript-eslint/no-unused-vars
+  485:14  error    '_' is defined but never used                                            @typescript-eslint/no-unused-vars
   492:25  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
   515:33  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
   516:25  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
@@ -425,11 +586,13 @@
    513:39  warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
    543:44  warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
    566:53  warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+   569:14  error    '_' is defined but never used                             @typescript-eslint/no-unused-vars
    633:47  warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
    655:46  warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
    667:21  error    'params' is assigned a value but never used               @typescript-eslint/no-unused-vars
    674:42  warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
    689:11  error    Unexpected aliasing of 'this' to local variable           @typescript-eslint/no-this-alias
+   774:16  error    '_' is defined but never used                             @typescript-eslint/no-unused-vars
    850:12  error    A `require()` style import is forbidden                   @typescript-eslint/no-require-imports
    854:12  error    A `require()` style import is forbidden                   @typescript-eslint/no-require-imports
    925:33  warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
@@ -441,14 +604,20 @@
   1168:62  warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
   1186:47  error    Unnecessary escape character: \!                          no-useless-escape
   1228:69  warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
-  1381:14  error    'error' is defined but never used                         @typescript-eslint/no-unused-vars
+  1238:14  error    '_' is defined but never used                             @typescript-eslint/no-unused-vars
+  1381:14  error    '_' is defined but never used                             @typescript-eslint/no-unused-vars
   1407:11  error    'buffer' is assigned a value but never used               @typescript-eslint/no-unused-vars
   1418:11  error    'buffer' is assigned a value but never used               @typescript-eslint/no-unused-vars
 
 /Users/rowan/github/tw-enigma/core/src/output/ciIntegration.ts
-   10:3   error    'BudgetViolation' is defined but never used  @typescript-eslint/no-unused-vars
-  439:12  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
-  545:12  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+   10:3   error    'BudgetViolation' is defined but never used                                @typescript-eslint/no-unused-vars
+  439:12  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  545:12  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  629:14  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
+  679:14  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
+  767:16  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
+  810:14  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
+  828:3   error    'options' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
 
 /Users/rowan/github/tw-enigma/core/src/output/criticalCssExtractor.ts
     8:10  error    'readFile' is defined but never used                                                @typescript-eslint/no-unused-vars
@@ -464,6 +633,7 @@
   326:22  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
   331:52  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
   353:26  warning  Unexpected any. Specify a different type                                            @typescript-eslint/no-explicit-any
+  370:16  error    '_' is defined but never used                                                       @typescript-eslint/no-unused-vars
 
 /Users/rowan/github/tw-enigma/core/src/output/cssAnalyzer.ts
     8:10  error    'createHash' is defined but never used                                     @typescript-eslint/no-unused-vars
@@ -534,9 +704,16 @@
 /Users/rowan/github/tw-enigma/core/src/output/cssOutputConfig.ts
    605:21  warning  Unexpected any. Specify a different type                                                          @typescript-eslint/no-explicit-any
    608:76  warning  Unexpected any. Specify a different type                                                          @typescript-eslint/no-explicit-any
-  1066:14  error    'error' is defined but never used                                                                 @typescript-eslint/no-unused-vars
+   635:14  error    '_' is defined but never used                                                                     @typescript-eslint/no-unused-vars
+   655:14  error    '_' is defined but never used                                                                     @typescript-eslint/no-unused-vars
+   731:14  error    '_' is defined but never used                                                                     @typescript-eslint/no-unused-vars
+   759:14  error    '_' is defined but never used                                                                     @typescript-eslint/no-unused-vars
+   846:14  error    '_' is defined but never used                                                                     @typescript-eslint/no-unused-vars
+   890:14  error    '_' is defined but never used                                                                     @typescript-eslint/no-unused-vars
+  1066:14  error    '_' is defined but never used                                                                     @typescript-eslint/no-unused-vars
   1092:33  warning  Unexpected any. Specify a different type                                                          @typescript-eslint/no-explicit-any
-  1158:12  error    'error' is defined but never used                                                                 @typescript-eslint/no-unused-vars
+  1135:12  error    '_' is defined but never used                                                                     @typescript-eslint/no-unused-vars
+  1158:12  error    '_' is defined but never used                                                                     @typescript-eslint/no-unused-vars
   1223:10  error    'deepClone' is defined but never used                                                             @typescript-eslint/no-unused-vars
   1223:25  warning  Unexpected any. Specify a different type                                                          @typescript-eslint/no-explicit-any
   1223:31  warning  Unexpected any. Specify a different type                                                          @typescript-eslint/no-explicit-any
@@ -580,9 +757,15 @@
    13:3   error    'OutputStrategy' is defined but never used                                 @typescript-eslint/no-unused-vars
    14:3   error    'ChunkingStrategy' is defined but never used                               @typescript-eslint/no-unused-vars
    15:3   error    'CriticalCssStrategy' is defined but never used                            @typescript-eslint/no-unused-vars
+  237:14  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
+  256:16  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
+  290:16  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
   333:19  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
   335:7   error    'analysis' is assigned a value but never used                              @typescript-eslint/no-unused-vars
+  340:14  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
+  516:14  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
   762:5   error    'bundles' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  892:14  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
 
 /Users/rowan/github/tw-enigma/core/src/output/cssReportGenerator.ts
   195:15  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
@@ -596,33 +779,56 @@
   545:14  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
 
 /Users/rowan/github/tw-enigma/core/src/pathUtils.ts
-  238:13  error  'errorResult' is assigned a value but never used                            @typescript-eslint/no-unused-vars
-  431:5   error  'fromPath' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
-  432:5   error  'toPath' is defined but never used. Allowed unused args must match /^_/u    @typescript-eslint/no-unused-vars
+  238:13  error  'errorResult' is assigned a value but never used                                    @typescript-eslint/no-unused-vars
+  431:5   error  'fromPath' is defined but never used. Allowed unused args must match /^_/u          @typescript-eslint/no-unused-vars
+  432:5   error  'toPath' is defined but never used. Allowed unused args must match /^_/u            @typescript-eslint/no-unused-vars
+  530:3   error  'context' is assigned a value but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
 
 /Users/rowan/github/tw-enigma/core/src/patternAnalysis.ts
     78:18  error    An interface declaring no members is equivalent to its supertype           @typescript-eslint/no-empty-object-type
+   342:12  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
    376:42  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
    397:47  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+   411:12  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
    444:46  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
    453:47  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
    468:46  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
    488:51  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+   502:12  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
+   570:12  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
+   641:12  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
    654:3   error    'options' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+   696:12  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
+   835:12  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
+   940:12  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
+  1041:12  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
+  1315:12  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
   1328:38  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  1342:16  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
+  1347:12  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
+  1359:9   error    'options' is assigned a value but never used                               @typescript-eslint/no-unused-vars
 
 /Users/rowan/github/tw-enigma/core/src/performance/batchCoordinator.ts
    21:3   error  'PerformanceMetrics' is defined but never used  @typescript-eslint/no-unused-vars
    22:3   error  'WorkerConfig' is defined but never used        @typescript-eslint/no-unused-vars
    23:3   error  'CacheConfig' is defined but never used         @typescript-eslint/no-unused-vars
    31:33  error  'R' is defined but never used                   @typescript-eslint/no-unused-vars
+  326:14  error  '_' is defined but never used                   @typescript-eslint/no-unused-vars
+  445:14  error  '_' is defined but never used                   @typescript-eslint/no-unused-vars
+  462:13  error  '_' is assigned a value but never used          @typescript-eslint/no-unused-vars
+  489:14  error  '_' is defined but never used                   @typescript-eslint/no-unused-vars
   513:24  error  Promise executor functions should not be async  no-async-promise-executor
+  538:16  error  '_' is defined but never used                   @typescript-eslint/no-unused-vars
 
 /Users/rowan/github/tw-enigma/core/src/performance/cacheManager.ts
    31:3   error  'CacheStrategy' is defined but never used       @typescript-eslint/no-unused-vars
    32:3   error  'PerformanceMetrics' is defined but never used  @typescript-eslint/no-unused-vars
+  180:14  error  '_' is defined but never used                   @typescript-eslint/no-unused-vars
+  233:14  error  '_' is defined but never used                   @typescript-eslint/no-unused-vars
   326:11  error  'now' is assigned a value but never used        @typescript-eslint/no-unused-vars
   429:11  error  'now' is assigned a value but never used        @typescript-eslint/no-unused-vars
+  684:14  error  '_' is defined but never used                   @typescript-eslint/no-unused-vars
+  727:14  error  '_' is defined but never used                   @typescript-eslint/no-unused-vars
 
 /Users/rowan/github/tw-enigma/core/src/performance/config.ts
    24:42  error    'R' is defined but never used             @typescript-eslint/no-unused-vars
@@ -633,22 +839,30 @@
    99:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
   139:61  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
   378:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  505:14  error    'error' is defined but never used         @typescript-eslint/no-unused-vars
+  408:14  error    '_' is defined but never used             @typescript-eslint/no-unused-vars
+  505:14  error    '_' is defined but never used             @typescript-eslint/no-unused-vars
 
 /Users/rowan/github/tw-enigma/core/src/performance/profiler.ts
    19:10  error    'execSync' is defined but never used            @typescript-eslint/no-unused-vars
    23:32  error    'PerformanceMetrics' is defined but never used  @typescript-eslint/no-unused-vars
   252:11  error    'sessionId' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  319:14  error    '_' is defined but never used                   @typescript-eslint/no-unused-vars
+  343:14  error    '_' is defined but never used                   @typescript-eslint/no-unused-vars
   402:14  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
   417:16  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
   430:16  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
   902:18  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
   903:13  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  950:14  error    '_' is defined but never used                   @typescript-eslint/no-unused-vars
 
 /Users/rowan/github/tw-enigma/core/src/performance/regexOptimizer.ts
   127:8   error    Unnecessary escape character: \!          no-useless-escape
+  234:14  error    '_' is defined but never used             @typescript-eslint/no-unused-vars
+  278:14  error    '_' is defined but never used             @typescript-eslint/no-unused-vars
+  331:14  error    '_' is defined but never used             @typescript-eslint/no-unused-vars
   348:53  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
   365:58  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  373:14  error    '_' is defined but never used             @typescript-eslint/no-unused-vars
   425:23  error    Unnecessary escape character: \=          no-useless-escape
   425:30  error    Unnecessary escape character: \!          no-useless-escape
   672:38  error    Unnecessary escape character: \$          no-useless-escape
@@ -656,23 +870,36 @@
 /Users/rowan/github/tw-enigma/core/src/performance/streamOptimizer.ts
    15:51  error    'PassThrough' is defined but never used                                       @typescript-eslint/no-unused-vars
    16:28  error    'createWriteStream' is defined but never used                                 @typescript-eslint/no-unused-vars
+  200:14  error    '_' is defined but never used                                                 @typescript-eslint/no-unused-vars
+  288:20  error    '_' is defined but never used                                                 @typescript-eslint/no-unused-vars
+  333:14  error    '_' is defined but never used                                                 @typescript-eslint/no-unused-vars
   392:58  error    'batchIndex' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  422:20  error    '_' is defined but never used                                                 @typescript-eslint/no-unused-vars
   435:46  error    'batchIndex' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  451:19  error    '_' is assigned a value but never used                                        @typescript-eslint/no-unused-vars
+  480:14  error    '_' is defined but never used                                                 @typescript-eslint/no-unused-vars
   510:11  error    'totalBytes' is assigned a value but never used                               @typescript-eslint/no-unused-vars
   559:31  warning  Unexpected any. Specify a different type                                      @typescript-eslint/no-explicit-any
+  586:18  error    '_' is defined but never used                                                 @typescript-eslint/no-unused-vars
+  638:18  error    '_' is defined but never used                                                 @typescript-eslint/no-unused-vars
 
 /Users/rowan/github/tw-enigma/core/src/performance/workerManager.ts
-   18:3   error    'MessageChannel' is defined but never used      @typescript-eslint/no-unused-vars
-   19:3   error    'MessagePort' is defined but never used         @typescript-eslint/no-unused-vars
-   25:41  error    'PerformanceMetrics' is defined but never used  @typescript-eslint/no-unused-vars
-  444:66  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
-  460:13  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
-  461:12  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+   18:3   error    'MessageChannel' is defined but never used                               @typescript-eslint/no-unused-vars
+   19:3   error    'MessagePort' is defined but never used                                  @typescript-eslint/no-unused-vars
+   25:41  error    'PerformanceMetrics' is defined but never used                           @typescript-eslint/no-unused-vars
+  319:18  error    '_' is defined but never used                                            @typescript-eslint/no-unused-vars
+  365:27  error    'error' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  380:14  error    '_' is defined but never used                                            @typescript-eslint/no-unused-vars
+  444:66  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+  460:13  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+  461:12  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+  594:16  error    '_' is defined but never used                                            @typescript-eslint/no-unused-vars
 
 /Users/rowan/github/tw-enigma/core/src/performanceValidator.ts
     3:10  error    'statSync' is defined but never used                                        @typescript-eslint/no-unused-vars
     4:10  error    'join' is defined but never used                                            @typescript-eslint/no-unused-vars
   140:7   error    'includeSystemAnalysis' is assigned a value but never used                  @typescript-eslint/no-unused-vars
+  222:14  error    '_' is defined but never used                                               @typescript-eslint/no-unused-vars
   490:44  error    'analyses' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
   490:54  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
 
@@ -683,7 +910,10 @@
 
 /Users/rowan/github/tw-enigma/core/src/pluginConfig.ts
    17:7   error    'logger' is assigned a value but never used                                     @typescript-eslint/no-unused-vars
+  183:14  error    '_' is defined but never used                                                   @typescript-eslint/no-unused-vars
   285:36  warning  Unexpected any. Specify a different type                                        @typescript-eslint/no-explicit-any
+  353:14  error    '_' is defined but never used                                                   @typescript-eslint/no-unused-vars
+  377:14  error    '_' is defined but never used                                                   @typescript-eslint/no-unused-vars
   422:27  error    'enigmaConfig' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
 
 /Users/rowan/github/tw-enigma/core/src/postcssIntegration.ts
@@ -691,8 +921,11 @@
    20:3   error    'PluginConfig' is defined but never used  @typescript-eslint/no-unused-vars
    23:3   error    'EnigmaPlugin' is defined but never used  @typescript-eslint/no-unused-vars
    52:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  120:18  error    '_' is defined but never used             @typescript-eslint/no-unused-vars
+  214:14  error    '_' is defined but never used             @typescript-eslint/no-unused-vars
   224:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
   256:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  293:14  error    '_' is defined but never used             @typescript-eslint/no-unused-vars
   332:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
   344:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
 
@@ -714,14 +947,17 @@
 /Users/rowan/github/tw-enigma/core/src/security/pluginSandbox.ts
    21:7   error    'logger' is assigned a value but never used                                                                              @typescript-eslint/no-unused-vars
   125:48  warning  Unexpected any. Specify a different type                                                                                 @typescript-eslint/no-explicit-any
+  279:14  error    '_' is defined but never used                                                                                            @typescript-eslint/no-unused-vars
   330:20  error    A `require()` style import is forbidden                                                                                  @typescript-eslint/no-require-imports
   331:16  error    A `require()` style import is forbidden                                                                                  @typescript-eslint/no-require-imports
   335:38  warning  Unexpected any. Specify a different type                                                                                 @typescript-eslint/no-explicit-any
   336:37  warning  Unexpected any. Specify a different type                                                                                 @typescript-eslint/no-explicit-any
   356:18  warning  Unexpected any. Specify a different type                                                                                 @typescript-eslint/no-explicit-any
   357:18  warning  Unexpected any. Specify a different type                                                                                 @typescript-eslint/no-explicit-any
+  386:14  error    '_' is defined but never used                                                                                            @typescript-eslint/no-unused-vars
   399:18  warning  Unexpected any. Specify a different type                                                                                 @typescript-eslint/no-explicit-any
   400:18  warning  Unexpected any. Specify a different type                                                                                 @typescript-eslint/no-explicit-any
+  434:16  error    '_' is defined but never used                                                                                            @typescript-eslint/no-unused-vars
   509:5   error    'config' is defined but never used. Allowed unused args must match /^_/u                                                 @typescript-eslint/no-unused-vars
   575:30  error    The `Function` type accepts any function-like value.
 Prefer explicitly defining any function parameters and return type  @typescript-eslint/no-unsafe-function-type
@@ -732,6 +968,9 @@ Prefer explicitly defining any function parameters and return type  @typescript-
 
 /Users/rowan/github/tw-enigma/core/src/sourceMapGenerator.ts
   135:58  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  352:14  error    '_' is defined but never used             @typescript-eslint/no-unused-vars
+  418:14  error    '_' is defined but never used             @typescript-eslint/no-unused-vars
+  445:14  error    '_' is defined but never used             @typescript-eslint/no-unused-vars
   466:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
 
 /Users/rowan/github/tw-enigma/core/src/tailwindPlugin.js
@@ -745,6 +984,7 @@ Prefer explicitly defining any function parameters and return type  @typescript-
 
 /Users/rowan/github/tw-enigma/core/src/templates/pluginTemplate.ts
   102:18  error  'context' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  123:14  error  '_' is defined but never used                                              @typescript-eslint/no-unused-vars
 
 /Users/rowan/github/tw-enigma/core/src/templates/postcssPluginTemplate.ts
   207:18  error  'context' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
@@ -767,11 +1007,13 @@ Prefer explicitly defining any function parameters and return type  @typescript-
 
 /Users/rowan/github/tw-enigma/core/src/workers/batchWorker.ts
    15:22  error    'workerData' is defined but never used                                     @typescript-eslint/no-unused-vars
-  112:18  error    'error' is defined but never used                                          @typescript-eslint/no-unused-vars
-  253:20  error    'error' is defined but never used                                          @typescript-eslint/no-unused-vars
+  112:18  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
+  210:16  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
+  253:20  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
   283:44  error    'options' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
   309:43  error    'options' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
   363:54  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+  377:14  error    '_' is defined but never used                                              @typescript-eslint/no-unused-vars
 
 /Users/rowan/github/tw-enigma/core/tests/atomicOps/AtomicFileCreator.test.ts
    14:3   error    'vi' is defined but never used                       @typescript-eslint/no-unused-vars
@@ -1096,7 +1338,7 @@ Prefer explicitly defining any function parameters and return type  @typescript-
 /Users/rowan/github/tw-enigma/core/tests/performance/streamOptimizer.test.ts
   120:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
   321:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  371:16  error    '_error' is defined but never used        @typescript-eslint/no-unused-vars
+  371:16  error    '_' is defined but never used             @typescript-eslint/no-unused-vars
 
 /Users/rowan/github/tw-enigma/core/tests/plugin-system.test.ts
   304:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
@@ -1145,5 +1387,5 @@ Prefer explicitly defining any function parameters and return type  @typescript-
   181:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
   213:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
 
-✖ 901 problems (352 errors, 549 warnings)
+✖ 1143 problems (594 errors, 549 warnings)
 

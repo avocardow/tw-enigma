@@ -186,7 +186,7 @@ export class DryRunSimulator {
       const dryRunResult = await this.stop();
 
       return { result, dryRunResult };
-    } catch (_) {
+    } catch (error) {
       // Ensure simulation is stopped even if error occurs
       if (this.isActive) {
         const dryRunResult = await this.stop();
