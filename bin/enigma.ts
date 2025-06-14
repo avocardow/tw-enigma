@@ -715,14 +715,14 @@ const argv = await yargs(hideBin(process.argv))
 
         // Add performance budget if requested
         if (argv.budget) {
-          const budget = createPerformanceBudget();
+          const budget = createPerformanceBudget({});
           manager.setPerformanceBudget(budget);
           cliLogger.info("📊 Added performance budget configuration");
         }
 
         // Generate documentation if requested
         if (argv.docs) {
-          const docs = generateConfigDocs(config);
+          const docs = generateConfigDocs();
           console.log(docs);
         }
 

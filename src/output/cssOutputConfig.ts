@@ -1347,6 +1347,7 @@ export function fromCliArgs(args: CssOutputCliArguments): CssOutputConfig {
  */
 export class ProductionCssConfigManager {
   private manager: CssOutputConfigManager;
+  private performanceBudget?: PerformanceBudget;
 
   constructor(initialConfig?: Partial<CssOutputConfig>) {
     this.manager = new CssOutputConfigManager(initialConfig);
@@ -1357,6 +1358,34 @@ export class ProductionCssConfigManager {
    */
   fromCliArgs(args: CssOutputCliArguments): CssOutputConfig {
     return this.manager.fromCliArgs(args);
+  }
+
+  /**
+   * Get current configuration
+   */
+  getConfig(): CssOutputConfig {
+    return this.manager.getConfig();
+  }
+
+  /**
+   * Apply preset configuration
+   */
+  applyPreset(preset: "production" | "development"): CssOutputConfig {
+    return this.manager.applyPreset(preset);
+  }
+
+  /**
+   * Set performance budget
+   */
+  setPerformanceBudget(budget: PerformanceBudget): void {
+    this.performanceBudget = budget;
+  }
+
+  /**
+   * Get performance budget
+   */
+  getPerformanceBudget(): PerformanceBudget | undefined {
+    return this.performanceBudget;
   }
 
   /**

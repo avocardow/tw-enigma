@@ -563,7 +563,7 @@ export class AtomicFileCreator {
         // Don't set chown option to let it preserve existing ownership
       }
       
-      await writeFileAtomic(tempPath, content, atomicOptions);
+      await writeFileAtomic(tempPath, content, atomicOptions as any);
       this.metrics.totalFsyncCalls++;
     } else {
       // Use regular write without fsync
