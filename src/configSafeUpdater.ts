@@ -6,7 +6,7 @@
  */
 
 import { writeFile, readFile, copyFile, unlink } from "fs/promises";
-import { existsSync, mkdirSync, readFileSync } from "fs";
+import { existsSync, mkdirSync } from "fs";
 import { resolve, dirname, basename, join } from "path";
 import { randomUUID } from "crypto";
 import { logger } from "./logger.ts";

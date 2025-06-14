@@ -6,10 +6,10 @@
  */
 
 import { z } from "zod";
-import { resolve, relative, isAbsolute } from "path";
-import { existsSync, statSync } from "fs";
+import { resolve } from "path";
+import { existsSync, statSync, readFileSync } from "fs";
 import { logger } from "./logger.ts";
-import { ConfigError, ValidationError } from "./errors.ts";
+import { ValidationError } from "./errors.ts";
 import type { EnigmaConfig } from "./config.ts";
 
 /**
@@ -90,7 +90,7 @@ export class ConfigValidator {
    */
   public async validateFile(filepath: string): Promise<ValidationResult & { config?: EnigmaConfig }> {
     try {
-      const fileContent = require('fs').readFileSync(filepath, 'utf-8');
+      const fileContent = readFileSync(filepath, 'utf-8');
       // If the file is empty or only whitespace, treat as empty object
       const config = fileContent.trim().length === 0 ? {} : JSON.parse(fileContent);
       const result = await this.validateConfiguration(config, filepath);

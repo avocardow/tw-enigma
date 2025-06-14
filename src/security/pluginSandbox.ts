@@ -122,7 +122,7 @@ export class PluginSandbox extends EventEmitter {
   private config: SandboxConfig;
   private readonly logger = createLogger("plugin-sandbox");
 
-  constructor(config: Partial<SandboxConfig> = {}) {
+  constructor(config: Partial<SandboxConfig> | any = {}) {
     super();
     
     // Handle legacy config format from tests  
@@ -253,7 +253,7 @@ export class PluginSandbox extends EventEmitter {
       }
 
       // Create timeout promise that properly rejects
-      let timeoutId: NodeJS.Timeout;
+      let timeoutId: NodeJS.Timeout | undefined;
       const timeoutPromise = new Promise<never>((_, reject) => {
         timeoutId = setTimeout(() => {
           reject(new SecurityViolationError(
@@ -326,23 +326,44 @@ export class PluginSandbox extends EventEmitter {
       __PLUGIN_CONTEXT__: context,
     };
 
-    // For any isolation level, we need to properly block require
-    // Store original require and module to restore later
+    // Get the fs module to override - need to handle both require('fs') and import fs
     const Module = require('module');
+    const fs = require('fs');
+    
+    // Store originals to restore later
     const originalRequire = Module.prototype.require;
     const globalRequire = (global as any).require;
     const globalModule = (global as any).module;
+    const originalReadFileSync = fs.readFileSync;
+    const originalWriteFileSync = fs.writeFileSync;
+    const originalAppendFileSync = fs.appendFileSync;
+    const originalReadFile = fs.readFile;
+    const originalWriteFile = fs.writeFile;
+    const originalAppendFile = fs.appendFile;
 
     try {
-      // Temporarily override require to throw errors
+      // Define blocking functions
       const blockRequire = () => { 
         throw new Error('require is not available in sandbox'); 
       };
       
-      // Override at multiple levels to catch all access patterns
+      const blockFileAccess = () => {
+        throw new Error('File system access blocked in sandbox');
+      };
+      
+      // Override require at multiple levels
       Module.prototype.require = blockRequire;
       (global as any).require = blockRequire;
       (global as any).module = undefined;
+      
+      // CRITICAL: Block file system access on the actual fs module
+      // This affects both require('fs') and import fs from 'fs'
+      fs.readFileSync = blockFileAccess;
+      fs.writeFileSync = blockFileAccess;
+      fs.appendFileSync = blockFileAccess;
+      fs.readFile = blockFileAccess;
+      fs.writeFile = blockFileAccess;
+      fs.appendFile = blockFileAccess;
       
       // For VM-based isolation (strict mode)
       if (this.config.isolationLevel === "strict") {
@@ -359,7 +380,7 @@ export class PluginSandbox extends EventEmitter {
         
         return result;
       } else {
-        // For basic isolation, run with blocked require
+        // For basic isolation, run with blocked require and fs
         return await operation();
       }
     } catch (error) {
@@ -373,10 +394,16 @@ export class PluginSandbox extends EventEmitter {
       });
       throw error;
     } finally {
-      // Always restore original require functionality
+      // CRITICAL: Always restore original functionality in finally block
       Module.prototype.require = originalRequire;
       (global as any).require = globalRequire;
       (global as any).module = globalModule;
+      fs.readFileSync = originalReadFileSync;
+      fs.writeFileSync = originalWriteFileSync;
+      fs.appendFileSync = originalAppendFileSync;
+      fs.readFile = originalReadFile;
+      fs.writeFile = originalWriteFile;
+      fs.appendFile = originalAppendFile;
     }
   }
 
