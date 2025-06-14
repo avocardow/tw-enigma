@@ -28,9 +28,9 @@ import {
   CachedOptimizationResult, 
   OptimizationCacheConfig,
   getOptimizationCache 
-} from './optimizationCache.js';
-import type { EnigmaConfig } from './config.js';
-import type { OptimizationResult } from './output/assetHasher.js';
+} from './optimizationCache';
+import type { EnigmaConfig } from './config.ts';
+import type { OptimizationResult } from './output/assetHasher.ts';
 
 /**
  * Circuit breaker states for cache availability
@@ -193,6 +193,7 @@ export class OptimizationCacheIntegration extends EventEmitter {
         return result;
       } else {
         this.recordMissedGet(startTime);
+        this.handleCircuitBreakerSuccess(); // Cache miss is still a successful operation
         this.emit('cache-miss', { operationId, inputFiles });
         return null;
       }
@@ -369,9 +370,9 @@ export class OptimizationCacheIntegration extends EventEmitter {
       return null;
 
     } catch (error) {
-      // Log error but don't throw - fallback to original optimization
+      // Log error and re-throw to trigger circuit breaker
       this.emit('cache-retrieval-error', { context, error });
-      return null;
+      throw error;
     }
   }
 
@@ -388,7 +389,7 @@ export class OptimizationCacheIntegration extends EventEmitter {
       return await this.cache.set(inputFiles, config, result, framework);
     } catch (error) {
       this.emit('cache-storage-error', { context, error });
-      return false;
+      throw error;
     }
   }
 

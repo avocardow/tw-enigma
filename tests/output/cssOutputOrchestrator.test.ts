@@ -18,12 +18,12 @@ import {
   type CssProcessingOptions,
   type CssOrchestrationResult,
   type CssOutputResult,
-} from "../../src/output/cssOutputOrchestrator.js";
+} from "../../src/output/cssOutputOrchestrator.ts";
 import {
   createProductionConfig,
   createDevelopmentConfig,
   type CssOutputConfig,
-} from "../../src/output/cssOutputConfig.js";
+} from "../../src/output/cssOutputConfig.ts";
 
 describe("CssOutputOrchestrator", () => {
   let tempDir: string;

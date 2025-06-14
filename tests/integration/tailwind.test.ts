@@ -173,8 +173,8 @@ describe("Tailwind Enigma Plugin Integration", () => {
       });
 
       // Check for responsive variants
-      expect(result.css).toMatch(/@media.*md.*\.md\\:tw-opt-0/);
-      expect(result.css).toMatch(/@media.*lg.*\.lg\\:tw-opt-1/);
+      expect(result.css).toMatch(/@media.*min-width: 768px.*\.md\\:tw-opt-0/s);
+      expect(result.css).toMatch(/@media.*min-width: 1024px.*\.lg\\:tw-opt-1/s);
     });
 
     it("should generate hover and focus variants when enabled", async () => {
@@ -277,7 +277,7 @@ describe("Tailwind Enigma Plugin Integration", () => {
 
     it("should handle missing pattern files gracefully", async () => {
       const tailwindConfig = {
-        content: [{ raw: '<div class="tw-opt-0"></div>' }],
+        content: [{ raw: '<div class="flex p-4"></div>' }], // Include some standard Tailwind classes
         plugins: [
           tailwindEnigmaPlugin({
             paths: {
@@ -295,9 +295,10 @@ describe("Tailwind Enigma Plugin Integration", () => {
         from: undefined,
       });
 
-      // Should still generate base Tailwind CSS
+      // Should still generate base Tailwind CSS for standard classes
       expect(result.css).toBeDefined();
       expect(result.css.length).toBeGreaterThan(0);
+      expect(result.css).toContain("display: flex"); // Should include standard Tailwind utilities
     });
   });
 

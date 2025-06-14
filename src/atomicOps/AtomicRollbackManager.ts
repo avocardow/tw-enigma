@@ -41,6 +41,7 @@ interface Transaction {
 export class AtomicRollbackManager {
   private readonly options: Required<AtomicFileOptions>;
   private readonly activeTransactions: Map<string, Transaction>;
+  private readonly committedTransactions: Map<string, Transaction>; // Track committed transactions briefly
   private readonly rollbackHistory: RollbackOperation[];
   private readonly metrics: AtomicOperationMetrics;
   private readonly maxHistorySize: number;
@@ -64,6 +65,7 @@ export class AtomicRollbackManager {
     };
 
     this.activeTransactions = new Map();
+    this.committedTransactions = new Map(); // Initialize committed transactions map
     this.rollbackHistory = [];
     this.maxHistorySize = 1000; // Keep last 1000 rollback operations
     this.metrics = this.initializeMetrics();
@@ -103,8 +105,14 @@ export class AtomicRollbackManager {
     transactionId: string,
     operation: RollbackOperation,
   ): void {
-    const transaction = this.activeTransactions.get(transactionId);
+    let transaction = this.activeTransactions.get(transactionId);
+    
+    // If not in active transactions, check committed transactions for better error message
     if (!transaction) {
+      const committedTransaction = this.committedTransactions.get(transactionId);
+      if (committedTransaction) {
+        throw new Error(`Cannot add operations to ${committedTransaction.status} transaction`);
+      }
       throw new Error(`Transaction ${transactionId} not found`);
     }
 
@@ -166,8 +174,16 @@ export class AtomicRollbackManager {
       // Cleanup history if needed
       this.cleanupHistory();
 
+      // Move to committed transactions temporarily for better error messages
+      this.committedTransactions.set(transactionId, transaction);
+      
       // Remove from active transactions
       this.activeTransactions.delete(transactionId);
+      
+      // Clean up committed transaction after a short delay (for testing purposes)
+      setTimeout(() => {
+        this.committedTransactions.delete(transactionId);
+      }, 1000);
 
       this.updateMetrics("write", true, Date.now() - transaction.startTime, 0);
     } catch (error) {

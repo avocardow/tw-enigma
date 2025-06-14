@@ -84,6 +84,12 @@ export interface AtomicOperationResult {
     stack?: string;
   };
 
+  /** Rollback operation information (if applicable) */
+  rollbackOperation?: RollbackOperation;
+
+  /** File content (for read operations) */
+  fileContent?: string | Buffer;
+
   /** Operation metadata */
   metadata: AtomicOperationResultMetadata;
 }
@@ -384,21 +390,23 @@ export interface BatchOperationResult {
 }
 
 /** Error types for atomic operations */
-export enum AtomicOperationError {
-  FILE_NOT_FOUND = "FILE_NOT_FOUND",
-  PERMISSION_DENIED = "PERMISSION_DENIED",
-  TEMP_FILE_CREATION_FAILED = "TEMP_FILE_CREATION_FAILED",
-  WRITE_FAILED = "WRITE_FAILED",
-  FSYNC_FAILED = "FSYNC_FAILED",
-  RENAME_FAILED = "RENAME_FAILED",
-  CLEANUP_FAILED = "CLEANUP_FAILED",
-  TIMEOUT = "TIMEOUT",
-  ROLLBACK_FAILED = "ROLLBACK_FAILED",
-  WAL_CORRUPTION = "WAL_CORRUPTION",
-  INVALID_OPERATION = "INVALID_OPERATION",
-  DISK_FULL = "DISK_FULL",
-  LOCK_FAILED = "LOCK_FAILED",
-}
+export const AtomicOperationError = {
+  FILE_NOT_FOUND: "FILE_NOT_FOUND",
+  PERMISSION_DENIED: "PERMISSION_DENIED",
+  TEMP_FILE_CREATION_FAILED: "TEMP_FILE_CREATION_FAILED",
+  WRITE_FAILED: "WRITE_FAILED",
+  FSYNC_FAILED: "FSYNC_FAILED",
+  RENAME_FAILED: "RENAME_FAILED",
+  CLEANUP_FAILED: "CLEANUP_FAILED",
+  TIMEOUT: "TIMEOUT",
+  ROLLBACK_FAILED: "ROLLBACK_FAILED",
+  WAL_CORRUPTION: "WAL_CORRUPTION",
+  INVALID_OPERATION: "INVALID_OPERATION",
+  DISK_FULL: "DISK_FULL",
+  LOCK_FAILED: "LOCK_FAILED",
+} as const;
+
+export type AtomicOperationError = typeof AtomicOperationError[keyof typeof AtomicOperationError];
 
 /** Metadata about an atomic operation */
 export interface AtomicOperationResultMetadata {

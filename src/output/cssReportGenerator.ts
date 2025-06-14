@@ -5,11 +5,11 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import type { CssChunk } from "./cssChunker.js";
-import type { CssOutputConfig, PerformanceBudget } from "./cssOutputConfig.js";
-import type { AssetHash } from "./assetHasher.js";
+import type { CssChunk } from "./cssChunker.ts";
+import type { CssOutputConfig, PerformanceBudget } from "./cssOutputConfig.ts";
+import type { AssetHash } from "./assetHasher.ts";
 
-import type { CriticalCssResult } from "./criticalCssExtractor.js";
+import type { CriticalCssResult } from "./criticalCssExtractor.ts";
 
 /**
  * Performance metrics for CSS bundles
@@ -455,13 +455,13 @@ export class CssReportGenerator {
     });
 
     // Check critical CSS violations
-    if (metrics.totalCriticalCssSize > budget.maxCriticalSize) {
+    if (metrics.totalCriticalCssSize > budget.maxCriticalCssSize) {
       violations.push({
         type: "critical_css",
         actual: metrics.totalCriticalCssSize,
-        limit: budget.maxCriticalSize,
+        limit: budget.maxCriticalCssSize,
         severity:
-          metrics.totalCriticalCssSize > budget.maxCriticalSize * 1.3
+          metrics.totalCriticalCssSize > budget.maxCriticalCssSize * 1.3
             ? "error"
             : "warning",
         message: "Critical CSS size exceeds limit",
@@ -490,11 +490,11 @@ export class CssReportGenerator {
     }
 
     // Check load time violations
-    if (metrics.averageLoadTime > budget.maxLoadTime) {
+    if (metrics.averageLoadTime > budget.estimatedLoadTime) {
       violations.push({
         type: "load_time",
         actual: metrics.averageLoadTime,
-        limit: budget.maxLoadTime,
+        limit: budget.estimatedLoadTime,
         severity: "error",
         message: "Estimated load time exceeds target",
         recommendations: [

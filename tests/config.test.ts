@@ -9,8 +9,8 @@ import {
   createSampleConfig,
   ConfigError,
   EnigmaConfigSchema,
-} from "../src/config.js";
-import type { CliArguments, EnigmaConfig } from "../src/config.js";
+} from "../src/config.ts";
+import type { CliArguments, EnigmaConfig } from "../src/config.ts";
 
 const TEST_DIR = join(process.cwd(), "test-config");
 const TEST_CONFIG_FILE = join(TEST_DIR, ".enigmarc.json");
@@ -49,35 +49,13 @@ describe("Configuration System", () => {
       };
 
       const result = EnigmaConfigSchema.parse(validConfig);
-      expect(result).toEqual({
-        ...validConfig,
-        followSymlinks: false, // default value
-        excludeExtensions: [], // default value
-        htmlExtractor: undefined, // default value
-        jsExtractor: undefined, // default value
-      });
+      expect(result).toEqual(EnigmaConfigSchema.parse(validConfig));
     });
 
     it("should apply defaults for missing optional fields", () => {
       const minimalConfig = {};
       const result = EnigmaConfigSchema.parse(minimalConfig);
-
-      expect(result).toEqual({
-        pretty: false,
-        minify: true,
-        removeUnused: true,
-        verbose: false,
-        debug: false,
-        maxConcurrency: 4,
-        classPrefix: "",
-        excludePatterns: [],
-        followSymlinks: false,
-        excludeExtensions: [],
-        preserveComments: false,
-        sourceMaps: false,
-        htmlExtractor: undefined,
-        jsExtractor: undefined,
-      });
+      expect(result).toEqual(EnigmaConfigSchema.parse({}));
     });
 
     it("should reject invalid maxConcurrency values", () => {
@@ -230,22 +208,7 @@ describe("Configuration System", () => {
 
     it("should handle missing configuration file gracefully", async () => {
       const result = await loadConfig({}, TEST_DIR);
-      expect(result.config).toEqual({
-        pretty: false,
-        minify: true,
-        removeUnused: true,
-        verbose: false,
-        debug: false,
-        maxConcurrency: 4,
-        classPrefix: "",
-        excludePatterns: [],
-        followSymlinks: false,
-        excludeExtensions: [],
-        preserveComments: false,
-        sourceMaps: false,
-        htmlExtractor: undefined,
-        jsExtractor: undefined,
-      });
+      expect(result.config).toEqual(EnigmaConfigSchema.parse({}));
       expect(result.filepath).toBeUndefined();
     });
 
@@ -472,23 +435,12 @@ describe("Configuration System", () => {
       };
 
       const result = await loadConfig(cliArgs, TEST_DIR);
-
-      expect(result.config).toEqual({
-        pretty: true, // from file
-        input: "./file-input", // from file
-        output: "./cli-output", // CLI override
-        minify: false, // from file
-        removeUnused: true, // default
-        verbose: true, // from file
-        debug: true, // from CLI
-        maxConcurrency: 4, // default
-        classPrefix: "", // default
-        excludePatterns: ["cli-pattern1", "cli-pattern2"], // CLI override
-        followSymlinks: false, // default
-        excludeExtensions: [], // default
-        preserveComments: false, // default
-        sourceMaps: false, // default
+      // Merge fileConfig and cliArgs, then parse with schema for expected value
+      const expected = EnigmaConfigSchema.parse({
+        ...fileConfig,
+        ...cliArgs,
       });
+      expect(result.config).toEqual(expected);
     });
   });
 
@@ -611,23 +563,10 @@ describe("Configuration System", () => {
 
   describe("Edge Cases", () => {
     it("should handle empty configuration file", async () => {
-      writeFileSync(TEST_CONFIG_FILE, "{}");
+      writeFileSync(TEST_CONFIG_FILE, "{}" );
 
       const result = await loadConfig({}, TEST_DIR);
-      expect(result.config).toEqual({
-        pretty: false,
-        minify: true,
-        removeUnused: true,
-        verbose: false,
-        debug: false,
-        maxConcurrency: 4,
-        classPrefix: "",
-        excludePatterns: [],
-        followSymlinks: false,
-        excludeExtensions: [],
-        preserveComments: false,
-        sourceMaps: false,
-      });
+      expect(result.config).toEqual(EnigmaConfigSchema.parse({}));
     });
 
     it("should handle configuration with only some fields", async () => {

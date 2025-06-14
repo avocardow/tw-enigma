@@ -548,13 +548,18 @@ export class FrameworkDetector {
  * Framework Detection Error
  */
 export class FrameworkDetectionError extends Error {
+  public rootPath?: string;
+  public cause?: Error;
+
   constructor(
     message: string,
-    public rootPath?: string,
-    public cause?: Error,
+    rootPath?: string,
+    cause?: Error,
   ) {
     super(message);
     this.name = "FrameworkDetectionError";
+    this.rootPath = rootPath;
+    this.cause = cause;
   }
 }
 

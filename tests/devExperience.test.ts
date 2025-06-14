@@ -189,15 +189,17 @@ describe('DevExperienceManager', () => {
       devExperience.stop().then(() => devExperience.start());
     });
 
-    it('should emit error events', (done) => {
-      devExperience.on('error-detected', (error, context) => {
-        expect(error).toBeInstanceOf(Error);
-        expect(typeof context).toBe('string');
-        done();
+    it('should emit error events', async () => {
+      return new Promise((resolve) => {
+        devExperience.on('error-detected', (error, context) => {
+          expect(error).toBeInstanceOf(Error);
+          expect(typeof context).toBe('string');
+          resolve(undefined);
+        });
+        
+        // Simulate error
+        devExperience.emit('error-detected', new Error('Test error'), 'test');
       });
-      
-      // Simulate error
-      devExperience.emit('error-detected', new Error('Test error'), 'test');
     });
   });
 });
@@ -469,16 +471,19 @@ describe('DevDashboardEnhanced', () => {
 
     it('should generate analytics reports', async () => {
       const jsonReport = await dashboardEnhanced.generateReport('json');
-      expect(typeof jsonReport).toBe('string');
-      expect(() => JSON.parse(jsonReport)).not.toThrow();
+      expect(typeof jsonReport).toBe('object');
+      expect(jsonReport.format).toBe('json');
+      expect(() => JSON.parse(jsonReport.content)).not.toThrow();
 
       const csvReport = await dashboardEnhanced.generateReport('csv');
-      expect(typeof csvReport).toBe('string');
-      expect(csvReport).toContain('Timestamp');
+      expect(typeof csvReport).toBe('object');
+      expect(csvReport.format).toBe('csv');
+      expect(csvReport.content).toContain('Timestamp');
 
       const htmlReport = await dashboardEnhanced.generateReport('html');
-      expect(typeof htmlReport).toBe('string');
-      expect(htmlReport).toContain('<!DOCTYPE html>');
+      expect(typeof htmlReport).toBe('object');
+      expect(htmlReport.format).toBe('html');
+      expect(htmlReport.content).toContain('<!DOCTYPE html>');
     });
 
     it('should provide optimization insights', () => {
@@ -606,39 +611,43 @@ describe('Integration Tests', () => {
       ]);
     });
 
-    it('should coordinate optimization events', (done) => {
-      let eventCount = 0;
+    it('should coordinate optimization events', async () => {
+      return new Promise((resolve) => {
+        let eventCount = 0;
 
-      const checkComplete = () => {
-        eventCount++;
-        if (eventCount >= 1) {
-          done();
-        }
-      };
+        const checkComplete = () => {
+          eventCount++;
+          if (eventCount >= 1) {
+            resolve(undefined);
+          }
+        };
 
-      // Listen for coordination events
-      devExperience.on('optimization-completed', checkComplete);
+        // Listen for coordination events
+        devExperience.on('optimization-completed', checkComplete);
 
-      // Trigger optimization
-      devExperience.emit('optimization-completed', { test: true });
+        // Trigger optimization
+        devExperience.emit('optimization-completed', { test: true });
+      });
     });
 
-    it('should share file change events', (done) => {
-      hotReload.on('file-changed', (event) => {
-        expect(event).toHaveProperty('path');
-        expect(event).toHaveProperty('type');
-        done();
-      });
+    it('should share file change events', async () => {
+      return new Promise((resolve) => {
+        hotReload.on('file-changed', (event) => {
+          expect(event).toHaveProperty('path');
+          expect(event).toHaveProperty('type');
+          resolve(undefined);
+        });
 
-      // Simulate file change
-      hotReload.emit('file-changed', {
-        path: 'test.css',
+        // Simulate file change
+        hotReload.emit('file-changed', {
+          path: 'test.css',
         type: 'change',
         timestamp: new Date(),
         isCSS: true,
         isHTML: false,
         isJS: false,
         requiresOptimization: true,
+      });
       });
     });
   });
@@ -708,7 +717,7 @@ describe('Error Handling and Edge Cases', () => {
 
     it('should handle network errors in hot reload', async () => {
       const hotReload = new DevHotReload({
-        port: 0, // Invalid port
+        port: 65536, // Invalid port number (valid range is 0-65535)
       }, mockConfig);
 
       // Should handle startup errors gracefully

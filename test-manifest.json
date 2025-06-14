@@ -1,0 +1,19 @@
+{
+  "version": "1.0.0",
+  "generated": "2025-06-14T04:51:40.424Z",
+  "buildConfig": {
+    "strategy": "test",
+    "optimization": true,
+    "compression": true,
+    "hashing": true
+  },
+  "assets": {},
+  "entrypoints": {},
+  "stats": {
+    "totalFiles": 0,
+    "totalSize": 0,
+    "compressedSize": 0,
+    "compressionRatio": 1,
+    "optimizationRatio": 1
+  }
+}

@@ -6,7 +6,7 @@ import {
   logger,
   createLogger,
   ErrorContext,
-} from "../src/logger.js";
+} from "../src/logger.ts";
 
 // Mock console methods
 const originalConsoleLog = console.log;
@@ -103,10 +103,12 @@ describe("Logger", () => {
       testLogger.error("error message");
       testLogger.fatal("fatal message");
 
-      expect(consoleOutput).toHaveLength(3); // Only WARN, ERROR, FATAL
+      // WARN goes to stdout, ERROR and FATAL go to stderr
+      expect(consoleOutput).toHaveLength(1); // Only WARN
+      expect(errorOutput).toHaveLength(2); // ERROR and FATAL
       expect(consoleOutput[0]).toContain("WARN");
-      expect(consoleOutput[1]).toContain("ERROR");
-      expect(consoleOutput[2]).toContain("FATAL");
+      expect(errorOutput[0]).toContain("ERROR");
+      expect(errorOutput[1]).toContain("FATAL");
     });
 
     it("should set log level dynamically", () => {
@@ -198,7 +200,7 @@ describe("Logger", () => {
 
       testLogger.error(testError);
 
-      const logEntry = JSON.parse(consoleOutput[0]);
+      const logEntry = JSON.parse(errorOutput[0]);
       expect(logEntry.level).toBe("ERROR");
       expect(logEntry.message).toBe("Test error message");
       expect(logEntry.error).toBeDefined();
@@ -212,7 +214,7 @@ describe("Logger", () => {
 
       testLogger.error("String error message");
 
-      const logEntry = JSON.parse(consoleOutput[0]);
+      const logEntry = JSON.parse(errorOutput[0]);
       expect(logEntry.level).toBe("ERROR");
       expect(logEntry.message).toBe("String error message");
       expect(logEntry.error).toBeUndefined();
@@ -224,7 +226,7 @@ describe("Logger", () => {
 
       testLogger.fatal(fatalError);
 
-      const logEntry = JSON.parse(consoleOutput[0]);
+      const logEntry = JSON.parse(errorOutput[0]);
       expect(logEntry.level).toBe("FATAL");
       expect(logEntry.error.name).toBe("Error");
     });
@@ -315,7 +317,7 @@ describe("Logger", () => {
 
       // Import again to get fresh instance with new env
       vi.resetModules();
-      const { logger: devLogger } = await import("../src/logger.js");
+      const { logger: devLogger } = await import("../src/logger.ts");
 
       devLogger.debug("dev debug message");
 
@@ -333,7 +335,7 @@ describe("Logger", () => {
       process.env.NODE_ENV = "development"; // Ensure DEBUG level is enabled
 
       vi.resetModules();
-      const { logger: verboseLogger } = await import("../src/logger.js");
+      const { logger: verboseLogger } = await import("../src/logger.ts");
 
       verboseLogger.debug("verbose debug message");
 
@@ -553,9 +555,10 @@ describe("Enhanced Logger Features", () => {
       testLogger.warn("warn message");
       testLogger.error("error message");
 
-      expect(consoleOutput).toHaveLength(2); // Only WARN and ERROR
+      expect(consoleOutput).toHaveLength(1); // Only WARN goes to stdout
+      expect(errorOutput).toHaveLength(1); // Only ERROR goes to stderr
       expect(JSON.parse(consoleOutput[0]).level).toBe("WARN");
-      expect(JSON.parse(consoleOutput[1]).level).toBe("ERROR");
+      expect(JSON.parse(errorOutput[0]).level).toBe("ERROR");
     });
 
     it("should override verbose settings when quiet is enabled", () => {

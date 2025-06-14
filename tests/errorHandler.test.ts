@@ -9,12 +9,12 @@ import {
   CircuitBreaker,
   CircuitBreakerRegistry,
   CircuitBreakerOpenError,
-} from "../src/errorHandler/circuitBreaker.js";
+} from "../src/errorHandler/circuitBreaker.ts";
 import {
   ErrorHandler,
   getErrorHandler,
   handleError,
-} from "../src/errorHandler/errorHandler.js";
+} from "../src/errorHandler/errorHandler.ts";
 import {
   ErrorSeverity,
   ErrorCategory,
@@ -23,10 +23,10 @@ import {
   categorizeError,
   severityToNumber,
   isEnigmaError,
-} from "../src/errorHandler/types.js";
+} from "../src/errorHandler/types.ts";
 
 // Mock the logger
-vi.mock("../src/logger.js", () => ({
+vi.mock("../src/logger.ts", () => ({
   createLogger: vi.fn(() => ({
     debug: vi.fn(),
     info: vi.fn(),

@@ -24,9 +24,9 @@ import {
   type JsClassExtractionResult,
   type PatternFrequencyMap,
   type FrequencyAnalysisResult,
-} from "../src/patternAnalysis.js";
-import type { ClassData } from "../src/htmlExtractor.js";
-import type { JsClassData } from "../src/jsExtractor.js";
+} from "../src/patternAnalysis.ts";
+import type { ClassData } from "../src/htmlExtractor.ts";
+import type { JsClassData } from "../src/jsExtractor.ts";
 
 describe("PatternAnalysis", () => {
   let mockHtmlResult: HtmlClassExtractionResult;
@@ -456,8 +456,8 @@ describe("PatternAnalysis", () => {
   });
 
   describe("Export Functions", () => {
-    it("should export to JSON format", () => {
-      const analysisResult = analyzePatterns(mockInput);
+    it("should export to JSON format", async () => {
+      const analysisResult = await analyzePatterns(mockInput);
       const result = exportToJson(analysisResult);
 
       expect(result.frequencyMap).toBeDefined();
@@ -467,8 +467,8 @@ describe("PatternAnalysis", () => {
       expect(result.summary.topClasses).toBeInstanceOf(Array);
     });
 
-    it("should include top classes in summary", () => {
-      const analysisResult = analyzePatterns(mockInput);
+    it("should include top classes in summary", async () => {
+      const analysisResult = await analyzePatterns(mockInput);
       const result = exportToJson(analysisResult);
 
       expect(result.summary.topClasses.length).toBeGreaterThan(0);
@@ -487,8 +487,8 @@ describe("PatternAnalysis", () => {
   });
 
   describe("Main Analysis Function", () => {
-    it("should perform complete pattern analysis", () => {
-      const result = analyzePatterns(mockInput);
+    it("should perform complete pattern analysis", async () => {
+      const result = await analyzePatterns(mockInput);
 
       expect(result.frequencyMap).toBeInstanceOf(Map);
       expect(result.totalClasses).toBeGreaterThan(0);
@@ -502,22 +502,22 @@ describe("PatternAnalysis", () => {
       expect(result.metadata.processingTime).toBeGreaterThanOrEqual(0);
     });
 
-    it("should handle custom options", () => {
+    it("should handle custom options", async () => {
       const options: PatternAnalysisOptions = {
         minimumFrequency: 5,
         enablePatternGrouping: false,
         enableCoOccurrenceAnalysis: false,
         includeFrameworkAnalysis: false,
       };
-      const result = analyzePatterns(mockInput, options);
+      const result = await analyzePatterns(mockInput, options);
 
       expect(result.patternGroups).toEqual([]);
       expect(result.coOccurrencePatterns).toEqual([]);
       expect(result.frameworkAnalysis).toEqual([]);
     });
 
-    it("should collect metadata correctly", () => {
-      const result = analyzePatterns(mockInput);
+    it("should collect metadata correctly", async () => {
+      const result = await analyzePatterns(mockInput);
 
       expect(result.metadata.sources.htmlFiles).toBe(1);
       expect(result.metadata.sources.jsxFiles).toBe(1);
@@ -551,23 +551,23 @@ describe("PatternAnalysis", () => {
   });
 
   describe("Error Handling", () => {
-    it("should throw PatternAnalysisError for invalid input", () => {
+    it("should throw PatternAnalysisError for invalid input", async () => {
       const invalidInput = {
         htmlResults: [],
         jsxResults: [],
       };
 
-      expect(() => analyzePatterns(invalidInput)).not.toThrow();
+      await expect(analyzePatterns(invalidInput)).resolves.toBeDefined();
       // Empty input should work but return empty results
     });
 
-    it("should handle malformed extraction results gracefully", () => {
+    it("should handle malformed extraction results gracefully", async () => {
       const invalidInput = {
         htmlResults: [{ ...mockHtmlResult, classes: null as any }],
         jsxResults: [],
       };
 
-      expect(() => analyzePatterns(invalidInput)).toThrow();
+      await expect(analyzePatterns(invalidInput)).rejects.toThrow();
     });
 
     it("should provide detailed error messages", () => {

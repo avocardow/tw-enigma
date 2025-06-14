@@ -8,9 +8,9 @@
 import { z } from "zod";
 import { resolve, relative, isAbsolute } from "path";
 import { existsSync, statSync } from "fs";
-import { logger } from "./logger.js";
-import { ConfigError, ValidationError } from "./errors.js";
-import type { EnigmaConfig } from "./config.js";
+import { logger } from "./logger.ts";
+import { ConfigError, ValidationError } from "./errors.ts";
+import type { EnigmaConfig } from "./config.ts";
 
 /**
  * Configuration schema version for migration support
@@ -91,16 +91,17 @@ export class ConfigValidator {
   public async validateFile(filepath: string): Promise<ValidationResult & { config?: EnigmaConfig }> {
     try {
       const fileContent = require('fs').readFileSync(filepath, 'utf-8');
-      const config = JSON.parse(fileContent);
+      // If the file is empty or only whitespace, treat as empty object
+      const config = fileContent.trim().length === 0 ? {} : JSON.parse(fileContent);
       const result = await this.validateConfiguration(config, filepath);
-      
+      // Use the schema-validated config with defaults if available
       return {
         isValid: result.isValid,
         errors: result.errors,
         warnings: result.warnings,
         suggestions: result.suggestions,
         performance: result.performance,
-        config: result.isValid ? config as EnigmaConfig : undefined
+        config: result.isValid && (result as any).config ? (result as any).config : undefined
       };
     } catch (error) {
       return {
@@ -122,12 +123,13 @@ export class ConfigValidator {
   /**
    * Validate complete configuration with enhanced rules
    */
-  public async validateConfiguration(config: unknown, filepath?: string): Promise<ValidationResult> {
+  public async validateConfiguration(config: unknown, filepath?: string): Promise<ValidationResult & { config?: EnigmaConfig }> {
     const startTime = Date.now();
     const errors: ValidationError[] = [];
     const warnings: string[] = [];
     const suggestions: string[] = [];
     let rulesApplied = 0;
+    let validatedConfig: EnigmaConfig | undefined = undefined;
 
     logger.debug("Starting enhanced configuration validation", { filepath });
 
@@ -138,24 +140,24 @@ export class ConfigValidator {
         return basicValidation;
       }
 
-      const validConfig = basicValidation.config as EnigmaConfig;
+      validatedConfig = basicValidation.config as EnigmaConfig;
 
       // Step 2: Cross-field validation
-      const crossFieldResult = await this.validateCrossFields(validConfig, filepath);
+      const crossFieldResult = await this.validateCrossFields(validatedConfig, filepath);
       errors.push(...crossFieldResult.errors);
       warnings.push(...crossFieldResult.warnings);
       suggestions.push(...crossFieldResult.suggestions);
       rulesApplied += crossFieldResult.performance.rulesApplied;
 
       // Step 3: Security validation
-      const securityResult = await this.validateSecurity(validConfig, filepath);
+      const securityResult = await this.validateSecurity(validatedConfig, filepath);
       errors.push(...securityResult.errors);
       warnings.push(...securityResult.warnings);
       suggestions.push(...securityResult.suggestions);
       rulesApplied += securityResult.performance.rulesApplied;
 
       // Step 4: Performance validation
-      const performanceResult = await this.validatePerformance(validConfig, filepath);
+      const performanceResult = await this.validatePerformance(validatedConfig, filepath);
       warnings.push(...performanceResult.warnings);
       suggestions.push(...performanceResult.suggestions);
       rulesApplied += performanceResult.performance.rulesApplied;
@@ -179,6 +181,7 @@ export class ConfigValidator {
           validationTime,
           rulesApplied,
         },
+        config: errors.length === 0 ? validatedConfig : undefined,
       };
     } catch (error) {
       logger.error("Configuration validation failed", { filepath, error });
@@ -200,6 +203,7 @@ export class ConfigValidator {
           validationTime: Date.now() - startTime,
           rulesApplied,
         },
+        config: undefined,
       };
     }
   }

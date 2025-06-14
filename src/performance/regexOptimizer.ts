@@ -24,8 +24,8 @@
 
 import { performance } from "perf_hooks";
 import { EventEmitter } from "events";
-import type { CacheManager } from "./cacheManager.js";
-import { createCacheManager } from "./cacheManager.js";
+import type { CacheManager } from "./cacheManager.ts";
+import { createCacheManager } from "./cacheManager.ts";
 
 /**
  * Regex compilation cache entry

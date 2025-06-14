@@ -66,35 +66,46 @@ export interface RelativePathResult {
  * Custom error classes for path operations
  */
 export class PathUtilsError extends Error {
+  public code: string;
+  public cause?: Error;
+
   constructor(
     message: string,
-    public code: string,
-    public cause?: Error,
+    code: string,
+    cause?: Error,
   ) {
     super(message);
     this.name = "PathUtilsError";
+    this.code = code;
+    this.cause = cause;
   }
 }
 
 export class PathSecurityError extends PathUtilsError {
+  public path: string;
+
   constructor(
     message: string,
-    public path: string,
+    path: string,
     cause?: Error,
   ) {
     super(message, "PATH_SECURITY_ERROR", cause);
     this.name = "PathSecurityError";
+    this.path = path;
   }
 }
 
 export class PathValidationError extends PathUtilsError {
+  public path: string;
+
   constructor(
     message: string,
-    public path: string,
+    path: string,
     cause?: Error,
   ) {
     super(message, "PATH_VALIDATION_ERROR", cause);
     this.name = "PathValidationError";
+    this.path = path;
   }
 }
 

@@ -13,8 +13,9 @@ import type {
   OutputStrategy,
   ChunkingStrategy,
   CriticalCssStrategy,
-} from "./cssOutputConfig.js";
-import { CssChunker, CssChunk, createCssChunker } from "./cssChunker.js";
+} from "./cssOutputConfig.ts";
+import { CssChunker, createCssChunker } from "./cssChunker.ts";
+import type { CssChunk } from "./cssChunker.ts";
 import {
   AssetHasher,
   CssOptimizer,
@@ -28,12 +29,12 @@ import {
   type OptimizationResult,
   type CompressionResult,
   type AssetManifest,
-} from "./assetHasher.js";
+} from "./assetHasher.ts";
 import {
   CriticalCssExtractor,
   createCriticalCssExtractor,
-} from "./criticalCssExtractor.js";
-import { CssAnalyzer, createCssAnalyzer } from "./cssAnalyzer.js";
+} from "./criticalCssExtractor.ts";
+import { CssAnalyzer, createCssAnalyzer } from "./cssAnalyzer.ts";
 
 // =============================================================================
 // TYPE DEFINITIONS

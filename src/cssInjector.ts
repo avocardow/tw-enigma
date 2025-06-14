@@ -8,13 +8,13 @@
 import * as cheerio from "cheerio";
 import * as path from "path";
 import { z } from "zod";
-import { createLogger } from "./logger.js";
+import { createLogger } from "./logger.ts";
 import {
   PathUtils,
   type PathCalculationOptions,
   type RelativePathResult,
   PathUtilsError,
-} from "./pathUtils.js";
+} from "./pathUtils.ts";
 import type { AnyNode } from "domhandler";
 
 /**
@@ -140,49 +140,69 @@ export interface CssInjectionResult {
  * Custom error classes for CSS injection operations
  */
 export class CssInjectionError extends Error {
+  public source?: string;
+  public cause?: Error;
+  public code?: string;
+
   constructor(
     message: string,
-    public source?: string,
-    public cause?: Error,
-    public code?: string,
+    source?: string,
+    cause?: Error,
+    code?: string,
   ) {
     super(message);
     this.name = "CssInjectionError";
+    this.source = source;
+    this.cause = cause;
+    this.code = code;
   }
 }
 
 export class DuplicateInjectionError extends CssInjectionError {
+  public existingHref: string;
+  public newHref: string;
+
   constructor(
     message: string,
-    public existingHref: string,
-    public newHref: string,
+    existingHref: string,
+    newHref: string,
     source?: string,
   ) {
     super(message, source, undefined, "DUPLICATE_INJECTION");
     this.name = "DuplicateInjectionError";
+    this.existingHref = existingHref;
+    this.newHref = newHref;
   }
 }
 
 export class PathCalculationError extends CssInjectionError {
+  public fromPath: string;
+  public toPath: string;
+
   constructor(
     message: string,
-    public fromPath: string,
-    public toPath: string,
+    fromPath: string,
+    toPath: string,
     cause?: Error,
   ) {
     super(message, undefined, cause, "PATH_CALCULATION_ERROR");
     this.name = "PathCalculationError";
+    this.fromPath = fromPath;
+    this.toPath = toPath;
   }
 }
 
 export class HtmlStructureError extends CssInjectionError {
+  public htmlContent?: string;
+
   constructor(
     message: string,
-    public htmlContent?: string,
+    htmlContent?: string,
     cause?: Error,
   ) {
     super(message, undefined, cause, "HTML_STRUCTURE_ERROR");
     this.name = "HtmlStructureError";
+    this.htmlContent = htmlContent;
   }
 }
 

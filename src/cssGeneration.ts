@@ -10,12 +10,12 @@ import type {
   AggregatedClassData,
   FrequencyAnalysisResult,
   PatternFrequencyMap,
-} from "./patternAnalysis.js";
-import { createPluginApi } from "./pluginApi.js";
-import { createDefaultPluginConfigManager } from "./pluginConfig.js";
-import type { EnigmaPostCSSProcessor } from "./postcssIntegration.js";
-import { createLogger } from "./logger.js";
-import type { EnigmaConfig } from "./config.js";
+} from "./patternAnalysis.ts";
+import { createPluginApi } from "./pluginApi.ts";
+import { createDefaultPluginConfigManager } from "./pluginConfig.ts";
+import type { EnigmaPostCSSProcessor } from "./postcssIntegration.ts";
+import { createLogger } from "./logger.ts";
+import type { EnigmaConfig } from "./config.ts";
 // Note: FrequencyAnalyzer and GeneratedCSS types would be defined elsewhere or inline
 
 // Temporary type definitions for missing modules

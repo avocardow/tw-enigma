@@ -9,9 +9,9 @@ import { createHash } from "crypto";
 import { writeFile, readFile } from "fs/promises";
 import { join, dirname, basename, extname } from "path";
 import { SourceMapGenerator } from "source-map";
-import type { CssOutputConfig } from "./cssOutputConfig.js";
-import type { CssChunk } from "./cssChunker.js";
-import type { AssetHash } from "./assetHasher.js";
+import type { CssOutputConfig } from "./cssOutputConfig.ts";
+import type { CssChunk } from "./cssChunker.ts";
+import type { AssetHash } from "./assetHasher.ts";
 // Import types from other existing modules
 export interface CssBundle {
   id: string;

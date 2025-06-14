@@ -15,13 +15,13 @@
 import { EventEmitter } from "events";
 import { performance } from "perf_hooks";
 import { cpus } from "os";
-import { createLogger } from "../logger.js";
+import { createLogger } from "../logger.ts";
 import type {
   BatchConfig,
   PerformanceMetrics,
   WorkerConfig,
   CacheConfig,
-} from "./config.js";
+} from "./config.ts";
 
 const logger = createLogger("BatchCoordinator");
 

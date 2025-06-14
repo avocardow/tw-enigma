@@ -11,7 +11,7 @@
  */
 
 import { EventEmitter } from "events";
-import { createLogger } from "../logger.js";
+import { createLogger } from "../logger.ts";
 import {
   CircuitBreakerState,
   CircuitBreakerMetrics,
@@ -20,7 +20,7 @@ import {
   CircuitBreakerFallback,
   ErrorSeverity,
   ErrorCategory,
-} from "./types.js";
+} from "./types.ts";
 
 const circuitLogger = createLogger("CircuitBreaker");
 

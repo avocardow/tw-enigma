@@ -14,8 +14,8 @@ import {
   UsagePatternAnalyzer,
   createCssChunker,
   validateChunkingStrategy,
-} from "../../src/output/cssChunker.js";
-import { ChunkingConfig } from "../../src/output/cssOutputConfig.js";
+} from "../../src/output/cssChunker.ts";
+import { ChunkingConfig } from "../../src/output/cssOutputConfig.ts";
 
 // =============================================================================
 // TEST DATA AND FIXTURES
@@ -100,6 +100,7 @@ const createMockChunk = (overrides: Partial<CssChunk> = {}): CssChunk => ({
   size: Buffer.byteLength(mockCssContent, "utf8"),
   type: "main",
   priority: 1,
+  rules: [], // Add missing rules property
   dependencies: new Set(),
   routes: new Set(["/"]),
   components: new Set(["Button", "Card"]),
@@ -221,6 +222,9 @@ describe("DependencyGraph", () => {
     });
 
     it("should handle different edge types", () => {
+      // Add the missing node first
+      graph.addNode("form-input", "rule", "");
+      
       graph.addEdge("button-primary", "button", "extends");
       graph.addEdge("button", "form-input", "composes");
 

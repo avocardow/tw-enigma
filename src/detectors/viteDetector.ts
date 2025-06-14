@@ -14,7 +14,7 @@ import type {
   DetectionContext,
   DetectionSource,
   FrameworkType,
-} from "../frameworkDetector.js";
+} from "../frameworkDetector.ts";
 
 export class ViteDetector implements IFrameworkDetector {
   readonly frameworkType: FrameworkType = "vite";

@@ -54,7 +54,7 @@ import {
   type AggregatedClassData,
   type PrettyNameCache,
   type PrettyNameResult,
-} from "../src/nameGeneration.js";
+} from "../src/nameGeneration.ts";
 
 // Mock data for testing
 const mockFrequencyMap: PatternFrequencyMap = new Map([

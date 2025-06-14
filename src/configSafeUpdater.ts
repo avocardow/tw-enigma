@@ -9,11 +9,11 @@ import { writeFile, readFile, copyFile, unlink } from "fs/promises";
 import { existsSync, mkdirSync, readFileSync } from "fs";
 import { resolve, dirname, basename, join } from "path";
 import { randomUUID } from "crypto";
-import { logger } from "./logger.js";
-import { ConfigError } from "./errors.js";
-import { validateConfig } from "./configValidator.js";
-import type { EnigmaConfig } from "./config.js";
-import type { ValidationResult } from "./configValidator.js";
+import { logger } from "./logger.ts";
+import { ConfigError } from "./errors.ts";
+import { validateConfig } from "./configValidator.ts";
+import type { EnigmaConfig } from "./config.ts";
+import type { ValidationResult } from "./configValidator.ts";
 
 /**
  * Safe update operation result

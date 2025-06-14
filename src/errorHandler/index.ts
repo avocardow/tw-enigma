@@ -70,7 +70,7 @@ export {
   getErrorHandler,
   handleError,
   type ErrorStats,
-} from "./errorHandler.js";
+} from "./errorHandler.ts";
 
 // Circuit breaker components
 export {
@@ -78,7 +78,7 @@ export {
   CircuitBreakerRegistry,
   CircuitBreakerOpenError,
   withCircuitBreaker,
-} from "./circuitBreaker.js";
+} from "./circuitBreaker.ts";
 
 // Type definitions and utilities
 export {
@@ -101,15 +101,15 @@ export {
   categorizeError,
   severityToNumber,
   isEnigmaError,
-} from "./types.js";
+} from "./types.ts";
 
 // Convenience re-exports for common use cases
-export { createLogger } from "../logger.js";
-export { EnigmaError } from "../errors.js";
+export { createLogger } from "../logger.ts";
+export { EnigmaError } from "../errors.ts";
 
-import { ErrorHandlerConfig, ErrorSeverity, HealthStatus } from "./types.js";
-import { ErrorHandler, getErrorHandler } from "./errorHandler.js";
-import { CircuitBreakerRegistry } from "./circuitBreaker.js";
+import { ErrorHandlerConfig, ErrorSeverity, HealthStatus } from "./types.ts";
+import { ErrorHandler, getErrorHandler } from "./errorHandler.ts";
+import { CircuitBreakerRegistry } from "./circuitBreaker.ts";
 
 /**
  * Initialize error handling with default configuration

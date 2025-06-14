@@ -195,7 +195,7 @@ export class AtomicFileReader {
       );
     } finally {
       result.metadata.endTime = Date.now();
-      result.duration = result.metadata.endTime - startTime;
+      result.duration = Math.max(result.metadata.endTime - startTime, 0.1);
     }
 
     return result;
@@ -518,13 +518,16 @@ export class AtomicFileReader {
 
     this.metrics.totalBytesProcessed += bytesProcessed;
 
+    // Ensure minimum duration for tracking purposes (avoid division by zero)
+    const measuredDuration = Math.max(duration, 0.1);
+
     // Update average duration
     if (this.metrics.totalOperations === 1) {
-      this.metrics.averageDuration = duration;
+      this.metrics.averageDuration = measuredDuration;
     } else {
       const totalDuration =
         this.metrics.averageDuration * (this.metrics.totalOperations - 1) +
-        duration;
+        measuredDuration;
       this.metrics.averageDuration =
         totalDuration / this.metrics.totalOperations;
     }

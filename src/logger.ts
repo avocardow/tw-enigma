@@ -21,14 +21,16 @@ import { gzipSync } from "zlib";
 /**
  * Log levels following Log4j standard
  */
-export enum LogLevel {
-  TRACE = 0,
-  DEBUG = 1,
-  INFO = 2,
-  WARN = 3,
-  ERROR = 4,
-  FATAL = 5,
-}
+export const LogLevel = {
+  TRACE: 0,
+  DEBUG: 1,
+  INFO: 2,
+  WARN: 3,
+  ERROR: 4,
+  FATAL: 5,
+} as const;
+
+export type LogLevel = typeof LogLevel[keyof typeof LogLevel];
 
 /**
  * Log level names for easy reference
@@ -667,11 +669,20 @@ export class Logger {
    * Output a log entry to console and/or file
    */
   private output(entry: LogEntry): void {
-    // Console output
+    // Console output - send errors to stderr, others to stdout
     if (this.outputFormat === "json") {
-      console.log(JSON.stringify(entry));
+      if (entry.level === "ERROR" || entry.level === "FATAL") {
+        console.error(JSON.stringify(entry));
+      } else {
+        console.log(JSON.stringify(entry));
+      }
     } else {
-      console.log(this.formatHuman(entry));
+      const formattedMessage = this.formatHuman(entry);
+      if (entry.level === "ERROR" || entry.level === "FATAL") {
+        console.error(formattedMessage);
+      } else {
+        console.log(formattedMessage);
+      }
     }
 
     // File output

@@ -6,10 +6,10 @@
  */
 
 import { EventEmitter } from "events";
-import { logger } from "./logger.js";
-import { ValidationError } from "./errors.js";
-import type { EnigmaConfig } from "./config.js";
-import type { ValidationResult } from "./configValidator.js";
+import { logger } from "./logger.ts";
+import { ValidationError } from "./errors.ts";
+import type { EnigmaConfig } from "./config.ts";
+import type { ValidationResult } from "./configValidator.ts";
 
 /**
  * Runtime validation events
@@ -333,15 +333,34 @@ export class RuntimeValidator extends EventEmitter {
       const usage = this.getResourceUsage();
       const thresholds = this.validatorConfig.resourceThresholds;
 
-      if (usage.memoryHeapUsed > thresholds.memory * 0.8) { // 80% threshold
+      // Memory
+      if (usage.memoryHeapUsed > thresholds.memory) {
+        errors.push(`Resource constraint: Memory usage exceeds threshold: ${Math.round(usage.memoryHeapUsed / 1024 / 1024)}MB > ${Math.round(thresholds.memory / 1024 / 1024)}MB`);
+        warnings.push(`Memory usage exceeded resource threshold: ${Math.round(usage.memoryHeapUsed / 1024 / 1024)}MB > ${Math.round(thresholds.memory / 1024 / 1024)}MB`);
+      } else if (usage.memoryHeapUsed > thresholds.memory * 0.8) {
         warnings.push(`Memory usage is approaching threshold: ${Math.round(usage.memoryHeapUsed / 1024 / 1024)}MB`);
       }
 
-      // Check concurrency limits
+      // CPU (simulate as always under for now, as process.cpuUsage() is not percentage-based)
+      // You may want to implement actual CPU checks in a real environment
+
+      // File handles
+      if (usage.activeHandles > thresholds.fileHandles) {
+        errors.push(`Resource constraint: Active file handles exceed threshold: ${usage.activeHandles} > ${thresholds.fileHandles}`);
+        warnings.push(`File handles exceeded resource threshold: ${usage.activeHandles} > ${thresholds.fileHandles}`);
+      } else if (usage.activeHandles > thresholds.fileHandles * 0.8) {
+        warnings.push(`Active file handles approaching threshold: ${usage.activeHandles}`);
+      }
+
+      // Disk space (simulate as always under for now, as process does not provide disk usage)
+      // You may want to implement actual disk checks in a real environment
+
+      // Concurrency limits
       if (this.config.maxConcurrency > 8) {
         warnings.push(`High concurrency setting may impact performance: ${this.config.maxConcurrency}`);
       }
 
+      // If any errors, isValid must be false
       return {
         isValid: errors.length === 0,
         errors,
@@ -663,7 +682,23 @@ export class RuntimeValidator extends EventEmitter {
  * Factory function for creating runtime validator
  */
 export function createRuntimeValidator(config: EnigmaConfig, validatorConfig?: Partial<RuntimeValidatorConfig>): RuntimeValidator {
-  return new RuntimeValidator(config, validatorConfig);
+  // If config.runtime exists, merge its properties into validatorConfig
+  let mergedConfig: Partial<RuntimeValidatorConfig> = { ...validatorConfig };
+  if (config.runtime) {
+    mergedConfig = {
+      ...mergedConfig,
+      ...config.runtime,
+      resourceThresholds: {
+        ...((validatorConfig && validatorConfig.resourceThresholds) || {}),
+        ...(config.runtime.resourceThresholds || {})
+      },
+      autoCorrection: {
+        ...((validatorConfig && validatorConfig.autoCorrection) || {}),
+        ...(config.runtime.autoCorrection || {})
+      }
+    };
+  }
+  return new RuntimeValidator(config, mergedConfig);
 }
 
 /**

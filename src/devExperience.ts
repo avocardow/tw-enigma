@@ -6,19 +6,19 @@
  */
 
 import { EventEmitter } from "events";
-import { createLogger, Logger } from "./logger.js";
-import { EnigmaConfig } from "./config.js";
-import { DevDiagnostics, DevPerformanceMetrics } from "./devDiagnostics.js";
-import { DevDashboard } from "./devDashboard.js";
-import { DevPreview } from "./devPreview.js";
-import { DebugUtils, DebugSession } from "./debugUtils.js";
-import { SourceMapGenerator } from "./sourceMapGenerator.js";
+import { createLogger, Logger } from "./logger.ts";
+import { EnigmaConfig } from "./config.ts";
+import { DevDiagnostics, DevPerformanceMetrics } from "./devDiagnostics.ts";
+import { DevDashboard } from "./devDashboard.ts";
+import { DevPreview } from "./devPreview.ts";
+import { DebugUtils, DebugSession } from "./debugUtils.ts";
+import { SourceMapGenerator } from "./sourceMapGenerator.ts";
 import { readFile, writeFile, mkdir } from "fs/promises";
 import { join, dirname } from "path";
 import { existsSync } from "fs";
-import { DevDashboardEnhanced } from "./devDashboardEnhanced.js";
-import { DevHotReload } from "./devHotReload.js";
-import { DevIdeIntegration } from "./devIdeIntegration.js";
+import { DevDashboardEnhanced } from "./devDashboardEnhanced.ts";
+import { DevHotReload } from "./devHotReload.ts";
+import { DevIdeIntegration } from "./devIdeIntegration.ts";
 
 /**
  * Development experience configuration
@@ -216,6 +216,10 @@ export class DevExperienceManager extends EventEmitter {
         await this.loadState();
       }
 
+      // Ensure active state is set even after loading previous state
+      this.isActive = true;
+      this.state.isActive = true;
+
       // Initialize tools in coordinated manner
       await this.initializeTools();
       
@@ -261,16 +265,20 @@ export class DevExperienceManager extends EventEmitter {
 
       this.logger.info("Development experience started", {
         tools: startedTools,
-        dashboardUrl: this.tools.dashboard ? `http://${this.enigmaConfig.dev.dashboard.host}:${this.enigmaConfig.dev.dashboard.port}` : undefined,
+        dashboardUrl: this.tools.dashboard && this.enigmaConfig.dev?.dashboard ? `http://${this.enigmaConfig.dev.dashboard.host}:${this.enigmaConfig.dev.dashboard.port}` : undefined,
       });
 
       // Send notification
       this.sendNotification('info', 'Development experience started', {
         tools: startedTools,
-        url: this.tools.dashboard ? `http://${this.enigmaConfig.dev.dashboard.host}:${this.enigmaConfig.dev.dashboard.port}` : undefined,
+        url: this.tools.dashboard && this.enigmaConfig.dev?.dashboard ? `http://${this.enigmaConfig.dev.dashboard.host}:${this.enigmaConfig.dev.dashboard.port}` : undefined,
       });
 
     } catch (error) {
+      // Reset state on failure
+      this.isActive = false;
+      this.state.isActive = false;
+      
       this.logger.error("Failed to start development experience", { error });
       this.emit('error-detected', error as Error, 'startup');
       throw error;
@@ -506,78 +514,122 @@ export class DevExperienceManager extends EventEmitter {
       diagnostics: true,
     };
 
-    // Initialize Enhanced Dashboard
-    this.dashboardEnhanced = new DevDashboardEnhanced(
-      this.tools.dashboard!,
-      {
-        ...dashboardConfig,
-        enhanced: {
-          enabled: true,
-          analytics: {
-            enabled: true,
-            retentionDays: 30,
-            trackOptimizations: true,
-            trackPerformance: true,
-            trackFileChanges: true,
-            trackClassUsage: true,
-          },
-          visualizations: {
-            enabled: true,
-            charts: {
-              performance: true,
-              optimization: true,
-              fileChanges: true,
-              classUsage: true,
-            },
-            realTime: true,
-          },
-          alerts: {
-            enabled: true,
-            performance: {
+    // Initialize core development tools
+    try {
+      // Initialize diagnostics if performance monitoring is enabled
+      if (this.config.enablePerformanceMonitoring) {
+        this.tools.diagnostics = new DevDiagnostics(config);
+      }
+
+      // Initialize dashboard if enabled
+      if (dashboardConfig.enabled) {
+        this.tools.dashboard = new DevDashboard(dashboardConfig);
+      }
+
+      // Initialize preview if real-time preview is enabled
+      if (this.config.enableRealTimePreview && config.dev?.preview) {
+        this.tools.preview = new DevPreview(config.dev.preview, config);
+      }
+
+      // Initialize debug utils if debug console is enabled
+      if (this.config.enableDebugConsole) {
+        this.tools.debugUtils = new DebugUtils();
+      }
+
+      // Initialize source map generator if source maps are enabled
+      if (this.config.enableSourceMaps) {
+        this.tools.sourceMap = new SourceMapGenerator();
+      }
+    } catch (error) {
+      this.logger.warn("Some tools failed to initialize", { error });
+    }
+
+    // Initialize Enhanced Dashboard (only if base dashboard exists)
+    if (this.tools.dashboard) {
+      try {
+        this.dashboardEnhanced = new DevDashboardEnhanced(
+          this.tools.dashboard,
+          {
+            ...dashboardConfig,
+            enhanced: {
               enabled: true,
-              buildTimeThreshold: 5000,
-              memoryThreshold: 512,
-              cpuThreshold: 80,
+              analytics: {
+                enabled: true,
+                retentionDays: 30,
+                trackOptimizations: true,
+                trackPerformance: true,
+                trackFileChanges: true,
+                trackClassUsage: true,
+              },
+              visualizations: {
+                enabled: true,
+                charts: {
+                  performance: true,
+                  optimization: true,
+                  fileChanges: true,
+                  classUsage: true,
+                },
+                realTime: true,
+              },
+              alerts: {
+                enabled: true,
+                performance: {
+                  enabled: true,
+                  buildTimeThreshold: 5000,
+                  memoryThreshold: 512,
+                  cpuThreshold: 80,
+                },
+                optimization: {
+                  enabled: true,
+                  savingsThreshold: 10,
+                  errorThreshold: 5,
+                },
+              },
+              reports: {
+                enabled: true,
+                formats: ['html', 'json', 'csv'],
+                schedule: 'daily',
+                email: false,
+              },
             },
-            optimization: {
-              enabled: true,
-              savingsThreshold: 10,
-              errorThreshold: 5,
-            },
-          },
-          reports: {
-            enabled: true,
-            formats: ['html', 'json', 'csv'],
-            schedule: 'daily',
-            email: false,
-          },
-        },
-      } as any
-    );
+          } as any
+        );
+      } catch (error) {
+        this.logger.warn("Enhanced dashboard failed to initialize", { error });
+      }
+    }
 
     // Initialize Hot Reload (with error handling for missing ws dependency)
-    this.hotReload = new DevHotReload(
-      {},
-              {
+    try {
+      this.hotReload = new DevHotReload(
+        {},
+        {
           ...config,
           dev: {
             ...(config.dev as any),
             hotReload: hotReloadConfig,
           },
         } as any
-    );
+      );
+    } catch (error) {
+      this.logger.warn("Hot reload failed to initialize", { error });
+    }
 
     // Initialize IDE Integration
-    this.ideIntegration = new DevIdeIntegration(
-      {},
-              {
+    try {
+      this.ideIntegration = new DevIdeIntegration(
+        {},
+        {
           ...config,
           dev: {
             ...(config.dev as any),
             ide: ideConfig,
           },
         } as any
-    );
+      );
+    } catch (error) {
+      this.logger.warn("IDE integration failed to initialize", { error });
+    }
 
     // Setup event coordination
     // this.setupEventCoordination(); // Method not implemented yet

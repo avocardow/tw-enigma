@@ -2,8 +2,8 @@ import { EventEmitter } from 'events';
 import { cpus, totalmem, freemem } from 'os';
 import { statSync } from 'fs';
 import { join } from 'path';
-import { createLogger } from './logger.js';
-import { type EnigmaConfig } from './config.js';
+import { createLogger } from './logger.ts';
+import { type EnigmaConfig } from './config.ts';
 
 const logger = createLogger('performance-validator');
 
@@ -181,6 +181,18 @@ export class PerformanceValidator extends EventEmitter {
         ...networkAnalysis.warnings,
         ...buildTimeAnalysis.warnings
       ];
+      
+      // Add warning for very short runtime checkInterval
+      if (this.config.runtime && typeof this.config.runtime.checkInterval === 'number' && this.config.runtime.checkInterval < 1000) {
+        warnings.push({
+          type: 'timeout',
+          severity: 'warning',
+          message: `Runtime check interval (${this.config.runtime.checkInterval}ms) is very short and may cause frequent checks or network timeouts`,
+          currentValue: `${this.config.runtime.checkInterval}ms`,
+          recommendedValue: '>=1000ms',
+          impact: 'Frequent checks may cause performance issues or network timeouts'
+        });
+      }
       
       const bottlenecks = [
         ...memoryAnalysis.bottlenecks,

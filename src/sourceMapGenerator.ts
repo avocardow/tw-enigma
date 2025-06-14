@@ -6,8 +6,8 @@
  */
 
 import { SourceMapGenerator as SMGenerator, SourceMapConsumer, RawSourceMap } from "source-map";
-import { createLogger, Logger } from "./logger.js";
-import { EnigmaConfig } from "./config.js";
+import { createLogger, Logger } from "./logger.ts";
+import { EnigmaConfig } from "./config.ts";
 import { writeFile, readFile } from "fs/promises";
 import { join, dirname, basename } from "path";
 

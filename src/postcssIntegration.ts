@@ -12,8 +12,8 @@
 
 import postcss, { type Root, type Result, type ProcessOptions } from "postcss";
 import { readFile, writeFile } from "fs/promises";
-import { createLogger } from "./logger.js";
-import { createPluginMetrics } from "./core/postcssPlugin.js";
+import { createLogger } from "./logger.ts";
+import { createPluginMetrics } from "./core/postcssPlugin.ts";
 import type {
   ProcessorConfig,
   ProcessingResult,
@@ -21,12 +21,12 @@ import type {
   PluginContext,
   PluginManager,
   EnigmaPlugin,
-} from "./types/plugins.js";
-import type { EnigmaConfig } from "./config.js";
+} from "./types/plugins.ts";
+import type { EnigmaConfig } from "./config.ts";
 import type {
   FrequencyAnalysisResult,
 
-} from "./patternAnalysis.js";
+} from "./patternAnalysis.ts";
 
 const logger = createLogger("postcss-integration");
 

@@ -7,8 +7,8 @@
 
 import { EventEmitter } from "events";
 import { watch, FSWatcher } from "chokidar";
-import { createLogger, Logger } from "./logger.js";
-import { EnigmaConfig } from "./config.js";
+import { createLogger, Logger } from "./logger.ts";
+import { EnigmaConfig } from "./config.ts";
 import { readFile, writeFile } from "fs/promises";
 import { join, extname, relative, dirname } from "path";
 import { createHash } from "crypto";
@@ -399,6 +399,10 @@ export class DevHotReload extends EventEmitter {
       },
       depth: 10,
     });
+
+    if (!this.watcher) {
+      throw new Error('Failed to initialize file watcher');
+    }
 
     this.watcher.on('add', (path) => this.handleFileChange(path, 'add'));
     this.watcher.on('change', (path) => this.handleFileChange(path, 'change'));

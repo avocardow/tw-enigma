@@ -10,43 +10,43 @@ import { z } from "zod";
 import {
   HtmlExtractionOptionsSchema,
   type HtmlExtractionOptions,
-} from "./htmlExtractor.js";
+} from "./htmlExtractor.ts";
 import {
   JsExtractionOptionsSchema,
   type JsExtractionOptions,
-} from "./jsExtractor.js";
+} from "./jsExtractor.ts";
 import {
   CssInjectionOptionsSchema,
   type CssInjectionOptions,
-} from "./cssInjector.js";
+} from "./cssInjector.ts";
 import {
   FileIntegrityOptionsSchema,
   type FileIntegrityOptions,
-} from "./fileIntegrity.js";
+} from "./fileIntegrity.ts";
 import {
   SimpleValidatorConfigSchema,
   type SimpleValidatorConfig,
-} from "./patternValidator.js";
-import { ConfigError, ValidationError } from "./errors.js";
-import { createLogger } from "./logger.js";
+} from "./patternValidator.ts";
+import { ConfigError, ValidationError } from "./errors.ts";
+import { createLogger } from "./logger.ts";
 
 // Create a logger instance for this module
 const logger = createLogger('config');
-import { validateConfig as enhancedValidateConfig } from "./configValidator.js";
-import { createRuntimeValidator } from "./runtimeValidator.js";
-import { createConfigWatcher } from "./configWatcher.js";
-import { createConfigSafeUpdater } from "./configSafeUpdater.js";
-import type { ValidationResult } from "./configValidator.js";
-import type { RuntimeValidator } from "./runtimeValidator.js";
-import type { ConfigWatcher } from "./configWatcher.js";
-import type { ConfigSafeUpdater } from "./configSafeUpdater.js";
+import { validateConfig as enhancedValidateConfig } from "./configValidator.ts";
+import { createRuntimeValidator } from "./runtimeValidator.ts";
+import { createConfigWatcher } from "./configWatcher.ts";
+import { createConfigSafeUpdater } from "./configSafeUpdater.ts";
+import type { ValidationResult } from "./configValidator.ts";
+import type { RuntimeValidator } from "./runtimeValidator.ts";
+import type { ConfigWatcher } from "./configWatcher.ts";
+import type { ConfigSafeUpdater } from "./configSafeUpdater.ts";
 import { join, resolve, isAbsolute } from 'path';
 import { existsSync } from 'fs';
-import { createConfigValidator } from './configValidator.js';
-import { createConfigMigration, type ConfigMigration } from './configMigration.js';
-import { createPerformanceValidator, type PerformanceMetrics } from './performanceValidator.js';
-import { createConfigBackup, type ConfigBackup } from './configBackup.js';
-import { createConfigDefaults, type Environment } from './configDefaults.js';
+import { createConfigValidator } from './configValidator.ts';
+import { createConfigMigration, type ConfigMigration } from './configMigration.ts';
+import { createPerformanceValidator, type PerformanceMetrics } from './performanceValidator.ts';
+import { createConfigBackup, type ConfigBackup } from './configBackup.ts';
+import { createConfigDefaults, type Environment } from './configDefaults.ts';
 
 // Re-export ConfigError for backward compatibility
 export { ConfigError };
@@ -63,8 +63,15 @@ export const EnigmaConfigSchema = z.object({
     .describe("Enable pretty output formatting"),
 
   // File processing
-  input: z.string().optional().describe("Input file or directory to process"),
-  output: z.string().optional().describe("Output file or directory"),
+  input: z.string().default('./src').describe("Input file or directory to process"),
+  output: z.union([
+    z.string(),
+    z.object({
+      format: z.string().default("css"),
+      filename: z.string().default("optimized.css"),
+      preserveOriginal: z.boolean().default(true),
+    })
+  ]).default('./dist').describe("Output file or directory or output settings"),
 
   // Processing options
   minify: z.boolean().default(true).describe("Minify the output CSS"),
@@ -879,45 +886,27 @@ function normalizeCliArguments(args: CliArguments): Partial<EnigmaConfig> {
  * Validate configuration using Zod schema
  */
 function validateConfig(config: unknown, filepath?: string): EnigmaConfig {
-  configLogger.debug("Validating configuration", { filePath: filepath });
-
   try {
     const validatedConfig = EnigmaConfigSchema.parse(config);
-    configLogger.debug("Configuration validation successful", {
-      filePath: filepath,
-      configKeys: Object.keys(validatedConfig),
-    });
+    // Always return all top-level fields with defaults
     return validatedConfig;
   } catch (error) {
     if (error instanceof z.ZodError) {
       const issues = error.issues
-        .map((issue) => `  - ${issue.path.join(".")}: ${issue.message}`)
-        .join("\n");
-
-      configLogger.error("Configuration validation failed", {
-        filePath: filepath,
-        issueCount: error.issues.length,
-        issues: error.issues,
-      });
-
+        .map((issue) => `  - ${issue.path.join('.')}: ${issue.message}`)
+        .join('\n');
       throw new ConfigError(
-        `Invalid configuration${filepath ? ` in ${filepath}` : ""}:\n${issues}`,
+        `Invalid configuration${filepath ? ` in ${filepath}` : ''}:\n${issues}`,
         filepath,
         error as Error,
-        { operation: "validateConfig", issueCount: error.issues.length },
+        { operation: 'validateConfig', issueCount: error.issues.length },
       );
     }
-
-    configLogger.error("Unexpected configuration validation error", {
-      filePath: filepath,
-      errorType: error instanceof Error ? error.constructor.name : typeof error,
-    });
-
     throw new ConfigError(
-      `Configuration validation failed${filepath ? ` for ${filepath}` : ""}`,
+      `Configuration validation failed${filepath ? ` for ${filepath}` : ''}`,
       filepath,
       error as Error,
-      { operation: "validateConfig" },
+      { operation: 'validateConfig' },
     );
   }
 }
@@ -1060,10 +1049,18 @@ export class EnhancedConfigManager {
   private performanceValidator?: ReturnType<typeof createPerformanceValidator>;
   private backup?: ConfigBackup;
   private environment: Environment;
+  private options: {
+    enableWatching?: boolean;
+    enableBackup?: boolean;
+    enablePerformanceValidation?: boolean;
+    enableMigration?: boolean;
+    validateOnLoad?: boolean;
+    createBackupOnLoad?: boolean;
+  };
 
   constructor(
     environment: Environment = 'development',
-    private options: {
+    options: {
       enableWatching?: boolean;
       enableBackup?: boolean;
       enablePerformanceValidation?: boolean;
@@ -1591,14 +1588,21 @@ export async function loadConfig(cliArgs?: CliArguments, searchFrom?: string): P
       isEmpty
     };
   } catch (error) {
-    // If loading fails, create default config with CLI args
-    const cliConfig = cliArgs ? normalizeCliArguments(cliArgs) : {};
-    const config = validateConfig(cliConfig);
-
-    return {
-      config,
-      isEmpty: true
-    };
+    // If error is already a ConfigError, rethrow
+    if (error instanceof ConfigError) throw error;
+    // If loading fails, create default config with CLI args, but only if valid
+    try {
+      const cliConfig = cliArgs ? normalizeCliArguments(cliArgs) : {};
+      const config = validateConfig(cliConfig);
+      return {
+        config,
+        isEmpty: true
+      };
+    } catch (fallbackError) {
+      // Always throw a ConfigError for consistency
+      if (fallbackError instanceof ConfigError) throw fallbackError;
+      throw new ConfigError("Failed to load configuration and fallback config is invalid", undefined, fallbackError);
+    }
   }
 }
 
@@ -1628,14 +1632,21 @@ export function loadConfigSync(cliArgs?: CliArguments, searchFrom?: string): Con
       isEmpty
     };
   } catch (error) {
-    // If loading fails, create default config with CLI args
-    const cliConfig = cliArgs ? normalizeCliArguments(cliArgs) : {};
-    const config = validateConfig(cliConfig);
-
-    return {
-      config,
-      isEmpty: true
-    };
+    // If error is already a ConfigError, rethrow
+    if (error instanceof ConfigError) throw error;
+    // If loading fails, create default config with CLI args, but only if valid
+    try {
+      const cliConfig = cliArgs ? normalizeCliArguments(cliArgs) : {};
+      const config = validateConfig(cliConfig);
+      return {
+        config,
+        isEmpty: true
+      };
+    } catch (fallbackError) {
+      // Always throw a ConfigError for consistency
+      if (fallbackError instanceof ConfigError) throw fallbackError;
+      throw new ConfigError("Failed to load configuration and fallback config is invalid", undefined, fallbackError);
+    }
   }
 }
 

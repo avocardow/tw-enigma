@@ -7,7 +7,7 @@
 
 import { readFile, writeFile } from "fs/promises";
 import { join, dirname, basename } from "path";
-import type { CssOutputConfig, CriticalCssConfig } from "./cssOutputConfig.js";
+import type { CssOutputConfig, CriticalCssConfig } from "./cssOutputConfig.ts";
 
 // Critical CSS Types
 export interface CriticalCssResult {

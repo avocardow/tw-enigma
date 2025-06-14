@@ -3,7 +3,7 @@ import {
   HtmlRewriter,
   HtmlPattern,
   createHtmlRewriter,
-} from "../src/htmlRewriter.js";
+} from "../src/htmlRewriter.ts";
 
 describe("HtmlRewriter - Step 1: Core Foundation", () => {
   test("should create HtmlRewriter instance with default options", () => {

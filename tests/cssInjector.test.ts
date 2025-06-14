@@ -8,7 +8,7 @@ import {
   HtmlStructureError,
   createCssInjector,
   validateInjectionRequest,
-} from "../src/cssInjector.js";
+} from "../src/cssInjector.ts";
 
 describe("CssInjector", () => {
   let injector: CssInjector;

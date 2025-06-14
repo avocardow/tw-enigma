@@ -12,9 +12,9 @@ import {
   FileDiscoveryError,
   SUPPORTED_FILE_TYPES,
   ALL_SUPPORTED_EXTENSIONS,
-} from "../src/fileDiscovery.js";
-import type { FileDiscoveryOptions } from "../src/fileDiscovery.js";
-import type { EnigmaConfig } from "../src/config.js";
+} from "../src/fileDiscovery.ts";
+import type { FileDiscoveryOptions } from "../src/fileDiscovery.ts";
+import type { EnigmaConfig } from "../src/config.ts";
 
 describe("File Discovery Module", () => {
   const testDir = join(process.cwd(), "test-temp");

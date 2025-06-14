@@ -11,13 +11,13 @@
  */
 
 import { EventEmitter } from "events";
-import { createLogger } from "../../logger.js";
+import { createLogger } from "../../logger.ts";
 import type {
   HMRUpdate,
   BuildToolContext,
   BuildToolType,
   OptimizationResult,
-} from "./buildToolPlugin.js";
+} from "./buildToolPlugin.ts";
 
 const logger = createLogger("hmr-handler");
 

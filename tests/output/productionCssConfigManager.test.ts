@@ -20,7 +20,7 @@ import {
   type DeploymentPreset,
   createProductionConfig,
   createDevelopmentConfig,
-} from "../../src/output/cssOutputConfig.js";
+} from "../../src/output/cssOutputConfig.ts";
 
 describe("ProductionCssConfigManager", () => {
   let tempDir: string;
@@ -333,14 +333,29 @@ describe("ProductionCssConfigManager", () => {
     });
 
     it("should handle environment-specific defaults", () => {
+      // Test environment defaults when no conflicting CLI args are provided
       const devArgs = {
-        ...sampleCliArgs,
         environment: "development" as const,
+        preset: "cdn",
+        "critical-css": true,
+        "performance-budget": "100KB",
+        output: tempDir,
+        verbose: false,
+        "asset-hash": true,
+        "hash-length": 8,
+        // Note: No minify, compress, or sourceMap args - let environment defaults apply
       };
 
       const prodArgs = {
-        ...sampleCliArgs,
         environment: "production" as const,
+        preset: "cdn",
+        "critical-css": true,
+        "performance-budget": "100KB",
+        output: tempDir,
+        verbose: false,
+        "asset-hash": true,
+        "hash-length": 8,
+        // Note: No minify, compress, or sourceMap args - let environment defaults apply
       };
 
       const devConfig = configManager.fromCliArgs(devArgs);
@@ -391,7 +406,7 @@ describe("ProductionCssConfigManager", () => {
 
       expect(
         result.warnings.some(
-          (w) => w.includes("single") && w.includes("chunking"),
+          (w) => w.includes("Single") && w.includes("chunking"),
         ),
       ).toBe(true);
     });

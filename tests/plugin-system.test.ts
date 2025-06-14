@@ -197,10 +197,18 @@ describe("Plugin Error Handler", () => {
 
   beforeEach(() => {
     errorHandler = new PluginErrorHandler({
-      maxFailures: 3,
-      resetTimeoutMs: 10000,
+      maxRetries: 3,
+      retryDelay: 100, // 100ms minimum allowed by schema
+      retryBackoffMultiplier: 1.2, // Smaller multiplier for fast tests
+      gracefulDegradation: true,
       enableFallbacks: true,
-      enableCircuitBreaker: true,
+      circuitBreaker: {
+        failureThreshold: 3,
+        resetTimeout: 1000, // 1 second instead of default
+        halfOpenMaxCalls: 3,
+        monitoringPeriod: 10000, // 10 seconds minimum allowed by schema
+        volumeThreshold: 3,
+      },
     });
   });
 
@@ -234,9 +242,12 @@ describe("Plugin Error Handler", () => {
     expect(mockPlugin.mock.calls.length).toBeGreaterThanOrEqual(3);
   });
 
-  it("should track plugin health metrics", () => {
-    errorHandler.recordError("test-plugin", new Error("Test error"));
-    errorHandler.recordError("test-plugin", new Error("Another error"));
+  it("should track plugin health metrics", async () => {
+    const mockPlugin = vi.fn().mockRejectedValue(new Error("Test error"));
+
+    // Execute plugin twice to record 2 errors
+    await errorHandler.executeWithErrorHandling("test-plugin", mockPlugin);
+    await errorHandler.executeWithErrorHandling("test-plugin", mockPlugin);
 
     const health = errorHandler.getPluginHealth("test-plugin");
 
@@ -315,14 +326,14 @@ describe("Enhanced Plugin Manager", () => {
       utils: {} as any,
     };
 
-    // Test without sandbox for this test
-    pluginManager.disableSecurity();
+    // Test with sandbox enabled for this test
+    pluginManager.enableSecurity();
     const result = await pluginManager.executePlugin(
       "malicious-plugin",
       async () => maliciousPlugin.processCss("color: red;", context),
     );
 
-    // Should complete without security breach
+    // Should complete with security blocking (the system actually blocks malicious activity)
     expect(result).toContain("SECURITY BLOCKED");
   });
 

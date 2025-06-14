@@ -57,7 +57,7 @@ describe("AtomicPermissionManager", () => {
       );
 
       expect(result.success).toBe(false);
-      expect(result.error).toContain("Invalid permission mode");
+      expect(result.error?.message).toContain("Invalid permission mode");
     });
 
     it("should preserve permissions from source to target", async () => {
@@ -111,14 +111,14 @@ describe("AtomicPermissionManager", () => {
       const result = await manager.changePermissions(nonExistentFile, 0o644);
 
       expect(result.success).toBe(false);
-      expect(result.error).toContain("ENOENT");
+      expect(result.error?.message).toContain("ENOENT");
     });
 
     it("should validate ownership values", async () => {
       const result = await manager.changeOwnership(testFile, -1, 0);
 
       expect(result.success).toBe(false);
-      expect(result.error).toContain("Invalid user ID");
+      expect(result.error?.message).toContain("Invalid user ID");
     });
   });
 });

@@ -2,8 +2,8 @@ import { EventEmitter } from 'events';
 import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, statSync, unlinkSync } from 'fs';
 import { join, dirname, basename, extname } from 'path';
 import { createHash } from 'crypto';
-import { createLogger } from './logger.js';
-import { type EnigmaConfig } from './config.js';
+import { createLogger } from './logger.ts';
+import { type EnigmaConfig } from './config.ts';
 
 const logger = createLogger('config-backup');
 
@@ -353,6 +353,8 @@ export class ConfigBackup extends EventEmitter {
    * Verify backup integrity
    */
   public async verifyBackup(backupId: string): Promise<BackupVerification> {
+    // Reload backup metadata from disk to ensure checksum and file info are current
+    this.loadBackupMetadata();
     const verification: BackupVerification = {
       isValid: false,
       checksumMatch: false,
@@ -386,7 +388,7 @@ export class ConfigBackup extends EventEmitter {
         const currentChecksum = this.calculateChecksum(content);
         verification.checksumMatch = currentChecksum === backup.checksum;
         if (!verification.checksumMatch) {
-          verification.errors.push('Checksum mismatch - backup may be corrupted');
+          verification.errors.push('Corrupted backup: Checksum mismatch - backup may be corrupted');
         }
         
         // Check if content is valid JSON
@@ -401,10 +403,8 @@ export class ConfigBackup extends EventEmitter {
         verification.errors.push(`Failed to read backup file: ${error}`);
       }
       
-      // Overall validity
-      verification.isValid = verification.fileExists && 
-                           verification.isReadable && 
-                           verification.checksumMatch;
+      // Final validity assignment: after all checks
+      verification.isValid = verification.fileExists && verification.isReadable && verification.checksumMatch;
       
     } catch (error) {
       verification.errors.push(`Verification failed: ${error}`);

@@ -24,8 +24,8 @@ describe("CSS Optimization CLI Commands", () => {
     // Create temporary directory for test files
     tempDir = await mkdtemp(join(tmpdir(), "css-cli-test-"));
 
-    // Path to the CLI binary
-    cliPath = join(process.cwd(), "bin", "enigma.ts");
+    // Path to the CLI binary (use built version)
+    cliPath = join(process.cwd(), "dist", "enigma.js");
 
     // Create sample CSS file
     sampleCssFile = join(tempDir, "sample.css");
@@ -551,8 +551,10 @@ describe("CSS Optimization CLI Commands", () => {
         const { stdout, stderr } = await execAsync(command);
 
         expect(stderr).toContain("not found");
-      } catch (error) {
-        expect(error.message).toContain("not found");
+      } catch (error: any) {
+        // When the CLI exits with non-zero code, execAsync throws an error
+        // The stderr output is available in error.stderr
+        expect(error.stderr || error.message).toContain("not found");
       }
     }, 30000);
 

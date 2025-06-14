@@ -11,8 +11,8 @@
  */
 
 import { z } from "zod";
-import { createLogger } from "./logger.js";
-import type { EnigmaConfig } from "./config.js";
+import { createLogger } from "./logger.ts";
+import type { EnigmaConfig } from "./config.ts";
 
 const logger = createLogger("plugin-config");
 

@@ -12,18 +12,18 @@
 
 import { readFile, access } from "fs/promises";
 import { join, resolve } from "path";
-import { createLogger } from "../../logger.js";
-import { FrameworkDetector } from "../../frameworkDetector.js";
+import { createLogger } from "../../logger.ts";
+import { FrameworkDetector } from "../../frameworkDetector.ts";
 import type {
   FrameworkInfo,
   DetectionResult,
-} from "../../frameworkDetector.js";
+} from "../../frameworkDetector.ts";
 import type {
   BuildToolType,
   BuildToolPluginConfig,
   BuildToolContext,
   BuildPhase,
-} from "./buildToolPlugin.js";
+} from "./buildToolPlugin.ts";
 
 const logger = createLogger("config-detector");
 
@@ -110,6 +110,20 @@ export class ConfigDetector {
     };
 
     try {
+      // Check for critical package.json issues first
+      const packageJsonPath = join(projectRoot, "package.json");
+      try {
+        await access(packageJsonPath);
+        const packageContent = await readFile(packageJsonPath, "utf-8");
+        JSON.parse(packageContent); // Validate JSON syntax
+      } catch (error) {
+        if (error instanceof SyntaxError) {
+          // Invalid JSON is a critical error that should prevent initialization
+          throw new Error(`Invalid JSON in package.json: ${error.message}`);
+        }
+        // File doesn't exist - that's okay, continue
+      }
+
       // First, detect frameworks to guide build tool detection
       const frameworkResults = await this.frameworkDetector.detect(projectRoot);
       const framework = frameworkResults.primary; // Use primary framework
@@ -161,6 +175,8 @@ export class ConfigDetector {
       result.errors.push(
         `Configuration detection failed: ${error instanceof Error ? error.message : String(error)}`,
       );
+      // Re-throw critical errors
+      throw error;
     }
 
     return result;
@@ -296,8 +312,14 @@ export class ConfigDetector {
             framework,
           });
         }
-      } catch {
-        // package.json doesn't exist or is malformed
+      } catch (error) {
+        // Log JSON parsing errors but don't fail the entire detection
+        if (error instanceof SyntaxError) {
+          logger.warn(`Invalid JSON in package.json: ${error.message}`);
+          // Don't add to result.errors here as this is per-pattern detection
+          // The main detectConfiguration method will handle overall errors
+        }
+        // package.json doesn't exist or is malformed - continue silently
       }
     }
 

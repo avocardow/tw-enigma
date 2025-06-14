@@ -12,47 +12,53 @@
 
 import { z } from "zod";
 import { EventEmitter } from "events";
-import { createLogger } from "../logger.js";
+import { createLogger } from "../logger.ts";
 import type {
   EnigmaPlugin,
   PluginConfig,
   PluginResult,
-} from "../types/plugins.js";
+} from "../types/plugins.ts";
 
 const logger = createLogger("plugin-error-handler");
 
 /**
  * Error categories for classification
  */
-export enum PluginErrorCategory {
-  INITIALIZATION = "initialization",
-  EXECUTION = "execution",
-  TIMEOUT = "timeout",
-  RESOURCE = "resource",
-  CONFIGURATION = "configuration",
-  DEPENDENCY = "dependency",
-  SECURITY = "security",
-  UNKNOWN = "unknown",
-}
+export const PluginErrorCategory = {
+  INITIALIZATION: "initialization",
+  EXECUTION: "execution",
+  TIMEOUT: "timeout",
+  RESOURCE: "resource",
+  CONFIGURATION: "configuration",
+  DEPENDENCY: "dependency",
+  SECURITY: "security",
+  UNKNOWN: "unknown",
+} as const;
+
+export type PluginErrorCategory = typeof PluginErrorCategory[keyof typeof PluginErrorCategory];
 
 /**
  * Error severity levels
  */
-export enum ErrorSeverity {
-  LOW = "low",
-  MEDIUM = "medium",
-  HIGH = "high",
-  CRITICAL = "critical",
-}
+export const ErrorSeverity = {
+  LOW: "low",
+  MEDIUM: "medium",
+  HIGH: "high",
+  CRITICAL: "critical",
+} as const;
+
+export type ErrorSeverity = typeof ErrorSeverity[keyof typeof ErrorSeverity];
 
 /**
  * Circuit breaker states
  */
-export enum CircuitState {
-  CLOSED = "closed", // Normal operation
-  OPEN = "open", // Failing fast
-  HALF_OPEN = "half_open", // Testing recovery
-}
+export const CircuitState = {
+  CLOSED: "closed", // Normal operation
+  OPEN: "open", // Failing fast
+  HALF_OPEN: "half_open", // Testing recovery
+} as const;
+
+export type CircuitState = typeof CircuitState[keyof typeof CircuitState];
 
 /**
  * Plugin error details

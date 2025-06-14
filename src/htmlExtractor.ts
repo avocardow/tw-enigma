@@ -6,7 +6,7 @@
  */
 
 import * as cheerio from "cheerio";
-import { AnyNode } from "domhandler";
+import { Node } from "domhandler";
 import * as fs from "fs/promises";
 import { z } from "zod";
 
@@ -60,24 +60,34 @@ export interface HtmlClassExtractionResult {
  * Custom error classes for HTML parsing operations
  */
 export class HtmlParsingError extends Error {
+  public source?: string;
+  public cause?: Error;
+
   constructor(
     message: string,
-    public source?: string,
-    public cause?: Error,
+    source?: string,
+    cause?: Error,
   ) {
     super(message);
     this.name = "HtmlParsingError";
+    this.source = source;
+    this.cause = cause;
   }
 }
 
 export class FileReadError extends Error {
+  public filePath?: string;
+  public cause?: Error;
+
   constructor(
     message: string,
-    public filePath?: string,
-    public cause?: Error,
+    filePath?: string,
+    cause?: Error,
   ) {
     super(message);
     this.name = "FileReadError";
+    this.filePath = filePath;
+    this.cause = cause;
   }
 }
 
@@ -279,7 +289,7 @@ export class HtmlExtractor {
   /**
    * Calculate the depth of an element in the DOM tree
    */
-  private calculateDepth($element: cheerio.Cheerio<AnyNode>): number {
+  private calculateDepth($element: cheerio.Cheerio<Node>): number {
     let depth = 0;
     let current = $element.parent();
 

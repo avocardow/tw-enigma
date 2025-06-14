@@ -7,8 +7,8 @@
 
 import { EventEmitter } from "events";
 import { watch, FSWatcher } from "chokidar";
-import { createLogger, Logger } from "./logger.js";
-import { EnigmaConfig } from "./config.js";
+import { createLogger, Logger } from "./logger.ts";
+import { EnigmaConfig } from "./config.ts";
 import { readFile, writeFile } from "fs/promises";
 import { join, relative } from "path";
 

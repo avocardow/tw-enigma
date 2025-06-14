@@ -13,9 +13,9 @@
 import type { Compiler, Configuration, WebpackPluginInstance } from "webpack";
 import type { Plugin } from "postcss";
 import { z } from "zod";
-import { createLogger } from "../../logger.js";
-import { createHMRHandler } from "../core/hmrHandler.js";
-import type { PluginContext } from "../../types/plugins.js";
+import { createLogger } from "../../logger.ts";
+import { createHMRHandler } from "../core/hmrHandler.ts";
+import type { PluginContext } from "../../types/plugins.ts";
 import type {
   BuildToolPlugin,
   BuildToolPluginConfig,
@@ -25,7 +25,7 @@ import type {
   HMRUpdate,
   OptimizationResult,
   createBuildToolContext,
-} from "../core/buildToolPlugin.js";
+} from "../core/buildToolPlugin.ts";
 
 const logger = createLogger("webpack-plugin");
 

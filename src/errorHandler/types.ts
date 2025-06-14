@@ -11,49 +11,57 @@
  * and graceful recovery mechanisms.
  */
 
-import { ErrorContext } from "../logger.js";
+import { ErrorContext } from "../logger.ts";
 
 /**
  * Error severity levels for categorization and routing
  */
-export enum ErrorSeverity {
-  CRITICAL = "critical", // System-threatening errors requiring immediate attention
-  HIGH = "high", // Functional errors affecting core operations
-  MEDIUM = "medium", // Recoverable errors with automatic retry
-  LOW = "low", // Warning-level issues with graceful degradation
-}
+export const ErrorSeverity = {
+  CRITICAL: "critical", // System-threatening errors requiring immediate attention
+  HIGH: "high", // Functional errors affecting core operations
+  MEDIUM: "medium", // Recoverable errors with automatic retry
+  LOW: "low", // Warning-level issues with graceful degradation
+} as const;
+
+export type ErrorSeverity = typeof ErrorSeverity[keyof typeof ErrorSeverity];
 
 /**
  * Error categories for different types of failures
  */
-export enum ErrorCategory {
-  OPERATIONAL = "operational", // File system, network, permissions
-  PROGRAMMING = "programming", // Type errors, null references, logic errors
-  EXTERNAL_SERVICE = "external", // API failures, timeouts, external dependencies
-  CONFIGURATION = "configuration", // Invalid config, missing environment variables
-  RESOURCE = "resource", // Memory, disk space, CPU limitations
-  VALIDATION = "validation", // Input validation, schema violations
-}
+export const ErrorCategory = {
+  OPERATIONAL: "operational", // File system, network, permissions
+  PROGRAMMING: "programming", // Type errors, null references, logic errors
+  EXTERNAL_SERVICE: "external", // API failures, timeouts, external dependencies
+  CONFIGURATION: "configuration", // Invalid config, missing environment variables
+  RESOURCE: "resource", // Memory, disk space, CPU limitations
+  VALIDATION: "validation", // Input validation, schema violations
+} as const;
+
+export type ErrorCategory = typeof ErrorCategory[keyof typeof ErrorCategory];
 
 /**
  * Circuit breaker states
  */
-export enum CircuitBreakerState {
-  CLOSED = "closed", // Normal operation, requests pass through
-  OPEN = "open", // Circuit is broken, requests fail immediately
-  HALF_OPEN = "half_open", // Testing state, limited requests allowed
-}
+export const CircuitBreakerState = {
+  CLOSED: "closed", // Normal operation, requests pass through
+  OPEN: "open", // Circuit is broken, requests fail immediately
+  HALF_OPEN: "half_open", // Testing state, limited requests allowed
+} as const;
+
+export type CircuitBreakerState = typeof CircuitBreakerState[keyof typeof CircuitBreakerState];
 
 /**
  * Recovery strategy types
  */
-export enum RecoveryStrategy {
-  RETRY = "retry", // Automatic retry with backoff
-  FALLBACK = "fallback", // Use fallback/default values
-  GRACEFUL_DEGRADATION = "degradation", // Reduce functionality
-  CIRCUIT_BREAKER = "circuit_breaker", // Circuit breaker protection
-  MANUAL_INTERVENTION = "manual", // Requires manual intervention
-}
+export const RecoveryStrategy = {
+  RETRY: "retry", // Automatic retry with backoff
+  FALLBACK: "fallback", // Use fallback/default values
+  GRACEFUL_DEGRADATION: "degradation", // Reduce functionality
+  CIRCUIT_BREAKER: "circuit_breaker", // Circuit breaker protection
+  MANUAL_INTERVENTION: "manual", // Requires manual intervention
+} as const;
+
+export type RecoveryStrategy = typeof RecoveryStrategy[keyof typeof RecoveryStrategy];
 
 /**
  * Enhanced error context with comprehensive metadata
@@ -329,11 +337,13 @@ export interface ErrorRecoveryStrategy {
 /**
  * Health status enumeration
  */
-export enum HealthStatus {
-  HEALTHY = "healthy",
-  DEGRADED = "degraded",
-  UNHEALTHY = "unhealthy",
-}
+export const HealthStatus = {
+  HEALTHY: "healthy",
+  DEGRADED: "degraded",
+  UNHEALTHY: "unhealthy",
+} as const;
+
+export type HealthStatus = typeof HealthStatus[keyof typeof HealthStatus];
 
 /**
  * Check if error is an Enigma error with severity

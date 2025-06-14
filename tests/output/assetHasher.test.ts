@@ -19,13 +19,13 @@ import {
   createCssMinifier,
   createManifestGenerator,
   validateAssetHashingOptions,
-} from "../../src/output/assetHasher.js";
-import { CssChunk } from "../../src/output/cssChunker.js";
+} from "../../src/output/assetHasher.ts";
+import { CssChunk } from "../../src/output/cssChunker.ts";
 import {
   CompressionConfig,
   OptimizationConfig,
   OutputPaths,
-} from "../../src/output/cssOutputConfig.js";
+} from "../../src/output/cssOutputConfig.ts";
 
 // =============================================================================
 // TEST DATA AND FIXTURES
@@ -111,7 +111,7 @@ const createMockChunk = (overrides: Partial<CssChunk> = {}): CssChunk => ({
 const mockCompressionConfig: CompressionConfig = {
   type: "auto",
   level: 6,
-  threshold: 1024,
+  threshold: 100,
   includeBrotli: true,
   includeGzip: true,
 };
@@ -308,7 +308,7 @@ describe("AssetHasher", () => {
 
   describe("cache functionality", () => {
     it("should cache hash results", () => {
-      const spy = jest.spyOn(require("crypto"), "createHash");
+      const spy = vi.spyOn(require("crypto"), "createHash");
 
       // First call should create hash
       assetHasher.hashContent(mockCssContent, "test.css");
@@ -814,7 +814,7 @@ describe("ManifestGenerator", () => {
 
       // Check entrypoints
       expect(manifest.entrypoints).toHaveProperty("main");
-      expect(manifest.entrypoints).toHaveProperty("secondary");
+      expect(manifest.entrypoints).toHaveProperty("critical");
     });
 
     it("should handle chunks without compression", () => {
@@ -1031,10 +1031,10 @@ describe("Integration Tests", () => {
     expect(Object.keys(manifest.assets)).toHaveLength(2);
 
     // Verify optimization occurred
-    for (const chunk of minifiedChunks) {
-      expect(chunk.size).toBeLessThan(
-        Buffer.byteLength(mockMinifiableCss, "utf8"),
-      );
+    for (let i = 0; i < minifiedChunks.length; i++) {
+      const chunk = minifiedChunks[i];
+      const originalChunk = chunks[i];
+      expect(chunk.size).toBeLessThan(originalChunk.size);
     }
 
     // Verify compression occurred

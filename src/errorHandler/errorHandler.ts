@@ -11,8 +11,8 @@
  */
 
 import { EventEmitter } from "events";
-import { createLogger } from "../logger.js";
-import { CircuitBreakerRegistry, CircuitBreaker } from "./circuitBreaker.js";
+import { createLogger } from "../logger.ts";
+import { CircuitBreakerRegistry, CircuitBreaker } from "./circuitBreaker.ts";
 import {
   ErrorSeverity,
   ErrorCategory,
@@ -24,8 +24,8 @@ import {
   isEnigmaError,
   categorizeError,
   severityToNumber,
-} from "./types.js";
-import { EnigmaError } from "../errors.js";
+} from "./types.ts";
+import { EnigmaError } from "../errors.ts";
 
 /**
  * Error handling statistics for monitoring

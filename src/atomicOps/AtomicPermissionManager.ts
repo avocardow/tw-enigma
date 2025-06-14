@@ -77,7 +77,6 @@ export class AtomicPermissionManager {
       success: false,
       operation: "write", // Use valid operation type
       filePath,
-      // rollbackOperation property doesn't exist in AtomicOperationResult
       bytesProcessed: 0,
       duration: 0,
       metadata: {
@@ -117,9 +116,9 @@ export class AtomicPermissionManager {
       // Apply permission change
       await fs.chmod(filePath, newPermissions);
 
-      // Create rollback operation (note: not stored in result as property doesn't exist)
+      // Create rollback operation
       const rollbackOperation = {
-        type: "permission_change",
+        type: "permission_change" as const,
         filePath,
         originalPermissions: oldPermissions,
         timestamp: Date.now(),
@@ -132,6 +131,7 @@ export class AtomicPermissionManager {
       result.success = true;
       result.duration = Date.now() - startTime;
       result.metadata.endTime = Date.now();
+      result.rollbackOperation = rollbackOperation;
 
       this.updateMetrics("write", true, result.duration, 0);
 
@@ -174,7 +174,6 @@ export class AtomicPermissionManager {
       success: false,
       operation: "write", // Use valid operation type
       filePath,
-      // rollbackOperation property doesn't exist in AtomicOperationResult
       bytesProcessed: 0,
       duration: 0,
       metadata: {
@@ -199,9 +198,9 @@ export class AtomicPermissionManager {
       // Apply ownership change
       await fs.chown(filePath, uid, gid);
 
-      // Create rollback operation (note: not stored in result as property doesn't exist)
+      // Create rollback operation
       const rollbackOperation = {
-        type: "permission_change",
+        type: "permission_change" as const,
         filePath,
         originalPermissions: stats.mode,
         timestamp: Date.now(),
@@ -211,6 +210,7 @@ export class AtomicPermissionManager {
       result.success = true;
       result.duration = Date.now() - startTime;
       result.metadata.endTime = Date.now();
+      result.rollbackOperation = rollbackOperation;
 
       this.updateMetrics("write", true, result.duration, 0);
 
@@ -249,7 +249,9 @@ export class AtomicPermissionManager {
     try {
       const sourceStats = await fs.stat(sourcePath);
 
-      const result = await this.changePermissions(targetPath, sourceStats.mode);
+      // Extract only the permission bits (0o777) from the full mode
+      const permissionBits = sourceStats.mode & 0o777;
+      const result = await this.changePermissions(targetPath, permissionBits);
 
       // Also preserve ownership if enabled
       if (this.options.preserveOwnership) {
@@ -274,7 +276,6 @@ export class AtomicPermissionManager {
         success: false,
         operation: "write", // Use valid operation type
         filePath: targetPath,
-        // rollbackOperation property doesn't exist in AtomicOperationResult
         bytesProcessed: 0,
         duration: 0,
         error: {

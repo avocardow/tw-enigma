@@ -9,7 +9,7 @@ import { z } from "zod";
 import type {
   PatternFrequencyMap,
   AggregatedClassData,
-} from "./patternAnalysis.js";
+} from "./patternAnalysis.ts";
 
 /**
  * Configuration options for name generation
@@ -185,60 +185,83 @@ export interface PrettyNameStatistics {
  * Error classes for name generation operations
  */
 export class NameGenerationError extends Error {
+  public cause?: Error;
+
   constructor(
     message: string,
-    public cause?: Error,
+    cause?: Error,
   ) {
     super(message);
     this.name = "NameGenerationError";
+    this.cause = cause;
   }
 }
 
 export class CollisionError extends NameGenerationError {
+  public conflictingName: string;
+  public attemptedName: string;
+
   constructor(
     message: string,
-    public conflictingName: string,
-    public attemptedName: string,
+    conflictingName: string,
+    attemptedName: string,
     cause?: Error,
   ) {
     super(message, cause);
     this.name = "CollisionError";
+    this.conflictingName = conflictingName;
+    this.attemptedName = attemptedName;
   }
 }
 
 export class CacheError extends NameGenerationError {
+  public operation: "read" | "write" | "clear" | "validate";
+
   constructor(
     message: string,
-    public operation: "read" | "write" | "clear" | "validate",
+    operation: "read" | "write" | "clear" | "validate",
     cause?: Error,
   ) {
     super(message, cause);
     this.name = "CacheError";
+    this.operation = operation;
   }
 }
 
 export class InvalidNameError extends NameGenerationError {
+  public invalidName: string;
+  public reason: "css-invalid" | "reserved" | "collision" | "format";
+
   constructor(
     message: string,
-    public invalidName: string,
-    public reason: "css-invalid" | "reserved" | "collision" | "format",
+    invalidName: string,
+    reason: "css-invalid" | "reserved" | "collision" | "format",
     cause?: Error,
   ) {
     super(message, cause);
     this.name = "InvalidNameError";
+    this.invalidName = invalidName;
+    this.reason = reason;
   }
 }
 
 export class PrettyNameExhaustionError extends NameGenerationError {
+  public maxLength: number;
+  public totalGenerated: number;
+  public availableStrategies: string[];
+
   constructor(
     message: string,
-    public maxLength: number,
-    public totalGenerated: number,
-    public availableStrategies: string[],
+    maxLength: number,
+    totalGenerated: number,
+    availableStrategies: string[],
     cause?: Error,
   ) {
     super(message, cause);
     this.name = "PrettyNameExhaustionError";
+    this.maxLength = maxLength;
+    this.totalGenerated = totalGenerated;
+    this.availableStrategies = availableStrategies;
   }
 }
 

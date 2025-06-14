@@ -9,9 +9,9 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import {
   CiIntegration,
   createCiIntegration,
-} from "../../src/output/ciIntegration.js";
-import type { CssOutputConfig } from "../../src/output/cssOutputConfig.js";
-import type { CssPerformanceReport } from "../../src/output/cssReportGenerator.js";
+} from "../../src/output/ciIntegration.ts";
+import type { CssOutputConfig } from "../../src/output/cssOutputConfig.ts";
+import type { CssPerformanceReport } from "../../src/output/cssReportGenerator.ts";
 
 describe("CiIntegration", () => {
   let config: CssOutputConfig;
@@ -504,7 +504,7 @@ describe("CiIntegration", () => {
       vi.doMock("fs/promises", () => ({
         readFile: vi.fn().mockResolvedValue(JSON.stringify(baseline)),
         writeFile: vi.fn().mockResolvedValue(undefined),
-        mkdir: vi.fn().mkdirSync(undefined),
+        mkdir: vi.fn().mockResolvedValue(undefined),
       }));
 
       const ci = new CiIntegration(config, {

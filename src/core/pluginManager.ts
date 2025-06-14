@@ -14,20 +14,20 @@
 import { readdir, stat } from "fs/promises";
 import { join, dirname } from "path";
 import { pathToFileURL } from "url";
-import { createLogger } from "../logger.js";
-import { isEnigmaPlugin, validatePluginConfig } from "./postcssPlugin.js";
+import { createLogger } from "../logger.ts";
+import { isEnigmaPlugin, validatePluginConfig } from "./postcssPlugin.ts";
 import {
   PluginSandbox,
   createPluginSandbox,
   PluginPermission,
   type SandboxConfig,
-} from "../security/pluginSandbox.js";
+} from "../security/pluginSandbox.ts";
 import {
   PluginErrorHandler,
   createPluginErrorHandler,
   type ErrorHandlerConfig,
   type PluginHealth,
-} from "../errorHandler/pluginErrorHandler.js";
+} from "../errorHandler/pluginErrorHandler.ts";
 import type {
   PluginManager,
   EnigmaPlugin,
@@ -35,7 +35,7 @@ import type {
   ValidationResult,
   PluginDiscoveryOptions,
   PluginResult,
-} from "../types/plugins.js";
+} from "../types/plugins.ts";
 
 const logger = createLogger("plugin-manager");
 
@@ -122,6 +122,13 @@ export class EnigmaPluginManager implements PluginManager {
     }
 
     this.plugins.set(plugin.meta.name, plugin);
+
+    // Initialize resource monitor for the plugin
+    this.resourceMonitor.set(plugin.meta.name, {
+      memoryUsage: 0,
+      executionTime: 0,
+      lastAccess: Date.now(),
+    });
 
     // Auto-configure plugin with default config if not already configured
     if (!this.pluginConfigs.has(plugin.meta.name)) {
@@ -717,53 +724,58 @@ export class EnigmaPluginManager implements PluginManager {
     memoryUsage: number,
     executionTime: number,
   ): void {
-    const monitor = this.resourceMonitor.get(pluginName);
-    if (monitor) {
-      monitor.memoryUsage = memoryUsage;
-      monitor.executionTime = executionTime;
-      monitor.lastAccess = Date.now();
+    // Create entry if it doesn't exist
+    if (!this.resourceMonitor.has(pluginName)) {
+      this.resourceMonitor.set(pluginName, {
+        memoryUsage: 0,
+        executionTime: 0,
+        lastAccess: Date.now(),
+      });
+    }
 
-      // Enhanced security monitoring
-      if (this.securityEnabled) {
-        // Check for suspicious resource usage
-        if (memoryUsage > 500 * 1024 * 1024) {
-          // 500MB
-          logger.warn(`Plugin ${pluginName} is using excessive memory`, {
-            memoryUsage,
-          });
-          this.errorHandler.disablePlugin(
-            pluginName,
-            "Excessive memory usage detected",
-          );
-        }
+    const monitor = this.resourceMonitor.get(pluginName)!;
+    monitor.memoryUsage = memoryUsage;
+    monitor.executionTime = executionTime;
+    monitor.lastAccess = Date.now();
 
-        if (executionTime > 30000) {
-          // 30 seconds
-          logger.warn(`Plugin ${pluginName} is taking too long to execute`, {
-            executionTime,
-          });
-          // This could indicate a stuck plugin or infinite loop
-        }
-      }
-
-      // Log warning if resource usage is high (existing logic)
-      if (memoryUsage > 100 * 1024 * 1024) {
-        // 100MB
-        logger.warn(`Plugin ${pluginName} is using high memory`, {
+    // Enhanced security monitoring
+    if (this.securityEnabled) {
+      // Check for suspicious resource usage
+      if (memoryUsage > 500 * 1024 * 1024) {
+        // 500MB
+        logger.warn(`Plugin ${pluginName} is using excessive memory`, {
           memoryUsage,
         });
+        this.errorHandler.disablePlugin(
+          pluginName,
+          "Excessive memory usage detected",
+        );
       }
 
-      if (executionTime > 5000) {
-        // 5 seconds
-        logger.warn(`Plugin ${pluginName} is taking a long time to execute`, {
+      if (executionTime > 30000) {
+        // 30 seconds
+        logger.warn(`Plugin ${pluginName} is taking too long to execute`, {
           executionTime,
         });
+        // This could indicate a stuck plugin or infinite loop
       }
     }
+
+    // Log warning if resource usage is high (existing logic)
+    if (memoryUsage > 100 * 1024 * 1024) {
+      // 100MB
+      logger.warn(`Plugin ${pluginName} is using high memory`, {
+        memoryUsage,
+      });
+    }
+
+    if (executionTime > 5000) {
+      // 5 seconds
+      logger.warn(`Plugin ${pluginName} is taking a long time to execute`, {
+        executionTime,
+      });
+    }
   }
-
-
 
   /**
    * Private: Set up event listeners for security systems
@@ -1061,6 +1073,40 @@ export class EnigmaPluginManager implements PluginManager {
 
     return circular;
   }
+
+  /**
+   * Disable security for testing purposes
+   */
+  disableSecurity(): void {
+    this.securityEnabled = false;
+    logger.debug("Security disabled");
+  }
+
+  /**
+   * Enable security
+   */
+  enableSecurity(): void {
+    this.securityEnabled = true;
+    logger.debug("Security enabled");
+  }
+
+  /**
+   * Get resource metrics for all plugins
+   */
+  getResourceMetrics(): Record<string, any> {
+    const metrics: Record<string, any> = {};
+    
+    for (const [pluginName, stats] of this.resourceMonitor.entries()) {
+      metrics[pluginName] = {
+        memoryUsage: stats.memoryUsage,
+        executionTime: stats.executionTime,
+        lastAccess: stats.lastAccess,
+        health: this.getPluginHealth(pluginName)
+      };
+    }
+    
+    return metrics;
+  }
 }
 
 /**
@@ -1076,17 +1122,21 @@ export function createPluginManager(
 /**
  * Create enhanced plugin manager with default security settings
  */
-export function createSecurePluginManager(): PluginManager {
+export function createSecurePluginManager(options?: {
+  enableSandbox?: boolean;
+  enableErrorHandling?: boolean;
+  enableResourceMonitoring?: boolean;
+}): PluginManager {
   return new EnigmaPluginManager(
     {
-      enabled: true,
+      enabled: options?.enableSandbox !== false,
       strictMode: true,
       isolationLevel: "basic",
       signatureVerification: false,
       permissions: [PluginPermission.READ_FILES, PluginPermission.WRITE_FILES],
     },
     {
-      enabled: true,
+      enabled: options?.enableErrorHandling !== false,
       maxRetries: 3,
       gracefulDegradation: true,
       enableFallbacks: true,

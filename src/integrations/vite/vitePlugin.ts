@@ -13,9 +13,9 @@
 import type { Plugin, ViteDevServer, ResolvedConfig } from "vite";
 import type { Plugin as PostCSSPlugin } from "postcss";
 import { z } from "zod";
-import { createLogger } from "../../logger.js";
-import { createHMRHandler } from "../core/hmrHandler.js";
-import type { PluginContext } from "../../types/plugins.js";
+import { createLogger } from "../../logger.ts";
+import { createHMRHandler } from "../core/hmrHandler.ts";
+import type { PluginContext } from "../../types/plugins.ts";
 import type {
   BuildToolPlugin,
   BuildToolPluginConfig,
@@ -24,7 +24,7 @@ import type {
   BuildToolHooks,
   HMRUpdate,
   OptimizationResult,
-} from "../core/buildToolPlugin.js";
+} from "../core/buildToolPlugin.ts";
 
 const logger = createLogger("vite-plugin");
 

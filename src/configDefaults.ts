@@ -2,8 +2,8 @@ import { z } from 'zod';
 import { join } from 'path';
 import { homedir, tmpdir, cpus } from 'os';
 import { existsSync } from 'fs';
-import { EnigmaConfigSchema, type EnigmaConfig } from './config.js';
-import { createLogger } from './logger.js';
+import { EnigmaConfigSchema, type EnigmaConfig } from './config.ts';
+import { createLogger } from './logger.ts';
 
 // Use EnigmaConfig as the primary type
 type Config = EnigmaConfig;
@@ -18,13 +18,15 @@ export type Environment = 'development' | 'production' | 'test' | 'ci';
 /**
  * Fallback priority levels
  */
-export enum FallbackPriority {
-  USER = 1,           // User-provided configuration
-  PROJECT = 2,        // Project-specific configuration
-  ENVIRONMENT = 3,    // Environment-specific defaults
-  GLOBAL = 4,         // Global system defaults
-  SYSTEM = 5          // System fallback defaults
-}
+export const FallbackPriority = {
+  USER: 1,           // User-provided configuration
+  PROJECT: 2,        // Project-specific configuration
+  ENVIRONMENT: 3,    // Environment-specific defaults
+  GLOBAL: 4,         // Global system defaults
+  SYSTEM: 5          // System fallback defaults
+} as const;
+
+export type FallbackPriority = typeof FallbackPriority[keyof typeof FallbackPriority];
 
 /**
  * Configuration source metadata
@@ -563,7 +565,14 @@ export class ConfigDefaults {
    */
   public createConfigWithDefaults(partialConfig: Partial<Config>): Config {
     const defaults = this.getDefaults();
-    return this.mergeConfigs(defaults, partialConfig);
+    const merged = this.mergeConfigs(defaults, partialConfig);
+    try {
+      return EnigmaConfigSchema.parse(merged);
+    } catch (error) {
+      logger.error('Config validation failed in createConfigWithDefaults', { error: error instanceof Error ? error.message : String(error) });
+      logger.warn('Falling back to system defaults due to validation failure in createConfigWithDefaults');
+      return SYSTEM_DEFAULTS;
+    }
   }
   
   /**

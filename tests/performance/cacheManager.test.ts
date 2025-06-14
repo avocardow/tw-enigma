@@ -3,8 +3,8 @@ import {
   CacheManager,
   createCacheManager,
   getGlobalCacheManager,
-} from "../../src/performance/cacheManager.js";
-import type { CacheConfig } from "../../src/performance/config.js";
+} from "../../src/performance/cacheManager.ts";
+import type { CacheConfig } from "../../src/performance/config.ts";
 
 describe("CacheManager", () => {
   let cacheManager: CacheManager;

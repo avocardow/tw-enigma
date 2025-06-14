@@ -12,8 +12,8 @@
 
 import type { Root, Result, Plugin, PluginCreator } from "postcss";
 import type { z } from "zod";
-import type { FrequencyAnalysisResult } from "../patternAnalysis.js";
-import type { Logger } from "../logger.js";
+import type { FrequencyAnalysisResult } from "../patternAnalysis.ts";
+import type { Logger } from "../logger.ts";
 import type { PluginUtils } from "../utils/index";
 
 /**

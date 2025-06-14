@@ -81,24 +81,34 @@ export interface JsClassExtractionResult {
  * Custom error classes for JavaScript parsing operations
  */
 export class JsParsingError extends Error {
+  public source?: string;
+  public cause?: Error;
+
   constructor(
     message: string,
-    public source?: string,
-    public cause?: Error,
+    source?: string,
+    cause?: Error,
   ) {
     super(message);
     this.name = "JsParsingError";
+    this.source = source;
+    this.cause = cause;
   }
 }
 
 export class JsFileReadError extends Error {
+  public filePath?: string;
+  public cause?: Error;
+
   constructor(
     message: string,
-    public filePath?: string,
-    public cause?: Error,
+    filePath?: string,
+    cause?: Error,
   ) {
     super(message);
     this.name = "JsFileReadError";
+    this.filePath = filePath;
+    this.cause = cause;
   }
 }
 

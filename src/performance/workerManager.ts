@@ -21,8 +21,8 @@ import {
 import { EventEmitter } from "events";
 import { cpus } from "os";
 import { resolve } from "path";
-import { createLogger } from "../logger.js";
-import type { WorkerConfig, WorkerTask, PerformanceMetrics } from "./config.js";
+import { createLogger } from "../logger.ts";
+import type { WorkerConfig, WorkerTask, PerformanceMetrics } from "./config.ts";
 
 const logger = createLogger("WorkerManager");
 

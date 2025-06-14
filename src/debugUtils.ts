@@ -5,8 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { createLogger, Logger } from "./logger.js";
-import { EnigmaConfig } from "./config.js";
+import { createLogger, Logger } from "./logger.ts";
+import { EnigmaConfig } from "./config.ts";
 import { readFile, writeFile } from "fs/promises";
 import { join, relative, extname } from "path";
 

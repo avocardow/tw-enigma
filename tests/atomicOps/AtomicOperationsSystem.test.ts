@@ -107,19 +107,20 @@ describe("AtomicOperationsSystem Integration", () => {
     });
 
     it("should handle operation failures with rollback", async () => {
-      const nonExistentFile = path.join(testDir, "non-existent", "test.txt");
+      // Use an invalid file path that will actually fail (not just missing directory)
+      const invalidPath = process.platform === "win32" ? "CON" : "/dev/null/invalid";
 
-      // This should fail due to non-existent directory
+      // This should fail due to invalid path
       await expect(
         system.performAtomicOperation({
           type: "create",
-          filePath: nonExistentFile,
+          filePath: invalidPath,
           content: "test",
         }),
       ).rejects.toThrow();
 
       // Verify rollback worked (no partial state)
-      const fileExists = await fs.access(nonExistentFile).then(
+      const fileExists = await fs.access(invalidPath).then(
         () => true,
         () => false,
       );

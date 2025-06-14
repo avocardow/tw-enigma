@@ -889,6 +889,7 @@ export class JSRewriter {
             originalCode,
             filePath,
             fileType,
+            transformationErrors,
           );
         } catch (error) {
           if (this.config.errorHandling.continueOnError) {
@@ -1654,7 +1655,7 @@ export class JSRewriter {
       );
 
       for (const match of ruleMatches) {
-        if (this.validateReplacementContext(match, context)) {
+        if (this.validateReplacementContext(match, context, path)) {
           const patternMatch: PatternMatch = {
             rule,
             originalText: match.text,
@@ -1712,10 +1713,11 @@ export class JSRewriter {
           originalValue,
           rule,
           context,
+          errors,
         );
 
         for (const match of ruleMatches) {
-          if (this.validateReplacementContext(match, context)) {
+          if (this.validateReplacementContext(match, context, path)) {
             const patternMatch: PatternMatch = {
               rule,
               originalText: match.text,
@@ -1806,6 +1808,7 @@ export class JSRewriter {
     originalCode: string,
     filePath: string,
     fileType: JavaScriptFileType,
+    errors?: Array<{ message: string; phase: string }>,
   ): void {
     const node = path.node;
     if (!node.value || typeof node.value !== "string") {
@@ -1836,10 +1839,11 @@ export class JSRewriter {
           originalValue,
           rule,
           context,
+          errors,
         );
 
         for (const match of ruleMatches) {
-          if (this.validateReplacementContext(match, context)) {
+          if (this.validateReplacementContext(match, context, path)) {
             const patternMatch: PatternMatch = {
               rule,
               originalText: match.text,
@@ -1875,7 +1879,7 @@ export class JSRewriter {
       const ruleMatches = this.findPatternMatches(originalValue, rule, context);
 
       for (const match of ruleMatches) {
-        if (this.validateReplacementContext(match, context)) {
+        if (this.validateReplacementContext(match, context, attributePath)) {
           const patternMatch: PatternMatch = {
             rule,
             originalText: match.text,
@@ -1920,7 +1924,7 @@ export class JSRewriter {
         );
 
         for (const match of ruleMatches) {
-          if (this.validateReplacementContext(match, context)) {
+          if (this.validateReplacementContext(match, context, attributePath)) {
             const patternMatch: PatternMatch = {
               rule,
               originalText: match.text,
@@ -2066,6 +2070,7 @@ export class JSRewriter {
   private validateReplacementContext(
     match: { text: string; replacement: string; start: number; end: number },
     context: JSReplacementContext,
+    nodePath?: NodePath,
   ): boolean {
     // Don't replace if the replacement is the same as original
     if (match.text === match.replacement) {
@@ -2078,7 +2083,14 @@ export class JSRewriter {
       return false;
     }
 
-    // Skip replacements in TypeScript type contexts - but be more precise
+    // Skip replacements in TypeScript type contexts using advanced detection
+    if (context.hasTypeScript && nodePath) {
+      if (this.isInTypeScriptTypeContext(nodePath)) {
+        return false;
+      }
+    }
+
+    // Fallback to basic parent node type checks for TypeScript contexts
     if (context.hasTypeScript && context.parentNodeType) {
       // Don't replace string literals that are USED AS types (not default values)
       // This catches cases like: className as 'text-orange-500'
@@ -2102,6 +2114,79 @@ export class JSRewriter {
     }
 
     return true;
+  }
+
+  /**
+   * Check if a string literal is in a TypeScript type context using NodePath
+   */
+  private isInTypeScriptTypeContext(nodePath: NodePath): boolean {
+    // Check immediate parent first
+    const immediateParent = nodePath.parent;
+    const immediateParentType = immediateParent?.type;
+
+    // Check for direct type contexts
+    if (
+      immediateParentType === "TSLiteralType" ||
+      immediateParentType === "TSTypeParameter" ||
+      immediateParentType === "TSTypeReference" ||
+      immediateParentType === "TSTypeQuery" ||
+      immediateParentType === "TSUnionType" ||
+      immediateParentType === "TSIntersectionType" ||
+      immediateParentType === "TSTypeAliasDeclaration"
+    ) {
+      return true;
+    }
+
+    // Walk up the AST to check for TypeScript type contexts
+    let current = nodePath.parent;
+    let depth = 0;
+    const maxDepth = 5; // Prevent infinite loops
+
+    while (current && depth < maxDepth) {
+      const parentType = current.type;
+
+      // Check for type parameter defaults
+      // interface Props<T extends string = 'text-purple-500'> - should NOT be replaced
+      if (parentType === "TSTypeParameter") {
+        return true;
+      }
+
+      // Check for type assertion contexts (right side of 'as')
+      // className as 'text-orange-500' - should NOT be replaced
+      if (parentType === "TSAsExpression" || parentType === "TSTypeAssertion") {
+        // For TSAsExpression: { expression, typeAnnotation }
+        // For TSTypeAssertion: { expression, typeAnnotation }
+        const asExpression = current as any;
+        
+        // Walk back down to see if our original node is in the type annotation
+        if (this.isNodeInTypeAnnotation(nodePath.node, asExpression.typeAnnotation)) {
+          return true;
+        }
+      }
+
+      // Move up the tree
+      current = current.parent;
+      depth++;
+    }
+
+    return false;
+  }
+
+  /**
+   * Check if a node is contained within a type annotation
+   */
+  private isNodeInTypeAnnotation(targetNode: any, typeAnnotation: any): boolean {
+    if (!typeAnnotation) return false;
+    
+    // Direct match
+    if (typeAnnotation === targetNode) return true;
+    
+    // Check if wrapped in TSLiteralType
+    if (typeAnnotation.type === "TSLiteralType" && typeAnnotation.literal === targetNode) {
+      return true;
+    }
+    
+    return false;
   }
 }
 

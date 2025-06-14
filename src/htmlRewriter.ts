@@ -9,7 +9,7 @@ import * as cheerio from "cheerio";
 import { AnyNode } from "domhandler";
 import * as fs from "fs/promises";
 import { z } from "zod";
-import type { NameGenerationResult } from "./nameGeneration.js";
+import type { NameGenerationResult } from "./nameGeneration.ts";
 
 /**
  * Configuration options for HTML rewriting operations
@@ -268,62 +268,89 @@ export interface RewriteCache {
  * Custom error classes for HTML rewriting operations
  */
 export class HtmlRewriteError extends Error {
+  source?: string;
+  operation?: string;
+  cause?: Error;
+
   constructor(
     message: string,
-    public source?: string,
-    public operation?: string,
-    public cause?: Error,
+    source?: string,
+    operation?: string,
+    cause?: Error,
   ) {
     super(message);
     this.name = "HtmlRewriteError";
+    this.source = source;
+    this.operation = operation;
+    this.cause = cause;
   }
 }
 
 export class PatternValidationError extends HtmlRewriteError {
+  patternId: string;
+  validationErrors: string[];
+
   constructor(
     message: string,
-    public patternId: string,
-    public validationErrors: string[],
+    patternId: string,
+    validationErrors: string[],
     cause?: Error,
   ) {
     super(message, undefined, "pattern-validation", cause);
     this.name = "PatternValidationError";
+    this.patternId = patternId;
+    this.validationErrors = validationErrors;
   }
 }
 
 export class BackupError extends HtmlRewriteError {
+  filePath: string;
+  backupPath?: string;
+
   constructor(
     message: string,
-    public filePath: string,
-    public backupPath?: string,
+    filePath: string,
+    backupPath?: string,
     cause?: Error,
   ) {
     super(message, filePath, "backup", cause);
     this.name = "BackupError";
+    this.filePath = filePath;
+    this.backupPath = backupPath;
   }
 }
 
 export class ConflictResolutionError extends HtmlRewriteError {
+  conflictingPatterns: string[];
+  elementSelector: string;
+
   constructor(
     message: string,
-    public conflictingPatterns: string[],
-    public elementSelector: string,
+    conflictingPatterns: string[],
+    elementSelector: string,
     cause?: Error,
   ) {
     super(message, undefined, "conflict-resolution", cause);
     this.name = "ConflictResolutionError";
+    this.conflictingPatterns = conflictingPatterns;
+    this.elementSelector = elementSelector;
   }
 }
 
 export class HtmlValidationError extends HtmlRewriteError {
+  validationErrors: string[];
+  htmlFragment?: string;
+
   constructor(
     message: string,
-    public validationErrors: string[],
-    public htmlFragment?: string,
+    validationErrors: string[],
+    htmlFragment?: string,
     cause?: Error,
   ) {
     super(message, undefined, "html-validation", cause);
     this.name = "HtmlValidationError";
+    this.validationErrors = validationErrors;
+    this.htmlFragment = htmlFragment;
   }
 }
 

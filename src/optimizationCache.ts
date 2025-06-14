@@ -26,9 +26,9 @@ import { createHash } from 'crypto';
 import { promises as fs } from 'fs';
 import path from 'path';
 import chokidar from 'chokidar';
-import { CacheManager, createCacheManager } from './performance/cacheManager.js';
-import type { EnigmaConfig } from './config.js';
-import type { OptimizationResult } from './output/assetHasher.js';
+import { CacheManager, createCacheManager } from './performance/cacheManager.ts';
+import type { EnigmaConfig } from './config.ts';
+import type { OptimizationResult } from './output/assetHasher.ts';
 
 /**
  * Cache key components for optimization results
@@ -416,7 +416,14 @@ export class OptimizationCache extends EventEmitter {
       return createHash('sha256').update(keyString).digest('hex');
     } catch (error) {
       // Fallback for test environments or crypto issues
-      return `cache-key-${keyString.length}-${Date.now()}`;
+      // Use a simple hash of the keyString for deterministic results
+      let hash = 0;
+      for (let i = 0; i < keyString.length; i++) {
+        const char = keyString.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash; // Convert to 32-bit integer
+      }
+      return `cache-key-${Math.abs(hash)}-${keyString.length}`;
     }
   }
 
@@ -444,7 +451,14 @@ export class OptimizationCache extends EventEmitter {
       return hash.digest('hex');
     } catch (error) {
       // Fallback if crypto operations fail (e.g., in tests)
-      return `fallback-hash-${files.join('-')}-${Date.now()}`;
+      const content = files.join('-');
+      let hash = 0;
+      for (let i = 0; i < content.length; i++) {
+        const char = content.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash; // Convert to 32-bit integer
+      }
+      return `fallback-hash-${Math.abs(hash)}`;
     }
   }
 
@@ -456,13 +470,41 @@ export class OptimizationCache extends EventEmitter {
       // Extract only optimization-relevant config properties
       const relevantConfig = this.extractRelevantConfig(config);
       
-      const configString = JSON.stringify(relevantConfig, Object.keys(relevantConfig).sort());
+      // Sort keys recursively for deterministic serialization
+      const configString = JSON.stringify(relevantConfig, (key, value) => {
+        if (value && typeof value === 'object' && !Array.isArray(value)) {
+          const sorted: any = {};
+          Object.keys(value).sort().forEach(k => {
+            sorted[k] = value[k];
+          });
+          return sorted;
+        }
+        return value;
+      });
       return createHash('sha256').update(configString).digest('hex');
     } catch (error) {
       // Fallback for test environments or crypto issues
       const relevantConfig = this.extractRelevantConfig(config);
-      const configString = JSON.stringify(relevantConfig, Object.keys(relevantConfig).sort());
-      return `config-hash-${configString.length}-${Date.now()}`;
+      
+      // Sort keys recursively for deterministic serialization
+      const configString = JSON.stringify(relevantConfig, (key, value) => {
+        if (value && typeof value === 'object' && !Array.isArray(value)) {
+          const sorted: any = {};
+          Object.keys(value).sort().forEach(k => {
+            sorted[k] = value[k];
+          });
+          return sorted;
+        }
+        return value;
+      });
+      
+      let hash = 0;
+      for (let i = 0; i < configString.length; i++) {
+        const char = configString.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash; // Convert to 32-bit integer
+      }
+      return `config-hash-${Math.abs(hash)}`;
     }
   }
 

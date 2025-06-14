@@ -30,7 +30,7 @@ import type {
   CacheConfig,
   CacheStrategy,
   PerformanceMetrics,
-} from "./config.js";
+} from "./config.ts";
 
 /**
  * Cache entry with metadata

@@ -352,9 +352,10 @@ export class AtomicFileCreator {
     const results: AtomicOperationResult[] = [];
     const successfulFiles: string[] = [];
 
-    try {
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      
+      try {
         const result = await this.createFile(
           file.path,
           file.content,
@@ -367,13 +368,40 @@ export class AtomicFileCreator {
         } else if (options.stopOnError) {
           // Rollback all successful files and stop processing
           await this.rollbackMultipleFiles(successfulFiles);
-          break; // Stop processing but return all results so far
+          break; // Stop processing after adding the failed result
+        }
+      } catch (error) {
+        // Convert thrown errors to failed results
+        const failedResult: AtomicOperationResult = {
+          success: false,
+          operation: "create",
+          filePath: file.path,
+          duration: 0,
+          bytesProcessed: 0,
+          error: {
+            code: this.getErrorCode(error),
+            message: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined,
+          },
+          metadata: {
+            startTime: Date.now(),
+            endTime: Date.now(),
+            fsyncUsed: false,
+            retryAttempts: 0,
+            walUsed: false,
+            backupCreated: false,
+            checksumVerified: false,
+          },
+        };
+        
+        results.push(failedResult);
+        
+        if (options.stopOnError) {
+          // Rollback all successful files and stop processing
+          await this.rollbackMultipleFiles(successfulFiles);
+          break; // Stop processing after adding the failed result
         }
       }
-    } catch (error) {
-      // Rollback all successful files on unexpected error
-      await this.rollbackMultipleFiles(successfulFiles);
-      throw error;
     }
 
     return results;
@@ -383,7 +411,11 @@ export class AtomicFileCreator {
    * Gets current performance metrics
    */
   getMetrics(): AtomicOperationMetrics {
-    return { ...this.metrics };
+    return { 
+      ...this.metrics,
+      operationTypes: { ...this.metrics.operationTypes },
+      errorStats: { ...this.metrics.errorStats }
+    };
   }
 
   /**

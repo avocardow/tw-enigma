@@ -7,7 +7,7 @@
 
 import { glob, globSync } from "glob";
 import { extname } from "path";
-import type { EnigmaConfig } from "./config.js";
+import type { EnigmaConfig } from "./config.ts";
 
 /**
  * Supported file types for CSS optimization
@@ -71,14 +71,21 @@ export interface FileDiscoveryResult {
  * Custom error class for file discovery operations
  */
 export class FileDiscoveryError extends Error {
+  public code: string;
+  public patterns?: string | string[];
+  public cause?: Error;
+  
   constructor(
     message: string,
-    public code: string,
-    public patterns?: string | string[],
-    public cause?: Error,
+    code: string,
+    patterns?: string | string[],
+    cause?: Error,
   ) {
     super(message);
     this.name = "FileDiscoveryError";
+    this.code = code;
+    this.patterns = patterns;
+    this.cause = cause;
   }
 }
 

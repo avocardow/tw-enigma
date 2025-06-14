@@ -1,0 +1,50 @@
+{
+  "version": "1.0.0",
+  "currentFullBackup": {
+    "id": "backup_1749876692956_tgsink",
+    "createdAt": "2025-06-14T04:51:32.956Z",
+    "filePath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749876692949/.backups-isolated/diff-test-isolated.2025-06-14T04-51-32-955Z.txt.backup",
+    "size": 33
+  },
+  "differentialChain": [
+    {
+      "id": "backup_1749876692970_htzc4m",
+      "type": "differential",
+      "baseFullBackupId": "backup_1749876692956_tgsink",
+      "backupPath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749876692949/.backups-isolated/diff-test-isolated.2025-06-14T04-51-32-970Z.txt.backup",
+      "originalPath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749876692949/diff-test-isolated.txt",
+      "createdAt": "2025-06-14T04:51:32.970Z",
+      "cumulativeFiles": [
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749876692949/diff-test-isolated.txt"
+      ],
+      "cumulativeSize": 25,
+      "currentFiles": [
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749876692949/diff-test-isolated.txt"
+      ],
+      "currentSize": 25,
+      "changeDetectionMethod": "mtime",
+      "compressed": false,
+      "deduplicated": false,
+      "timeSinceFullBackup": 0.000003611111111111111
+    }
+  ],
+  "cumulativeFileStates": {
+    "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749876692949/diff-test-isolated.txt": {
+      "filePath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749876692949/diff-test-isolated.txt",
+      "size": 25,
+      "mtime": "2025-06-14T04:51:32.969Z",
+      "lastBackup": "2025-06-14T04:51:32.970Z",
+      "hasChanged": true
+    }
+  },
+  "stats": {
+    "totalDifferentials": 1,
+    "currentChainLength": 1,
+    "cumulativeSize": 25,
+    "cumulativeSizeRatio": 0.7575757575757576,
+    "totalSpaceSaved": 0,
+    "lastBackupAt": "2025-06-14T04:51:32.970Z",
+    "timeSinceFullBackup": 0.000003611111111111111
+  },
+  "lastUpdated": "2025-06-14T04:51:32.971Z"
+}

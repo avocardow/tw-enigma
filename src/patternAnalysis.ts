@@ -6,12 +6,12 @@
  */
 
 import { z } from "zod";
-import type { HtmlClassExtractionResult } from "./htmlExtractor.js";
+import type { HtmlClassExtractionResult } from "./htmlExtractor.ts";
 import type {
   JsClassExtractionResult,
   SupportedFramework,
-} from "./jsExtractor.js";
-import type { ValidationResult } from "./patternValidator.js";
+} from "./jsExtractor.ts";
+import type { ValidationResult } from "./patternValidator.ts";
 
 /**
  * Configuration options for pattern analysis
@@ -206,34 +206,43 @@ export interface JsonExportFormat {
  * Error classes for pattern analysis operations
  */
 export class PatternAnalysisError extends Error {
+  public cause?: Error;
+
   constructor(
     message: string,
-    public cause?: Error,
+    cause?: Error,
   ) {
     super(message);
     this.name = "PatternAnalysisError";
+    this.cause = cause;
   }
 }
 
 export class DataAggregationError extends PatternAnalysisError {
+  public sourceType?: "html" | "jsx";
+
   constructor(
     message: string,
-    public sourceType?: "html" | "jsx",
+    sourceType?: "html" | "jsx",
     cause?: Error,
   ) {
     super(message, cause);
     this.name = "DataAggregationError";
+    this.sourceType = sourceType;
   }
 }
 
 export class FrequencyCalculationError extends PatternAnalysisError {
+  public className?: string;
+
   constructor(
     message: string,
-    public className?: string,
+    className?: string,
     cause?: Error,
   ) {
     super(message, cause);
     this.name = "FrequencyCalculationError";
+    this.className = className;
   }
 }
 

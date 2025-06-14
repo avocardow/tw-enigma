@@ -125,10 +125,15 @@ export class AtomicOperationsSystem {
           break;
 
         case "read":
-          result = await this.fileReader.readFile(
+          const readResult = await this.fileReader.readFile(
             operation.filePath,
             operation.options,
           );
+          // Map content to fileContent for API consistency
+          result = {
+            ...readResult,
+            fileContent: readResult.content,
+          };
           break;
 
         case "write":
@@ -198,6 +203,11 @@ export class AtomicOperationsSystem {
 
       // Commit transaction
       await this.rollbackManager.commitTransaction(transactionId);
+
+      // Check if operation failed and throw error if needed
+      if (!result.success && result.error) {
+        throw new Error(result.error.message);
+      }
 
       return result;
     } catch (error) {

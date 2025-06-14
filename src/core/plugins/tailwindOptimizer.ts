@@ -13,8 +13,8 @@
 import type { Plugin, Root, Rule, Declaration } from "postcss";
 import postcss from "postcss";
 import { z } from "zod";
-import { BaseEnigmaPlugin } from "../postcssPlugin.js";
-import type { PluginContext } from "../../types/plugins.js";
+import { BaseEnigmaPlugin } from "../postcssPlugin.ts";
+import type { PluginContext } from "../../types/plugins.ts";
 
 /**
  * Configuration schema for Tailwind Optimizer

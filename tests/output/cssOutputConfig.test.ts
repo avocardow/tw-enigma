@@ -25,7 +25,7 @@ import {
   DeliveryConfig,
   OutputPaths,
   ConfigPreset,
-} from "../../src/output/cssOutputConfig.js";
+} from "../../src/output/cssOutputConfig.ts";
 
 // =============================================================================
 // TEST DATA AND FIXTURES
@@ -625,14 +625,13 @@ describe("CssOutputConfigManager", () => {
     it("should load and validate configuration", async () => {
       // Mock cosmiconfig to return a valid config
       const mockConfig = createProductionConfig();
-      vi.doMock("cosmiconfig", () => ({
-        cosmiconfig: () => ({
-          search: vi.fn().mockResolvedValue({
-            config: mockConfig,
-            filepath: "/test/config.js",
-          }),
-        }),
-      }));
+      const mockSearchFn = vi.fn().mockResolvedValue({
+        config: mockConfig,
+        filepath: "/test/config.js",
+      });
+
+      const mockExplorer = { search: mockSearchFn };
+      const manager = new CssOutputConfigManager({}, mockExplorer);
 
       const result = await manager.loadConfig();
 
@@ -642,11 +641,9 @@ describe("CssOutputConfigManager", () => {
     });
 
     it("should return default config when no config file found", async () => {
-      vi.doMock("cosmiconfig", () => ({
-        cosmiconfig: () => ({
-          search: vi.fn().mockResolvedValue(null),
-        }),
-      }));
+      const mockSearchFn = vi.fn().mockResolvedValue(null);
+      const mockExplorer = { search: mockSearchFn };
+      const manager = new CssOutputConfigManager({}, mockExplorer);
 
       const result = await manager.loadConfig();
 
@@ -656,25 +653,21 @@ describe("CssOutputConfigManager", () => {
     });
 
     it("should handle configuration errors gracefully", async () => {
-      vi.doMock("cosmiconfig", () => ({
-        cosmiconfig: () => ({
-          search: vi.fn().mockRejectedValue(new Error("Config error")),
-        }),
-      }));
+      const mockSearchFn = vi.fn().mockRejectedValue(new Error("Config error"));
+      const mockExplorer = { search: mockSearchFn };
+      const manager = new CssOutputConfigManager({}, mockExplorer);
 
       await expect(manager.loadConfig()).rejects.toThrow("Config error");
     });
 
     it("should validate loaded configuration", async () => {
       const invalidConfig = { strategy: "invalid" };
-      vi.doMock("cosmiconfig", () => ({
-        cosmiconfig: () => ({
-          search: vi.fn().mockResolvedValue({
-            config: invalidConfig,
-            filepath: "/test/config.js",
-          }),
-        }),
-      }));
+      const mockSearchFn = vi.fn().mockResolvedValue({
+        config: invalidConfig,
+        filepath: "/test/config.js",
+      });
+      const mockExplorer = { search: mockSearchFn };
+      const manager = new CssOutputConfigManager({}, mockExplorer);
 
       await expect(manager.loadConfig()).rejects.toThrow();
     });
@@ -683,14 +676,13 @@ describe("CssOutputConfigManager", () => {
   describe("loadConfigFromPath", () => {
     it("should load configuration from specific path", async () => {
       const mockConfig = createDevelopmentConfig();
-      vi.doMock("cosmiconfig", () => ({
-        cosmiconfig: () => ({
-          load: vi.fn().mockResolvedValue({
-            config: mockConfig,
-            filepath: "/custom/path/config.js",
-          }),
-        }),
-      }));
+      const mockLoadFn = vi.fn().mockResolvedValue({
+        config: mockConfig,
+        filepath: "/custom/path/config.js",
+      });
+
+      const mockExplorer = { load: mockLoadFn };
+      const manager = new CssOutputConfigManager({}, mockExplorer);
 
       const result = await manager.loadConfigFromPath("/custom/path/config.js");
 
@@ -699,11 +691,9 @@ describe("CssOutputConfigManager", () => {
     });
 
     it("should handle file not found", async () => {
-      vi.doMock("cosmiconfig", () => ({
-        cosmiconfig: () => ({
-          load: vi.fn().mockResolvedValue(null),
-        }),
-      }));
+      const mockLoadFn = vi.fn().mockResolvedValue(null);
+      const mockExplorer = { load: mockLoadFn };
+      const manager = new CssOutputConfigManager({}, mockExplorer);
 
       await expect(
         manager.loadConfigFromPath("/nonexistent/config.js"),
@@ -789,9 +779,8 @@ describe("CssOutputConfigManager", () => {
         filepath: "/test/config.js",
       });
 
-      vi.doMock("cosmiconfig", () => ({
-        cosmiconfig: () => ({ search: mockSearchFn }),
-      }));
+      const mockExplorer = { search: mockSearchFn };
+      const manager = new CssOutputConfigManager({}, mockExplorer);
 
       // Load twice
       await manager.loadConfig();
@@ -807,10 +796,10 @@ describe("CssOutputConfigManager", () => {
         config: mockConfig,
         filepath: "/test/config.js",
       });
+      const mockClearCaches = vi.fn();
 
-      vi.doMock("cosmiconfig", () => ({
-        cosmiconfig: () => ({ search: mockSearchFn }),
-      }));
+      const mockExplorer = { search: mockSearchFn, clearCaches: mockClearCaches };
+      const manager = new CssOutputConfigManager({}, mockExplorer);
 
       await manager.loadConfig();
       manager.clearCache();
@@ -818,6 +807,7 @@ describe("CssOutputConfigManager", () => {
 
       // Should call search twice after cache clear
       expect(mockSearchFn).toHaveBeenCalledTimes(2);
+      expect(mockClearCaches).toHaveBeenCalledTimes(1);
     });
   });
 });

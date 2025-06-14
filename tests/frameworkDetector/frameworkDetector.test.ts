@@ -12,7 +12,7 @@ import {
   FrameworkDetectionError,
   type DetectionResult,
   type FrameworkType,
-} from "../../src/frameworkDetector.js";
+} from "../../src/frameworkDetector.ts";
 
 describe("FrameworkDetector", () => {
   let testDir: string;

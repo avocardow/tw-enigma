@@ -258,7 +258,7 @@ describe("AtomicRollbackManager", () => {
       const result = await manager.rollbackTransaction(transactionId);
 
       expect(result.success).toBe(false);
-      expect(result.error).toContain("No backup path available");
+      expect(result.error?.message).toContain("No backup path available");
     });
 
     it("should rollback multiple operations in reverse order", async () => {
@@ -376,7 +376,7 @@ describe("AtomicRollbackManager", () => {
       );
 
       expect(result.success).toBe(false);
-      expect(result.error).toContain(
+      expect(result.error?.message).toContain(
         "Checkpoint non-existent-checkpoint not found",
       );
     });

@@ -9,7 +9,7 @@ import {
   JsParsingError,
   JsFileReadError,
   JsExtractionOptionsSchema,
-} from "../src/jsExtractor.js";
+} from "../src/jsExtractor.ts";
 
 // Mock fs module - ensure fs/promises is mocked correctly
 vi.mock("fs/promises", () => ({

@@ -9,7 +9,7 @@ import {
   HtmlParsingError,
   FileReadError,
   type HtmlExtractionOptions,
-} from "../src/htmlExtractor.js";
+} from "../src/htmlExtractor.ts";
 
 // Mock fs module
 vi.mock("fs/promises");

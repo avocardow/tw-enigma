@@ -93,7 +93,18 @@ export class AtomicFileWriter {
     options: FileWriteOptions = {},
   ): Promise<AtomicOperationResult> {
     const startTime = Date.now();
-    const mergedOptions = { ...DEFAULT_WRITE_OPTIONS, ...options };
+    const mergedOptions: Required<FileWriteOptions> = {
+      ...DEFAULT_WRITE_OPTIONS,
+      ...options,
+    };
+
+    const rollbackOp: RollbackOperation = {
+      type: "file_create",
+      operationId: uuidv4(),
+      filePath,
+      steps: [],
+      timestamp: startTime,
+    };
 
     const result: AtomicOperationResult = {
       success: false,
@@ -110,13 +121,6 @@ export class AtomicFileWriter {
         backupCreated: false,
         checksumVerified: false,
       },
-    };
-
-    const rollbackOp: RollbackOperation = {
-      type: "file_create",
-      operationId: uuidv4(),
-      filePath,
-      steps: [],
       timestamp: startTime,
     };
 
@@ -130,21 +134,46 @@ export class AtomicFileWriter {
       const contentBuffer = Buffer.isBuffer(content)
         ? content
         : Buffer.from(content, mergedOptions.encoding);
-      result.bytesProcessed = contentBuffer.length;
+      
+      // For append operations, we need to track both the appended content and total file size
+      let totalFileSize = contentBuffer.length;
+      let expectedFinalContent = contentBuffer;
+      
+      // Check if this is an append operation and file exists
+      const fileExists = await this.fileExists(filePath);
+      
+      // Capture original file permissions for preservation
+      let originalPermissions: number | undefined;
+      if (fileExists && this.options.preservePermissions) {
+        try {
+          const stats = await fs.stat(filePath);
+          originalPermissions = stats.mode & 0o777;
+        } catch (error) {
+          // If we can't read permissions, continue without preservation
+        }
+      }
+      
+      if (mergedOptions.append && fileExists) {
+        // Read the original content to calculate total size and expected final content
+        const originalContent = await fs.readFile(filePath);
+        totalFileSize = originalContent.length + contentBuffer.length;
+        expectedFinalContent = Buffer.concat([originalContent, contentBuffer]);
+      }
+      
+      result.bytesProcessed = totalFileSize;
 
       // Step 2.5: Check file size limits
       if (
         mergedOptions.maxFileSize &&
-        contentBuffer.length > mergedOptions.maxFileSize
+        totalFileSize > mergedOptions.maxFileSize
       ) {
         throw new Error(
-          `File size ${contentBuffer.length} bytes exceeds maximum allowed size ${mergedOptions.maxFileSize} bytes`,
+          `File size ${totalFileSize} bytes exceeds maximum allowed size ${mergedOptions.maxFileSize} bytes`,
         );
       }
 
       // Step 3: Check if file exists and create backup if needed
       let backupPath: string | undefined;
-      const fileExists = await this.fileExists(filePath);
 
       if (fileExists && mergedOptions.createBackup) {
         backupPath = await this.createBackup(filePath, mergedOptions);
@@ -186,7 +215,7 @@ export class AtomicFileWriter {
 
       rollbackOp.steps?.push({
         stepNumber: 3,
-        description: `Wrote ${contentBuffer.length} bytes to temporary file`,
+        description: `Wrote ${totalFileSize} bytes to temporary file`,
         type: "write",
         filePath: tempInfo.path,
         timestamp: Date.now(),
@@ -197,7 +226,7 @@ export class AtomicFileWriter {
       if (mergedOptions.verifyAfterWrite) {
         const verification = await this.verifyTempFile(
           tempInfo.path,
-          contentBuffer,
+          expectedFinalContent,
           mergedOptions,
         );
         if (!verification.success) {
@@ -221,8 +250,12 @@ export class AtomicFileWriter {
       });
 
       // Step 8: Set file permissions if required
-      if (mergedOptions.mode !== 0o644 || this.options.preservePermissions) {
-        await this.setFilePermissions(filePath, mergedOptions.mode);
+      const targetMode = this.options.preservePermissions && originalPermissions !== undefined 
+        ? originalPermissions 
+        : mergedOptions.mode;
+        
+      if (targetMode !== 0o644 || this.options.preservePermissions) {
+        await this.setFilePermissions(filePath, targetMode);
       }
 
       // Success!
@@ -230,7 +263,7 @@ export class AtomicFileWriter {
       // Note: rollbackOperation is not part of AtomicOperationResult interface
 
       // Update metrics
-      result.duration = Date.now() - startTime;
+      result.duration = Math.max(Date.now() - startTime, 0.1);
       result.metadata.endTime = Date.now();
 
       // Add file stats
@@ -239,6 +272,16 @@ export class AtomicFileWriter {
         result.fileStats = stats; // Use the full Stats object
       } catch (error) {
         // File stats are optional, don't fail the operation
+      }
+
+      // Clean up backup after successful operation if requested
+      if (mergedOptions.createBackup && backupPath) {
+        try {
+          await fs.unlink(backupPath);
+        } catch (error) {
+          // Backup cleanup failure shouldn't fail the main operation
+          console.warn(`Failed to cleanup backup file ${backupPath}:`, error);
+        }
       }
 
       // Clean up old backups if needed
@@ -261,7 +304,7 @@ export class AtomicFileWriter {
     } catch (error) {
       // Handle failure
       result.success = false;
-      result.duration = Date.now() - startTime;
+      result.duration = Math.max(Date.now() - startTime, 0.1);
       result.metadata.endTime = Date.now();
       result.error = {
         code: this.getErrorCode(error),
@@ -312,7 +355,7 @@ export class AtomicFileWriter {
         success: false,
         operation: "write",
         filePath,
-        duration: Date.now() - startTime,
+        duration: Math.max(Date.now() - startTime, 0.1),
         bytesProcessed: 0,
         error: {
           code: "JSON_SERIALIZATION_ERROR",
@@ -365,10 +408,12 @@ export class AtomicFileWriter {
       content: string | Buffer;
       options?: FileWriteOptions;
     }>,
-    options: { abortOnFirstError?: boolean } = {},
+    options: { abortOnFirstError?: boolean; stopOnError?: boolean } = {},
   ): Promise<AtomicOperationResult[]> {
     const results: AtomicOperationResult[] = [];
-    const { abortOnFirstError = false } = options;
+    const { abortOnFirstError = false, stopOnError = false } = options;
+    const shouldStopOnError = abortOnFirstError || stopOnError;
+    const successfulFiles: string[] = []; // Track files created for rollback
 
     for (const file of files) {
       try {
@@ -379,15 +424,22 @@ export class AtomicFileWriter {
         );
         results.push(result);
 
-        if (!result.success && abortOnFirstError) {
+        if (result.success) {
+          successfulFiles.push(file.path);
+        }
+
+        if (!result.success && shouldStopOnError) {
+          // Rollback all previously successful files
+          await this.rollbackFiles(successfulFiles);
           break;
         }
       } catch (error) {
+        const startTime = Date.now();
         const failedResult: AtomicOperationResult = {
           success: false,
           operation: "write",
           filePath: file.path,
-          duration: 0,
+          duration: 0.1, // Minimum duration for failed operations
           bytesProcessed: 0,
           error: {
             code: "WRITE_ERROR",
@@ -395,7 +447,7 @@ export class AtomicFileWriter {
             stack: error instanceof Error ? error.stack : undefined,
           },
           metadata: {
-            startTime: Date.now(),
+            startTime,
             endTime: Date.now(),
             fsyncUsed: false,
             retryAttempts: 0,
@@ -407,13 +459,30 @@ export class AtomicFileWriter {
 
         results.push(failedResult);
 
-        if (abortOnFirstError) {
+        if (shouldStopOnError) {
+          // Rollback all previously successful files
+          await this.rollbackFiles(successfulFiles);
           break;
         }
       }
     }
 
     return results;
+  }
+
+  /**
+   * Rolls back files created during a batch operation
+   * @param filePaths - Array of file paths to remove
+   */
+  private async rollbackFiles(filePaths: string[]): Promise<void> {
+    for (const filePath of filePaths) {
+      try {
+        await fs.unlink(filePath);
+      } catch (error) {
+        // Log but don't throw - rollback should be best effort
+        console.warn(`Failed to rollback file ${filePath}:`, error);
+      }
+    }
   }
 
   /**
@@ -779,13 +848,16 @@ export class AtomicFileWriter {
 
     this.metrics.totalBytesProcessed += bytesProcessed;
 
+    // Ensure minimum duration for tracking purposes (avoid division by zero)
+    const measuredDuration = Math.max(duration, 0.1);
+
     // Update average duration
     if (this.metrics.totalOperations === 1) {
-      this.metrics.averageDuration = duration;
+      this.metrics.averageDuration = measuredDuration;
     } else {
       const totalDuration =
         this.metrics.averageDuration * (this.metrics.totalOperations - 1) +
-        duration;
+        measuredDuration;
       this.metrics.averageDuration =
         totalDuration / this.metrics.totalOperations;
     }

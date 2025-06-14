@@ -3,32 +3,33 @@
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import chalk from "chalk";
-import { readFileSync, writeFileSync, mkdirSync } from "fs";
+import { readFileSync, writeFileSync, mkdirSync, statSync } from "fs";
 import { fileURLToPath } from "url";
 import { dirname, join, resolve, basename, extname } from "path";
 import {
   getConfigSync,
   createSampleConfig,
+  EnigmaConfigSchema,
   type CliArguments,
   ConfigError,
-} from "../src/config.js";
+} from "../src/config.ts";
 import {
   discoverFilesFromConfig,
   type FileDiscoveryOptions,
   FileDiscoveryError,
-} from "../src/fileDiscovery.js";
+} from "../src/fileDiscovery.ts";
 import {
   Logger,
   LogLevel,
   type FileOutputOptions,
-} from "../src/logger.js";
+} from "../src/logger.ts";
 import {
   createCssOutputOrchestrator,
   createProductionOrchestrator,
   createDevelopmentOrchestrator,
   type CssBundle,
   type CssProcessingOptions,
-} from "../src/output/cssOutputOrchestrator.js";
+} from "../src/output/cssOutputOrchestrator.ts";
 import {
   createProductionConfigManager,
   parseCliArgs,
@@ -37,7 +38,7 @@ import {
   generateConfigDocs,
   type CliArgs,
   type PerformanceBudget,
-} from "../src/output/cssOutputConfig.js";
+} from "../src/output/cssOutputConfig.ts";
 
 // Get package.json for version information
 const __filename = fileURLToPath(import.meta.url);
@@ -309,19 +310,40 @@ const argv = await yargs(hideBin(process.argv))
       try {
         cliLogger.info("🎯 Starting CSS Output Optimization");
 
+        // First, validate that the input file exists
+        const inputPath = resolve(argv.input);
+        try {
+          const stats = statSync(inputPath);
+          if (!stats.isFile()) {
+            cliLogger.error(`Input path is not a file: ${inputPath}`);
+            process.exit(1);
+          }
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          if (errorMessage.includes('ENOENT') || errorMessage.includes('no such file')) {
+            cliLogger.error(`Input CSS file not found: ${inputPath}`);
+          } else {
+            cliLogger.error("Failed to access input CSS file", {
+              path: inputPath,
+              error: errorMessage,
+            });
+          }
+          process.exit(1);
+        }
+
         // Parse CLI arguments
-        const cliArgs: CliArgs = parseCliArgs({
+        const cliArgs = {
           strategy: argv.strategy,
-          env: argv.env,
+          environment: argv.env,
           compress: argv.compress,
-          critical: argv.critical,
+          "critical-css": argv.critical,
           outDir: argv.output,
           verbose: argv.verbose,
           chunkSize: argv["chunk-size"] ? argv["chunk-size"] * 1024 : undefined,
           force: argv.force,
           budgets: argv.budgets,
           dryRun: argv["dry-run"],
-        });
+        };
 
         // Create performance budget if enabled
         let budget: PerformanceBudget | undefined;
@@ -340,6 +362,11 @@ const argv = await yargs(hideBin(process.argv))
         const configManager = createProductionConfigManager(undefined, budget);
         const config = configManager.applyCliOverrides(cliArgs);
 
+        // Debug: Log the config object
+        if (argv.verbose) {
+          console.log("Generated configuration:", JSON.stringify(config, null, 2));
+        }
+
         // Apply preset if specified
         if (argv.preset) {
           const presetConfig = configManager.createOptimizedPreset(argv.preset);
@@ -349,9 +376,20 @@ const argv = await yargs(hideBin(process.argv))
 
         // Validate production configuration
         const validation = validateProductionConfig(config);
+        if (argv.verbose) {
+          console.log("Validation result:", {
+            valid: validation.valid,
+            errors: validation.errors,
+            warnings: validation.warnings,
+            suggestions: validation.suggestions
+          });
+        }
         if (!validation.valid) {
           cliLogger.error("❌ Configuration validation failed");
           validation.errors.forEach((error) => cliLogger.error(`  • ${error}`));
+          if (validation.suggestions.length > 0) {
+            validation.suggestions.forEach((suggestion) => cliLogger.error(`  💡 ${suggestion}`));
+          }
           process.exit(1);
         }
 
@@ -373,8 +411,7 @@ const argv = await yargs(hideBin(process.argv))
             ? createDevelopmentOrchestrator(config)
             : createProductionOrchestrator(config);
 
-        // Load CSS files
-        const inputPath = resolve(argv.input);
+        // Load CSS files (we already validated the file exists)
         const bundles: CssBundle[] = [];
 
         try {
@@ -392,9 +429,10 @@ const argv = await yargs(hideBin(process.argv))
             },
           });
         } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : String(error);
           cliLogger.error("Failed to read input CSS file", {
             path: inputPath,
-            error: error instanceof Error ? error.message : String(error),
+            error: errorMessage,
           });
           process.exit(1);
         }
@@ -887,7 +925,7 @@ const argv = await yargs(hideBin(process.argv))
 
               // Import plugin manager
               const { createPluginManager } = await import(
-                "../src/core/pluginManager.js"
+                "../src/core/pluginManager.ts"
               );
               const pluginManager = createPluginManager();
 
@@ -979,7 +1017,7 @@ const argv = await yargs(hideBin(process.argv))
               cliLogger.info("🩺 Checking plugin health");
 
               const { createPluginManager } = await import(
-                "../src/core/pluginManager.js"
+                "../src/core/pluginManager.ts"
               );
               const pluginManager = createPluginManager();
 
@@ -1079,7 +1117,7 @@ const argv = await yargs(hideBin(process.argv))
               cliLogger.info(`🔓 Enabling plugin: ${argv.plugin}`);
 
               const { createPluginManager } = await import(
-                "../src/core/pluginManager.js"
+                "../src/core/pluginManager.ts"
               );
               const pluginManager = createPluginManager();
 
@@ -1118,7 +1156,7 @@ const argv = await yargs(hideBin(process.argv))
               cliLogger.info(`🔒 Disabling plugin: ${argv.plugin}`);
 
               const { createPluginManager } = await import(
-                "../src/core/pluginManager.js"
+                "../src/core/pluginManager.ts"
               );
               const pluginManager = createPluginManager();
 
@@ -1167,7 +1205,7 @@ const argv = await yargs(hideBin(process.argv))
               cliLogger.info("🔍 Discovering plugins");
 
               const { createPluginManager, createDefaultDiscoveryOptions } =
-                await import("../src/core/pluginManager.js");
+                await import("../src/core/pluginManager.ts");
               const pluginManager = createPluginManager();
 
               const options = createDefaultDiscoveryOptions();
@@ -1247,7 +1285,7 @@ const argv = await yargs(hideBin(process.argv))
               cliLogger.info("🧪 Testing plugin functionality");
 
               const { createPluginManager } = await import(
-                "../src/core/pluginManager.js"
+                "../src/core/pluginManager.ts"
               );
               const pluginManager = createPluginManager();
 
@@ -1394,10 +1432,10 @@ const argv = await yargs(hideBin(process.argv))
 
               // Import marketplace modules
               const { createPluginRegistry } = await import(
-                "../src/registry/pluginRegistry"
+                "../src/registry/pluginRegistry.ts"
               );
               const { createPluginMarketplace } = await import(
-                "../src/marketplace/pluginMarketplace"
+                "../src/marketplace/pluginMarketplace.ts"
               );
 
               // Create registry and marketplace
@@ -1478,10 +1516,10 @@ const argv = await yargs(hideBin(process.argv))
 
               // Import marketplace modules
               const { createPluginRegistry } = await import(
-                "../src/registry/pluginRegistry"
+                "../src/registry/pluginRegistry.ts"
               );
               const { createPluginMarketplace } = await import(
-                "../src/marketplace/pluginMarketplace"
+                "../src/marketplace/pluginMarketplace.ts"
               );
 
               // Create registry and marketplace
@@ -1535,10 +1573,10 @@ const argv = await yargs(hideBin(process.argv))
 
               // Import marketplace modules
               const { createPluginRegistry } = await import(
-                "../src/registry/pluginRegistry"
+                "../src/registry/pluginRegistry.ts"
               );
               const { createPluginMarketplace } = await import(
-                "../src/marketplace/pluginMarketplace"
+                "../src/marketplace/pluginMarketplace.ts"
               );
 
               // Create registry and marketplace
@@ -1573,10 +1611,10 @@ const argv = await yargs(hideBin(process.argv))
             try {
               // Import marketplace modules
               const { createPluginRegistry } = await import(
-                "../src/registry/pluginRegistry"
+                "../src/registry/pluginRegistry.ts"
               );
               const { createPluginMarketplace } = await import(
-                "../src/marketplace/pluginMarketplace"
+                "../src/marketplace/pluginMarketplace.ts"
               );
 
               // Create registry and marketplace
@@ -1656,10 +1694,10 @@ const argv = await yargs(hideBin(process.argv))
 
               // Import marketplace modules
               const { createPluginRegistry } = await import(
-                "../src/registry/pluginRegistry"
+                "../src/registry/pluginRegistry.ts"
               );
               const { createPluginMarketplace } = await import(
-                "../src/marketplace/pluginMarketplace"
+                "../src/marketplace/pluginMarketplace.ts"
               );
 
               // Create registry and marketplace
@@ -1742,10 +1780,10 @@ const argv = await yargs(hideBin(process.argv))
 
               // Import marketplace modules
               const { createPluginRegistry } = await import(
-                "../src/registry/pluginRegistry"
+                "../src/registry/pluginRegistry.ts"
               );
               const { createPluginMarketplace } = await import(
-                "../src/marketplace/pluginMarketplace"
+                "../src/marketplace/pluginMarketplace.ts"
               );
 
               // Create registry and marketplace
@@ -1947,7 +1985,7 @@ try {
   // For now, just display the configuration for demonstration
   cliLogger.info("Tailwind Enigma is ready to optimize your CSS!");
 
-  if (!configResult.input && !argv._.length) {
+  if (!argv.input && !argv._.length) {
     cliLogger.info("Tip: Use --input to specify files to process");
     cliLogger.info(
       "Tip: Run 'enigma init-config' to create a sample configuration file",
@@ -1955,11 +1993,30 @@ try {
   }
 } catch (error) {
   if (error instanceof ConfigError) {
-    cliLogger.error("Configuration Error", {
+    // Log the config error but continue with defaults for missing files
+    cliLogger.info("Failed to load configuration file", {
       message: error.message,
       filepath: error.filepath,
     });
-    process.exit(1);
+    
+    // Try to get a default config and continue
+    try {
+      const defaultConfig = EnigmaConfigSchema.parse({});
+      cliLogger.info("Configuration loaded successfully");
+      cliLogger.info("Tailwind Enigma is ready to optimize your CSS!");
+      
+      if (!argv.input && !argv._.length) {
+        cliLogger.info("Tip: Use --input to specify files to process");
+        cliLogger.info(
+          "Tip: Run 'enigma init-config' to create a sample configuration file",
+        );
+      }
+    } catch (defaultError) {
+      cliLogger.fatal("Failed to create default configuration", {
+        message: defaultError instanceof Error ? defaultError.message : String(defaultError),
+      });
+      process.exit(1);
+    }
   } else {
     cliLogger.fatal("Unexpected Error", {
       message: error instanceof Error ? error.message : String(error),

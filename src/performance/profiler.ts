@@ -19,8 +19,8 @@ import { EventEmitter } from "events";
 import { execSync, spawn, ChildProcess } from "child_process";
 import { writeFileSync, existsSync, mkdirSync } from "fs";
 import { join } from "path";
-import { createLogger } from "../logger.js";
-import type { ProfilingConfig, PerformanceMetrics } from "./config.js";
+import { createLogger } from "../logger.ts";
+import type { ProfilingConfig, PerformanceMetrics } from "./config.ts";
 
 const logger = createLogger("PerformanceProfiler");
 

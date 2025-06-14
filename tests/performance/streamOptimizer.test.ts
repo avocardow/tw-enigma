@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { StreamOptimizer } from "../../src/performance/streamOptimizer.js";
+import { StreamOptimizer } from "../../src/performance/streamOptimizer.ts";
 import {
   createWriteStream,
   existsSync,
@@ -237,11 +237,16 @@ describe("StreamOptimizer", () => {
 
       expect(result.success).toBe(false); // Should be false due to errors
       expect(result.stats.errorCount).toBeGreaterThan(0);
-      expect(result.data).toHaveLength(filesWithError.length);
-
-      // Some results should be errors
-      const errors = result.data?.filter((item) => item instanceof Error);
-      expect(errors?.length).toBeGreaterThan(0);
+      // Only successful files are returned in data, failed files are excluded
+      expect(result.data).toHaveLength(testFiles.length); // 3 successful files
+      
+      // Verify that we have successful results for the valid files
+      expect(result.data?.length).toBe(3);
+      result.data?.forEach((item) => {
+        expect(item).not.toBeInstanceOf(Error);
+        expect(item).toHaveProperty("path");
+        expect(item).toHaveProperty("size");
+      });
     });
 
     it("should respect concurrency limits", async () => {

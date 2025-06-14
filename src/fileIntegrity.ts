@@ -31,8 +31,8 @@ import {
 } from "zlib";
 import { EventEmitter } from "events";
 import { resolve, dirname, basename, extname, join } from "path";
-import { createLogger } from "./logger.js";
-import { ConfigError } from "./errors.js";
+import { createLogger } from "./logger.ts";
+import { ConfigError } from "./errors.ts";
 import os from "os";
 
 /**
@@ -1141,6 +1141,17 @@ export class FileIntegrityValidator {
   clearCache(): void {
     this.checksumCache.clear();
     this.logger.debug("Checksum cache cleared");
+  }
+
+  /**
+   * Clear all cached indexes (for testing purposes)
+   */
+  clearAllCaches(): void {
+    this.checksumCache.clear();
+    this.deduplicationIndex = null;
+    this.incrementalIndex = null;
+    this.differentialIndex = null;
+    this.logger.debug("All caches and indexes cleared");
   }
 
   /**
@@ -2483,8 +2494,13 @@ export class FileIntegrityValidator {
           currentChainLength: parsedIndex.stats.currentChainLength,
         });
         return parsedIndex;
-      } catch {
-        // Create new index if file doesn't exist
+      } catch (parseError) {
+        // Handle corruption by logging and creating new index
+        this.logger.warn("Differential index corrupted or invalid, creating new index", {
+          error: parseError instanceof Error ? parseError.message : String(parseError),
+        });
+        // Clear any cached index to ensure clean state
+        this.differentialIndex = null;
         this.differentialIndex = {
           version: "1.0.0",
           currentFullBackup: null,
@@ -2605,13 +2621,11 @@ export class FileIntegrityValidator {
     }
 
     // Get all cumulative changes since last full backup
+    // This includes ALL files that have been backed up since the full backup was created
     const cumulativeChanges = Object.keys(index.cumulativeFileStates).filter(
       (path) => {
         const state = index.cumulativeFileStates[path];
-        return (
-          state.hasChanged &&
-          state.lastBackup >= index.currentFullBackup.createdAt
-        );
+        return state.lastBackup >= index.currentFullBackup.createdAt;
       },
     );
 
@@ -2640,20 +2654,17 @@ export class FileIntegrityValidator {
     const index = await this.loadDifferentialIndex();
     const changeInfo = await this.detectCumulativeFileChanges(filePath);
 
+
+
     // Skip if no changes
     if (!changeInfo.hasChanged) {
+      this.logger.debug("No changes detected, skipping backup");
       return "skip";
     }
 
     // Force full backup if no current full backup exists
     if (!index.currentFullBackup) {
-      this.logger.debug("No full backup exists, forcing full backup");
-      return "full";
-    }
-    
-    // Force full backup for very first backup in a fresh system
-    if (index.differentialChain.length === 0 && index.stats.totalDifferentials === 0) {
-      this.logger.debug("First backup in system, forcing full backup");
+      this.logger.info("DEBUG: No full backup exists, forcing full backup");
       return "full";
     }
 
@@ -2679,8 +2690,9 @@ export class FileIntegrityValidator {
       return "full";
     }
 
-    // Check size multiplier threshold only if cumulative size > 0
+    // Check size multiplier threshold only if cumulative size > 0 and full backup exists
     if (
+      index.currentFullBackup &&
       index.stats.cumulativeSize > 0 &&
       index.stats.cumulativeSizeRatio >= this.options.differentialSizeMultiplier
     ) {
@@ -2863,25 +2875,30 @@ export class FileIntegrityValidator {
         mtime: fileStats.mtime,
         contentHash,
         lastBackup: currentTime,
-        hasChanged: false, // Reset after backup
+        hasChanged: strategy === "full" ? false : true, // Only reset for full backups, keep true for differential
       };
 
       await this.saveDifferentialIndex();
 
+      // Calculate updated ratio after this backup for recommendation
+      const updatedCumulativeSize = index.stats.cumulativeSize;
+      const updatedSizeRatio = index.currentFullBackup
+        ? updatedCumulativeSize / index.currentFullBackup.size
+        : 0;
+
       // Determine if next backup should be full
       const recommendFullBackup =
-        index.stats.cumulativeSizeRatio >=
-          this.options.differentialSizeMultiplier ||
+        (index.currentFullBackup && updatedSizeRatio >= this.options.differentialSizeMultiplier) ||
         changeInfo.timeSinceFullBackup >=
           this.options.differentialFullBackupInterval * 0.8; // 80% threshold
 
       let recommendationReason: string | undefined;
       if (recommendFullBackup) {
         if (
-          index.stats.cumulativeSizeRatio >=
-          this.options.differentialSizeMultiplier
+          index.currentFullBackup && 
+          updatedSizeRatio >= this.options.differentialSizeMultiplier
         ) {
-          recommendationReason = `Cumulative size ratio (${index.stats.cumulativeSizeRatio.toFixed(2)}) approaching threshold (${this.options.differentialSizeMultiplier})`;
+          recommendationReason = `Cumulative size ratio (${updatedSizeRatio.toFixed(2)}) approaching threshold (${this.options.differentialSizeMultiplier})`;
         } else {
           recommendationReason = `Time since full backup (${changeInfo.timeSinceFullBackup.toFixed(1)}h) approaching threshold (${this.options.differentialFullBackupInterval}h)`;
         }
@@ -2900,7 +2917,7 @@ export class FileIntegrityValidator {
         backupPath: backupResult.backupPath,
         currentBackupSize: backupResult.backupSize || 0,
         cumulativeSize: index.stats.cumulativeSize,
-        cumulativeSizeRatio: index.stats.cumulativeSizeRatio,
+        cumulativeSizeRatio: updatedSizeRatio,
         spaceSaved: index.stats.totalSpaceSaved,
         backedUpFiles: [resolvedPath],
         cumulativeChangedFiles: changeInfo.cumulativeChanges,
@@ -3789,6 +3806,12 @@ export class FileIntegrityValidator {
           if (error instanceof RollbackError) {
             throw error;
           }
+          // Wrap any other verification error as a RollbackError
+          throw new RollbackError(
+            `Rollback verification failed: ${error instanceof Error ? error.message : String(error)}`,
+            resolvedPath,
+            error as Error,
+          );
         }
       }
 

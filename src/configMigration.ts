@@ -1,9 +1,9 @@
 import { z } from 'zod';
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { join, dirname } from 'path';
-import { createLogger } from './logger.js';
-import { EnigmaConfigSchema, type EnigmaConfig } from './config.js';
-import { createConfigDefaults } from './configDefaults.js';
+import { createLogger } from './logger.ts';
+import { EnigmaConfigSchema, type EnigmaConfig } from './config.ts';
+import { createConfigDefaults } from './configDefaults.ts';
 
 const logger = createLogger('config-migration');
 
@@ -93,19 +93,30 @@ export class ConfigMigration {
       schemaVersion: 2,
       description: 'Add optimization and performance configuration',
       migrate: async (config: any) => {
+        const {
+          removeUnused,
+          mergeDuplicates,
+          minifyClassNames,
+          treeshake,
+          deadCodeElimination,
+          maxMemoryUsage,
+          timeout,
+          retries,
+          ...rest
+        } = config;
         return {
-          ...config,
+          ...rest,
           optimization: {
-            removeUnused: config.removeUnused ?? true,
-            mergeDuplicates: config.mergeDuplicates ?? false,
-            minifyClassNames: config.minifyClassNames ?? false,
-            treeshake: config.treeshake ?? false,
-            deadCodeElimination: config.deadCodeElimination ?? false
+            removeUnused: removeUnused ?? true,
+            mergeDuplicates: mergeDuplicates ?? false,
+            minifyClassNames: minifyClassNames ?? false,
+            treeshake: treeshake ?? false,
+            deadCodeElimination: deadCodeElimination ?? false
           },
           performance: {
-            maxMemoryUsage: config.maxMemoryUsage ?? '256MB',
-            timeout: config.timeout ?? 15000,
-            retries: config.retries ?? 1
+            maxMemoryUsage: maxMemoryUsage ?? '256MB',
+            timeout: timeout ?? 15000,
+            retries: retries ?? 1
           },
           validation: {
             enabled: true,
@@ -154,16 +165,24 @@ export class ConfigMigration {
       schemaVersion: 3,
       description: 'Add output configuration and Tailwind integration',
       migrate: async (config: any) => {
+        const {
+          outputFormat,
+          outputFilename,
+          preserveOriginal,
+          tailwindConfig,
+          tailwindCss,
+          ...rest
+        } = config;
         return {
-          ...config,
+          ...rest,
           output: {
-            format: config.outputFormat ?? 'css',
-            filename: config.outputFilename ?? 'optimized.css',
-            preserveOriginal: config.preserveOriginal ?? true
+            format: outputFormat ?? 'css',
+            filename: outputFilename ?? 'optimized.css',
+            preserveOriginal: preserveOriginal ?? true
           },
           tailwind: {
-            configPath: config.tailwindConfig ?? './tailwind.config.js',
-            cssPath: config.tailwindCss ?? './src/styles/tailwind.css'
+            configPath: tailwindConfig ?? './tailwind.config.js',
+            cssPath: tailwindCss ?? './src/styles/tailwind.css'
           }
         };
       },

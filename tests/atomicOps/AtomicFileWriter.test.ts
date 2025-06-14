@@ -272,7 +272,7 @@ describe("AtomicFileWriter", () => {
       expect(result.success).toBe(true);
 
       const content = await fs.readFile(TEST_JSON_FILE, "utf8");
-      expect(content).toContain("\\n  "); // Should have indentation
+      expect(content).toContain("\n  "); // Should have indentation (actual newline + spaces)
     });
   });
 

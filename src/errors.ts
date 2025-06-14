@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { logger, ErrorContext } from "./logger.js";
+import { logger, type ErrorContext } from "./logger.ts";
 
 /**
  * Base error class for all Tailwind Enigma Core errors
@@ -14,15 +14,21 @@ import { logger, ErrorContext } from "./logger.js";
 export abstract class EnigmaError extends Error {
   public readonly timestamp: Date;
   public readonly errorId: string;
+  public readonly code: string;
+  public readonly context?: ErrorContext;
+  public readonly cause?: Error;
 
   constructor(
     message: string,
-    public readonly code: string,
-    public readonly context?: ErrorContext,
-    public readonly cause?: Error,
+    code: string,
+    context?: ErrorContext,
+    cause?: Error,
   ) {
     super(message);
     this.name = this.constructor.name;
+    this.code = code;
+    this.context = context;
+    this.cause = cause;
     this.timestamp = new Date();
     this.errorId = this.generateErrorId();
 
@@ -85,9 +91,11 @@ export abstract class EnigmaError extends Error {
  * Configuration-related errors
  */
 export class ConfigError extends EnigmaError {
+  public readonly filepath?: string;
+
   constructor(
     message: string,
-    public readonly filepath?: string,
+    filepath?: string,
     cause?: Error,
     context?: ErrorContext,
   ) {
@@ -101,6 +109,7 @@ export class ConfigError extends EnigmaError {
       },
       cause,
     );
+    this.filepath = filepath;
   }
 }
 
@@ -108,9 +117,11 @@ export class ConfigError extends EnigmaError {
  * File system operation errors
  */
 export class FileReadError extends EnigmaError {
+  public readonly filePath?: string;
+
   constructor(
     message: string,
-    public readonly filePath?: string,
+    filePath?: string,
     cause?: Error,
     context?: ErrorContext,
   ) {
@@ -124,6 +135,7 @@ export class FileReadError extends EnigmaError {
       },
       cause,
     );
+    this.filePath = filePath;
   }
 }
 
@@ -131,9 +143,11 @@ export class FileReadError extends EnigmaError {
  * File discovery operation errors
  */
 export class FileDiscoveryError extends EnigmaError {
+  public readonly patterns?: string | string[];
+
   constructor(
     message: string,
-    public readonly patterns?: string | string[],
+    patterns?: string | string[],
     cause?: Error,
     context?: ErrorContext,
   ) {
@@ -147,6 +161,7 @@ export class FileDiscoveryError extends EnigmaError {
       },
       cause,
     );
+    this.patterns = patterns;
   }
 }
 
@@ -154,9 +169,11 @@ export class FileDiscoveryError extends EnigmaError {
  * HTML parsing and extraction errors
  */
 export class HtmlParsingError extends EnigmaError {
+  public readonly source?: string;
+
   constructor(
     message: string,
-    public readonly source?: string,
+    source?: string,
     cause?: Error,
     context?: ErrorContext,
   ) {
@@ -170,6 +187,7 @@ export class HtmlParsingError extends EnigmaError {
       },
       cause,
     );
+    this.source = source;
   }
 }
 
@@ -177,10 +195,13 @@ export class HtmlParsingError extends EnigmaError {
  * JavaScript/JSX parsing and extraction errors
  */
 export class JsParsingError extends EnigmaError {
+  public readonly source?: string;
+  public readonly framework?: string;
+
   constructor(
     message: string,
-    public readonly source?: string,
-    public readonly framework?: string,
+    source?: string,
+    framework?: string,
     cause?: Error,
     context?: ErrorContext,
   ) {
@@ -195,6 +216,8 @@ export class JsParsingError extends EnigmaError {
       },
       cause,
     );
+    this.source = source;
+    this.framework = framework;
   }
 }
 
@@ -202,10 +225,13 @@ export class JsParsingError extends EnigmaError {
  * CSS processing and optimization errors
  */
 export class CssProcessingError extends EnigmaError {
+  public readonly source?: string;
+  public readonly operation?: string;
+
   constructor(
     message: string,
-    public readonly source?: string,
-    public readonly operation?: string,
+    source?: string,
+    operation?: string,
     cause?: Error,
     context?: ErrorContext,
   ) {
@@ -220,6 +246,8 @@ export class CssProcessingError extends EnigmaError {
       },
       cause,
     );
+    this.source = source;
+    this.operation = operation;
   }
 }
 
@@ -227,10 +255,13 @@ export class CssProcessingError extends EnigmaError {
  * CLI command execution errors
  */
 export class CliError extends EnigmaError {
+  public readonly command?: string;
+  public readonly suggestions?: string[];
+
   constructor(
     message: string,
-    public readonly command?: string,
-    public readonly suggestions?: string[],
+    command?: string,
+    suggestions?: string[],
     cause?: Error,
     context?: ErrorContext,
   ) {
@@ -245,6 +276,8 @@ export class CliError extends EnigmaError {
       },
       cause,
     );
+    this.command = command;
+    this.suggestions = suggestions;
   }
 
   /**
@@ -270,10 +303,13 @@ export class CliError extends EnigmaError {
  * Validation errors for user input
  */
 export class ValidationError extends EnigmaError {
+  public readonly field?: string;
+  public readonly value?: unknown;
+
   constructor(
     message: string,
-    public readonly field?: string,
-    public readonly value?: unknown,
+    field?: string,
+    value?: unknown,
     cause?: Error,
     context?: ErrorContext,
   ) {
@@ -289,6 +325,8 @@ export class ValidationError extends EnigmaError {
       },
       cause,
     );
+    this.field = field;
+    this.value = value;
   }
 }
 
@@ -296,10 +334,13 @@ export class ValidationError extends EnigmaError {
  * Performance and timeout errors
  */
 export class TimeoutError extends EnigmaError {
+  public readonly operation?: string;
+  public readonly timeoutMs?: number;
+
   constructor(
     message: string,
-    public readonly operation?: string,
-    public readonly timeoutMs?: number,
+    operation?: string,
+    timeoutMs?: number,
     cause?: Error,
     context?: ErrorContext,
   ) {
@@ -314,6 +355,8 @@ export class TimeoutError extends EnigmaError {
       },
       cause,
     );
+    this.operation = operation;
+    this.timeoutMs = timeoutMs;
   }
 }
 
@@ -321,10 +364,13 @@ export class TimeoutError extends EnigmaError {
  * External dependency errors (libraries, APIs, etc.)
  */
 export class DependencyError extends EnigmaError {
+  public readonly dependency?: string;
+  public readonly version?: string;
+
   constructor(
     message: string,
-    public readonly dependency?: string,
-    public readonly version?: string,
+    dependency?: string,
+    version?: string,
     cause?: Error,
     context?: ErrorContext,
   ) {
@@ -339,6 +385,8 @@ export class DependencyError extends EnigmaError {
       },
       cause,
     );
+    this.dependency = dependency;
+    this.version = version;
   }
 }
 

@@ -8,8 +8,8 @@
 import type {
   CssPerformanceReport,
   BudgetViolation,
-} from "./cssReportGenerator.js";
-import type { CssOutputConfig } from "./cssOutputConfig.js";
+} from "./cssReportGenerator.ts";
+import type { CssOutputConfig } from "./cssOutputConfig.ts";
 
 /**
  * CI environment detection result
@@ -486,14 +486,21 @@ export class CiIntegration {
 
     // Load time regression
     if (delta.loadTimeChange > 500) {
+      const percentChange = (delta.loadTimeChange / baseline.metrics.averageLoadTime) * 100;
+      let severity: "minor" | "moderate" | "major";
+      
+      // Consider both absolute change and percentage increase
+      if (delta.loadTimeChange > 2000 || percentChange > 50) {
+        severity = "major";
+      } else if (delta.loadTimeChange > 1000 || percentChange > 25) {
+        severity = "moderate";
+      } else {
+        severity = "minor";
+      }
+      
       regressions.push({
         type: "load_time_increase",
-        severity:
-          delta.loadTimeChange > 2000
-            ? "major"
-            : delta.loadTimeChange > 1000
-              ? "moderate"
-              : "minor",
+        severity,
         description: `Load time increased by ${delta.loadTimeChange.toFixed(0)}ms`,
         current: current.metrics.averageLoadTime,
         previous: baseline.metrics.averageLoadTime,

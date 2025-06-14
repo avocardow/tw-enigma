@@ -95,15 +95,15 @@ function loadPatternData(patternsPath, frequencyPath) {
  */
 function generateUtilitiesFromPatterns(patterns, frequencies, config) {
   const utilities = {};
-  let utilityCount = 0;
+  let patternUtilityCount = 0;
+  let frequencyUtilityCount = 0;
 
   // Generate utilities from frequent patterns
   for (const pattern of patterns) {
     if (
-      pattern.type === "atomic" &&
       pattern.frequency >= config.patterns.minFrequency
     ) {
-      const utilityName = `${config.utilities.prefix}${utilityCount++}`;
+      const utilityName = `${config.utilities.prefix}${patternUtilityCount++}`;
 
       // Convert pattern properties to CSS declarations
       const declarations = {};
@@ -132,7 +132,7 @@ function generateUtilitiesFromPatterns(patterns, frequencies, config) {
   // Generate utilities from high-frequency individual classes
   for (const [className, frequency] of frequencies) {
     if (frequency >= config.patterns.minFrequency && !className.includes(" ")) {
-      const utilityName = `${config.utilities.prefix}freq-${utilityCount++}`;
+      const utilityName = `${config.utilities.prefix}freq-${frequencyUtilityCount++}`;
       const cssDeclarations = generateCssFromClasses([className]);
 
       if (Object.keys(cssDeclarations).length > 0) {
@@ -293,7 +293,7 @@ function convertTailwindColor(color) {
 /**
  * Generate autocomplete configuration for IDEs
  */
-function generateAutocompleteConfig(utilities, config) {
+function generateAutocompleteConfig(utilities, config, patterns, frequencies) {
   const autocompleteData = {
     version: "1.0.0",
     generatedAt: new Date().toISOString(),
@@ -301,6 +301,32 @@ function generateAutocompleteConfig(utilities, config) {
     patterns: [],
     suggestions: [],
   };
+
+  // Generate pattern suggestions from loaded patterns
+  for (const pattern of patterns) {
+    if (pattern.classes && pattern.classes.length > 0) {
+      autocompleteData.patterns.push({
+        pattern: pattern.classes.join(" "),
+        frequency: pattern.frequency,
+        type: pattern.type || "atomic",
+        complexity: pattern.complexity || 1,
+      });
+    }
+  }
+
+  // Generate context-aware suggestions from frequent classes
+  const frequentClasses = Array.from(frequencies.entries())
+    .filter(([, freq]) => freq >= config.patterns.minFrequency)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 20); // Top 20 frequent classes
+
+  for (const [className, frequency] of frequentClasses) {
+    autocompleteData.suggestions.push({
+      trigger: className,
+      frequency: frequency,
+      type: "class",
+    });
+  }
 
   // Save autocomplete data if path is configured
   if (config.paths.autocompleteFile) {
@@ -421,7 +447,7 @@ const tailwindEnigmaPlugin = plugin.withOptions((options = {}) => {
       );
 
       if (Object.keys(utilities).length > 0) {
-        // Add utilities to Tailwind
+        // Add base utilities to Tailwind
         addUtilities(utilities, {
           respectPrefix: false,
           respectImportant: true,
@@ -429,17 +455,44 @@ const tailwindEnigmaPlugin = plugin.withOptions((options = {}) => {
 
         // Generate responsive variants if enabled
         if (config.utilities.generateResponsive) {
-          addUtilities(utilities, ["responsive"]);
+          const responsiveUtilities = {};
+          Object.entries(utilities).forEach(([selector, declarations]) => {
+            const className = selector.substring(1); // Remove leading dot
+            responsiveUtilities[`.md\\:${className}`] = {
+              [`@media (min-width: 768px)`]: declarations
+            };
+            responsiveUtilities[`.lg\\:${className}`] = {
+              [`@media (min-width: 1024px)`]: declarations
+            };
+          });
+          addUtilities(responsiveUtilities, {
+            respectPrefix: false,
+            respectImportant: true,
+          });
         }
 
         // Generate hover variants if enabled
         if (config.utilities.generateHover) {
-          addUtilities(utilities, ["hover"]);
+          const hoverUtilities = {};
+          Object.entries(utilities).forEach(([selector, declarations]) => {
+            hoverUtilities[`.hover\\:${selector.substring(1)}:hover`] = declarations;
+          });
+          addUtilities(hoverUtilities, {
+            respectPrefix: false,
+            respectImportant: true,
+          });
         }
 
         // Generate focus variants if enabled
         if (config.utilities.generateFocus) {
-          addUtilities(utilities, ["focus"]);
+          const focusUtilities = {};
+          Object.entries(utilities).forEach(([selector, declarations]) => {
+            focusUtilities[`.focus\\:${selector.substring(1)}:focus`] = declarations;
+          });
+          addUtilities(focusUtilities, {
+            respectPrefix: false,
+            respectImportant: true,
+          });
         }
 
         if (config.development.logOptimizations) {
@@ -450,7 +503,7 @@ const tailwindEnigmaPlugin = plugin.withOptions((options = {}) => {
 
         // Generate autocomplete configuration
         if (config.development.generateAutocomplete) {
-          generateAutocompleteConfig(utilities, config);
+          generateAutocompleteConfig(utilities, config, patterns, frequencies);
         }
       }
     }

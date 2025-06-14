@@ -242,11 +242,20 @@ describe("AtomicFileCreator", () => {
     });
 
     it("should update metrics correctly", async () => {
-      const initialMetrics = creator.getMetrics();
+      // Create a fresh creator to ensure clean metrics state
+      const freshCreator = new AtomicFileCreator({
+        operationTimeout: 5000,
+        maxRetries: 2,
+      });
+      
+      const initialMetrics = freshCreator.getMetrics();
 
-      await creator.createFile(TEST_FILE, "test content");
+      // Use a unique file path to avoid conflicts
+      const uniqueFile = path.join(TEST_DIR, `metrics-test-${Date.now()}.txt`);
+      await freshCreator.createFile(uniqueFile, "test content");
 
-      const updatedMetrics = creator.getMetrics();
+      const updatedMetrics = freshCreator.getMetrics();
+      
       expect(updatedMetrics.totalOperations).toBe(
         initialMetrics.totalOperations + 1,
       );
@@ -259,6 +268,14 @@ describe("AtomicFileCreator", () => {
       expect(updatedMetrics.totalBytesProcessed).toBeGreaterThan(
         initialMetrics.totalBytesProcessed,
       );
+      
+      // Clean up the test file and fresh creator
+      try {
+        await fs.unlink(uniqueFile);
+      } catch {
+        // Ignore if file doesn't exist
+      }
+      await freshCreator.cleanup();
     });
   });
 
@@ -371,73 +388,204 @@ describe("AtomicFileCreator", () => {
     });
 
     it("should stop on first error when stopOnError is true", async () => {
-      // Create an existing file that will cause a conflict
-      const conflictFile = path.join(TEST_DIR, "conflict.txt");
-      await fs.writeFile(conflictFile, "existing");
-
-      const files = [
-        { path: path.join(TEST_DIR, "success1.txt"), content: "content 1" },
-        { path: conflictFile, content: "new content" }, // This will fail
-        { path: path.join(TEST_DIR, "not-created.txt"), content: "content 2" },
-      ];
-
-      const results = await creator.createMultipleFiles(files, {
-        stopOnError: true,
-      });
-
-      expect(results).toHaveLength(2);
-      expect(results[0].success).toBe(true);
-      expect(results[1].success).toBe(false);
-
-      // Verify the first file was rolled back
+      // Create a unique test directory for this test to avoid interference
+      const uniqueTestDir = path.join(TEST_DIR, `stop-on-error-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`);
+      await fs.mkdir(uniqueTestDir, { recursive: true });
+      
       try {
-        await fs.access(files[0].path);
-        expect(true).toBe(false); // Should not reach here
-      } catch {
-        // File should not exist due to rollback
-        expect(true).toBe(true);
-      }
+        // Create a fresh creator to ensure clean state
+        const freshCreator = new AtomicFileCreator({
+          operationTimeout: 5000,
+          maxRetries: 2,
+        });
+        
+        // Create an existing file that will cause a conflict
+        const conflictFile = path.join(uniqueTestDir, "conflict.txt");
+        await fs.writeFile(conflictFile, "existing");
 
-      // Verify the third file was not created
-      try {
-        await fs.access(files[2].path);
-        expect(true).toBe(false); // Should not reach here
-      } catch {
-        // File should not exist
-        expect(true).toBe(true);
+        const files = [
+          { path: path.join(uniqueTestDir, "success1.txt"), content: "content 1" },
+          { path: conflictFile, content: "new content" }, // This will fail
+          { path: path.join(uniqueTestDir, "not-created.txt"), content: "content 2" },
+        ];
+
+        const results = await freshCreator.createMultipleFiles(files, {
+          stopOnError: true,
+        });
+
+        expect(results).toHaveLength(2);
+        expect(results[0].success).toBe(true);
+        expect(results[1].success).toBe(false);
+
+        // Verify the first file was rolled back
+        try {
+          await fs.access(files[0].path);
+          expect(true).toBe(false); // Should not reach here
+        } catch {
+          // File should not exist due to rollback
+          expect(true).toBe(true);
+        }
+
+        // Verify the third file was not created
+        try {
+          await fs.access(files[2].path);
+          expect(true).toBe(false); // Should not reach here
+        } catch {
+          // File should not exist
+          expect(true).toBe(true);
+        }
+        
+        // Clean up the fresh creator
+        await freshCreator.cleanup();
+      } finally {
+        // Clean up the unique test directory
+        try {
+          await fs.rm(uniqueTestDir, { recursive: true, force: true });
+        } catch (error) {
+          console.warn("Failed to clean up unique test directory:", error);
+        }
       }
     });
   });
 
   describe("rollback and error handling", () => {
-    it.skip("should rollback on temp file write failure", async () => {
-      // This test has mocking issues with vitest - skipping for now
-      // Would need to use proper mock strategies to avoid property redefinition errors
-      expect(true).toBe(true);
+    it("should rollback on temp file write failure", async () => {
+      // Use a unique test directory to isolate this test
+      const uniqueTestDir = path.join(TEST_DIR, `rollback-write-test-${Date.now()}`);
+      const testFile = path.join(uniqueTestDir, "write-fail-test.txt");
+      
+      await fs.mkdir(uniqueTestDir, { recursive: true });
+
+      try {
+        const testCreator = new AtomicFileCreator({
+          operationTimeout: 2000,
+          maxRetries: 1,
+        });
+
+        // Create a scenario that triggers rollback: try to write to a read-only file system location
+        // Create a file that will cause issues during the atomic operation
+        const invalidPath = path.join(uniqueTestDir, "subdir", "file.txt");
+        
+        // Create a regular file where we expect a directory, causing ENOTDIR error
+        await fs.writeFile(path.join(uniqueTestDir, "subdir"), "not a directory");
+        
+        // Try to create a file in what should be a directory but is actually a file
+        const result = await testCreator.createFile(invalidPath, "test content");
+
+        // Should fail gracefully with proper error handling
+        expect(result.success).toBe(false);
+        expect(result.error).toBeDefined();
+        expect(result.error?.code).toBeDefined();
+
+        // Verify the original "subdir" file is still intact (not corrupted by rollback)
+        const subdirContent = await fs.readFile(path.join(uniqueTestDir, "subdir"), "utf8");
+        expect(subdirContent).toBe("not a directory");
+
+        // Verify no temp files remain in the test directory
+        const files = await fs.readdir(uniqueTestDir);
+        const tempFiles = files.filter(file => file.includes('.tmp-'));
+        expect(tempFiles).toHaveLength(0);
+
+        await testCreator.cleanup();
+      } finally {
+        // Clean up test directory
+        await fs.rm(uniqueTestDir, { recursive: true, force: true });
+      }
     });
 
-    it.skip("should handle atomic move failure gracefully", async () => {
-      // This test has mocking issues with vitest - skipping for now
-      expect(true).toBe(true);
+    it("should handle atomic move failure gracefully", async () => {
+      // Use a unique test directory to isolate this test
+      const uniqueTestDir = path.join(TEST_DIR, `move-fail-test-${Date.now()}`);
+      const testFile = path.join(uniqueTestDir, "move-fail-test.txt");
+      
+      await fs.mkdir(uniqueTestDir, { recursive: true });
+
+      try {
+        const testCreator = new AtomicFileCreator({
+          operationTimeout: 2000,
+          maxRetries: 1,
+        });
+
+        // Create a directory with the same name as target file to cause move failure
+        await fs.mkdir(testFile, { recursive: true });
+
+        // Try to create file - should fail during atomic move due to directory conflict
+        const result = await testCreator.createFile(testFile, "test content");
+
+        // Should fail gracefully
+        expect(result.success).toBe(false);
+        expect(result.error).toBeDefined();
+
+        // Verify directory still exists (wasn't corrupted)
+        const stats = await fs.stat(testFile);
+        expect(stats.isDirectory()).toBe(true);
+
+        await testCreator.cleanup();
+      } finally {
+        // Clean up test directory
+        await fs.rm(uniqueTestDir, { recursive: true, force: true });
+      }
     });
 
-    it.skip("should handle backup creation and restore during overwrite", async () => {
-      // This test has mocking issues with vitest - skipping for now
-      expect(true).toBe(true);
+    it("should handle backup creation and restore during overwrite", async () => {
+      // Use a unique test directory to isolate this test
+      const uniqueTestDir = path.join(TEST_DIR, `backup-test-${Date.now()}`);
+      const testFile = path.join(uniqueTestDir, "backup-test.txt");
+      
+      await fs.mkdir(uniqueTestDir, { recursive: true });
+
+      try {
+        const testCreator = new AtomicFileCreator({
+          operationTimeout: 2000,
+          maxRetries: 1,
+        });
+
+        // Create original file
+        const originalContent = "original content";
+        await fs.writeFile(testFile, originalContent);
+
+        // Attempt overwrite operation
+        const result = await testCreator.createFile(testFile, "new content", {
+          overwrite: true,
+        });
+
+        // Should succeed with backup handling
+        expect(result.success).toBe(true);
+
+        // Verify new content was written
+        const fileContent = await fs.readFile(testFile, "utf8");
+        expect(fileContent).toBe("new content");
+
+        // Verify no backup files remain (they should be cleaned up on success)
+        const files = await fs.readdir(uniqueTestDir);
+        const backupFiles = files.filter(file => file.includes('.backup-'));
+        expect(backupFiles).toHaveLength(0);
+
+        await testCreator.cleanup();
+      } finally {
+        // Clean up test directory
+        await fs.rm(uniqueTestDir, { recursive: true, force: true });
+      }
     });
   });
 
   describe("metrics and performance", () => {
     it("should track performance metrics accurately", async () => {
-      const initialMetrics = creator.getMetrics();
+      // Create a fresh creator to ensure clean metrics state
+      const freshCreator = new AtomicFileCreator({
+        operationTimeout: 5000,
+        maxRetries: 2,
+      });
+      
+      const initialMetrics = freshCreator.getMetrics();
 
       // Perform successful operation
-      await creator.createFile(TEST_FILE, "success content");
+      await freshCreator.createFile(TEST_FILE, "success content");
 
       // Perform failed operation
-      await creator.createFile(TEST_FILE, "fail content"); // Will fail - file exists
+      await freshCreator.createFile(TEST_FILE, "fail content"); // Will fail - file exists
 
-      const finalMetrics = creator.getMetrics();
+      const finalMetrics = freshCreator.getMetrics();
 
       expect(finalMetrics.totalOperations).toBe(
         initialMetrics.totalOperations + 2,
@@ -455,6 +603,9 @@ describe("AtomicFileCreator", () => {
       expect(finalMetrics.totalBytesProcessed).toBeGreaterThan(
         initialMetrics.totalBytesProcessed,
       );
+      
+      // Clean up the fresh creator
+      await freshCreator.cleanup();
     });
 
     it("should track error statistics", async () => {

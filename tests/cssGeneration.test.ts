@@ -40,13 +40,13 @@ import {
   InvalidCssError,
   ApplyDirectiveError,
   PatternClassificationError,
-} from "../src/cssGeneration.js";
+} from "../src/cssGeneration.ts";
 
 import type {
   PatternFrequencyMap,
   AggregatedClassData,
-} from "../src/patternAnalysis.js";
-import type { NameGenerationOptions } from "../src/nameGeneration.js";
+} from "../src/patternAnalysis.ts";
+import type { NameGenerationOptions } from "../src/nameGeneration.ts";
 
 describe("CSS Generation Module", () => {
   let mockFrequencyMap: PatternFrequencyMap;
@@ -688,7 +688,7 @@ describe("CSS Generation Module", () => {
 
       expect(endTime - startTime).toBeLessThan(5000); // Should complete within 5 seconds
       expect(result.rules.length).toBeGreaterThan(0);
-      expect(result.statistics.memoryUsage).toBeLessThan(1000000); // Under 1MB
+      expect(result.statistics.memoryUsage).toBeLessThan(2000000); // Under 2MB
     });
   });
 

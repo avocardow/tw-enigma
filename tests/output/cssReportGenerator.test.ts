@@ -9,14 +9,14 @@ import { describe, it, expect, beforeEach } from "vitest";
 import {
   CssReportGenerator,
   createCssReportGenerator,
-} from "../../src/output/cssReportGenerator.js";
+} from "../../src/output/cssReportGenerator.ts";
 import type {
   CssOutputConfig,
   PerformanceBudget,
-} from "../../src/output/cssOutputConfig.js";
-import type { CssBundle, CssChunk } from "../../src/output/cssTypes.js";
-import type { HashedAsset } from "../../src/output/assetHasher.js";
-import type { ChunkingStats } from "../../src/output/cssChunker.js";
+} from "../../src/output/cssOutputConfig.ts";
+import type { CssBundle, CssChunk } from "../../src/output/cssTypes.ts";
+import type { HashedAsset } from "../../src/output/assetHasher.ts";
+import type { ChunkingStats } from "../../src/output/cssChunker.ts";
 
 describe("CssReportGenerator", () => {
   let config: CssOutputConfig;

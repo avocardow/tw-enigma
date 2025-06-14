@@ -10,6 +10,7 @@ import { DevDashboardEnhanced } from '../src/devDashboardEnhanced.js';
 import { EnigmaConfig } from '../src/config.js';
 import * as fs from 'fs/promises';
 import * as http from 'http';
+import { EventEmitter } from 'events';
 
 // Mock file system operations
 vi.mock('fs/promises', () => ({
@@ -91,7 +92,18 @@ describe('DevDashboardEnhanced', () => {
       },
     } as EnigmaConfig;
 
-    dashboard = new DevDashboardEnhanced({}, mockConfig);
+    // Provide a mock baseDashboard as an EventEmitter with getDashboardState()
+    const baseDashboard = new EventEmitter();
+    baseDashboard.getDashboardState = () => ({
+      config: {},
+      metrics: [],
+      logs: [],
+      isRunning: false,
+      uptime: 0,
+      clientCount: 0,
+    });
+
+    dashboard = new DevDashboardEnhanced(baseDashboard, mockConfig);
   });
 
   afterEach(async () => {
@@ -643,13 +655,18 @@ describe('DevDashboardEnhanced', () => {
       expect(chart.error).toBeDefined();
     });
 
-    it('should emit error events for debugging', (done) => {
-      dashboard.on('error', (error) => {
-        expect(error).toBeInstanceOf(Error);
-        done();
+    it('should emit error events for debugging', async () => {
+      await new Promise<void>((resolve, reject) => {
+        dashboard.on('error', (error) => {
+          try {
+            expect(error).toBeInstanceOf(Error);
+            resolve();
+          } catch (e) {
+            reject(e);
+          }
+        });
+        dashboard.emit('error', new Error('Test error'));
       });
-
-      dashboard.emit('error', new Error('Test error'));
     });
   });
 

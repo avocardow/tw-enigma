@@ -13,7 +13,7 @@ import { tmpdir } from 'os';
 // Import all validation components
 import { createConfigValidator, validateConfigSchema } from '../src/configValidator.js';
 import { createRuntimeValidator, validateConfigRuntime } from '../src/runtimeValidator.js';
-import { createConfigWatcher } from '../src/configWatcher.js';
+import { createConfigWatcher, watchConfigFile } from '../src/configWatcher.js';
 import { createConfigDefaults, getEnvironmentDefaults } from '../src/configDefaults.js';
 import { createConfigMigration, migrateConfig, needsConfigMigration } from '../src/configMigration.js';
 import { createPerformanceValidator, analyzeConfigPerformance } from '../src/performanceValidator.js';
@@ -177,9 +177,9 @@ describe('Configuration Validation System', () => {
 
       expect(result.isValid).toBe(false);
       expect(result.errors.length).toBeGreaterThan(0);
-      expect(result.errors.some(e => e.includes('input'))).toBe(true);
-      expect(result.errors.some(e => e.includes('output'))).toBe(true);
-      expect(result.errors.some(e => e.includes('maxConcurrency'))).toBe(true);
+      expect(result.errors.some(e => (typeof e === 'string' ? e : e.message || e.toString()).includes('input'))).toBe(true);
+      expect(result.errors.some(e => (typeof e === 'string' ? e : e.message || e.toString()).includes('output'))).toBe(true);
+      expect(result.errors.some(e => (typeof e === 'string' ? e : e.message || e.toString()).includes('maxConcurrency'))).toBe(true);
     });
 
     test('should validate configuration with custom schema', async () => {
@@ -322,13 +322,13 @@ describe('Configuration Validation System', () => {
       const config = createTestConfig();
       writeFileSync(configPath, JSON.stringify(config, null, 2));
 
-      const watcher = createConfigWatcher(configPath);
+      const watcher = await watchConfigFile(configPath);
       const changePromise = new Promise((resolve, reject) => {
         const timeout = setTimeout(() => {
           reject(new Error('Test timeout: No change event received within 5 seconds'));
         }, 5000);
         
-        watcher.on('change', () => {
+        watcher.on('config-changed', () => {
           clearTimeout(timeout);
           resolve(true);
         });
@@ -350,7 +350,7 @@ describe('Configuration Validation System', () => {
       const config = createTestConfig();
       writeFileSync(configPath, JSON.stringify(config, null, 2));
 
-      const watcher = createConfigWatcher(configPath, {
+      const watcher = await watchConfigFile(configPath, {
         validateOnChange: true
       });
 
@@ -359,7 +359,7 @@ describe('Configuration Validation System', () => {
           reject(new Error('Test timeout: No validation event received within 5 seconds'));
         }, 5000);
         
-        watcher.on('validation', (result) => {
+        watcher.on('config-validated', (result) => {
           clearTimeout(timeout);
           resolve(result);
         });
@@ -452,6 +452,11 @@ describe('Configuration Validation System', () => {
         createBackup: false
       });
 
+      if (!result.success) {
+        // Log migration errors for debugging
+        // eslint-disable-next-line no-console
+        console.error('Migration errors:', result.errors);
+      }
       expect(result.success).toBe(true);
       expect(result.migrationsApplied).toContain('0.1.0->0.2.0');
 
@@ -699,11 +704,13 @@ describe('Configuration Validation System', () => {
       // Corrupt the backup file
       writeFileSync(backup.backupPath, 'corrupted content');
 
-      const verification = await backupManager.verifyBackup(backup.id);
+      // Re-instantiate backup manager to reload metadata
+      const backupManagerReloaded = createConfigBackup(configPath);
+      const verification = await backupManagerReloaded.verifyBackup(backup.id);
 
       expect(verification.isValid).toBe(false);
       expect(verification.checksumMatch).toBe(false);
-      expect(verification.errors.some(e => e.includes('checksum'))).toBe(true);
+      expect(verification.errors.some(e => (typeof e === 'string' ? e : e.message || e.toString()).toLowerCase().includes('checksum'))).toBe(true);
     });
 
     test('should apply retention policy', async () => {
@@ -715,10 +722,10 @@ describe('Configuration Validation System', () => {
         autoCleanup: true
       });
 
-      // Create multiple backups
-      await backupManager.createBackup({ description: 'Backup 1' });
-      await backupManager.createBackup({ description: 'Backup 2' });
-      await backupManager.createBackup({ description: 'Backup 3' });
+      // Create multiple automatic backups (no description)
+      await backupManager.createBackup();
+      await backupManager.createBackup();
+      await backupManager.createBackup();
 
       const backups = backupManager.listBackups();
       expect(backups.length).toBeLessThanOrEqual(2);
@@ -770,6 +777,7 @@ describe('Configuration Validation System', () => {
 
       // 5. Migration check
       const migration = createConfigMigration(configPath);
+      const result = await migration.migrate({ autoMigrate: true });
       const needsMigration = migration.needsMigration(config);
       expect(typeof needsMigration).toBe('boolean');
     });
@@ -812,8 +820,8 @@ describe('Configuration Validation System', () => {
       const backupManager = createConfigBackup(configPath);
 
       // Run validations
-      const schemaValidation = await validator.validate(config);
-      const runtimeValidation = await runtimeValidator.validateComplete();
+      const schemaValidation = await validator.validateConfiguration(config);
+      const runtimeValidation = await validateConfigRuntime(config);
       const performanceAnalysis = await performanceValidator.analyzePerformance();
 
       expect(schemaValidation.isValid).toBe(true);
@@ -937,6 +945,6 @@ describe('Configuration Validation Edge Cases', () => {
     const performanceValidator = createPerformanceValidator(config);
     const metrics = await performanceValidator.analyzePerformance();
 
-    expect(metrics.warnings.some(w => w.includes('interval') || w.includes('frequent'))).toBe(true);
+    expect(metrics.warnings.some(w => (typeof w === 'string' ? w : w.message || w.toString()).includes('interval') || (typeof w === 'string' ? w : w.message || w.toString()).includes('frequent'))).toBe(true);
   });
 }); 

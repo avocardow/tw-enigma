@@ -23,20 +23,27 @@ import {
   IntegrationManager,
   createIntegrationManager,
   type IntegrationManagerConfig,
-} from "../../src/integrations/core/integrationManager.js";
+} from "../../src/integrations/core/integrationManager.ts";
 import type {
   BuildToolType,
   BuildToolPlugin,
   BuildToolPluginConfig,
   BuildToolContext,
-} from "../../src/integrations/core/buildToolPlugin.js";
+} from "../../src/integrations/core/buildToolPlugin.ts";
 
 // Mock filesystem
-vi.mock("fs/promises");
-vi.mock("fs");
+vi.mock("fs/promises", async () => {
+  const memfs = await import("memfs");
+  return memfs.fs.promises;
+});
+
+vi.mock("fs", async () => {
+  const memfs = await import("memfs");
+  return memfs.fs;
+});
 
 // Mock logger
-vi.mock("../../src/logger.js", () => ({
+vi.mock("../../src/logger.ts", () => ({
   createLogger: vi.fn(() => ({
     debug: vi.fn(),
     info: vi.fn(),
@@ -48,17 +55,17 @@ vi.mock("../../src/logger.js", () => ({
 // Mock framework detector
 vi.mock("../../src/frameworkDetector.js", () => ({
   FrameworkDetector: vi.fn(() => ({
-    detectFramework: vi.fn().mockResolvedValue({
+    detect: vi.fn().mockResolvedValue({
       detected: [
         {
-          framework: "react",
+          name: "react",
           confidence: 0.9,
           version: "18.2.0",
           buildTool: "vite",
         },
       ],
       primary: {
-        framework: "react",
+        name: "react",
         confidence: 0.9,
         version: "18.2.0",
         buildTool: "vite",
@@ -419,16 +426,19 @@ describe("IntegrationManager", () => {
         handleHMR: vi.fn().mockResolvedValue(undefined),
       } as any;
 
-      manager.registerPlugin("vite-plugin", mockPlugin, {
-        name: "vite-plugin",
-        enabled: true,
-        priority: 10,
-        buildTool: { type: "vite", autoDetect: true },
-      });
+      // Don't register here - will register after initialization to avoid being overwritten
     });
 
     it("should handle file changes for HMR", async () => {
       await manager.initialize();
+
+      // Register mock plugin AFTER initialization to avoid being overwritten
+      manager.registerPlugin("test-hmr-plugin", mockPlugin, {
+        name: "test-hmr-plugin",
+        enabled: true,
+        priority: 10,
+        buildTool: { type: "vite", autoDetect: true },
+      });
 
       // Set up active context
       await manager.startBuild("vite");
@@ -446,6 +456,15 @@ describe("IntegrationManager", () => {
       manager.on("hmr-update", hmrSpy);
 
       await manager.initialize();
+      
+      // Register mock plugin AFTER initialization to avoid being overwritten
+      manager.registerPlugin("test-hmr-plugin", mockPlugin, {
+        name: "test-hmr-plugin",
+        enabled: true,
+        priority: 10,
+        buildTool: { type: "vite", autoDetect: true },
+      });
+      
       await manager.startBuild("vite");
       await manager.handleFileChange("/test-project/src/App.tsx");
 
@@ -462,14 +481,16 @@ describe("IntegrationManager", () => {
         hmr: false,
       });
 
-      noHMRManager.registerPlugin("vite-plugin", mockPlugin, {
-        name: "vite-plugin",
+      await noHMRManager.initialize();
+      
+      // Register mock plugin AFTER initialization to avoid being overwritten
+      noHMRManager.registerPlugin("test-hmr-plugin", mockPlugin, {
+        name: "test-hmr-plugin",
         enabled: true,
         priority: 10,
         buildTool: { type: "vite", autoDetect: true },
       });
 
-      await noHMRManager.initialize();
       await noHMRManager.startBuild("vite");
       await noHMRManager.handleFileChange("/test-project/src/App.tsx");
 
@@ -507,7 +528,7 @@ describe("IntegrationManager", () => {
     it("should track errors and warnings", async () => {
       const badPlugin = {
         supportedBuildTools: ["vite"],
-        initializeBuildTool: jest
+        initializeBuildTool: vi
           .fn()
           .mockRejectedValue(new Error("Init failed")),
       } as any;
