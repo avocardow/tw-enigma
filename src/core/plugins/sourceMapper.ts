@@ -42,7 +42,7 @@ export class SourceMapper extends BaseEnigmaPlugin {
 
   readonly configSchema = SourceMapperConfigSchema;
 
-  createPlugin(context: PluginContext): Plugin {
+  createPlugin(_context: PluginContext): Plugin {
     return {
       postcssPlugin: 'enigma-source-mapper',
       Once: async (root: Root) => {
@@ -81,7 +81,7 @@ export class SourceMapper extends BaseEnigmaPlugin {
   /**
    * Preserve original source information for all nodes
    */
-  private preserveOriginalSources(root: Root, context: PluginContext): void {
+  private preserveOriginalSources(root: Root, _context: PluginContext): void {
     let preservedCount = 0;
 
     // Walk all nodes and ensure they have source information
@@ -108,7 +108,7 @@ export class SourceMapper extends BaseEnigmaPlugin {
   /**
    * Update source mapping information during transformations
    */
-  private updateSourceMappings(root: Root, context: PluginContext): void {
+  private updateSourceMappings(root: Root, _context: PluginContext): void {
     let updatedCount = 0;
 
     // Ensure all transformations maintain source references
@@ -142,7 +142,7 @@ export class SourceMapper extends BaseEnigmaPlugin {
    * Configure source map generation options
    */
   private configureSourceMapGeneration(
-    context: PluginContext,
+    _context: PluginContext,
     config: SourceMapperConfig,
   ): void {
     if (config.generateSourceMap) {
