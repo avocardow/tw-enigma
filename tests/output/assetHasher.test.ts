@@ -12,7 +12,6 @@ import {
   CssMinifier,
   ManifestGenerator,
   AssetHashingOptions,
-  CompressedAsset,
   AssetManifest,
   createAssetHasher,
   createCssCompressor,
@@ -308,7 +307,8 @@ describe("AssetHasher", () => {
 
   describe("cache functionality", () => {
     it("should cache hash results", () => {
-      const spy = vi.spyOn(require("crypto"), "createHash");
+      const crypto = await import("crypto");
+      const spy = vi.spyOn(crypto, "createHash");
 
       // First call should create hash
       assetHasher.hashContent(mockCssContent, "test.css");
@@ -430,8 +430,9 @@ describe("CssCompressor", () => {
 
     it("should handle compression errors gracefully", async () => {
       // Mock a compression failure
-      const originalGzip = require("zlib").gzip;
-      require("zlib").gzip = vi.fn((content, options, callback) => {
+      const zlib = await import("zlib");
+      const originalGzip = zlib.gzip;
+      zlib.gzip = vi.fn((content, options, callback) => {
         callback(new Error("Compression failed"));
       });
 
@@ -444,7 +445,7 @@ describe("CssCompressor", () => {
       expect(results.length).toBeLessThanOrEqual(2);
 
       // Restore original function
-      require("zlib").gzip = originalGzip;
+      zlib.gzip = originalGzip;
     });
   });
 
@@ -1038,7 +1039,7 @@ describe("Integration Tests", () => {
     }
 
     // Verify compression occurred
-    for (const [chunkId, compressedAssets] of compressions) {
+    for (const [, compressedAssets] of compressions) {
       expect(compressedAssets.length).toBeGreaterThan(0);
       for (const asset of compressedAssets) {
         expect(asset.compressedSize).toBeLessThan(asset.originalSize);

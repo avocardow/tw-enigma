@@ -5,8 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { writeFile, mkdtemp, rmdir } from "fs/promises";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { mkdtemp, rmdir } from "fs/promises";
 import { tmpdir } from "os";
 import { join } from "path";
 import {
@@ -17,9 +17,7 @@ import {
   validateProductionConfig,
   type CliArgs,
   type PerformanceBudget,
-  type DeploymentPreset,
   createProductionConfig,
-  createDevelopmentConfig,
 } from "../../src/output/cssOutputConfig.ts";
 
 describe("ProductionCssConfigManager", () => {
@@ -66,7 +64,7 @@ describe("ProductionCssConfigManager", () => {
     // Clean up temporary directory
     try {
       await rmdir(tempDir, { recursive: true });
-    } catch (error) {
+    } catch {
       // Ignore cleanup errors
     }
   });

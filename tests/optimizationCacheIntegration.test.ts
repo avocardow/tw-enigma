@@ -13,7 +13,7 @@ describe('OptimizationCacheIntegration', () => {
   let integration: OptimizationCacheIntegration;
   let mockConfig: EnigmaConfig;
   let mockCacheInstance: any;
-  let OptimizationCacheIntegration: any;
+
   let createOptimizationCacheIntegration: any;
   let getOptimizationCacheIntegration: any;
   let mockOptimizationResult: OptimizationResult;
@@ -25,7 +25,7 @@ describe('OptimizationCacheIntegration', () => {
     
     // Create fresh mock instance that behaves like the real cache
     mockCacheInstance = {
-      get: vi.fn().mockImplementation(async (inputFiles, config, framework) => {
+      get: vi.fn().mockImplementation(async (_inputFiles, _config, _framework) => {
         // Simulate the real cache behavior: increment hit count and return result
         const mockResult = mockCacheInstance._storedResults?.get('mock-cache-key-123');
         if (mockResult) {
@@ -35,7 +35,7 @@ describe('OptimizationCacheIntegration', () => {
         }
         return null;
       }),
-      set: vi.fn().mockImplementation(async (inputFiles, config, result, framework) => {
+      set: vi.fn().mockImplementation(async (inputFiles, config, result, _framework) => {
         // Simulate the real cache behavior: wrap result with cache metadata
         const cacheKey = 'mock-cache-key-123';
         const cachedResult = {
@@ -92,7 +92,6 @@ describe('OptimizationCacheIntegration', () => {
     
     // Import after mocking
     const module = await import('../src/optimizationCacheIntegration');
-    OptimizationCacheIntegration = module.OptimizationCacheIntegration;
     createOptimizationCacheIntegration = module.createOptimizationCacheIntegration;
     getOptimizationCacheIntegration = module.getOptimizationCacheIntegration;
 

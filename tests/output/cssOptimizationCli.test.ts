@@ -125,7 +125,7 @@ describe("CSS Optimization CLI Commands", () => {
     // Clean up temporary directory
     try {
       await rmdir(tempDir, { recursive: true });
-    } catch (error) {
+    } catch {
       // Ignore cleanup errors
     }
   });
@@ -242,7 +242,7 @@ describe("CSS Optimization CLI Commands", () => {
       const command = `node ${cliPath} css-optimize ${sampleCssFile} --output=${outputDir} --verbose`;
 
       try {
-        const { stdout, stderr } = await execAsync(command);
+        const { stdout } = await execAsync(command);
 
         expect(stdout.length).toBeGreaterThan(100); // Should have verbose output
         expect(stdout).toContain("Processing");
@@ -263,7 +263,7 @@ describe("CSS Optimization CLI Commands", () => {
       const command = `node ${cliPath} css-optimize ${sampleCssFile} ${secondCssFile} --output=${outputDir}`;
 
       try {
-        const { stdout, stderr } = await execAsync(command);
+        const { stdout } = await execAsync(command);
 
         expect(stdout).toContain("multiple");
         expect(stdout).toContain("bundle");
@@ -279,7 +279,7 @@ describe("CSS Optimization CLI Commands", () => {
       const command = `node ${cliPath} css-optimize ${sampleCssFile} --output=${outputDir} --asset-hash --hash-length=12`;
 
       try {
-        const { stdout, stderr } = await execAsync(command);
+        const { stdout } = await execAsync(command);
 
         expect(stdout).toContain("hash");
 
@@ -300,7 +300,7 @@ describe("CSS Optimization CLI Commands", () => {
       const command = `node ${cliPath} css-optimize ${sampleCssFile} --output=${outputDir} --chunks=size --max-chunk-size=2KB`;
 
       try {
-        const { stdout, stderr } = await execAsync(command);
+        const { stdout } = await execAsync(command);
 
         expect(stdout).toContain("chunk");
 
@@ -502,7 +502,7 @@ describe("CSS Optimization CLI Commands", () => {
       const command = `node ${cliPath} css-optimize --help`;
 
       try {
-        const { stdout, stderr } = await execAsync(command);
+        const { stdout } = await execAsync(command);
 
         expect(stdout).toContain("optimize CSS");
         expect(stdout).toContain("--output");
@@ -518,7 +518,7 @@ describe("CSS Optimization CLI Commands", () => {
       const command = `node ${cliPath} css-config --help`;
 
       try {
-        const { stdout, stderr } = await execAsync(command);
+        const { stdout } = await execAsync(command);
 
         expect(stdout).toContain("configuration");
         expect(stdout).toContain("--preset");
@@ -533,7 +533,7 @@ describe("CSS Optimization CLI Commands", () => {
       const command = `node ${cliPath} css-analyze --help`;
 
       try {
-        const { stdout, stderr } = await execAsync(command);
+        const { stdout } = await execAsync(command);
 
         expect(stdout).toContain("analyze CSS");
         expect(stdout).toContain("--format");
@@ -562,10 +562,9 @@ describe("CSS Optimization CLI Commands", () => {
       const command = `node ${cliPath} css-optimize ${sampleCssFile} --invalid-flag=value`;
 
       try {
-        const { stdout, stderr } = await execAsync(command);
+        await execAsync(command);
 
         // Should either ignore the flag or provide a warning
-        expect(stderr).toBeDefined();
       } catch (error) {
         // Expected during development
         expect(error).toBeDefined();
@@ -590,7 +589,7 @@ describe("CSS Optimization CLI Commands", () => {
       const command = `node ${cliPath} css-config --environment=development --output=${tempDir}/dev-config.json`;
 
       try {
-        const { stdout, stderr } = await execAsync(command);
+        await execAsync(command);
 
         const configContent = await readFile(
           join(tempDir, "dev-config.json"),
@@ -610,7 +609,7 @@ describe("CSS Optimization CLI Commands", () => {
       const command = `node ${cliPath} css-config --environment=production --output=${tempDir}/prod-config.json`;
 
       try {
-        const { stdout, stderr } = await execAsync(command);
+        await execAsync(command);
 
         const configContent = await readFile(
           join(tempDir, "prod-config.json"),
@@ -684,7 +683,7 @@ async function readdir(path: string): Promise<string[]> {
   try {
     const { readdir } = await import("fs/promises");
     return await readdir(path);
-  } catch (error) {
+  } catch {
     return [];
   }
 }

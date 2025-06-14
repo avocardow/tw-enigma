@@ -15,15 +15,10 @@ import {
   CommonFilters,
   COMMON_TAILWIND_PATTERNS,
   PatternAnalysisOptionsSchema,
-  PatternAnalysisError,
-  DataAggregationError,
-  FrequencyCalculationError,
   type PatternAnalysisInput,
   type PatternAnalysisOptions,
   type HtmlClassExtractionResult,
   type JsClassExtractionResult,
-  type PatternFrequencyMap,
-  type FrequencyAnalysisResult,
 } from "../src/patternAnalysis.ts";
 import type { ClassData } from "../src/htmlExtractor.ts";
 import type { JsClassData } from "../src/jsExtractor.ts";

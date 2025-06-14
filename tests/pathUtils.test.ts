@@ -1,5 +1,4 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import path from "node:path";
 import {
   PathUtils,
   createPathUtils,
@@ -13,8 +12,6 @@ import {
   PathValidationError,
   PathCalculationOptionsSchema,
   type PathCalculationOptions,
-  type PathValidationResult,
-  type RelativePathResult,
 } from "../src/pathUtils";
 
 describe("PathUtils", () => {

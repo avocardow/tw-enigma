@@ -10,7 +10,6 @@ import {
   CssChunker,
   CssChunk,
   ChunkingStrategy,
-  DependencyGraph,
   UsagePatternAnalyzer,
   createCssChunker,
   validateChunkingStrategy,
