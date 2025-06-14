@@ -1,5 +1,5 @@
 import { performance, PerformanceObserver } from "perf_hooks";
-import { cpus, freemem, totalmem } from "os";
+import { cpus, freemem, totalmem, loadavg } from "os";
 
 export interface PerformanceMetrics {
   duration: number;
@@ -80,7 +80,6 @@ export class PerformanceMonitor {
   ): PerformanceTimer {
     const startTime = performance.now();
     const startCpuUsage = process.cpuUsage();
-    const startMemory = process.memoryUsage();
 
     return {
       end: (): PerformanceMetrics => {
@@ -199,7 +198,7 @@ export class PerformanceMonitor {
       cpu: {
         cores: cpus().length,
         loadAverage:
-          process.platform !== "win32" ? require("os").loadavg() : [0, 0, 0],
+          process.platform !== "win32" ? loadavg() : [0, 0, 0],
         frequency: cpus()[0]?.speed || 0,
       },
       process: {
@@ -388,9 +387,9 @@ export class PerformanceMonitor {
   /**
    * Simple event emitter functionality
    */
-  private listeners: Map<string, Function[]> = new Map();
+  private listeners: Map<string, ((...args: any[]) => void)[]> = new Map();
 
-  on(event: string, listener: Function): void {
+  on(event: string, listener: (...args: any[]) => void): void {
     if (!this.listeners.has(event)) {
       this.listeners.set(event, []);
     }
@@ -483,7 +482,7 @@ export class PerformanceUtils {
 
       if (timeoutId === null) {
         timeoutId = setTimeout(() => {
-          fn.apply(null, lastArgs);
+          fn(...lastArgs);
           timeoutId = null;
         }, delay);
       }
@@ -493,7 +492,7 @@ export class PerformanceUtils {
       if (timeoutId) {
         clearTimeout(timeoutId);
         timeoutId = null;
-        fn.apply(null, lastArgs);
+        fn(...lastArgs);
       }
     };
 

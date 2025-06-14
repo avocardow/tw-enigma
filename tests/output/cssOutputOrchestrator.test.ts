@@ -6,7 +6,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { mkdtemp, rmdir, writeFile, readFile, mkdir } from "fs/promises";
+import { mkdtemp, rmdir, readFile } from "fs/promises";
 import { tmpdir } from "os";
 import { join } from "path";
 import {
@@ -16,13 +16,9 @@ import {
   createDevelopmentOrchestrator,
   type CssBundle,
   type CssProcessingOptions,
-  type CssOrchestrationResult,
-  type CssOutputResult,
 } from "../../src/output/cssOutputOrchestrator.ts";
 import {
   createProductionConfig,
-  createDevelopmentConfig,
-  type CssOutputConfig,
 } from "../../src/output/cssOutputConfig.ts";
 
 describe("CssOutputOrchestrator", () => {
@@ -103,7 +99,7 @@ describe("CssOutputOrchestrator", () => {
     // Clean up temporary directory
     try {
       await rmdir(tempDir, { recursive: true });
-    } catch (error) {
+    } catch {
       // Ignore cleanup errors
     }
   });
@@ -688,7 +684,7 @@ describe("CssOutputOrchestrator", () => {
       const bundleResult = result.results.get("test-bundle")!;
 
       // Should generate hashes with specified parameters
-      for (const [chunkId, hash] of bundleResult.hashes) {
+      for (const [, hash] of bundleResult.hashes) {
         expect(hash.hash).toHaveLength(12);
         expect(hash.algorithm).toBe("xxhash");
         expect(hash.hashed).toContain(hash.hash);

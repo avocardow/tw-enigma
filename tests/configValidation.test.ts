@@ -454,7 +454,7 @@ describe('Configuration Validation System', () => {
 
       if (!result.success) {
         // Log migration errors for debugging
-        // eslint-disable-next-line no-console
+         
         console.error('Migration errors:', result.errors);
       }
       expect(result.success).toBe(true);

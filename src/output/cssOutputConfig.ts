@@ -985,10 +985,10 @@ export class CssOutputConfigManager {
     }
     
     // Apply CLI overrides to the base config (CLI args have highest precedence)
-    let mergedConfig = deepMerge(baseConfig, overrides);
+    const mergedConfig = deepMerge(baseConfig, overrides);
 
     // Handle performance budget CLI args
-    let budget: Partial<PerformanceBudget> = {};
+    const budget: Partial<PerformanceBudget> = {};
     if (
       args["performance-budget"] ||
       args["max-critical-css"] ||
@@ -1234,7 +1234,7 @@ function deepClone(obj: any): any {
 function deepMerge(target: any, ...sources: any[]): any {
   const isObject = (obj: any) => obj && typeof obj === 'object' && !Array.isArray(obj);
   const clone = (obj: any) => (Array.isArray(obj) ? [...obj] : isObject(obj) ? { ...obj } : obj);
-  let output = clone(target);
+  const output = clone(target);
   for (const source of sources) {
     if (!source) continue;
     for (const key of Object.keys(source)) {
@@ -1439,7 +1439,7 @@ export class ProductionCssConfigManager {
         if (typeof val === 'string') {
           const m = val.match(/([\d.]+)\s*(B|KB|MB|GB|s|ms)?/i);
           if (m) {
-            let n = parseFloat(m[1]);
+            const n = parseFloat(m[1]);
             switch ((m[2] || '').toUpperCase()) {
               case 'GB': return n * 1024 * 1024 * 1024;
               case 'MB': return n * 1024 * 1024;
@@ -1539,7 +1539,7 @@ export class ProductionCssConfigManager {
 function _deepMerge(target: any, ...sources: any[]): any {
   const isObject = (obj: any) => obj && typeof obj === 'object' && !Array.isArray(obj);
   const clone = (obj: any) => (Array.isArray(obj) ? [...obj] : isObject(obj) ? { ...obj } : obj);
-  let output = clone(target);
+  const output = clone(target);
   for (const source of sources) {
     if (!source) continue;
     for (const key of Object.keys(source)) {

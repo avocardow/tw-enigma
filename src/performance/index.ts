@@ -82,6 +82,7 @@ export {
 } from "./config.ts";
 
 // Import for internal use
+import os from "os";
 import {
   DEFAULT_PERFORMANCE_CONFIG as _DEFAULT_PERFORMANCE_CONFIG,
   type SystemResources as _SystemResources,
@@ -127,33 +128,27 @@ export const PERFORMANCE_CONSTANTS = {
 /**
  * Measure performance of a function execution
  */
-export function measurePerformance<T>(
+export async function measurePerformance<T>(
   fn: () => T | Promise<T>,
   label?: string,
 ): Promise<{ result: T; duration: number; memoryUsed: number }> {
-  return new Promise(async (resolve, reject) => {
-    const startTime = performance.now();
-    const startMemory = process.memoryUsage().heapUsed;
+  const startTime = performance.now();
+  const startMemory = process.memoryUsage().heapUsed;
 
-    try {
-      const result = await fn();
-      const endTime = performance.now();
-      const endMemory = process.memoryUsage().heapUsed;
+  const result = await fn();
+  const endTime = performance.now();
+  const endMemory = process.memoryUsage().heapUsed;
 
-      const duration = endTime - startTime;
-      const memoryUsed = endMemory - startMemory;
+  const duration = endTime - startTime;
+  const memoryUsed = endMemory - startMemory;
 
-      if (label) {
-        console.log(
-          `[Performance] ${label}: ${duration.toFixed(2)}ms, Memory: ${formatBytes(memoryUsed)}`,
-        );
-      }
+  if (label) {
+    console.log(
+      `[Performance] ${label}: ${duration.toFixed(2)}ms, Memory: ${formatBytes(memoryUsed)}`,
+    );
+  }
 
-      resolve({ result, duration, memoryUsed });
-    } catch (error) {
-      reject(error);
-    }
-  });
+  return { result, duration, memoryUsed };
 }
 
 /**
@@ -220,7 +215,6 @@ export function formatDuration(milliseconds: number): string {
  * Get current system resource information
  */
 export function getSystemResources(): _SystemResources {
-  const os = require("os");
 
   return {
     totalMemory: os.totalmem(),

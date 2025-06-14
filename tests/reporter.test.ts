@@ -551,7 +551,8 @@ describe("Reporter", () => {
       const output = noColorReporter.displayReport(report);
       
       // Should not contain ANSI color codes
-      expect(output).not.toMatch(/\u001b\[[0-9;]*m/);
+      const ansiRegex = new RegExp(String.fromCharCode(27) + '\\[[0-9;]*m');
+      expect(output).not.toMatch(ansiRegex);
     });
 
     it("should respect maxTableItems setting", () => {

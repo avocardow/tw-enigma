@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import {
   CssOutputConfigManager,
   createProductionConfig,
@@ -18,12 +18,6 @@ import {
   CompressionType,
   HashAlgorithm,
   DeliveryMethod,
-  ChunkingConfig,
-  OptimizationConfig,
-  CompressionConfig,
-  CriticalCssConfig,
-  DeliveryConfig,
-  OutputPaths,
   ConfigPreset,
 } from "../../src/output/cssOutputConfig.ts";
 
