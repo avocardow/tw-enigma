@@ -271,7 +271,7 @@ export class AtomicOperationsSystem {
             : "unhealthy";
 
       return { status, components, metrics };
-    } catch (error) {
+    } catch {
       return {
         status: "unhealthy",
         components: Object.fromEntries(

@@ -177,7 +177,7 @@ export class CacheManager<T = unknown> extends EventEmitter {
       this.recordMiss(startTime);
       this.emit("miss", key);
       return undefined;
-    } catch (error) {
+    } catch (_error) {
       this.emit("error", error);
       this.recordMiss(startTime);
       return undefined;
@@ -230,7 +230,7 @@ export class CacheManager<T = unknown> extends EventEmitter {
       }
 
       return true;
-    } catch (error) {
+    } catch (_error) {
       this.emit("error", error);
       return false;
     }
@@ -547,7 +547,7 @@ export class CacheManager<T = unknown> extends EventEmitter {
     try {
       const json = JSON.stringify(value);
       return Buffer.byteLength(json, "utf8");
-    } catch (error) {
+    } catch {
       // Fallback for circular references or non-serializable objects
       return 1024; // Estimate 1KB for complex objects
     }
@@ -666,7 +666,7 @@ export class CacheManager<T = unknown> extends EventEmitter {
       }
 
       return entry;
-    } catch (error) {
+    } catch {
       return null;
     }
   }
@@ -681,7 +681,7 @@ export class CacheManager<T = unknown> extends EventEmitter {
       const filePath = path.join(this.config.persistencePath, `${key}.json`);
       await fs.mkdir(this.config.persistencePath, { recursive: true });
       await fs.writeFile(filePath, JSON.stringify(entry), "utf8");
-    } catch (error) {
+    } catch (_error) {
       this.emit("error", error);
     }
   }
@@ -705,7 +705,7 @@ export class CacheManager<T = unknown> extends EventEmitter {
     try {
       const filePath = path.join(this.config.persistencePath, `${key}.json`);
       await fs.unlink(filePath);
-    } catch (error) {
+    } catch {
       // File might not exist, ignore error
     }
   }
@@ -724,7 +724,7 @@ export class CacheManager<T = unknown> extends EventEmitter {
           fs.unlink(path.join(this.config.persistencePath!, file)),
         );
       await Promise.allSettled(promises);
-    } catch (error) {
+    } catch (_error) {
       this.emit("error", error);
     }
   }

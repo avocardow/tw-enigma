@@ -146,7 +146,7 @@ export class AtomicFileWriter {
         try {
           const stats = await fs.stat(filePath);
           originalPermissions = stats.mode & 0o777;
-        } catch (error) {
+        } catch {
           // If we can't read permissions, continue without preservation
         }
       }
@@ -268,7 +268,7 @@ export class AtomicFileWriter {
       try {
         const stats = await fs.stat(filePath);
         result.fileStats = stats; // Use the full Stats object
-      } catch (error) {
+      } catch {
         // File stats are optional, don't fail the operation
       }
 
@@ -536,7 +536,7 @@ export class AtomicFileWriter {
     try {
       await fs.access(filePath);
       return true;
-    } catch (error) {
+    } catch {
       return false;
     }
   }
@@ -588,7 +588,7 @@ export class AtomicFileWriter {
       for (const backup of backupFiles) {
         try {
           backup.stat = await fs.stat(backup.path);
-        } catch (error) {
+        } catch {
           // Skip files that can't be accessed
         }
       }
@@ -636,7 +636,7 @@ export class AtomicFileWriter {
   ): Promise<void> {
     if (content.length > options.bufferSize) {
       // Use streaming for large content
-      await this.writeStreamingToTempFile(tempPath, content, _options);
+      await this.writeStreamingToTempFile(tempPath, content, options);
     } else {
       // Direct write for small content
       await fs.writeFile(tempPath, content, {
@@ -720,7 +720,7 @@ export class AtomicFileWriter {
       // Clean up on error
       try {
         await fs.unlink(tempPath);
-      } catch (error) {
+      } catch {
         // Ignore cleanup errors
       }
       throw error;

@@ -296,7 +296,7 @@ export function validateCssGenerationOptions(
 ): CssGenerationOptions {
   try {
     return CssGenerationOptionsSchema.parse(options);
-  } catch (error) {
+  } catch (_error) {
     throw new CssGenerationError(
       `Invalid CSS generation options: ${error instanceof Error ? error.message : "Unknown error"}`,
       "INVALID_OPTIONS",
@@ -308,7 +308,7 @@ export function validateCssGenerationOptions(
 export function validateCssRule(rule: unknown): CssRule {
   try {
     return CssRuleSchema.parse(rule);
-  } catch (error) {
+  } catch (_error) {
     throw new CssGenerationError(
       `Invalid CSS rule: ${error instanceof Error ? error.message : "Unknown error"}`,
       "INVALID_RULE",
@@ -363,7 +363,7 @@ export function isValidCssSelector(selector: string): boolean {
       validSelectorPattern.test(selector) ||
       elementSelectorPattern.test(selector)
     );
-  } catch (error) {
+  } catch {
     return false;
   }
 }
@@ -394,7 +394,7 @@ export function isValidCssPropertyValue(
 
     // Basic validation - non-empty value
     return value.trim().length > 0;
-  } catch (error) {
+  } catch {
     return false;
   }
 }
@@ -414,7 +414,7 @@ export function sanitizeCssSelector(selector: string): string {
     }
 
     return sanitized || "element";
-  } catch (error) {
+  } catch {
     return "element";
   }
 }
@@ -667,7 +667,7 @@ export function generateCssRules(
     }
 
     return rules;
-  } catch (error) {
+  } catch (_error) {
     throw new CssGenerationError(
       `Failed to generate CSS rules: ${error instanceof Error ? error.message : "Unknown error"}`,
       "RULE_GENERATION_FAILED",
@@ -1190,7 +1190,7 @@ export function generateApplyDirective(
       optimized: optimizedDirective,
       conflicts,
     };
-  } catch (error) {
+  } catch (_error) {
     throw new ApplyDirectiveError(
       `Failed to generate @apply directive: ${error instanceof Error ? error.message : "Unknown error"}`,
       classes.join(" "),
@@ -1256,7 +1256,7 @@ export function validateApplyDirective(
     }
 
     return issues;
-  } catch (error) {
+  } catch (_error) {
     return [
       {
         type: "error",
@@ -1298,7 +1298,7 @@ export function optimizeApplyDirective(
     optimized.optimized = allClasses;
 
     return optimized;
-  } catch (error) {
+  } catch (_error) {
     throw new ApplyDirectiveError(
       `Failed to optimize apply directive: ${error instanceof Error ? error.message : "Unknown error"}`,
       directive.optimized,
@@ -1778,7 +1778,7 @@ export function classifyPattern(
       recommendedStrategy,
       confidence,
     };
-  } catch (error) {
+  } catch (_error) {
     throw new PatternClassificationError(
       `Failed to classify pattern: ${error instanceof Error ? error.message : "Unknown error"}`,
       pattern.name || "unknown",
@@ -2190,7 +2190,7 @@ export function sortCssRulesAdvanced(
     });
 
     return sortedRules;
-  } catch (error) {
+  } catch (_error) {
     throw new CssGenerationError(
       `Failed to sort CSS rules: ${error instanceof Error ? error.message : "Unknown error"}`,
       "SORT_FAILED",
@@ -2353,7 +2353,7 @@ export function analyzePatternRelationships(
       clusters,
       recommendations,
     };
-  } catch (error) {
+  } catch (_error) {
     throw new CssGenerationError(
       `Failed to analyze pattern relationships: ${error instanceof Error ? error.message : "Unknown error"}`,
       "ANALYSIS_FAILED",
@@ -2441,7 +2441,7 @@ export function sortCssRules(
       default:
         return sortedRules.sort(sortBySpecificity);
     }
-  } catch (error) {
+  } catch (_error) {
     throw new CssGenerationError(
       `Failed to sort CSS rules: ${error instanceof Error ? error.message : "Unknown error"}`,
       "SORT_FAILED",
@@ -2915,7 +2915,7 @@ export function generateCssComments(
     }
 
     return comments.join("\n");
-  } catch (error) {
+  } catch (_error) {
     throw new CssGenerationError(
       `Failed to generate CSS comments: ${error instanceof Error ? error.message : "Unknown error"}`,
       "COMMENT_GENERATION_FAILED",
@@ -3619,7 +3619,7 @@ export function integrateCssGeneration(
       warnings,
       errors,
     };
-  } catch (error) {
+  } catch (_error) {
     throw new CssGenerationError(
       `Failed to integrate CSS generation: ${error instanceof Error ? error.message : "Unknown error"}`,
       "INTEGRATION_FAILED",
@@ -3791,7 +3791,7 @@ export function generateOptimizedCss(
       warnings: [],
       errors: [],
     };
-  } catch (error) {
+  } catch (_error) {
     throw new CssGenerationError(
       `Failed to generate optimized CSS: ${error instanceof Error ? error.message : "Unknown error"}`,
       "GENERATION_FAILED",
@@ -3839,7 +3839,7 @@ export function formatCssOutput(
     }
 
     return lines.join("\n");
-  } catch (error) {
+  } catch (_error) {
     throw new CssGenerationError(
       `Failed to format CSS output: ${error instanceof Error ? error.message : "Unknown error"}`,
       "FORMAT_FAILED",
@@ -3909,7 +3909,7 @@ export class EnhancedCSSGenerator {
       // );
 
       this.logger.info("PostCSS integration initialized successfully");
-    } catch (error) {
+    } catch (_error) {
       this.logger.warn("Failed to initialize PostCSS integration", {
         error: error instanceof Error ? error.message : String(error),
       });
@@ -3983,7 +3983,7 @@ export class EnhancedCSSGenerator {
         ...baseCSS,
         processingTime: endTime - startTime,
       };
-    } catch (error) {
+    } catch (_error) {
       this.logger.error("Enhanced CSS generation failed", {
         error: error instanceof Error ? error.message : String(error),
       });
@@ -4132,7 +4132,7 @@ export class EnhancedCSSGenerator {
         compressionRatio: 0, // result.compressionRatio not available
         pluginResults: undefined, // result.pluginResults not available
       };
-    } catch (error) {
+    } catch (_error) {
       this.logger.error("PostCSS processing failed", {
         error: error instanceof Error ? error.message : String(error),
         cssLength: css.length,
@@ -4161,7 +4161,7 @@ export class EnhancedCSSGenerator {
         pluginNames: plugins.map((p) => p.name),
         processorConfig: {}, // this.postcssProcessor.getConfig not available
       };
-    } catch (error) {
+    } catch (_error) {
       this.logger.warn("Failed to get PostCSS metrics", {
         error: error instanceof Error ? error.message : String(error),
       });
@@ -4236,7 +4236,7 @@ export class EnhancedCSSGenerator {
       // );
 
       this.logger.info("PostCSS configuration updated successfully", updates);
-    } catch (error) {
+    } catch (_error) {
       this.logger.error("Failed to update PostCSS configuration", {
         error: error instanceof Error ? error.message : String(error),
         updates,

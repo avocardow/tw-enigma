@@ -1430,7 +1430,7 @@ export function createEnhancedConfigManager(
     createBackupOnLoad?: boolean;
   }
 ): EnhancedConfigManager {
-  return new EnhancedConfigManager(environment, _options);
+  return new EnhancedConfigManager(environment, options);
 }
 
 /**

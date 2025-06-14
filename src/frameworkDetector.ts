@@ -231,7 +231,7 @@ export class FrameworkDetector {
       }
 
       return result;
-    } catch (error) {
+    } catch (_error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
       throw new FrameworkDetectionError(
@@ -272,7 +272,7 @@ export class FrameworkDetector {
     // Check if directory exists
     try {
       await fs.access(rootPath);
-    } catch (error) {
+    } catch {
       throw new FrameworkDetectionError(
         `Directory does not exist: ${rootPath}`,
         rootPath,
@@ -291,7 +291,7 @@ export class FrameworkDetector {
           const packagePath = path.join(rootPath, "package.json");
           const packageContent = await fs.readFile(packagePath, "utf-8");
           context.packageJson = JSON.parse(packageContent);
-        } catch (error) {
+        } catch {
           // package.json not found or invalid - not an error
         }
       }
@@ -308,7 +308,7 @@ export class FrameworkDetector {
 
       // Analyze file structure
       context.fileStructure = await this.analyzeFileStructure(rootPath);
-    } catch (error) {
+    } catch (_error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
       throw new FrameworkDetectionError(
@@ -330,7 +330,7 @@ export class FrameworkDetector {
   ): Promise<FrameworkInfo | null> {
     try {
       return await detector.detect(context);
-    } catch (error) {
+    } catch (_error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
       throw new Error(`${detector.name} detector failed: ${errorMessage}`);
@@ -370,11 +370,11 @@ export class FrameworkDetector {
         // Try to parse as JSON first, then as JS module
         try {
           configFiles.set(pattern, JSON.parse(content));
-        } catch (error) {
+        } catch {
           // For non-JSON files, store the raw content for pattern analysis
           configFiles.set(pattern, { _rawContent: content });
         }
-      } catch (error) {
+      } catch {
         // File doesn't exist - continue
       }
     }
@@ -397,7 +397,7 @@ export class FrameworkDetector {
         try {
           await fs.access(dirPath);
           patterns.push(dir);
-        } catch (error) {
+        } catch {
           // Directory doesn't exist
         }
       }
@@ -415,11 +415,11 @@ export class FrameworkDetector {
             patterns.push(`*${pattern}`);
             filesFound += files.length;
           }
-        } catch (error) {
+        } catch {
           // Continue on error
         }
       }
-    } catch (error) {
+    } catch (_error) {
       // Non-critical error - continue with empty patterns
     }
 
@@ -452,7 +452,7 @@ export class FrameworkDetector {
           structure.files.push(item.name);
         }
       }
-    } catch (error) {
+    } catch {
       // Continue with empty structure
     }
 
@@ -491,7 +491,7 @@ export class FrameworkDetector {
             await searchDir(path.join(dirPath, item.name), depth + 1);
           }
         }
-      } catch (error) {
+      } catch {
         // Continue on error
       }
     };
@@ -538,7 +538,7 @@ export class FrameworkDetector {
 
       // Additional detectors can be added here in the future
       // Vue, Angular, Svelte, etc.
-    } catch (error) {
+    } catch (_error) {
       // Continue without detectors if imports fail
     }
   }

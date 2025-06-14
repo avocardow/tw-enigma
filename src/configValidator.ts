@@ -103,7 +103,7 @@ export class ConfigValidator {
         performance: result.performance,
         config: result.isValid && (result as any).config ? (result as any).config : undefined
       };
-    } catch (error) {
+    } catch (_error) {
       return {
         isValid: false,
         errors: [new ValidationError(
@@ -183,7 +183,7 @@ export class ConfigValidator {
         },
         config: errors.length === 0 ? validatedConfig : undefined,
       };
-    } catch (error) {
+    } catch (_error) {
       logger.error("Configuration validation failed", { filepath, error });
       
       const validationError = new ValidationError(
@@ -225,7 +225,7 @@ export class ConfigValidator {
         performance: { validationTime: 0, rulesApplied: 1 },
         config: validatedConfig,
       };
-    } catch (error) {
+    } catch (_error) {
       if (error instanceof z.ZodError) {
         const validationErrors = error.issues.map((issue) => {
           const field = issue.path.join(".");
@@ -363,7 +363,7 @@ export class ConfigValidator {
             ));
           }
         }
-      } catch (error) {
+      } catch (_error) {
         warnings.push(`Cannot verify output directory permissions: ${error instanceof Error ? error.message : String(error)}`);
       }
       rulesApplied++;

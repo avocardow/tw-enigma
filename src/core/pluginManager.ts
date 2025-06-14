@@ -278,7 +278,7 @@ export class EnigmaPluginManager implements PluginManager {
       return result as T;
     } catch (error) {
       // Record failed execution
-      this.recordFailedExecution(context, _error);
+      this.recordFailedExecution(context, error);
       throw error;
     } finally {
       // Clean up sandbox if it was created for this execution

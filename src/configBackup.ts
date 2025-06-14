@@ -320,7 +320,7 @@ export class ConfigBackup extends EventEmitter {
           const { _backup, ...originalConfig } = backupData;
           restoredContent = JSON.stringify(originalConfig, null, 2);
         }
-      } catch (error) {
+      } catch {
         // If not valid JSON, use content as-is
         result.warnings.push('Backup content is not valid JSON, restoring as-is');
       }
@@ -393,7 +393,7 @@ export class ConfigBackup extends EventEmitter {
         try {
           JSON.parse(content);
           verification.isValidJson = true;
-        } catch (error) {
+        } catch {
           verification.warnings.push('Backup content is not valid JSON');
         }
         
@@ -597,7 +597,7 @@ export class ConfigBackup extends EventEmitter {
     try {
       const config = JSON.parse(content);
       return config._version?.version || 'unknown';
-    } catch (error) {
+    } catch {
       return 'unknown';
     }
   }

@@ -160,7 +160,7 @@ export abstract class BaseEnigmaPlugin implements EnigmaPlugin {
                 transformations: context.metrics.getMetrics().transformations,
               });
             }
-          } catch (error) {
+          } catch (_error) {
             context.metrics.addWarning(
               `Plugin error: ${error instanceof Error ? error.message : String(error)}`,
             );
@@ -217,7 +217,7 @@ export abstract class BaseEnigmaPlugin implements EnigmaPlugin {
       const selectorPattern =
         /^[.#]?[a-zA-Z_-][a-zA-Z0-9_-]*([:.][a-zA-Z0-9_-]+)*$/;
       return selectorPattern.test(selector.trim());
-    } catch (error) {
+    } catch {
       return false;
     }
   }

@@ -231,7 +231,7 @@ export class RegexOptimizer extends EventEmitter {
       this.updatePerformanceMetrics(pattern, compilationTime, false);
 
       return regex;
-    } catch (error) {
+    } catch (_error) {
       this.emit("error", {
         type: "compilation_error",
         pattern,
@@ -275,7 +275,7 @@ export class RegexOptimizer extends EventEmitter {
       }
 
       return result;
-    } catch (error) {
+    } catch (_error) {
       this.emit("error", {
         type: "execution_error",
         pattern: pattern instanceof RegExp ? pattern.source : pattern,
@@ -328,7 +328,7 @@ export class RegexOptimizer extends EventEmitter {
       }
 
       return result;
-    } catch (error) {
+    } catch (_error) {
       this.emit("error", {
         type: "match_error",
         pattern: pattern instanceof RegExp ? pattern.source : pattern,
@@ -370,7 +370,7 @@ export class RegexOptimizer extends EventEmitter {
       }
 
       return result;
-    } catch (error) {
+    } catch (_error) {
       this.emit("error", {
         type: "replace_error",
         pattern: pattern instanceof RegExp ? pattern.source : pattern,
@@ -397,7 +397,7 @@ export class RegexOptimizer extends EventEmitter {
     try {
       // Test if pattern is valid
       new RegExp(pattern, flags);
-    } catch (error) {
+    } catch {
       analysis.isValid = false;
       analysis.safetyScore = 0;
       return analysis;

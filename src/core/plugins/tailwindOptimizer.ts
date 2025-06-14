@@ -215,7 +215,7 @@ export class TailwindOptimizer extends BaseEnigmaPlugin {
 
           root.append(utilityRule);
           // Transformation recorded
-        } catch (error) {
+        } catch {
           this.addWarning(
             context,
             `Failed to generate utility for pattern: ${pattern.classes.join(" ")}`,

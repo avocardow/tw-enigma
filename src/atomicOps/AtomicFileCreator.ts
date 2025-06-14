@@ -506,7 +506,7 @@ export class AtomicFileCreator {
     try {
       await fs.access(filePath, constants.F_OK);
       return true;
-    } catch (error) {
+    } catch {
       return false;
     }
   }
@@ -587,7 +587,7 @@ export class AtomicFileCreator {
     } catch (error: unknown) {
       // If rename fails (e.g., cross-device), fall back to copy + delete
       if (error && typeof error === 'object' && 'code' in error && error.code === "EXDEV") {
-        await this.copyFile(sourcePath, targetPath, _options);
+        await this.copyFile(sourcePath, targetPath, options);
         await fs.unlink(sourcePath);
       } else {
         throw error;

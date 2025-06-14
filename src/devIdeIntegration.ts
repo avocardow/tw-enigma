@@ -1223,7 +1223,7 @@ nnoremap <leader>ew :EnigmaWatch<CR>`;
         });
       }
       
-    } catch (error) {
+    } catch {
       diagnostics.push({
         range: { start: { line: 0, character: 0 }, end: { line: 0, character: 0 } },
         severity: 'error',

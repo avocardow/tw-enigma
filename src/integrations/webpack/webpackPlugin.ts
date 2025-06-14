@@ -336,7 +336,7 @@ export class EnigmaWebpackPlugin
             await this.hooks.beforeBuild?.(this.context);
           }
           callback();
-        } catch (error) {
+        } catch (_error) {
           logger.error("Error in beforeRun hook", { error });
           callback(error as Error);
         }
@@ -361,13 +361,13 @@ export class EnigmaWebpackPlugin
             try {
               await this.processAssets(compilation, assets);
               callback();
-            } catch (error) {
+            } catch (_error) {
               logger.error("Error processing assets", { error });
               callback(error as Error);
             }
           },
         );
-      } catch (error) {
+      } catch (_error) {
         logger.error("Error in compilation hook", { error });
       }
     });
@@ -382,7 +382,7 @@ export class EnigmaWebpackPlugin
             await this.hooks.emit?.(this.context);
           }
           callback();
-        } catch (error) {
+        } catch (_error) {
           logger.error("Error in emit hook", { error });
           callback(error as Error);
         }
@@ -403,7 +403,7 @@ export class EnigmaWebpackPlugin
           errors: stats.hasErrors(),
           warnings: stats.hasWarnings(),
         });
-      } catch (error) {
+      } catch (_error) {
         logger.error("Error in done hook", { error });
       }
     });
@@ -431,7 +431,7 @@ export class EnigmaWebpackPlugin
               await this.hooks.development?.(this.context);
             }
             callback();
-          } catch (error) {
+          } catch (_error) {
             logger.error("Error in watchRun hook", { error });
             callback(error as Error);
           }
@@ -439,7 +439,7 @@ export class EnigmaWebpackPlugin
       );
 
       logger.debug("HMR setup completed for webpack");
-    } catch (error) {
+    } catch (_error) {
       logger.error("Failed to setup HMR", { error });
     }
   }
@@ -496,7 +496,7 @@ export class EnigmaWebpackPlugin
             reduction: optimizedResult.reductionPercentage,
           });
         }
-      } catch (error) {
+      } catch (_error) {
         logger.error(`Failed to optimize CSS asset: ${assetName}`, { error });
       }
     }
@@ -622,7 +622,7 @@ export class EnigmaWebpackPlugin
       });
 
       return result;
-    } catch (error) {
+    } catch (_error) {
       logger.error("Webpack build processing failed", { error });
 
       return {

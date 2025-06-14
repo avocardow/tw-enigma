@@ -117,7 +117,7 @@ export class EnigmaPostCSSProcessor {
           postcssPlugins.push(wrappedPlugin);
 
           logger.debug(`Added plugin ${pluginName} to processing pipeline`);
-        } catch (error) {
+        } catch (_error) {
           const errorMessage =
             error instanceof Error ? error.message : String(error);
           logger.error(
@@ -211,7 +211,7 @@ export class EnigmaPostCSSProcessor {
         totalTime,
         peakMemory: peakMemory > 0 ? peakMemory : undefined,
       };
-    } catch (error) {
+    } catch (_error) {
       const totalTime = Date.now() - startTime;
 
       // Handle PostCSS-specific errors
@@ -290,7 +290,7 @@ export class EnigmaPostCSSProcessor {
       });
 
       return result;
-    } catch (error) {
+    } catch (_error) {
       logger.error("File processing failed", {
         inputPath,
         outputPath,

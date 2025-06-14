@@ -541,7 +541,7 @@ export class MockFileSystem implements IMockFileSystem {
 
         this.files.set(normalized, entry);
       }
-    } catch (error) {
+    } catch (_error) {
       // File doesn't exist on disk, that's fine
     }
   }
@@ -660,7 +660,7 @@ export class MockFileSystem implements IMockFileSystem {
       });
 
       return result;
-    } catch (error) {
+    } catch (_error) {
       this.recordOperation({
         type,
         path,

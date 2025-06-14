@@ -531,7 +531,7 @@ export class ConfigDefaults {
     try {
       EnigmaConfigSchema.partial().parse(config);
       return true;
-    } catch (error) {
+    } catch {
       return false;
     }
   }

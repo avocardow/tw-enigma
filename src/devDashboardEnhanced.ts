@@ -1003,7 +1003,7 @@ export class DevDashboardEnhanced extends EventEmitter {
         }
       }
       return Promise.resolve();
-    } catch (_e) {
+    } catch (e) {
       return Promise.reject(e);
     }
   }
@@ -1029,7 +1029,7 @@ export class DevDashboardEnhanced extends EventEmitter {
     if (options && options.filename) {
       try {
         await writeFile(options.filename, content);
-      } catch (error) {
+      } catch {
         throw new Error('Disk full');
       }
     }

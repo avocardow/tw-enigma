@@ -349,7 +349,7 @@ export class SourceMapGenerator {
         filePath,
         contentLength: content.length,
       });
-    } catch (error) {
+    } catch (_error) {
       this.logger.warn("Failed to load source content", {
         filePath,
         error: error instanceof Error ? error.message : String(error),
@@ -415,7 +415,7 @@ export class SourceMapGenerator {
         filePath,
         contentLength: content.length,
       });
-    } catch (error) {
+    } catch (_error) {
       this.logger.error("Failed to write source map file", {
         filePath,
         error: error instanceof Error ? error.message : String(error),
@@ -442,7 +442,7 @@ export class SourceMapGenerator {
       });
       
       return consumer;
-    } catch (error) {
+    } catch (_error) {
       logger.error("Failed to parse source map", {
         sourceMapPath,
         error: error instanceof Error ? error.message : String(error),
