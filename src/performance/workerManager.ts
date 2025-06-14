@@ -316,7 +316,7 @@ export class WorkerManager extends EventEmitter {
         try {
           await workerState.worker.terminate();
           logger.debug("Worker terminated", { workerId: workerState.id });
-        } catch (_error) {
+        } catch (error) {
           logger.error("Error terminating worker", {
             workerId: workerState.id,
             error: error instanceof Error ? error.message : String(error),
@@ -377,7 +377,7 @@ export class WorkerManager extends EventEmitter {
         workerId,
         threadId: worker.threadId,
       });
-    } catch (_error) {
+    } catch (error) {
       logger.error("Failed to create worker", {
         workerId,
         error: error instanceof Error ? error.message : String(error),
@@ -591,7 +591,7 @@ export class WorkerManager extends EventEmitter {
     if (workerState) {
       try {
         await workerState.worker.terminate();
-      } catch (_error) {
+      } catch (error) {
         logger.error("Error terminating worker during restart", {
           workerId,
           error: error instanceof Error ? error.message : String(error),

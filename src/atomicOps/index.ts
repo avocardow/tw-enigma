@@ -211,7 +211,7 @@ export class AtomicOperationsSystem {
       }
 
       return result;
-    } catch (_error) {
+    } catch (error) {
       // Rollback on error
       await this.rollbackManager.rollbackTransaction(transactionId);
       throw error;
@@ -271,7 +271,7 @@ export class AtomicOperationsSystem {
             : "unhealthy";
 
       return { status, components, metrics };
-    } catch {
+    } catch (error) {
       return {
         status: "unhealthy",
         components: Object.fromEntries(

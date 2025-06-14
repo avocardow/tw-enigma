@@ -163,7 +163,7 @@ export class HMRHandler extends EventEmitter {
       });
 
       this.emit("initialized", { buildTool });
-    } catch (_error) {
+    } catch (error) {
       logger.error(`Failed to initialize HMR for ${buildTool}`, { error });
       throw error;
     }
@@ -286,7 +286,7 @@ export class HMRHandler extends EventEmitter {
         this.lastUpdate = Date.now();
 
         this.emit("update", entry.payload);
-      } catch (_error) {
+      } catch (error) {
         logger.error("Failed to process HMR update", {
           error,
           payload: entry.payload,
@@ -392,7 +392,7 @@ export class HMRHandler extends EventEmitter {
       try {
         await server.stop();
         logger.debug(`HMR server stopped for ${buildTool}`);
-      } catch (_error) {
+      } catch (error) {
         logger.error(`Error stopping HMR server for ${buildTool}`, { error });
       }
     }

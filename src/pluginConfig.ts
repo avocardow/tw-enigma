@@ -180,7 +180,7 @@ export class PluginConfigManager {
       const result = PostCSSIntegrationConfigSchema.parse(config);
       this.logger.debug("Configuration validated successfully");
       return result;
-    } catch (_error) {
+    } catch (error) {
       if (error instanceof z.ZodError) {
         const errorMessages = error.errors
           .map((err) => `${err.path.join(".")}: ${err.message}`)
@@ -350,7 +350,7 @@ export class PluginConfigManager {
           // but we can check basic requirements
           return config !== null && config !== undefined;
       }
-    } catch (_error) {
+    } catch (error) {
       this.logger.warn("Plugin configuration validation failed", {
         pluginName,
         error: error instanceof Error ? error.message : String(error),
@@ -374,7 +374,7 @@ export class PluginConfigManager {
       const parsed = JSON.parse(jsonConfig);
       this.config = this.validateAndNormalize(parsed);
       this.logger.info("Configuration loaded from JSON");
-    } catch (_error) {
+    } catch (error) {
       this.logger.error("Failed to load configuration from JSON", {
         error: error instanceof Error ? error.message : String(error),
       });

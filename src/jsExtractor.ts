@@ -249,7 +249,7 @@ export class JsExtractor {
         framework,
         metadata,
       };
-    } catch (_error) {
+    } catch (error) {
       metadata.errors.push(
         error instanceof Error ? error.message : String(error),
       );
@@ -288,7 +288,7 @@ export class JsExtractor {
       result.metadata.fileSize = stats.size;
 
       return result;
-    } catch (_error) {
+    } catch (error) {
       if (error instanceof JsParsingError || error instanceof JsFileReadError) {
         throw error;
       }
@@ -313,7 +313,7 @@ export class JsExtractor {
       try {
         const result = await this.extractFromFile(filePath);
         results.push(result);
-      } catch (_error) {
+      } catch (error) {
         // Create error result for failed files
         results.push({
           classes: new Map(),

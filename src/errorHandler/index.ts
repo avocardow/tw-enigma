@@ -22,7 +22,7 @@
  * try {
  *   // Some risky operation
  *   await riskyOperation();
- * } catch (_error) {
+ * } catch (error) {
  *   const shouldContinue = await handleError(error);
  *   if (!shouldContinue) {
  *     process.exit(1);
@@ -188,7 +188,7 @@ export async function shutdownErrorHandling(): Promise<void> {
     circuitRegistry.destroyAll();
 
     console.log("Error handling system shutdown complete");
-  } catch (_error) {
+  } catch (error) {
     console.error("Error during error handling shutdown:", error);
   }
 }

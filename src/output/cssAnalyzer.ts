@@ -839,7 +839,7 @@ export class CssAnalyzer {
     try {
       const content = await readFile(sourceMapPath, "utf8");
       return Buffer.byteLength(content, "utf8");
-    } catch {
+    } catch (error) {
       return 0;
     }
   }

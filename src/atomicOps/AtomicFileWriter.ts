@@ -146,7 +146,7 @@ export class AtomicFileWriter {
         try {
           const stats = await fs.stat(filePath);
           originalPermissions = stats.mode & 0o777;
-        } catch {
+        } catch (error) {
           // If we can't read permissions, continue without preservation
         }
       }
@@ -268,7 +268,7 @@ export class AtomicFileWriter {
       try {
         const stats = await fs.stat(filePath);
         result.fileStats = stats; // Use the full Stats object
-      } catch {
+      } catch (error) {
         // File stats are optional, don't fail the operation
       }
 
@@ -276,7 +276,7 @@ export class AtomicFileWriter {
       if (mergedOptions.createBackup && backupPath) {
         try {
           await fs.unlink(backupPath);
-        } catch (_error) {
+        } catch (error) {
           // Backup cleanup failure shouldn't fail the main operation
           console.warn(`Failed to cleanup backup file ${backupPath}:`, error);
         }
@@ -299,7 +299,7 @@ export class AtomicFileWriter {
 
       this.updateMetrics("write", true, result.duration, result.bytesProcessed);
       return result;
-    } catch (_error) {
+    } catch (error) {
       // Handle failure
       result.success = false;
       result.duration = Math.max(Date.now() - startTime, 0.1);
@@ -347,7 +347,7 @@ export class AtomicFileWriter {
         ...options,
         encoding: "utf8",
       });
-    } catch (_error) {
+    } catch (error) {
       const startTime = Date.now();
       const result: AtomicOperationResult = {
         success: false,
@@ -431,7 +431,7 @@ export class AtomicFileWriter {
           await this.rollbackFiles(successfulFiles);
           break;
         }
-      } catch (_error) {
+      } catch (error) {
         const startTime = Date.now();
         const failedResult: AtomicOperationResult = {
           success: false,
@@ -476,7 +476,7 @@ export class AtomicFileWriter {
     for (const filePath of filePaths) {
       try {
         await fs.unlink(filePath);
-      } catch (_error) {
+      } catch (error) {
         // Log but don't throw - rollback should be best effort
         console.warn(`Failed to rollback file ${filePath}:`, error);
       }
@@ -536,7 +536,7 @@ export class AtomicFileWriter {
     try {
       await fs.access(filePath);
       return true;
-    } catch {
+    } catch (error) {
       return false;
     }
   }
@@ -588,7 +588,7 @@ export class AtomicFileWriter {
       for (const backup of backupFiles) {
         try {
           backup.stat = await fs.stat(backup.path);
-        } catch {
+        } catch (error) {
           // Skip files that can't be accessed
         }
       }
@@ -605,7 +605,7 @@ export class AtomicFileWriter {
           toDelete.map((backup) => fs.unlink(backup.path)),
         );
       }
-    } catch (_error) {
+    } catch (error) {
       // Backup cleanup failure shouldn't fail the main operation
       console.warn("Failed to cleanup old backups:", error);
     }
@@ -716,11 +716,11 @@ export class AtomicFileWriter {
           await fd.close();
         }
       }
-    } catch (_error) {
+    } catch (error) {
       // Clean up on error
       try {
         await fs.unlink(tempPath);
-      } catch {
+      } catch (error) {
         // Ignore cleanup errors
       }
       throw error;
@@ -757,7 +757,7 @@ export class AtomicFileWriter {
       const checksum = hash.digest("hex");
 
       return { success: true, checksum };
-    } catch (_error) {
+    } catch (error) {
       return {
         success: false,
         error: error instanceof Error ? error.message : "Verification failed",
@@ -789,7 +789,7 @@ export class AtomicFileWriter {
   ): Promise<void> {
     try {
       await fs.chmod(filePath, mode);
-    } catch (_error) {
+    } catch (error) {
       // Permission setting is not critical
       console.warn(`Failed to set permissions on ${filePath}:`, error);
     }
@@ -818,7 +818,7 @@ export class AtomicFileWriter {
             await fs.unlink(rollbackOp.filePath).catch(() => {});
             break;
         }
-      } catch (_error) {
+      } catch (error) {
         console.error(`Rollback step ${step.stepNumber} failed:`, error);
       }
     }

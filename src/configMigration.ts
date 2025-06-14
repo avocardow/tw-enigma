@@ -331,7 +331,7 @@ export class ConfigMigration {
       
       try {
         config = JSON.parse(configContent);
-      } catch (_error) {
+      } catch (error) {
         result.errors.push(`Invalid JSON in configuration file: ${error}`);
         return result;
       }
@@ -382,7 +382,7 @@ export class ConfigMigration {
             return result;
           }
           
-        } catch (_error) {
+        } catch (error) {
           result.errors.push(`Migration failed: ${migration.fromVersion} -> ${migration.toVersion}: ${error}`);
           return result;
         }
@@ -400,7 +400,7 @@ export class ConfigMigration {
       // Validate final configuration
       try {
         EnigmaConfigSchema.parse(migratedConfig);
-      } catch (_error) {
+      } catch (error) {
         result.errors.push(`Final configuration validation failed: ${error}`);
         return result;
       }
@@ -416,7 +416,7 @@ export class ConfigMigration {
       
       result.success = true;
       
-    } catch (_error) {
+    } catch (error) {
       result.errors.push(`Migration failed: ${error}`);
       logger.error('Configuration migration failed', { error: error instanceof Error ? error.message : String(error) });
     }
@@ -471,7 +471,7 @@ export class ConfigMigration {
       logger.info(`Configuration restored from backup: ${backupPath}`);
       return true;
       
-    } catch (_error) {
+    } catch (error) {
       logger.error('Failed to restore configuration from backup', { error: error instanceof Error ? error.message : String(error) });
       return false;
     }
@@ -514,7 +514,7 @@ export class ConfigMigration {
             createdAt: data._backup?.createdAt || stats.ctime.toISOString(),
             size: stats.size
           });
-        } catch (_error) {
+        } catch (error) {
           logger.warn(`Failed to read backup file ${file}`, { error: error instanceof Error ? error.message : String(error) });
         }
       }
@@ -643,7 +643,7 @@ export function needsConfigMigration(configPath: string): boolean {
     const config = JSON.parse(configContent);
     const migration = new ConfigMigration(configPath);
     return migration.needsMigration(config);
-  } catch {
+  } catch (error) {
     return false;
   }
 }

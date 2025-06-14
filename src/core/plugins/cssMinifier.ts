@@ -89,7 +89,7 @@ export class CssMinifier extends BaseEnigmaPlugin {
         context.metrics.recordMemory(Math.max(0, endMemory - startMemory));
 
         this.logger.debug("CSS minification completed");
-      } catch (_error) {
+      } catch (error) {
         this.addWarning(
           context,
           `CSS minification failed: ${error instanceof Error ? error.message : String(error)}`,

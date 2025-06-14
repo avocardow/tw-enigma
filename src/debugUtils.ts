@@ -260,7 +260,7 @@ export class DebugUtils {
             examples.push({ file, line, context, usage });
           }
         });
-      } catch (_error) {
+      } catch (error) {
         this.logger.error("Failed to analyze file", {
           file,
           error: error instanceof Error ? error.message : String(error),
@@ -851,7 +851,7 @@ export class DebugUtils {
         filepath,
         size: content.length,
       });
-    } catch (_error) {
+    } catch (error) {
       this.logger.error("Failed to save debug session", {
         sessionId: session.id,
         error: error instanceof Error ? error.message : String(error),

@@ -323,7 +323,7 @@ export class DevDashboardEnhanced extends EventEmitter {
 
       this.logger.info("Enhanced dashboard features started");
 
-    } catch (_error) {
+    } catch (error) {
       this.logger.error("Failed to start enhanced dashboard features", { error });
       throw error;
     }
@@ -1029,7 +1029,7 @@ export class DevDashboardEnhanced extends EventEmitter {
     if (options && options.filename) {
       try {
         await writeFile(options.filename, content);
-      } catch {
+      } catch (error) {
         throw new Error('Disk full');
       }
     }

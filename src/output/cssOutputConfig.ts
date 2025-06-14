@@ -632,7 +632,7 @@ export class CssOutputConfigManager {
 
       // Return default configuration if no file found
       return this.config;
-    } catch (_error) {
+    } catch (error) {
       throw new Error(
         `Failed to load CSS output configuration: ${error instanceof Error ? error.message : "Unknown error"}`,
       );
@@ -652,7 +652,7 @@ export class CssOutputConfigManager {
       }
 
       throw new Error(`No configuration found in ${filePath}`);
-    } catch (_error) {
+    } catch (error) {
       throw new Error(
         `Failed to load CSS output configuration from ${filePath}: ${error instanceof Error ? error.message : "Unknown error"}`,
       );
@@ -728,7 +728,7 @@ export class CssOutputConfigManager {
       const defaultConfig = this.validateAndMergeConfig({ strategy: "single" });
       this.configCache = { config: defaultConfig };
       return this.configCache;
-    } catch (_error) {
+    } catch (error) {
       // Re-throw validation errors as-is so tests can catch them
       if (error instanceof Error && error.message.includes('Invalid CSS output configuration')) {
         throw error;
@@ -756,7 +756,7 @@ export class CssOutputConfigManager {
       }
 
       throw new Error("Configuration file not found");
-    } catch (_error) {
+    } catch (error) {
       if (error instanceof Error && error.message === "Configuration file not found") {
         throw error;
       }
@@ -843,7 +843,7 @@ export class CssOutputConfigManager {
       }
 
       return { valid: errors.length === 0, errors };
-    } catch (_error) {
+    } catch (error) {
       errors.push(
         `Configuration validation error: ${error instanceof Error ? error.message : "Unknown error"}`,
       );
@@ -887,7 +887,7 @@ export class CssOutputConfigManager {
       }
 
       return validatedConfig;
-    } catch (_error) {
+    } catch (error) {
       if (error instanceof z.ZodError) {
         const issues = error.issues
           .map((issue) => `${issue.path.join(".")}: ${issue.message}`)
@@ -1063,7 +1063,7 @@ export class CssOutputConfigManager {
     try {
       const result = validateCssOutputConfig(mergedConfig);
       return result;
-    } catch (_error) {
+    } catch (error) {
       // Fallback to basic structure if validation fails
       return mergedConfig as CssOutputConfig;
     }
@@ -1132,7 +1132,7 @@ export function validateCssOutputConfig(config: unknown): CssOutputConfig {
     
     // Apply normalization after validation to ensure aliases are set
     return normalizeConfig(validated) as CssOutputConfig;
-  } catch (_error) {
+  } catch (error) {
     if (error instanceof z.ZodError) {
       const issues = error.issues
         .map((issue) => `${issue.path.join(".")}: ${issue.message}`)
@@ -1155,7 +1155,7 @@ export function createProductionConfig(
   // Don't validate strictly - let validateProductionConfig handle validation
   try {
     return manager.applyPreset("production", overrides);
-  } catch (_error) {
+  } catch (error) {
     // If validation fails, create a basic config with the overrides applied
     // This allows invalid configs to be created for testing validation
     const baseConfig = {

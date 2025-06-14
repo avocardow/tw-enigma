@@ -264,7 +264,7 @@ export function discoverFilesSync(
         } else {
           emptyPatterns.push(pattern);
         }
-      } catch (_error) {
+      } catch (error) {
         throw new FileDiscoveryError(
           `Failed to process pattern "${pattern}": ${error instanceof Error ? error.message : String(error)}`,
           "PATTERN_ERROR",
@@ -304,7 +304,7 @@ export function discoverFilesSync(
       emptyPatterns,
       duration,
     };
-  } catch (_error) {
+  } catch (error) {
     if (error instanceof FileDiscoveryError) {
       throw error;
     }
@@ -355,7 +355,7 @@ export async function discoverFiles(
         } else {
           emptyPatterns.push(pattern);
         }
-      } catch (_error) {
+      } catch (error) {
         throw new FileDiscoveryError(
           `Failed to process pattern "${pattern}": ${error instanceof Error ? error.message : String(error)}`,
           "PATTERN_ERROR",
@@ -395,7 +395,7 @@ export async function discoverFiles(
       emptyPatterns,
       duration,
     };
-  } catch (_error) {
+  } catch (error) {
     if (error instanceof FileDiscoveryError) {
       throw error;
     }

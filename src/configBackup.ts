@@ -151,7 +151,7 @@ export class ConfigBackup extends EventEmitter {
         }
         
         logger.debug(`Loaded ${this.backups.size} backup entries from metadata`);
-      } catch (_error) {
+      } catch (error) {
         logger.warn('Failed to load backup metadata', { error: error instanceof Error ? error.message : String(error) });
       }
     }
@@ -174,7 +174,7 @@ export class ConfigBackup extends EventEmitter {
       
       writeFileSync(this.metadataFile, JSON.stringify(metadata, null, 2), 'utf-8');
       logger.debug('Backup metadata saved');
-    } catch (_error) {
+    } catch (error) {
       logger.error('Failed to save backup metadata', { error: error instanceof Error ? error.message : String(error) });
     }
   }
@@ -258,7 +258,7 @@ export class ConfigBackup extends EventEmitter {
       
       return metadata;
       
-    } catch (_error) {
+    } catch (error) {
       this.emit('backup:error', error);
       logger.error('Failed to create backup', { error: error instanceof Error ? error.message : String(error) });
       throw error;
@@ -303,7 +303,7 @@ export class ConfigBackup extends EventEmitter {
             tags: ['pre-restore', 'emergency']
           });
           result.backupCreated = preRestoreBackup.backupPath;
-        } catch (_error) {
+        } catch (error) {
           result.warnings.push(`Failed to create pre-restore backup: ${error}`);
         }
       }
@@ -320,7 +320,7 @@ export class ConfigBackup extends EventEmitter {
           const { _backup, ...originalConfig } = backupData;
           restoredContent = JSON.stringify(originalConfig, null, 2);
         }
-      } catch {
+      } catch (error) {
         // If not valid JSON, use content as-is
         result.warnings.push('Backup content is not valid JSON, restoring as-is');
       }
@@ -338,7 +338,7 @@ export class ConfigBackup extends EventEmitter {
       this.emit('restore:complete', result);
       logger.info(`Configuration restored from backup: ${backupId}`);
       
-    } catch (_error) {
+    } catch (error) {
       result.errors.push(`Restore failed: ${error}`);
       this.emit('restore:error', error);
       logger.error('Failed to restore from backup', { error: error instanceof Error ? error.message : String(error) });
@@ -393,18 +393,18 @@ export class ConfigBackup extends EventEmitter {
         try {
           JSON.parse(content);
           verification.isValidJson = true;
-        } catch {
+        } catch (error) {
           verification.warnings.push('Backup content is not valid JSON');
         }
         
-      } catch (_error) {
+      } catch (error) {
         verification.errors.push(`Failed to read backup file: ${error}`);
       }
       
       // Final validity assignment: after all checks
       verification.isValid = verification.fileExists && verification.isReadable && verification.checksumMatch;
       
-    } catch (_error) {
+    } catch (error) {
       verification.errors.push(`Verification failed: ${error}`);
     }
     
@@ -479,7 +479,7 @@ export class ConfigBackup extends EventEmitter {
       
       return true;
       
-    } catch (_error) {
+    } catch (error) {
               logger.error(`Failed to delete backup ${backupId}`, { error: error instanceof Error ? error.message : String(error) });
       return false;
     }
@@ -541,7 +541,7 @@ export class ConfigBackup extends EventEmitter {
         logger.info(`Retention policy applied: deleted ${result.deleted.length} backups`);
       }
       
-    } catch (_error) {
+    } catch (error) {
       result.errors.push(`Retention policy failed: ${error}`);
       logger.error('Failed to apply retention policy', { error: error instanceof Error ? error.message : String(error) });
     }
@@ -597,7 +597,7 @@ export class ConfigBackup extends EventEmitter {
     try {
       const config = JSON.parse(content);
       return config._version?.version || 'unknown';
-    } catch {
+    } catch (error) {
       return 'unknown';
     }
   }

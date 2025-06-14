@@ -181,7 +181,7 @@ export class ConfigWatcher extends EventEmitter {
 
       logger.info("Configuration file watcher started successfully");
       this.emit("watcher-ready");
-    } catch (_error) {
+    } catch (error) {
       logger.error("Failed to start configuration file watcher", { error });
       this.emit("watcher-error", error as Error);
       throw new ConfigError(
@@ -275,7 +275,7 @@ export class ConfigWatcher extends EventEmitter {
 
       this.emit("config-validated", validation);
       return validation;
-    } catch (_error) {
+    } catch (error) {
       logger.error("Manual configuration validation failed", { filepath, error });
       
       const configError = new ConfigError(
@@ -363,7 +363,7 @@ export class ConfigWatcher extends EventEmitter {
       try {
         const stats = statSync(resolvedPath);
         tracker.lastSize = stats.size;
-      } catch (_error) {
+      } catch (error) {
         logger.warn("Failed to get file stats", { filepath: resolvedPath, error });
       }
     }
@@ -433,7 +433,7 @@ export class ConfigWatcher extends EventEmitter {
       }
 
       this.emit("config-changed", result);
-    } catch (_error) {
+    } catch (error) {
       logger.error("Failed to process configuration file change", { filepath, error });
       
       const configError = new ConfigError(
@@ -472,7 +472,7 @@ export class ConfigWatcher extends EventEmitter {
         // Try to parse as JSON by default
         return JSON.parse(content);
       }
-    } catch (_error) {
+    } catch (error) {
       throw new ConfigError(
         `Failed to parse configuration file ${filepath}: ${error instanceof Error ? error.message : String(error)}`,
         filepath,
@@ -509,7 +509,7 @@ export class ConfigWatcher extends EventEmitter {
       
       // Add to history as backup
       this.addToHistory(config, filepath);
-    } catch (_error) {
+    } catch (error) {
       logger.warn("Failed to backup configuration", { filepath, error });
     }
   }

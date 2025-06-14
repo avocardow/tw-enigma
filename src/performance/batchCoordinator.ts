@@ -323,7 +323,7 @@ export class BatchCoordinator extends EventEmitter {
       });
 
       return results;
-    } catch (_error) {
+    } catch (error) {
       logger.error("Batch execution failed", {
         error: error instanceof Error ? error.message : String(error),
         processedJobs: results.length,
@@ -442,7 +442,7 @@ export class BatchCoordinator extends EventEmitter {
           this.processJob(job);
         }
       }
-    } catch (_error) {
+    } catch (error) {
       logger.error("Processing loop error", {
         error: error instanceof Error ? error.message : String(error),
       });
@@ -486,7 +486,7 @@ export class BatchCoordinator extends EventEmitter {
     try {
       const result = await processingPromise;
       this.handleJobResult(job, result);
-    } catch (_error) {
+    } catch (error) {
       this.handleJobResult(job, {
         success: false,
         error: error instanceof Error ? error : new Error(String(error)),
@@ -535,7 +535,7 @@ export class BatchCoordinator extends EventEmitter {
           retryCount: job.retryCount || 0,
           metadata: job.metadata,
         });
-      } catch (_error) {
+      } catch (error) {
         clearTimeout(timeout);
         const duration = (performance.now() - startTime) / 1000;
 

@@ -267,7 +267,7 @@ export class DevIdeIntegration extends EventEmitter {
       if (this.config.supportedIdes.vscode) {
         try {
           await this.setupVSCode();
-        } catch (_error) {
+        } catch (error) {
           this.logger.error('setupVSCode failed', { error });
           this.emit('error', error instanceof Error ? error : new Error(String(error)));
         }
@@ -275,7 +275,7 @@ export class DevIdeIntegration extends EventEmitter {
       if (this.config.supportedIdes.webstorm) {
         try {
           await this.setupWebStorm();
-        } catch (_error) {
+        } catch (error) {
           this.logger.error('setupWebStorm failed', { error });
           this.emit('error', error instanceof Error ? error : new Error(String(error)));
         }
@@ -283,7 +283,7 @@ export class DevIdeIntegration extends EventEmitter {
       if (this.config.supportedIdes.vim) {
         try {
           await this.setupVim();
-        } catch (_error) {
+        } catch (error) {
           this.logger.error('setupVim failed', { error });
           this.emit('error', error instanceof Error ? error : new Error(String(error)));
         }
@@ -293,7 +293,7 @@ export class DevIdeIntegration extends EventEmitter {
         await this.startLanguageServer();
       }
       // ... existing code for other IDEs ...
-    } catch (_error) {
+    } catch (error) {
       this.logger.error('Failed to start IDE integration', { error });
       this.emit('error', error instanceof Error ? error : new Error(String(error)));
       // Do not throw
@@ -324,7 +324,7 @@ export class DevIdeIntegration extends EventEmitter {
 
       this.logger.info("IDE integration stopped");
 
-    } catch (_error) {
+    } catch (error) {
       this.logger.error("Error stopping IDE integration", { error });
       throw error;
     }
@@ -377,7 +377,7 @@ export class DevIdeIntegration extends EventEmitter {
       
       this.emit('diagnostics-updated', uri, diagnostics);
       
-    } catch (_error) {
+    } catch (error) {
       this.logger.debug("Error validating file", { uri, error });
     }
     
@@ -533,7 +533,7 @@ export class DevIdeIntegration extends EventEmitter {
       };
 
       this.logger.info(`Language server started on ${this.config.languageServer.host}:${this.config.languageServer.port}`);
-    } catch (_error) {
+    } catch (error) {
       this.logger.error('Failed to start language server', error);
       throw error;
     }
@@ -823,33 +823,33 @@ export class DevIdeIntegration extends EventEmitter {
       // Write files individually, catching errors
       try {
         await this.writeJsonFile(this.ideConfigs.vscode.settingsPath, settings);
-      } catch (_error) {
+      } catch (error) {
         this.logger.error('writeJsonFile failed', { error });
         this.emit('error', error instanceof Error ? error : new Error(String(error)));
         return Promise.resolve();
       }
       try {
         await this.writeJsonFile(this.ideConfigs.vscode.extensionPath, extensions);
-      } catch (_error) {
+      } catch (error) {
         this.logger.error('writeJsonFile failed', { error });
         this.emit('error', error instanceof Error ? error : new Error(String(error)));
         return Promise.resolve();
       }
       try {
         await this.writeJsonFile(this.ideConfigs.vscode.tasksPath, tasks);
-      } catch (_error) {
+      } catch (error) {
         this.logger.error('writeJsonFile failed', { error });
         this.emit('error', error instanceof Error ? error : new Error(String(error)));
         return Promise.resolve();
       }
       try {
         await this.writeJsonFile(this.ideConfigs.vscode.launchPath, launch);
-      } catch (_error) {
+      } catch (error) {
         this.logger.error('writeJsonFile failed', { error });
         this.emit('error', error instanceof Error ? error : new Error(String(error)));
         return Promise.resolve();
       }
-    } catch (_error) {
+    } catch (error) {
       this.logger.error('generateVSCodeConfig failed', { error });
       this.emit('error', error instanceof Error ? error : new Error(String(error)));
       return Promise.resolve();
@@ -888,7 +888,7 @@ export class DevIdeIntegration extends EventEmitter {
       await mkdir(this.ideConfigs.webstorm.templatesPath, { recursive: true });
       await writeFile(this.ideConfigs.webstorm.configPath, config);
       await writeFile(this.ideConfigs.webstorm.fileTypesPath, fileTypes);
-    } catch (_error) {
+    } catch (error) {
       this.logger.error('generateWebStormConfig failed', { error });
       this.emit('error', error instanceof Error ? error : new Error(String(error)));
       return;
@@ -921,7 +921,7 @@ nnoremap <leader>ew :EnigmaWatch<CR>`;
       await mkdir(dirname(this.ideConfigs.vim.configPath), { recursive: true });
       await mkdir(this.ideConfigs.vim.snippetsPath, { recursive: true });
       await writeFile(this.ideConfigs.vim.configPath, config);
-    } catch (_error) {
+    } catch (error) {
       this.logger.error('generateVimConfig failed', { error });
       this.emit('error', error instanceof Error ? error : new Error(String(error)));
       return;
@@ -1223,7 +1223,7 @@ nnoremap <leader>ew :EnigmaWatch<CR>`;
         });
       }
       
-    } catch {
+    } catch (error) {
       diagnostics.push({
         range: { start: { line: 0, character: 0 }, end: { line: 0, character: 0 } },
         severity: 'error',
@@ -1279,7 +1279,7 @@ nnoremap <leader>ew :EnigmaWatch<CR>`;
     try {
       await mkdir(dirname(filepath), { recursive: true });
       await writeFile(filepath, JSON.stringify(data, null, 2));
-    } catch (_error) {
+    } catch (error) {
       this.logger.debug("Error writing JSON file", { filepath, error });
     }
   }

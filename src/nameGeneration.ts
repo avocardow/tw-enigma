@@ -399,7 +399,7 @@ export function validateNameGenerationOptions(
 ): NameGenerationOptions {
   try {
     return NameGenerationOptionsSchema.parse(options);
-  } catch (_error) {
+  } catch (error) {
     throw new NameGenerationError(
       `Invalid name generation options: ${error instanceof Error ? error.message : String(error)}`,
       error instanceof Error ? error : undefined,
@@ -741,7 +741,7 @@ export function validateBaseConversions(
           `Base-36 conversion failed for ${i}: ${base36} -> ${back36}`,
         );
       }
-    } catch (_error) {
+    } catch (error) {
       errors.push(
         `Error testing conversion for ${i}: ${error instanceof Error ? error.message : String(error)}`,
       );
@@ -2275,7 +2275,7 @@ function generatePrettyMapping(
 
       nameMap.set(classItem.name, prettyResult.name);
       index++;
-    } catch (_error) {
+    } catch (error) {
       // If pretty name generation fails completely, fall back to sequential
       if (
         error instanceof PrettyNameExhaustionError &&

@@ -186,7 +186,7 @@ export class DryRunSimulator {
       const dryRunResult = await this.stop();
 
       return { result, dryRunResult };
-    } catch (_error) {
+    } catch (error) {
       // Ensure simulation is stopped even if error occurs
       if (this.isActive) {
         const dryRunResult = await this.stop();
@@ -426,7 +426,7 @@ export class DryRunSimulator {
         if (this.options.verbose) {
           console.log(`📂 Pre-loaded: ${path}`);
         }
-      } catch (_error) {
+      } catch (error) {
         if (this.options.verbose) {
           console.warn(`⚠️  Could not pre-load: ${path}`);
         }

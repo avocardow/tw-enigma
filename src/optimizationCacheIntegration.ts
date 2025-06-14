@@ -198,7 +198,7 @@ export class OptimizationCacheIntegration extends EventEmitter {
         return null;
       }
 
-    } catch (_error) {
+    } catch (error) {
       this.handleCircuitBreakerFailure();
       this.recordFailedGet(startTime);
       this.emit('cache-error', { operationId, error, operation: 'get' });
@@ -270,7 +270,7 @@ export class OptimizationCacheIntegration extends EventEmitter {
         return false;
       }
 
-    } catch (_error) {
+    } catch (error) {
       this.handleCircuitBreakerFailure();
       this.recordFailedSet(startTime);
       this.emit('cache-error', { operationId, error, operation: 'set' });
@@ -311,7 +311,7 @@ export class OptimizationCacheIntegration extends EventEmitter {
       this.emit('cache-invalidated', { reason, files, config, count: invalidatedCount });
       return invalidatedCount;
 
-    } catch (_error) {
+    } catch (error) {
       this.handleCircuitBreakerFailure();
       this.emit('cache-error', { error, operation: 'invalidate' });
       return 0;
@@ -369,7 +369,7 @@ export class OptimizationCacheIntegration extends EventEmitter {
       // Layer 3: Return null to trigger fallback to original optimization
       return null;
 
-    } catch (_error) {
+    } catch (error) {
       // Log error and re-throw to trigger circuit breaker
       this.emit('cache-retrieval-error', { context, error });
       throw error;
@@ -387,7 +387,7 @@ export class OptimizationCacheIntegration extends EventEmitter {
     
     try {
       return await this.cache.set(inputFiles, config, result, framework);
-    } catch (_error) {
+    } catch (error) {
       this.emit('cache-storage-error', { context, error });
       throw error;
     }

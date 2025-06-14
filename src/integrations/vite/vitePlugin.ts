@@ -394,7 +394,7 @@ export class EnigmaVitePlugin implements BuildToolPlugin {
                 optimizedSize: optimized.optimizedSize,
               });
             }
-          } catch (_error) {
+          } catch (error) {
             logger.error("Error processing CSS HMR update", { file, error });
           }
         }
@@ -481,7 +481,7 @@ export class EnigmaVitePlugin implements BuildToolPlugin {
               reduction: optimized.reductionPercentage,
             });
           }
-        } catch (_error) {
+        } catch (error) {
           logger.error(`Failed to optimize CSS bundle asset: ${fileName}`, {
             error,
           });
@@ -655,7 +655,7 @@ if (import.meta.hot) {
       });
 
       return result;
-    } catch (_error) {
+    } catch (error) {
       logger.error("Vite build processing failed", { error });
 
       return {

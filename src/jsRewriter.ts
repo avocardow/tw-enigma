@@ -477,7 +477,7 @@ export class JSRewriter {
 
       this.updateStatistics(result, Date.now() - startTime);
       return result;
-    } catch (_error) {
+    } catch (error) {
       const errorResult: JSReplacementResult = {
         modified: false,
         code: content,
@@ -670,7 +670,7 @@ export class JSRewriter {
         errors,
         performance: performanceMetrics,
       };
-    } catch (_error) {
+    } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Unknown error";
 
@@ -748,7 +748,7 @@ export class JSRewriter {
       }
 
       return ast;
-    } catch (_error) {
+    } catch (error) {
       throw new Error(
         `Failed to parse ${filePath}: ${error instanceof Error ? error.message : "Unknown error"}`,
       );
@@ -812,7 +812,7 @@ export class JSRewriter {
             fileType,
             transformationErrors,
           );
-        } catch (_error) {
+        } catch (error) {
           if (this.config.errorHandling.continueOnError) {
             const errorMessage =
               error instanceof Error
@@ -838,7 +838,7 @@ export class JSRewriter {
             filePath,
             fileType,
           );
-        } catch (_error) {
+        } catch (error) {
           if (this.config.errorHandling.continueOnError) {
             const errorMessage =
               error instanceof Error
@@ -864,7 +864,7 @@ export class JSRewriter {
             filePath,
             fileType,
           );
-        } catch (_error) {
+        } catch (error) {
           if (this.config.errorHandling.continueOnError) {
             const errorMessage =
               error instanceof Error
@@ -891,7 +891,7 @@ export class JSRewriter {
             fileType,
             transformationErrors,
           );
-        } catch (_error) {
+        } catch (error) {
           if (this.config.errorHandling.continueOnError) {
             const errorMessage =
               error instanceof Error
@@ -936,7 +936,7 @@ export class JSRewriter {
     // Phase 4: Apply resolved matches to AST
     try {
       this.applyMatchesToAST(resolvedMatches);
-    } catch (_error) {
+    } catch (error) {
       if (this.config.errorHandling.continueOnError) {
         const errorMessage =
           error instanceof Error ? error.message : "AST application error";
@@ -2010,7 +2010,7 @@ export class JSRewriter {
         if (typeof rule.replacement === "function") {
           try {
             replacement = rule.replacement(matchedText, _context);
-          } catch (_error) {
+          } catch (error) {
             // Collect error for reporting
             if (errors) {
               const errorMessage =
@@ -2047,7 +2047,7 @@ export class JSRewriter {
           globalPattern.lastIndex++;
         }
       }
-    } catch (_error) {
+    } catch (error) {
       // Collect error for reporting
       if (errors) {
         const errorMessage =

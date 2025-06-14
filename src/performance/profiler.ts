@@ -316,7 +316,7 @@ export class PerformanceProfiler extends EventEmitter {
 
         return perfMeasurement;
       }
-    } catch (_error) {
+    } catch (error) {
       logger.warn("Failed to create performance measurement", {
         name,
         error: error instanceof Error ? error.message : String(error),
@@ -340,7 +340,7 @@ export class PerformanceProfiler extends EventEmitter {
       const result = await fn();
       const measurement = this.markEnd(name, detail);
       return { result, measurement };
-    } catch (_error) {
+    } catch (error) {
       this.markEnd(name, {
         ...(detail && typeof detail === "object" ? detail : {}),
         error: true,
@@ -947,7 +947,7 @@ export class PerformanceProfiler extends EventEmitter {
     try {
       writeFileSync(reportPath, JSON.stringify(analysis, null, 2));
       logger.info("Analysis report saved", { reportPath });
-    } catch (_error) {
+    } catch (error) {
       logger.error("Failed to save analysis report", {
         reportPath,
         error: error instanceof Error ? error.message : String(error),

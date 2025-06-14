@@ -339,7 +339,7 @@ export function aggregateExtractionResults(
     }
 
     return aggregatedData;
-  } catch (_error) {
+  } catch (error) {
     throw new DataAggregationError(
       `Failed to aggregate extraction results: ${error instanceof Error ? error.message : "Unknown error"}`,
       undefined,
@@ -408,7 +408,7 @@ function processHtmlResult(
         aggregatedData.set(processedClassName, newData);
       }
     }
-  } catch (_error) {
+  } catch (error) {
     throw new DataAggregationError(
       `Failed to process HTML result from ${htmlResult.metadata?.source || "unknown"}: ${error instanceof Error ? error.message : "Unknown error"}`,
       "html",
@@ -499,7 +499,7 @@ function processJsxResult(
         aggregatedData.set(processedClassName, newData);
       }
     }
-  } catch (_error) {
+  } catch (error) {
     throw new DataAggregationError(
       `Failed to process JSX result from ${jsxResult.metadata?.source || "unknown"}: ${error instanceof Error ? error.message : "Unknown error"}`,
       "jsx",
@@ -567,7 +567,7 @@ export function generateFrequencyMap(
     }
 
     return aggregatedData;
-  } catch (_error) {
+  } catch (error) {
     throw new FrequencyCalculationError(
       `Failed to generate frequency map: ${error instanceof Error ? error.message : "Unknown error"}`,
       undefined,
@@ -638,7 +638,7 @@ export function generatePatternGroups(
 
     // Sort pattern groups by total frequency
     return patternGroups.sort((a, b) => b.totalFrequency - a.totalFrequency);
-  } catch (_error) {
+  } catch (error) {
     throw new PatternAnalysisError(
       `Failed to generate pattern groups: ${error instanceof Error ? error.message : "Unknown error"}`,
       error instanceof Error ? error : undefined,
@@ -693,7 +693,7 @@ function generateCoOccurrencePatterns(
       // Update the class data with co-occurrence information
       classData.coOccurrences = coOccurrences;
     }
-  } catch (_error) {
+  } catch (error) {
     throw new PatternAnalysisError(
       `Failed to generate co-occurrence patterns: ${error instanceof Error ? error.message : "Unknown error"}`,
       error instanceof Error ? error : undefined,
@@ -832,7 +832,7 @@ export function calculateFrequencyStatistics(
       classesAboveThreshold,
       classesBelowThreshold,
     };
-  } catch (_error) {
+  } catch (error) {
     throw new FrequencyCalculationError(
       `Failed to calculate frequency statistics: ${error instanceof Error ? error.message : "Unknown error"}`,
       undefined,
@@ -937,7 +937,7 @@ export function generateCoOccurrenceAnalysis(
 
     // Sort by strength descending
     return coOccurrencePatterns.sort((a, b) => b.strength - a.strength);
-  } catch (_error) {
+  } catch (error) {
     throw new PatternAnalysisError(
       `Failed to generate co-occurrence analysis: ${error instanceof Error ? error.message : "Unknown error"}`,
       error instanceof Error ? error : undefined,
@@ -1038,7 +1038,7 @@ export function generateFrameworkAnalysis(
 
     // Sort by total classes descending
     return analyses.sort((a, b) => b.totalClasses - a.totalClasses);
-  } catch (_error) {
+  } catch (error) {
     throw new PatternAnalysisError(
       `Failed to generate framework analysis: ${error instanceof Error ? error.message : "Unknown error"}`,
       error instanceof Error ? error : undefined,
@@ -1312,7 +1312,7 @@ export async function analyzePatterns(
     };
 
     return result;
-  } catch (_error) {
+  } catch (error) {
     throw new PatternAnalysisError(
       `Pattern analysis failed: ${error instanceof Error ? error.message : "Unknown error"}`,
       error instanceof Error ? error : undefined,
@@ -1339,12 +1339,12 @@ async function addValidationToFrequencyMap(
       try {
         const validationResult = validator.validateClass(className);
         data.validation = validationResult;
-      } catch (_error) {
+      } catch (error) {
         // If validation fails for a specific class, log but continue
         console.warn(`Failed to validate class "${className}":`, error);
       }
     }
-  } catch (_error) {
+  } catch (error) {
     console.warn("Failed to initialize simple pattern validator:", error);
   }
 }

@@ -67,7 +67,7 @@ export class SourceMapper extends BaseEnigmaPlugin {
         context.metrics.recordMemory(Math.max(0, endMemory - startMemory));
 
         this.logger.debug("Source map processing completed");
-      } catch (_error) {
+      } catch (error) {
         this.addWarning(
           context,
           `Source map processing failed: ${error instanceof Error ? error.message : String(error)}`,

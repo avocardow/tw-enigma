@@ -230,7 +230,7 @@ export class CssInjector {
         useRelativePaths: this.options.useRelativePaths,
         preventDuplicates: this.options.preventDuplicates,
       });
-    } catch (_error) {
+    } catch (error) {
       this.logger.error("Invalid CSS injection options", {
         error: error instanceof Error ? error.message : String(error),
         providedOptions: options,
@@ -360,7 +360,7 @@ export class CssInjector {
         documentStructure,
         metadata,
       };
-    } catch (_error) {
+    } catch (error) {
       metadata.errors.push(
         error instanceof Error ? error.message : String(error),
       );
@@ -623,7 +623,7 @@ export class CssInjector {
         }
 
         return normalizedPath;
-      } catch (_error) {
+      } catch (error) {
         this.logger.warn("Failed to process absolute CSS path, using as-is", {
           cssPath: this.options.cssPath,
           error: error instanceof Error ? error.message : String(error),
@@ -656,7 +656,7 @@ export class CssInjector {
       }
 
       return result.relativePath;
-    } catch (_error) {
+    } catch (error) {
       this.logger.error("Failed to calculate relative path using PathUtils", {
         cssPath: this.options.cssPath,
         htmlPath: this.options.htmlPath,
@@ -802,7 +802,7 @@ export class CssInjector {
     try {
       // Use PathUtils for consistent normalization
       return this.pathUtils.normalizePath(inputPath);
-    } catch (_error) {
+    } catch (error) {
       this.logger.warn("PathUtils normalization failed, using fallback", {
         inputPath,
         error: error instanceof Error ? error.message : String(error),

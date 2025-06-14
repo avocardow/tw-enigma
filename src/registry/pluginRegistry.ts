@@ -137,7 +137,7 @@ export class PluginRegistry extends EventEmitter {
       });
 
       this.emit("plugin:registered", { name: pluginName, version, entry });
-    } catch (_error) {
+    } catch (error) {
       this.logger.error("Failed to register plugin", {
         name: pluginName,
         version,
@@ -351,7 +351,7 @@ export class PluginRegistry extends EventEmitter {
         name,
         version: targetVersion,
       });
-    } catch (_error) {
+    } catch (error) {
       this.logger.error("Failed to reload plugin", {
         name,
         version: targetVersion,
@@ -482,7 +482,7 @@ export class PluginRegistry extends EventEmitter {
         );
 
         this.watchers.set(watchPath, watcher);
-      } catch (_error) {
+      } catch (error) {
         this.logger.warn("Failed to setup watcher for path", {
           watchPath,
           error,
@@ -568,7 +568,7 @@ export class PluginRegistry extends EventEmitter {
       const content = await fs.readFile(filePath, "utf-8");
       const crypto = await import("crypto");
       return crypto.createHash("sha256").update(content).digest("hex");
-    } catch (_error) {
+    } catch (error) {
       this.logger.warn("Failed to calculate checksum", { filePath, error });
       return "";
     }
@@ -625,7 +625,7 @@ export class PluginRegistry extends EventEmitter {
       if (entry.plugin.cleanup) {
         await entry.plugin.cleanup();
       }
-    } catch (_error) {
+    } catch (error) {
       this.logger.warn("Plugin cleanup failed", {
         name: entry.plugin.meta.name,
         version: entry.version,

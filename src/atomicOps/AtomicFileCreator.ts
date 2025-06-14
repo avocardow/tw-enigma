@@ -253,7 +253,7 @@ export class AtomicFileCreator {
         Date.now() - startTime,
         contentBuffer.length,
       );
-    } catch (_error) {
+    } catch (error) {
       // Handle operation failure and rollback
       result.error = {
         code: this.getErrorCode(error),
@@ -308,7 +308,7 @@ export class AtomicFileCreator {
         ...options,
         encoding: "utf8",
       });
-    } catch (_error) {
+    } catch (error) {
       // Handle JSON serialization errors
       const result: AtomicOperationResult = {
         success: false,
@@ -369,7 +369,7 @@ export class AtomicFileCreator {
           await this.rollbackMultipleFiles(successfulFiles);
           break; // Stop processing after adding the failed result
         }
-      } catch (_error) {
+      } catch (error) {
         // Convert thrown errors to failed results
         const failedResult: AtomicOperationResult = {
           success: false,
@@ -506,7 +506,7 @@ export class AtomicFileCreator {
     try {
       await fs.access(filePath, constants.F_OK);
       return true;
-    } catch {
+    } catch (error) {
       return false;
     }
   }
@@ -664,7 +664,7 @@ export class AtomicFileCreator {
       if (step.rollbackAction) {
         try {
           await step.rollbackAction();
-        } catch (_error) {
+        } catch (error) {
           console.error(`Rollback step ${step.stepNumber} failed:`, error);
         }
       }

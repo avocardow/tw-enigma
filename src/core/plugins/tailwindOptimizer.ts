@@ -73,7 +73,7 @@ export class TailwindOptimizer extends BaseEnigmaPlugin {
         context.metrics.recordMemory(Math.max(0, endMemory - startMemory));
 
         this.logger.debug("Tailwind optimization completed");
-      } catch (_error) {
+      } catch (error) {
         this.addWarning(
           context,
           `Tailwind optimization failed: ${error instanceof Error ? error.message : String(error)}`,
@@ -215,7 +215,7 @@ export class TailwindOptimizer extends BaseEnigmaPlugin {
 
           root.append(utilityRule);
           // Transformation recorded
-        } catch {
+        } catch (error) {
           this.addWarning(
             context,
             `Failed to generate utility for pattern: ${pattern.classes.join(" ")}`,

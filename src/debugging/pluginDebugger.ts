@@ -151,7 +151,7 @@ export class PluginDebugger {
         outputLength: output.length,
         reduction: input.length - output.length,
       });
-    } catch (_error) {
+    } catch (error) {
       result.error = error instanceof Error ? error : new Error(String(error));
       result.success = false;
 
@@ -219,7 +219,7 @@ export class PluginDebugger {
         };
 
         results.push(result);
-      } catch (_error) {
+      } catch (error) {
         const failedResult: DebugResult = {
           pluginName: plugin.meta?.name || "unknown",
           success: false,
@@ -315,7 +315,7 @@ export class PluginDebugger {
       });
 
       return testCases;
-    } catch (_error) {
+    } catch (error) {
       this.logger.error(`Failed to load test cases from ${filePath}`, {
         error,
       });
@@ -388,7 +388,7 @@ export class PluginDebugger {
 
       await fs.writeFile(filepath, JSON.stringify(debugData, null, 2));
       this.logger.debug(`Debug result saved to ${filepath}`);
-    } catch (_error) {
+    } catch (error) {
       this.logger.error("Failed to save debug result", { error });
     }
   }
@@ -425,7 +425,7 @@ export class PluginDebugger {
 
       await fs.writeFile(filepath, JSON.stringify(suiteData, null, 2));
       this.logger.debug(`Test suite results saved to ${filepath}`);
-    } catch (_error) {
+    } catch (error) {
       this.logger.error("Failed to save test suite results", { error });
     }
   }

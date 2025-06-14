@@ -195,7 +195,7 @@ export class MyPostCSSPlugin extends BasePostCSSEnigmaPlugin {
       });
 
       return result.css;
-    } catch (_error) {
+    } catch (error) {
       this.logger.error("PostCSS processing failed", { error });
       throw error;
     }
@@ -224,7 +224,7 @@ export class MyPostCSSPlugin extends BasePostCSSEnigmaPlugin {
 
       this.logger.debug("PostCSS plugin validation passed");
       return true;
-    } catch (_error) {
+    } catch (error) {
       this.logger.error("PostCSS plugin validation failed", { error });
       return false;
     }

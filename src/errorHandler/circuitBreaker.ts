@@ -163,7 +163,7 @@ export class CircuitBreaker extends EventEmitter {
 
       this.onSuccess(responseTime);
       return result;
-    } catch (_error) {
+    } catch (error) {
       const responseTime = Date.now() - startTime;
 
       await this.onFailure(error as Error, responseTime, _context);
