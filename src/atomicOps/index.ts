@@ -124,7 +124,7 @@ export class AtomicOperationsSystem {
           );
           break;
 
-        case "read":
+        case "read": {
           const readResult = await this.fileReader.readFile(
             operation.filePath,
             operation.options,
@@ -135,6 +135,7 @@ export class AtomicOperationsSystem {
             fileContent: readResult.content,
           };
           break;
+        }
 
         case "write":
           if (!operation.content) {
@@ -147,7 +148,7 @@ export class AtomicOperationsSystem {
           );
           break;
 
-        case "delete":
+        case "delete": {
           // Create backup before deletion
           const tempInfo = await this.fileManager.createTempFile(
             operation.filePath,
@@ -178,6 +179,7 @@ export class AtomicOperationsSystem {
             },
           };
           break;
+        }
 
         default:
           throw new Error(`Unsupported operation type: ${operation.type}`);
@@ -193,12 +195,11 @@ export class AtomicOperationsSystem {
 
       // Handle permissions if specified
       if (operation.permissions && result.success) {
-        const permResult = await this.permissionManager.changePermissions(
+        await this.permissionManager.changePermissions(
           operation.filePath,
           operation.permissions,
         );
-        // Note: permResult doesn't have rollbackOperation property
-        // Permission changes would need separate rollback tracking
+        // Note: Permission changes would need separate rollback tracking
       }
 
       // Commit transaction
@@ -270,7 +271,7 @@ export class AtomicOperationsSystem {
             : "unhealthy";
 
       return { status, components, metrics };
-    } catch (error) {
+    } catch {
       return {
         status: "unhealthy",
         components: Object.fromEntries(

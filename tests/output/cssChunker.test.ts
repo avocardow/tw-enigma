@@ -232,7 +232,7 @@ describe("DependencyGraph", () => {
       expect(edges.size).toBe(2);
 
       // Check edge types
-      for (const [key, edge] of edges) {
+      for (const [, edge] of edges) {
         if (edge.from === "button-primary") {
           expect(edge.type).toBe("extends");
         } else if (edge.from === "button") {

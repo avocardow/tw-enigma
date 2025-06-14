@@ -1,9 +1,8 @@
 import { z } from 'zod';
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, statSync } from 'fs';
 import { join, dirname } from 'path';
 import { createLogger } from './logger.ts';
-import { EnigmaConfigSchema, type EnigmaConfig } from './config.ts';
-import { createConfigDefaults } from './configDefaults.ts';
+import { EnigmaConfigSchema } from './config.ts';
 
 const logger = createLogger('config-migration');
 
@@ -462,6 +461,7 @@ export class ConfigMigration {
       const backupData = JSON.parse(backupContent);
       
       // Extract original configuration (remove backup metadata)
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { _backup, ...originalConfig } = backupData;
       
       // Write restored configuration
@@ -497,7 +497,7 @@ export class ConfigMigration {
       return backups;
     }
     
-    const files = require('fs').readdirSync(this.backupDir);
+    const files = readdirSync(this.backupDir);
     
     for (const file of files) {
       if (file.startsWith('config-backup-') && file.endsWith('.json')) {
@@ -506,7 +506,7 @@ export class ConfigMigration {
         try {
           const content = readFileSync(filePath, 'utf-8');
           const data = JSON.parse(content);
-          const stats = require('fs').statSync(filePath);
+          const stats = statSync(filePath);
           
           backups.push({
             path: filePath,

@@ -1,9 +1,8 @@
 import { EventEmitter } from 'events';
-import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, statSync, unlinkSync } from 'fs';
-import { join, dirname, basename, extname } from 'path';
+import { readFileSync, writeFileSync, existsSync, mkdirSync, unlinkSync } from 'fs';
+import { join, dirname } from 'path';
 import { createHash } from 'crypto';
 import { createLogger } from './logger.ts';
-import { type EnigmaConfig } from './config.ts';
 
 const logger = createLogger('config-backup');
 
@@ -187,8 +186,6 @@ export class ConfigBackup extends EventEmitter {
     const {
       description,
       tags = [],
-      compress = false,
-      encrypt = false,
       includeMetadata = true
     } = options;
     
@@ -319,10 +316,11 @@ export class ConfigBackup extends EventEmitter {
       try {
         const backupData = JSON.parse(backupContent);
         if (backupData._backup) {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const { _backup, ...originalConfig } = backupData;
           restoredContent = JSON.stringify(originalConfig, null, 2);
         }
-      } catch (error) {
+      } catch {
         // If not valid JSON, use content as-is
         result.warnings.push('Backup content is not valid JSON, restoring as-is');
       }
@@ -395,7 +393,7 @@ export class ConfigBackup extends EventEmitter {
         try {
           JSON.parse(content);
           verification.isValidJson = true;
-        } catch (error) {
+        } catch {
           verification.warnings.push('Backup content is not valid JSON');
         }
         
@@ -507,7 +505,6 @@ export class ConfigBackup extends EventEmitter {
       
       // Group backups by type and age
       const automaticBackups = allBackups.filter(b => b.isAutomatic);
-      const manualBackups = allBackups.filter(b => !b.isAutomatic);
       
       // Apply max age policy
       for (const backup of allBackups) {

@@ -11,7 +11,6 @@ import {
   createPluginDebugger,
 } from "../src/debugging/pluginDebugger";
 import { BaseEnigmaPlugin, EnigmaPluginContext } from "../src/types/plugins";
-import { createLogger } from "../src/logger";
 
 // Mock plugin for testing
 class TestPlugin extends BaseEnigmaPlugin {
@@ -23,16 +22,16 @@ class TestPlugin extends BaseEnigmaPlugin {
     tags: ["test"],
   };
 
-  async initialize(context: EnigmaPluginContext): Promise<void> {
+  async initialize(_context: EnigmaPluginContext): Promise<void> {
     // Test initialization
   }
 
-  async processCss(css: string, context: EnigmaPluginContext): Promise<string> {
+  async processCss(css: string, _context: EnigmaPluginContext): Promise<string> {
     // Simple transformation for testing
     return css.replace(/color:\s*red/g, "color: blue");
   }
 
-  async validate(context: EnigmaPluginContext): Promise<boolean> {
+  async validate(_context: EnigmaPluginContext): Promise<boolean> {
     return true;
   }
 
@@ -55,12 +54,12 @@ class MaliciousPlugin extends BaseEnigmaPlugin {
     tags: ["test", "malicious"],
   };
 
-  async processCss(css: string, context: EnigmaPluginContext): Promise<string> {
+  async processCss(css: string, _context: EnigmaPluginContext): Promise<string> {
     // Try to access file system (should be blocked)
     try {
       fs.readFileSync("/etc/passwd");
       return css + "/* SECURITY BREACH */";
-    } catch (error) {
+    } catch {
       return css + "/* SECURITY BLOCKED */";
     }
   }
@@ -80,7 +79,7 @@ class ErrorPlugin extends BaseEnigmaPlugin {
     tags: ["test", "error"],
   };
 
-  async processCss(css: string, context: EnigmaPluginContext): Promise<string> {
+  async processCss(_css: string, _context: EnigmaPluginContext): Promise<string> {
     throw new Error("Intentional test error");
   }
 
@@ -138,7 +137,7 @@ describe("Plugin Security System", () => {
           // This should be blocked
           fs.readFileSync("/etc/passwd");
           return "FILE_ACCESS_ALLOWED";
-        } catch (error) {
+        } catch {
           return "FILE_ACCESS_BLOCKED";
         }
       },
@@ -377,7 +376,7 @@ describe("Enhanced Plugin Manager", () => {
         await pluginManager.executePlugin("error-plugin", async () =>
           errorPlugin.processCss("color: red;", context),
         );
-      } catch (error) {
+      } catch {
         // Expected to fail
       }
     }
@@ -508,7 +507,7 @@ describe("Plugin Debugger", () => {
 
       async processCss(
         css: string,
-        context: EnigmaPluginContext,
+        _context: EnigmaPluginContext,
       ): Promise<string> {
         return css.replace(/background:\s*white/g, "background: black");
       }
