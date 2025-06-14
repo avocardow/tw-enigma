@@ -603,7 +603,7 @@ export class OptimizationCache extends EventEmitter {
    * Set up event handlers for cache events
    */
   private setupEventHandlers(): void {
-    this.cache.on('hit', (key, value) => {
+    this.cache.on('hit', (key, _value) => {
       this.emit('cache-access', { type: 'hit', key });
     });
 

@@ -14,11 +14,9 @@ import {
 } from "vitest";
 import * as fs from "fs/promises";
 import * as path from "path";
-import { createHash } from "crypto";
 import { AtomicFileWriter } from "../../src/atomicOps/AtomicFileWriter";
 import {
   // AtomicOperationResult,
-  FileWriteOptions,
   AtomicOperationError,
 } from "../../src/types/atomicOps";
 
@@ -76,7 +74,7 @@ describe("AtomicFileWriter", () => {
     for (const file of filesToClean) {
       try {
         await fs.unlink(file);
-      } catch (error) {
+      } catch (_error) {
         // Ignore errors - file might not exist
       }
     }
@@ -89,7 +87,7 @@ describe("AtomicFileWriter", () => {
           await fs.unlink(path.join(TEST_DIR, file));
         }
       }
-    } catch (error) {
+    } catch (_error) {
       // Ignore errors
     }
   });
@@ -455,7 +453,7 @@ describe("AtomicFileWriter", () => {
       const results = await Promise.all(promises);
 
       expect(results).toHaveLength(5);
-      results.forEach((result, i) => {
+      results.forEach((result, _i) => {
         expect(result.success).toBe(true);
       });
 

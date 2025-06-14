@@ -5,15 +5,15 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, test, expect, beforeEach, afterEach } from 'vitest';
 import { readFileSync, writeFileSync, existsSync, mkdirSync, rmSync } from 'fs';
-import { join, dirname } from 'path';
+import { join } from 'path';
 import { tmpdir } from 'os';
 
 // Import all validation components
 import { createConfigValidator, validateConfigSchema } from '../src/configValidator.js';
 import { createRuntimeValidator, validateConfigRuntime } from '../src/runtimeValidator.js';
-import { createConfigWatcher, watchConfigFile } from '../src/configWatcher.js';
+import { createConfigWatcher } from '../src/configWatcher.js';
 import { createConfigDefaults, getEnvironmentDefaults } from '../src/configDefaults.js';
 import { createConfigMigration, migrateConfig, needsConfigMigration } from '../src/configMigration.js';
 import { createPerformanceValidator, analyzeConfigPerformance } from '../src/performanceValidator.js';
@@ -430,7 +430,7 @@ describe('Configuration Validation System', () => {
         mergeDuplicates: false // Old format
       };
 
-      const needsMigration = needsConfigMigration(configPath);
+      const _needsMigration = needsConfigMigration(configPath);
       writeFileSync(configPath, JSON.stringify(oldConfig, null, 2));
       
       const migration = createConfigMigration(configPath);
@@ -777,7 +777,7 @@ describe('Configuration Validation System', () => {
 
       // 5. Migration check
       const migration = createConfigMigration(configPath);
-      const result = await migration.migrate({ autoMigrate: true });
+      const _result = await migration.migrate({ autoMigrate: true });
       const needsMigration = migration.needsMigration(config);
       expect(typeof needsMigration).toBe('boolean');
     });
@@ -815,9 +815,9 @@ describe('Configuration Validation System', () => {
 
       // Test all validation systems
       const validator = createConfigValidator();
-      const runtimeValidator = createRuntimeValidator(config);
-      const performanceValidator = createPerformanceValidator(config);
-      const backupManager = createConfigBackup(configPath);
+      const _runtimeValidator = createRuntimeValidator(config);
+      const _performanceValidator = createPerformanceValidator(config);
+      const _backupManager = createConfigBackup(configPath);
 
       // Run validations
       const schemaValidation = await validator.validateConfiguration(config);

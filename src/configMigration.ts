@@ -430,7 +430,7 @@ export class ConfigMigration {
   private async createBackup(config: any, version: ConfigVersion): Promise<string> {
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const backupFilename = `config-backup-${version.version}-${timestamp}.json`;
-    const backupPath = join(this.backupDir, backupFilename);
+    const _backupPath = join(this.backupDir, backupFilename);
     
     const backupData = {
       _backup: {
@@ -441,10 +441,10 @@ export class ConfigMigration {
       ...config
     };
     
-    writeFileSync(backupPath, JSON.stringify(backupData, null, 2), 'utf-8');
-    logger.info(`Configuration backup created: ${backupPath}`);
+    writeFileSync(_backupPath, JSON.stringify(backupData, null, 2), 'utf-8');
+    logger.info(`Configuration backup created: ${_backupPath}`);
     
-    return backupPath;
+    return _backupPath;
   }
   
   /**

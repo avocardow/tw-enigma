@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { DevExperienceManager } from '../src/devExperience.js';
 import { DevHotReload } from '../src/devHotReload.js';
 import { DevIdeIntegration } from '../src/devIdeIntegration.js';
@@ -401,10 +401,10 @@ describe('DevIdeIntegration', () => {
 describe('DevDashboardEnhanced', () => {
   let dashboardEnhanced: DevDashboardEnhanced;
   let baseDashboard: DevDashboard;
-  let mockConfig: EnigmaConfig;
+  let _mockConfig: EnigmaConfig;
 
   beforeEach(() => {
-    mockConfig = {
+    _mockConfig = {
       dev: {
         enabled: true,
         dashboard: {
@@ -660,7 +660,7 @@ describe('Integration Tests', () => {
 
     it('should handle multiple rapid session operations', async () => {
       const promises = [];
-      const files = ['test1.css', 'test2.css'];
+      const _files = ['test1.css', 'test2.css'];
 
       // Create multiple sessions rapidly
       for (let i = 0; i < 5; i++) {

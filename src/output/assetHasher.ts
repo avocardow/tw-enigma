@@ -663,7 +663,7 @@ export class CssOptimizer {
         });
 
         // Merge duplicate media queries
-        for (const [_params, rules] of mediaQueries) {
+        for (const [, rules] of mediaQueries) {
           if (rules.length > 1) {
             const firstRule = rules[0];
 
@@ -1185,7 +1185,7 @@ export class CssMinifier extends CssOptimizer {
       // Remove comments based on configuration
       if (this.config.removeComments) {
         // Remove regular comments but preserve important comments (/*! ... */)
-        processed = processed.replace(/\/\*(?!\!)[\s\S]*?\*\//g, '');
+        processed = processed.replace(/\/\*(?![!])[\s\S]*?\*\//g, '');
       }
 
       // Merge duplicate selectors
@@ -1406,7 +1406,7 @@ export class CssCompressor extends CompressionEngine {
   // Helper methods for actual compression (simplified implementations that produce smaller output)
   private async compressGzip(content: string): Promise<Buffer> {
     // Simulate gzip compression with guaranteed size reduction
-    const buffer = Buffer.from(content, 'utf8');
+    const _buffer = Buffer.from(content, 'utf8');
     // Simulate compression by removing whitespace and ensuring size reduction
     const compressed = content.replace(/\s+/g, ' ').trim();
     // Simulate additional compression by reducing the content by approximately 30%
@@ -1417,7 +1417,7 @@ export class CssCompressor extends CompressionEngine {
 
   private async compressBrotli(content: string): Promise<Buffer> {
     // Simulate brotli compression with guaranteed size reduction
-    const buffer = Buffer.from(content, 'utf8');
+    const _buffer = Buffer.from(content, 'utf8');
     // Simulate compression by removing whitespace and ensuring size reduction
     const compressed = content.replace(/\s+/g, ' ').trim();
     // Simulate additional compression by reducing the content by approximately 35% (better than gzip)

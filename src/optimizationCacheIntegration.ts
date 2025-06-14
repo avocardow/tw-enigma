@@ -322,7 +322,7 @@ export class OptimizationCacheIntegration extends EventEmitter {
    * Get comprehensive cache statistics
    */
   getStats(): StorageRetrievalStats {
-    const cacheStats = this.cache.getAnalytics();
+    const _cacheStats = this.cache.getAnalytics();
     
     return {
       ...this.stats,

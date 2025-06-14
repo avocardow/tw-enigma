@@ -9,7 +9,6 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { DevDashboardEnhanced } from '../src/devDashboardEnhanced.js';
 import { EnigmaConfig } from '../src/config.js';
 import * as fs from 'fs/promises';
-import * as http from 'http';
 import { EventEmitter } from 'events';
 
 // Mock file system operations

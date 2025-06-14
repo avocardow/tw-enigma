@@ -1182,7 +1182,7 @@ function handlePrettyNameExhaustion(
         ["fallback-sequential", "fallback-hybrid"],
       );
 
-    case "fallback-sequential":
+    case "fallback-sequential": {
       // Handle single-character alphabets specially
       if (options.alphabet.length === 1) {
         const char = options.alphabet[0];
@@ -1197,7 +1197,7 @@ function handlePrettyNameExhaustion(
         };
       }
 
-      const sequentialName = generateSequentialName(index, _options);
+      const sequentialName = generateSequentialName(index, options);
       return {
         name: sequentialName,
         length: sequentialName.length,
@@ -1206,9 +1206,10 @@ function handlePrettyNameExhaustion(
         fallbackUsed: true,
         generationStrategy: "fallback-sequential",
       };
+    }
 
     case "fallback-hybrid":
-    default:
+    default: {
       // Handle single-character alphabets specially
       if (options.alphabet.length === 1) {
         const char = options.alphabet[0];
@@ -1224,8 +1225,8 @@ function handlePrettyNameExhaustion(
       }
 
       // Use hybrid approach: try to make sequential names more aesthetic
-      const baseName = generateSequentialName(index, _options);
-      const enhancedName = enhanceNameAesthetics(baseName, _options);
+      const baseName = generateSequentialName(index, options);
+      const enhancedName = enhanceNameAesthetics(baseName, options);
       return {
         name: enhancedName,
         length: enhancedName.length,
@@ -1234,6 +1235,7 @@ function handlePrettyNameExhaustion(
         fallbackUsed: true,
         generationStrategy: "fallback-hybrid",
       };
+    }
   }
 }
 

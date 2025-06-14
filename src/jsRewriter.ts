@@ -445,7 +445,7 @@ export class JSRewriter {
               content.includes(">") &&
               (content.includes("className") ||
                 content.includes("jsx") ||
-                /\<[A-Z]\w*/.test(content) ||
+                /<[A-Z]\w*/.test(content) ||
                 content.includes("<div"))) ||
             content.includes("</") ||
             content.includes("/>");
@@ -696,7 +696,7 @@ export class JSRewriter {
   /**
    * Process multiple files in batch
    */
-  async processBatch(options: JSBatchProcessingOptions): Promise<{
+  async processBatch(_options: JSBatchProcessingOptions): Promise<{
     results: Array<{ filePath: string; result: JSReplacementResult }>;
     summary: {
       totalFiles: number;
@@ -1229,7 +1229,7 @@ export class JSRewriter {
       matches: PatternMatch[];
       severity: "low" | "medium" | "high";
     }>,
-    context: JSReplacementContext,
+    _context: JSReplacementContext,
   ): PatternMatch[] {
     if (conflicts.length === 0) {
       return matches;
@@ -1308,7 +1308,7 @@ export class JSRewriter {
       matches: PatternMatch[];
       severity: "low" | "medium" | "high";
     }>,
-    context: JSReplacementContext,
+    _context: JSReplacementContext,
   ): PatternMatch[] {
     // For now, fall back to priority strategy for complex merging
     // This can be enhanced in the future with more sophisticated merging logic
@@ -1341,7 +1341,7 @@ export class JSRewriter {
       matches: PatternMatch[];
       severity: "low" | "medium" | "high";
     }>,
-    context: JSReplacementContext,
+    _context: JSReplacementContext,
   ): PatternMatch[] {
     // Auto strategy logic:
     // - Identical conflicts: Use priority
@@ -1498,7 +1498,6 @@ export class JSRewriter {
     // Extract all string literals from the original code
     const stringLiteralRegex = /(['"`])([^\\]|\\.)*?\1/g;
     const originalStrings = [...originalCode.matchAll(stringLiteralRegex)];
-    const generatedStrings = [...generatedCode.matchAll(stringLiteralRegex)];
 
     // Map to track quote styles for specific content
     const quoteStyleMap = new Map<string, string>();

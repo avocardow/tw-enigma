@@ -28,8 +28,6 @@ import {
   type CssGenerationOptions,
   type CssRule,
   type ApplyDirective,
-  type PatternClassification,
-  type CssGenerationResult,
 
   // Constants
   CSS_PATTERN_THRESHOLDS,

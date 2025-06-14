@@ -6,6 +6,8 @@
  */
 
 import { EventEmitter } from "events";
+import { dirname } from "path";
+import { existsSync } from "fs";
 import { logger } from "./logger.ts";
 import { ValidationError } from "./errors.ts";
 import type { EnigmaConfig } from "./config.ts";
@@ -301,8 +303,8 @@ export class RuntimeValidator extends EventEmitter {
 
       // Validate output path
       if (this.config.output) {
-        const outputDir = require('path').dirname(this.config.output);
-        if (!require('fs').existsSync(outputDir)) {
+        const outputDir = dirname(this.config.output);
+        if (!existsSync(outputDir)) {
           warnings.push(`Output directory does not exist and will be created: ${outputDir}`);
         }
       }
@@ -603,7 +605,7 @@ export class RuntimeValidator extends EventEmitter {
     }
   }
 
-  private validateGenericField(field: string, value: unknown, constraints: Record<string, unknown> | undefined, errors: ValidationError[], warnings: string[], suggestions: string[]): void {
+  private validateGenericField(field: string, value: unknown, constraints: Record<string, unknown> | undefined, errors: ValidationError[], _warnings: string[], _suggestions: string[]): void {
     // Generic validation logic
     if (constraints) {
       // Apply constraints if provided

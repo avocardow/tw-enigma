@@ -1149,7 +1149,7 @@ function convertTailwindColor(color: string): string {
 
 export function generateApplyDirective(
   classes: string[],
-  options: CssGenerationOptions,
+  _options: CssGenerationOptions,
 ): ApplyDirective {
   try {
     // Validate input
@@ -4021,7 +4021,7 @@ export class EnhancedCSSGenerator {
    */
   private async generateBasicCSS(
     classFrequencies: Map<string, number>,
-    options: CssGenerationOptions,
+    _options: CssGenerationOptions,
   ): Promise<GeneratedCSS> {
     // Convert frequency map to patterns
     const patterns: AggregatedClassData[] = [];
