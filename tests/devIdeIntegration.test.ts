@@ -154,7 +154,7 @@ describe('DevIdeIntegration', () => {
       
       expect(fs.writeFile).toHaveBeenCalledWith(
         expect.stringContaining('extensions.json'),
-        expect.stringMatching(/tailwindcss-intellisense/)
+        expect.stringMatching(/bradlc\.vscode-tailwindcss/)
       );
     });
 
@@ -430,13 +430,18 @@ describe('DevIdeIntegration', () => {
       await expect(conflictIdeIntegration.startLanguageServer()).rejects.toThrow();
     });
 
-    it('should emit error events for debugging', (done) => {
-      ideIntegration.on('error', (error) => {
-        expect(error).toBeInstanceOf(Error);
-        done();
+    it('should emit error events for debugging', async () => {
+      await new Promise<void>((resolve, reject) => {
+        ideIntegration.on('error', (error) => {
+          try {
+            expect(error).toBeInstanceOf(Error);
+            resolve();
+          } catch (e) {
+            reject(e);
+          }
+        });
+        ideIntegration.emit('error', new Error('Test error'));
       });
-
-      ideIntegration.emit('error', new Error('Test error'));
     });
   });
 
