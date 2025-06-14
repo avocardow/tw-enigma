@@ -1,8 +1,8 @@
 import { z } from 'zod';
 import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, statSync } from 'fs';
 import { join, dirname } from 'path';
-import { createLogger } from './logger.ts';
-import { EnigmaConfigSchema } from './config.ts';
+import { createLogger } from './logger';
+import { EnigmaConfigSchema } from './config';
 
 const logger = createLogger('config-migration');
 

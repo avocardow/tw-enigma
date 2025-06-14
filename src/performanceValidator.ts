@@ -2,8 +2,8 @@ import { EventEmitter } from 'events';
 import { cpus, totalmem, freemem } from 'os';
 // import { statSync } from 'fs';
 // import { join } from 'path';
-import { createLogger } from './logger.ts';
-import { type EnigmaConfig } from './config.ts';
+import { createLogger } from './logger';
+import { type EnigmaConfig } from './config';
 
 const logger = createLogger('performance-validator');
 

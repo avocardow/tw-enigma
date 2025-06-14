@@ -2,7 +2,7 @@ import { EventEmitter } from 'events';
 import { readFileSync, writeFileSync, existsSync, mkdirSync, unlinkSync } from 'fs';
 import { join, dirname } from 'path';
 import { createHash } from 'crypto';
-import { createLogger } from './logger.ts';
+import { createLogger } from './logger';
 
 const logger = createLogger('config-backup');
 

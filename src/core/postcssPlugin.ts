@@ -180,13 +180,13 @@ export abstract class BaseEnigmaPlugin implements EnigmaPlugin {
     filePath: string,
     type: "file" | "dir" = "file",
   ): void {
-    context.result.messages.push({
+    _context.result.messages.push({
       type: type === "dir" ? "dir-dependency" : "dependency",
       plugin: this.meta.name,
       file: filePath,
-      parent: context.result.opts.from || "",
+      parent: _context.result.opts.from || "",
     });
-    context.metrics.addDependency(filePath);
+    _context.metrics.addDependency(filePath);
   }
 
   /**
@@ -198,11 +198,11 @@ export abstract class BaseEnigmaPlugin implements EnigmaPlugin {
     node?: any,
   ): void {
     if (node && node.warn) {
-      node.warn(context.result, message);
+      node.warn(_context.result, message);
     } else {
-      context.result.warn(message, { plugin: this.meta.name });
+      _context.result.warn(message, { plugin: this.meta.name });
     }
-    context.metrics.addWarning(message);
+    _context.metrics.addWarning(message);
   }
 
   /**
@@ -262,7 +262,7 @@ export function createEnigmaPlugin<
     },
 
     createPlugin(_context: PluginContext): Plugin {
-      return pluginHandler(context);
+      return pluginHandler(_context);
     },
   };
 }

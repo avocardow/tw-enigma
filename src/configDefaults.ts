@@ -2,8 +2,8 @@
 import { join, resolve } from 'path';
 import { homedir, tmpdir, cpus } from 'os';
 import { existsSync } from 'fs';
-import { EnigmaConfigSchema, type EnigmaConfig } from './config.ts';
-import { createLogger } from './logger.ts';
+import { EnigmaConfigSchema, type EnigmaConfig } from './config';
+import { createLogger } from './logger';
 
 // Use EnigmaConfig as the primary type
 type Config = EnigmaConfig;

@@ -26,9 +26,9 @@ import { createHash } from 'crypto';
 import { promises as fs } from 'fs';
 import path from 'path';
 import chokidar from 'chokidar';
-import { CacheManager, createCacheManager } from './performance/cacheManager.ts';
-import type { EnigmaConfig } from './config.ts';
-import type { OptimizationResult } from './output/assetHasher.ts';
+import { CacheManager, createCacheManager } from './performance/cacheManager';
+import type { EnigmaConfig } from './config';
+import type { OptimizationResult } from './output/assetHasher';
 
 /**
  * Cache key components for optimization results

@@ -44,7 +44,7 @@ export class TailwindOptimizer extends BaseEnigmaPlugin {
 
   readonly configSchema = TailwindOptimizerConfigSchema;
 
-  createPlugin(_context: PluginContext): Plugin {
+  createPlugin(context: PluginContext): Plugin {
     return {
       postcssPlugin: 'enigma-tailwind-optimizer',
       Once: async (root: Root) => {
@@ -89,7 +89,7 @@ export class TailwindOptimizer extends BaseEnigmaPlugin {
    */
   private async extractUtilityClasses(
     root: Root,
-    _context: PluginContext,
+    context: PluginContext,
   ): Promise<void> {
     // const _config = context.config.options as TailwindOptimizerConfig;
     const frequencyData = context.frequencyData;
@@ -129,7 +129,7 @@ export class TailwindOptimizer extends BaseEnigmaPlugin {
    */
   private async optimizeFrequentClasses(
     root: Root,
-    _context: PluginContext,
+    context: PluginContext,
   ): Promise<void> {
     const config = context.config.options as TailwindOptimizerConfig;
     const frequencyData = context.frequencyData;
@@ -178,7 +178,7 @@ export class TailwindOptimizer extends BaseEnigmaPlugin {
    */
   private async generateOptimizedUtilities(
     root: Root,
-    _context: PluginContext,
+    context: PluginContext,
   ): Promise<void> {
     const config = context.config.options as TailwindOptimizerConfig;
     const patternData = context.patternData;

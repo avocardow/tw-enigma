@@ -42,7 +42,7 @@ export class SourceMapper extends BaseEnigmaPlugin {
 
   readonly configSchema = SourceMapperConfigSchema;
 
-  createPlugin(_context: PluginContext): Plugin {
+  createPlugin(context: PluginContext): Plugin {
     return {
       postcssPlugin: 'enigma-source-mapper',
       Once: async (root: Root) => {

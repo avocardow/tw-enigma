@@ -29,8 +29,8 @@ import {
   OptimizationCacheConfig,
   getOptimizationCache 
 } from './optimizationCache';
-import type { EnigmaConfig } from './config.ts';
-import type { OptimizationResult } from './output/assetHasher.ts';
+import type { EnigmaConfig } from './config';
+import type { OptimizationResult } from './output/assetHasher';
 
 /**
  * Circuit breaker states for cache availability

@@ -45,7 +45,7 @@ export class CssMinifier extends BaseEnigmaPlugin {
 
   readonly configSchema = CssMinifierConfigSchema;
 
-  createPlugin(_context: PluginContext): Plugin {
+  createPlugin(context: PluginContext): Plugin {
     return {
       postcssPlugin: 'enigma-css-minifier',
       Once: async (root: Root) => {
