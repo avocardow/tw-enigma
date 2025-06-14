@@ -303,7 +303,7 @@ export class DevDashboard extends EventEmitter {
         res.writeHead(404, { 'Content-Type': 'text/plain' });
         res.end('Not Found');
       }
-    } catch (error) {
+    } catch (_error) {
       this.logger.error("Request handling error", { url, error });
       res.writeHead(500, { 'Content-Type': 'text/plain' });
       res.end('Internal Server Error');

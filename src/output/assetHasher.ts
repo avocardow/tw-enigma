@@ -566,7 +566,7 @@ export class CssOptimizer {
         plugins: plugins.map((plugin) => (plugin as any).pluginName || "unknown"),
         sourceMap: result.map?.toString(),
       };
-    } catch (error) {
+    } catch (_error) {
       throw new Error(
         `CSS optimization failed: ${error instanceof Error ? error.message : "Unknown error"}`,
       );
@@ -771,7 +771,7 @@ export class CompressionEngine {
       try {
         const result = await this.compressWithType(contentBuffer, type);
         results.push(result);
-      } catch (error) {
+      } catch (_error) {
         console.warn(`Failed to compress with ${type}:`, error);
       }
     }
@@ -1235,7 +1235,7 @@ export class CssMinifier extends CssOptimizer {
       }
 
       return result;
-    } catch (error) {
+    } catch (_error) {
       throw new Error(`CSS minification failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
@@ -1378,7 +1378,7 @@ export class CssCompressor extends CompressionEngine {
       }
 
       return results;
-    } catch (error) {
+    } catch (_error) {
       // Handle compression errors gracefully - return partial results
       return results;
     }

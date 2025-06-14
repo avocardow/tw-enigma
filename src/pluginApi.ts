@@ -132,7 +132,7 @@ export class EnigmaPluginApi {
 
       this.isInitialized = true;
       logger.info("Plugin API initialization completed");
-    } catch (error) {
+    } catch (_error) {
       logger.error("Plugin API initialization failed", { error });
       throw new Error(
         `Plugin API initialization failed: ${error instanceof Error ? error.message : String(error)}`,
@@ -153,7 +153,7 @@ export class EnigmaPluginApi {
       }
 
       logger.debug(`Plugin ${plugin.meta.name} registered via API`);
-    } catch (error) {
+    } catch (_error) {
       logger.error(`Failed to register plugin ${plugin.meta.name}`, { error });
       throw error;
     }
@@ -172,7 +172,7 @@ export class EnigmaPluginApi {
       }
 
       logger.debug(`Plugin ${pluginName} unregistered via API`);
-    } catch (error) {
+    } catch (_error) {
       logger.error(`Failed to unregister plugin ${pluginName}`, { error });
       throw error;
     }
@@ -236,7 +236,7 @@ export class EnigmaPluginApi {
       });
 
       return result;
-    } catch (error) {
+    } catch (_error) {
       logger.error("CSS processing failed via API", { error });
 
       // Trigger error hook
@@ -263,7 +263,7 @@ export class EnigmaPluginApi {
       const validation = this.manager.validateDependencies(pluginNames);
 
       return validation;
-    } catch (error) {
+    } catch (_error) {
       return {
         valid: false,
         errors: [error instanceof Error ? error.message : String(error)],
@@ -306,7 +306,7 @@ export class EnigmaPluginApi {
       this.hooks = {};
 
       logger.info("Plugin API cleanup completed");
-    } catch (error) {
+    } catch (_error) {
       logger.error("Plugin API cleanup failed", { error });
       throw error;
     }
@@ -326,7 +326,7 @@ export class EnigmaPluginApi {
       try {
         this.manager.register(plugin);
         logger.debug(`Built-in plugin ${plugin.meta.name} registered`);
-      } catch (error) {
+      } catch (_error) {
         logger.warn(`Failed to register built-in plugin ${plugin.meta.name}`, {
           error,
         });
@@ -354,7 +354,7 @@ export class EnigmaPluginApi {
       }
 
       logger.debug(`Discovered ${discoveredPlugins.length} plugins`);
-    } catch (error) {
+    } catch (_error) {
       logger.warn("Plugin discovery failed", { error });
     }
   }

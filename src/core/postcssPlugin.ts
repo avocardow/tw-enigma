@@ -151,7 +151,7 @@ export abstract class BaseEnigmaPlugin implements EnigmaPlugin {
 
           try {
             context.metrics.startTimer("plugin-execution");
-            await handler(root, context);
+            await handler(root, _context);
             const duration = context.metrics.endTimer("plugin-execution");
 
             if (pluginLogger) {
@@ -160,7 +160,7 @@ export abstract class BaseEnigmaPlugin implements EnigmaPlugin {
                 transformations: context.metrics.getMetrics().transformations,
               });
             }
-          } catch (error) {
+          } catch (_error) {
             context.metrics.addWarning(
               `Plugin error: ${error instanceof Error ? error.message : String(error)}`,
             );

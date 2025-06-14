@@ -177,7 +177,7 @@ export class CacheManager<T = unknown> extends EventEmitter {
       this.recordMiss(startTime);
       this.emit("miss", key);
       return undefined;
-    } catch (error) {
+    } catch (_error) {
       this.emit("error", error);
       this.recordMiss(startTime);
       return undefined;
@@ -230,7 +230,7 @@ export class CacheManager<T = unknown> extends EventEmitter {
       }
 
       return true;
-    } catch (error) {
+    } catch (_error) {
       this.emit("error", error);
       return false;
     }
@@ -681,7 +681,7 @@ export class CacheManager<T = unknown> extends EventEmitter {
       const filePath = path.join(this.config.persistencePath, `${key}.json`);
       await fs.mkdir(this.config.persistencePath, { recursive: true });
       await fs.writeFile(filePath, JSON.stringify(entry), "utf8");
-    } catch (error) {
+    } catch (_error) {
       this.emit("error", error);
     }
   }
@@ -724,7 +724,7 @@ export class CacheManager<T = unknown> extends EventEmitter {
           fs.unlink(path.join(this.config.persistencePath!, file)),
         );
       await Promise.allSettled(promises);
-    } catch (error) {
+    } catch (_error) {
       this.emit("error", error);
     }
   }

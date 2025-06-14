@@ -445,7 +445,7 @@ export class ConfigDefaults {
           const globalConfig = require(configPath);
           logger.debug(`Loaded global defaults from: ${configPath}`);
           return globalConfig;
-        } catch (error) {
+        } catch (_error) {
           logger.warn(`Failed to load global config from ${configPath}`, { error: error instanceof Error ? error.message : String(error) });
         }
       }
@@ -464,7 +464,7 @@ export class ConfigDefaults {
           const projectConfig = require(configPath);
           logger.debug(`Loaded project defaults from: ${configPath}`);
           return projectConfig;
-        } catch (error) {
+        } catch (_error) {
           logger.warn(`Failed to load project config from ${configPath}`, { error: error instanceof Error ? error.message : String(error) });
         }
       }
@@ -515,7 +515,7 @@ export class ConfigDefaults {
   private validateDefaults(config: Config): Config {
     try {
       return EnigmaConfigSchema.parse(config);
-    } catch (error) {
+    } catch (_error) {
       logger.error('Default configuration validation failed', { error: error instanceof Error ? error.message : String(error) });
       
       // Return system defaults as ultimate fallback
@@ -571,7 +571,7 @@ export class ConfigDefaults {
     const merged = this.mergeConfigs(defaults, partialConfig);
     try {
       return EnigmaConfigSchema.parse(merged);
-    } catch (error) {
+    } catch (_error) {
       logger.error('Config validation failed in createConfigWithDefaults', { error: error instanceof Error ? error.message : String(error) });
       logger.warn('Falling back to system defaults due to validation failure in createConfigWithDefaults');
       return SYSTEM_DEFAULTS;

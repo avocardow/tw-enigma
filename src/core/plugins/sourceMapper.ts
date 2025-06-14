@@ -54,11 +54,11 @@ export class SourceMapper extends BaseEnigmaPlugin {
       try {
         // Preserve original source information
         if (config.preserveOriginalSources) {
-          this.preserveOriginalSources(root, context);
+          this.preserveOriginalSources(root, _context);
         }
 
         // Update source mapping information
-        this.updateSourceMappings(root, context);
+        this.updateSourceMappings(root, _context);
 
         // Configure source map generation options
         this.configureSourceMapGeneration(context, config);
@@ -67,7 +67,7 @@ export class SourceMapper extends BaseEnigmaPlugin {
         context.metrics.recordMemory(Math.max(0, endMemory - startMemory));
 
         this.logger.debug("Source map processing completed");
-      } catch (error) {
+      } catch (_error) {
         this.addWarning(
           context,
           `Source map processing failed: ${error instanceof Error ? error.message : String(error)}`,

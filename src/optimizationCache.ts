@@ -236,7 +236,7 @@ export class OptimizationCache extends EventEmitter {
       this.emit('cache-miss', { cacheKey, inputFiles });
 
       return null;
-    } catch (error) {
+    } catch (_error) {
       this.emit('error', error);
       return null;
     }
@@ -279,7 +279,7 @@ export class OptimizationCache extends EventEmitter {
       }
 
       return success;
-    } catch (error) {
+    } catch (_error) {
       this.emit('error', error);
       return false;
     }
@@ -314,7 +314,7 @@ export class OptimizationCache extends EventEmitter {
       }
 
       return invalidatedCount;
-    } catch (error) {
+    } catch (_error) {
       this.emit('error', error);
       return 0;
     }
@@ -345,7 +345,7 @@ export class OptimizationCache extends EventEmitter {
       }
 
       return invalidatedCount;
-    } catch (error) {
+    } catch (_error) {
       this.emit('error', error);
       return 0;
     }
@@ -414,7 +414,7 @@ export class OptimizationCache extends EventEmitter {
     const keyString = JSON.stringify(keyComponents);
     try {
       return createHash('sha256').update(keyString).digest('hex');
-    } catch (error) {
+    } catch (_error) {
       // Fallback for test environments or crypto issues
       // Use a simple hash of the keyString for deterministic results
       let hash = 0;
@@ -442,14 +442,14 @@ export class OptimizationCache extends EventEmitter {
           const content = await fs.readFile(file, 'utf8');
           hash.update(file); // Include file path
           hash.update(content); // Include file content
-        } catch (error) {
+        } catch (_error) {
           // If file can't be read, include error in hash
           hash.update(`ERROR:${file}:${error}`);
         }
       }
 
       return hash.digest('hex');
-    } catch (error) {
+    } catch (_error) {
       // Fallback if crypto operations fail (e.g., in tests)
       const content = files.join('-');
       let hash = 0;
@@ -482,7 +482,7 @@ export class OptimizationCache extends EventEmitter {
         return value;
       });
       return createHash('sha256').update(configString).digest('hex');
-    } catch (error) {
+    } catch (_error) {
       // Fallback for test environments or crypto issues
       const relevantConfig = this.extractRelevantConfig(config);
       

@@ -124,7 +124,7 @@ export class PluginMarketplace {
 
       this.logger.info("Found marketplace plugins", { count: plugins.length });
       return plugins;
-    } catch (error) {
+    } catch (_error) {
       this.logger.error("Failed to search marketplace", {
         error: error instanceof Error ? error.message : String(error),
       });
@@ -164,7 +164,7 @@ export class PluginMarketplace {
       }
 
       return plugin;
-    } catch (error) {
+    } catch (_error) {
       this.logger.error("Failed to get plugin info", {
         name,
         version,
@@ -243,7 +243,7 @@ export class PluginMarketplace {
       });
 
       return plugin;
-    } catch (error) {
+    } catch (_error) {
       this.logger.error("Failed to install plugin", {
         name,
         error: error instanceof Error ? error.message : String(error),
@@ -274,7 +274,7 @@ export class PluginMarketplace {
       await this.removePluginFiles(name, version);
 
       this.logger.info("Plugin uninstalled successfully", { name, version });
-    } catch (error) {
+    } catch (_error) {
       this.logger.error("Failed to uninstall plugin", {
         name,
         version,
@@ -325,7 +325,7 @@ export class PluginMarketplace {
       });
 
       return updatedPlugin;
-    } catch (error) {
+    } catch (_error) {
       this.logger.error("Failed to update plugin", {
         name,
         error: error instanceof Error ? error.message : String(error),
@@ -387,7 +387,7 @@ export class PluginMarketplace {
     try {
       await fs.rm(this.config.cacheDir, { recursive: true, force: true });
       await this.ensureCacheDir();
-    } catch (error) {
+    } catch (_error) {
       this.logger.warn("Failed to clear cache directory", { error });
     }
   }
@@ -456,7 +456,7 @@ export class PluginMarketplace {
             try {
               const plugins = JSON.parse(data);
               resolve(Array.isArray(plugins) ? plugins : [plugins]);
-            } catch (error) {
+            } catch (_error) {
               reject(new Error(`Invalid JSON response: ${error}`));
             }
           });
@@ -547,7 +547,7 @@ export class PluginMarketplace {
         if (!existingPlugin) {
           await this.installPlugin(dep);
         }
-      } catch (error) {
+      } catch (_error) {
         this.logger.warn("Failed to install dependency", {
           dependency: dep,
           error,
@@ -573,7 +573,7 @@ export class PluginMarketplace {
       }
 
       return plugin;
-    } catch (error) {
+    } catch (_error) {
       throw new Error(`Failed to load plugin from ${filePath}: ${error}`);
     }
   }
@@ -597,7 +597,7 @@ export class PluginMarketplace {
           this.logger.debug("Removed plugin file", { file });
         }
       }
-    } catch (error) {
+    } catch (_error) {
       this.logger.warn("Failed to remove plugin files", {
         name,
         version,
@@ -667,7 +667,7 @@ export class PluginMarketplace {
   private async ensureCacheDir(): Promise<void> {
     try {
       await fs.mkdir(this.config.cacheDir, { recursive: true });
-    } catch (error) {
+    } catch (_error) {
       this.logger.warn("Failed to create cache directory", {
         dir: this.config.cacheDir,
         error,

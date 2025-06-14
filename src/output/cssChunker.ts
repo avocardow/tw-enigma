@@ -1435,7 +1435,7 @@ class CssChunker extends EventEmitter {
   processCSS(cssContent: string, options: CssChunkingOptions): CssChunkingResult {
     const startTime = Date.now();
     
-    const chunks = this.chunkCSS(cssContent, options);
+    const chunks = this.chunkCSS(cssContent, _options);
     
     const endTime = Date.now();
     const processingTime = Math.max(1, endTime - startTime); // Ensure minimum 1ms
@@ -1473,16 +1473,16 @@ class CssChunker extends EventEmitter {
     
     switch (options.strategy) {
       case 'size':
-        chunks = this.chunkBySize(cssContent, options);
+        chunks = this.chunkBySize(cssContent, _options);
         break;
       case 'route':
-        chunks = this.chunkByRoute(cssContent, options);
+        chunks = this.chunkByRoute(cssContent, _options);
         break;
       case 'component':
-        chunks = this.chunkByComponent(cssContent, options);
+        chunks = this.chunkByComponent(cssContent, _options);
         break;
       case 'hybrid':
-        chunks = this.chunkHybrid(cssContent, options);
+        chunks = this.chunkHybrid(cssContent, _options);
         break;
       default:
         throw new Error(`Unknown chunking strategy: ${options.strategy}`);

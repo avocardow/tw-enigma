@@ -323,7 +323,7 @@ export class DevDashboardEnhanced extends EventEmitter {
 
       this.logger.info("Enhanced dashboard features started");
 
-    } catch (error) {
+    } catch (_error) {
       this.logger.error("Failed to start enhanced dashboard features", { error });
       throw error;
     }
@@ -1003,7 +1003,7 @@ export class DevDashboardEnhanced extends EventEmitter {
         }
       }
       return Promise.resolve();
-    } catch (e) {
+    } catch (_e) {
       return Promise.reject(e);
     }
   }

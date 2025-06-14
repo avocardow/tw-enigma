@@ -625,7 +625,7 @@ export class HtmlRewriter {
         },
         statistics: result.statistics || statistics,
       };
-    } catch (error) {
+    } catch (_error) {
       metadata.errors.push(
         error instanceof Error ? error.message : String(error),
       );
@@ -680,7 +680,7 @@ export class HtmlRewriter {
       result.metadata.fileSize = stats.size;
 
       return result;
-    } catch (error) {
+    } catch (_error) {
       if (error instanceof HtmlRewriteError) {
         throw error;
       }
@@ -751,7 +751,7 @@ export class HtmlRewriter {
             });
           }
         }
-      } catch (error) {
+      } catch (_error) {
         throw new HtmlRewriteError(
           `Batch processing failed: ${error instanceof Error ? error.message : String(error)}`,
           `batch-${i / batchSize}`,
@@ -1138,7 +1138,7 @@ export class HtmlRewriter {
     // Test CSS selector syntax
     try {
       cheerio.load("<div></div>")(pattern.selector);
-    } catch (error) {
+    } catch (_error) {
       errors.push(
         `Invalid CSS selector: ${error instanceof Error ? error.message : String(error)}`,
       );
@@ -1148,7 +1148,7 @@ export class HtmlRewriter {
     if (pattern.pattern instanceof RegExp) {
       try {
         "test".match(pattern.pattern);
-      } catch (error) {
+      } catch (_error) {
         errors.push(
           `Invalid regex pattern: ${error instanceof Error ? error.message : String(error)}`,
         );
@@ -1169,7 +1169,7 @@ export class HtmlRewriter {
       const backupPath = `${filePath}${this.options.backupSuffix}`;
       await fs.copyFile(filePath, backupPath);
       return backupPath;
-    } catch (error) {
+    } catch (_error) {
       throw new BackupError(
         `Failed to create backup: ${error instanceof Error ? error.message : String(error)}`,
         filePath,
@@ -1187,7 +1187,7 @@ export class HtmlRewriter {
       const $ = cheerio.load(html);
       // Basic validation - ensure HTML can be parsed
       $.html();
-    } catch (error) {
+    } catch (_error) {
       throw new HtmlValidationError(
         `Invalid HTML output: ${error instanceof Error ? error.message : String(error)}`,
         [error instanceof Error ? error.message : String(error)],
@@ -1344,7 +1344,7 @@ export class HtmlRewriter {
             },
           });
         }
-      } catch (error) {
+      } catch (_error) {
         // Log error but continue with other patterns
         console.warn(`Pattern matching error for '${pattern.id}':`, error);
       }
@@ -1688,7 +1688,7 @@ export class HtmlRewriter {
     let replacement: string;
 
     if (typeof pattern.replacement === "function") {
-      replacement = pattern.replacement(matched, element, context);
+      replacement = pattern.replacement(matched, element, _context);
     } else {
       replacement = pattern.replacement;
     }
@@ -2603,7 +2603,7 @@ export class HtmlRewriter {
 
     const files =
       await this.integration.fileDiscovery.findFiles(discoveryOptions);
-    return this.processBatch(files, options);
+    return this.processBatch(files, _options);
   }
 
   /**
@@ -2673,7 +2673,7 @@ export class HtmlRewriter {
               error: `Processing failed: ${fileResult.metadata.errors.join(", ")}`,
             });
           }
-        } catch (error) {
+        } catch (_error) {
           const errorMessage =
             error instanceof Error ? error.message : String(error);
           result.failedFiles.push({ file: filePath, error: errorMessage });
@@ -2785,7 +2785,7 @@ export class HtmlRewriter {
       );
 
       return result;
-    } catch (error) {
+    } catch (_error) {
       if (error instanceof HtmlRewriteError) {
         throw error;
       }
@@ -2855,7 +2855,7 @@ export class HtmlRewriter {
       await fs.writeFile(metadataPath, JSON.stringify(metadata, null, 2));
 
       return backupPath;
-    } catch (error) {
+    } catch (_error) {
       throw new BackupError(
         `Failed to create backup: ${error instanceof Error ? error.message : String(error)}`,
         filePath,
@@ -2878,7 +2878,7 @@ export class HtmlRewriter {
     try {
       await fs.writeFile(tempPath, content, encoding);
       await fs.rename(tempPath, filePath);
-    } catch (error) {
+    } catch (_error) {
       // Clean up temp file on error
       try {
         await fs.unlink(tempPath);

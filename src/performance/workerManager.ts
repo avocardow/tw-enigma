@@ -316,7 +316,7 @@ export class WorkerManager extends EventEmitter {
         try {
           await workerState.worker.terminate();
           logger.debug("Worker terminated", { workerId: workerState.id });
-        } catch (error) {
+        } catch (_error) {
           logger.error("Error terminating worker", {
             workerId: workerState.id,
             error: error instanceof Error ? error.message : String(error),
@@ -363,7 +363,7 @@ export class WorkerManager extends EventEmitter {
       });
 
       worker.on("error", (error) => {
-        this.handleWorkerError(workerState, error);
+        this.handleWorkerError(workerState, _error);
       });
 
       worker.on("exit", (code) => {
@@ -377,7 +377,7 @@ export class WorkerManager extends EventEmitter {
         workerId,
         threadId: worker.threadId,
       });
-    } catch (error) {
+    } catch (_error) {
       logger.error("Failed to create worker", {
         workerId,
         error: error instanceof Error ? error.message : String(error),
@@ -442,10 +442,10 @@ export class WorkerManager extends EventEmitter {
    * Handle worker message responses
    */
   private handleWorkerMessage(workerState: WorkerState, message: any): void {
-    const { type, id, result, error } = message;
+    const { type, id, result, _error } = message;
 
     if (type === "taskComplete") {
-      this.handleTaskComplete(workerState, id, result, error);
+      this.handleTaskComplete(workerState, id, result, _error);
     } else if (type === "metrics") {
       workerState.memoryUsage = message.memoryUsage || 0;
     }
@@ -591,7 +591,7 @@ export class WorkerManager extends EventEmitter {
     if (workerState) {
       try {
         await workerState.worker.terminate();
-      } catch (error) {
+      } catch (_error) {
         logger.error("Error terminating worker during restart", {
           workerId,
           error: error instanceof Error ? error.message : String(error),

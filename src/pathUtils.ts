@@ -234,7 +234,7 @@ export class PathUtils {
 
       this.cacheResult(cacheKey, result);
       return result;
-    } catch (error) {
+    } catch (_error) {
       const errorResult: RelativePathResult = {
         relativePath: "",
         isValid: false,
@@ -343,7 +343,7 @@ export class PathUtils {
       // Cache the result
       this.cacheValidationResult(cacheKey, result);
       return result;
-    } catch (error) {
+    } catch (_error) {
       result.isValid = false;
       result.errors.push(
         `Validation failed: ${error instanceof Error ? error.message : String(error)}`,
@@ -530,7 +530,7 @@ export function validatePath(
   context = "path",
 ): PathValidationResult {
   const utils = createPathUtils();
-  return utils.validatePath(inputPath, context);
+  return utils.validatePath(inputPath, _context);
 }
 
 /**

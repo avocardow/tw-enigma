@@ -56,24 +56,24 @@ export class TailwindOptimizer extends BaseEnigmaPlugin {
       try {
         // Extract utility classes from frequency data
         if (config.extractUtilities && context.frequencyData) {
-          await this.extractUtilityClasses(root, context);
+          await this.extractUtilityClasses(root, _context);
         }
 
         // Optimize frequent class combinations
         if (config.optimizeFrequentClasses && context.frequencyData) {
-          await this.optimizeFrequentClasses(root, context);
+          await this.optimizeFrequentClasses(root, _context);
         }
 
         // Generate optimized utility classes
         if (config.generateUtilityClasses) {
-          await this.generateOptimizedUtilities(root, context);
+          await this.generateOptimizedUtilities(root, _context);
         }
 
         const endMemory = this.getMemoryUsage();
         context.metrics.recordMemory(Math.max(0, endMemory - startMemory));
 
         this.logger.debug("Tailwind optimization completed");
-      } catch (error) {
+      } catch (_error) {
         this.addWarning(
           context,
           `Tailwind optimization failed: ${error instanceof Error ? error.message : String(error)}`,

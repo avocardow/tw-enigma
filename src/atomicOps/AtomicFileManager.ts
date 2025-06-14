@@ -143,7 +143,7 @@ export class AtomicFileManager {
 
       // Update metrics
       this.updateMetrics("delete", true, Date.now() - tempInfo.createdAt, 0);
-    } catch (error) {
+    } catch (_error) {
       console.error(`Error cleaning up temp file ${tempInfo.path}:`, error);
       this.updateMetrics(
         "delete",
@@ -186,7 +186,7 @@ export class AtomicFileManager {
 
       // Update metrics
       this.updateMetrics("write", true, Date.now() - tempInfo.createdAt, 0);
-    } catch (error) {
+    } catch (_error) {
       // Keep in tracking for cleanup, but mark as failed
       console.error(
         `Failed to promote temp file ${tempInfo.path} to ${targetPath}:`,
@@ -303,14 +303,14 @@ export class AtomicFileManager {
               cleanedCount++;
             }
           }
-        } catch (error) {
+        } catch (_error) {
           // Skip files that can't be accessed or are already deleted
           if (!(error && typeof error === 'object' && 'code' in error && error.code === "ENOENT")) {
             console.warn(`Failed to clean stale temp file ${filePath}:`, error);
           }
         }
       }
-    } catch (error) {
+    } catch (_error) {
       console.warn(`Failed to scan temp directory ${tempDir}:`, error);
     }
 
@@ -399,7 +399,7 @@ export class AtomicFileManager {
               `Periodic cleanup: ${abandonedCount} abandoned, ${staleCount} stale temp files removed`,
             );
           }
-        } catch (error) {
+        } catch (_error) {
           console.warn("Periodic cleanup failed:", error);
         }
       }

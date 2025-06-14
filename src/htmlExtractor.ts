@@ -185,7 +185,7 @@ export class HtmlExtractor {
         uniqueClasses: classes.size,
         metadata,
       };
-    } catch (error) {
+    } catch (_error) {
       metadata.errors.push(
         error instanceof Error ? error.message : String(error),
       );
@@ -224,7 +224,7 @@ export class HtmlExtractor {
       result.metadata.fileSize = stats.size;
 
       return result;
-    } catch (error) {
+    } catch (_error) {
       if (error instanceof HtmlParsingError || error instanceof FileReadError) {
         throw error;
       }
@@ -249,7 +249,7 @@ export class HtmlExtractor {
       try {
         const result = await this.extractFromFile(filePath);
         results.push(result);
-      } catch (error) {
+      } catch (_error) {
         // Create error result for failed files
         results.push({
           classes: new Map(),

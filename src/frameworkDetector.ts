@@ -183,7 +183,7 @@ export class FrameworkDetector {
       // Run all detectors
       const detectionPromises = Array.from(this.detectors.values())
         .filter((detector) => detector.canDetect(context))
-        .map((detector) => this.runDetector(detector, context));
+        .map((detector) => this.runDetector(detector, _context));
 
       const detectorResults = await Promise.allSettled(detectionPromises);
 
@@ -231,7 +231,7 @@ export class FrameworkDetector {
       }
 
       return result;
-    } catch (error) {
+    } catch (_error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
       throw new FrameworkDetectionError(
@@ -308,7 +308,7 @@ export class FrameworkDetector {
 
       // Analyze file structure
       context.fileStructure = await this.analyzeFileStructure(rootPath);
-    } catch (error) {
+    } catch (_error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
       throw new FrameworkDetectionError(
@@ -330,7 +330,7 @@ export class FrameworkDetector {
   ): Promise<FrameworkInfo | null> {
     try {
       return await detector.detect(context);
-    } catch (error) {
+    } catch (_error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
       throw new Error(`${detector.name} detector failed: ${errorMessage}`);
@@ -419,7 +419,7 @@ export class FrameworkDetector {
           // Continue on error
         }
       }
-    } catch (error) {
+    } catch (_error) {
       // Non-critical error - continue with empty patterns
     }
 
@@ -538,7 +538,7 @@ export class FrameworkDetector {
 
       // Additional detectors can be added here in the future
       // Vue, Angular, Svelte, etc.
-    } catch (error) {
+    } catch (_error) {
       // Continue without detectors if imports fail
     }
   }

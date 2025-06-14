@@ -262,7 +262,7 @@ export class RuntimeValidator extends EventEmitter {
         suggestions,
         performance: { validationTime: 0, rulesApplied: 1 },
       };
-    } catch (error) {
+    } catch (_error) {
       logger.error("Runtime validation failed", { field, error });
       
       const validationError = new ValidationError(
@@ -311,7 +311,7 @@ export class RuntimeValidator extends EventEmitter {
         errors,
         warnings
       };
-    } catch (error) {
+    } catch (_error) {
       errors.push(`Path validation failed: ${error instanceof Error ? error.message : String(error)}`);
       return {
         isValid: false,
@@ -366,7 +366,7 @@ export class RuntimeValidator extends EventEmitter {
         errors,
         warnings
       };
-    } catch (error) {
+    } catch (_error) {
       errors.push(`Constraint validation failed: ${error instanceof Error ? error.message : String(error)}`);
       return {
         isValid: false,
@@ -431,7 +431,7 @@ export class RuntimeValidator extends EventEmitter {
 
       // Update performance history
       this.updatePerformanceHistory();
-    } catch (error) {
+    } catch (_error) {
       logger.error("Runtime validation check failed", { error });
     }
   }

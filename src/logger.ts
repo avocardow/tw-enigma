@@ -222,7 +222,7 @@ export class Logger {
         console.error(`Logger file stream error: ${error.message}`);
         this.fileStream = undefined;
       });
-    } catch (error) {
+    } catch (_error) {
       console.error(
         `Failed to initialize file output: ${error instanceof Error ? error.message : String(error)}`,
       );
@@ -525,7 +525,7 @@ export class Logger {
       message += ` → ${details.result}`;
     }
 
-    this.trace(message, context);
+    this.trace(message, _context);
   }
 
   /**
@@ -539,7 +539,7 @@ export class Logger {
       message += `: ${details}`;
     }
 
-    this.debug(message, context);
+    this.debug(message, _context);
   }
 
   /**
@@ -662,7 +662,7 @@ export class Logger {
     const context = entry.context
       ? JSON.stringify(entry.context).replace(/"/g, '""')
       : "";
-    const error = entry.error
+    const _error = entry.error
       ? `${entry.error.name}: ${entry.error.message}`.replace(/"/g, '""')
       : "";
 
@@ -710,7 +710,7 @@ export class Logger {
 
         // Check if rotation is needed after write
         this.rotateLogsIfNeeded();
-      } catch (error) {
+      } catch (_error) {
         console.error(
           `Failed to write to log file: ${error instanceof Error ? error.message : String(error)}`,
         );
@@ -729,7 +729,7 @@ export class Logger {
   ): void {
     if (!this.shouldLog(level)) return;
 
-    const entry = this.createLogEntry(level, message, context, error);
+    const entry = this.createLogEntry(level, message, context, _error);
     this.output(entry);
   }
 
@@ -906,5 +906,5 @@ export function createLogger(
   component: string,
   options?: Partial<LoggerOptions>,
 ): Logger {
-  return logger.child(component, options);
+  return logger.child(component, _options);
 }

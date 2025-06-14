@@ -276,7 +276,7 @@ export class AtomicFileWriter {
       if (mergedOptions.createBackup && backupPath) {
         try {
           await fs.unlink(backupPath);
-        } catch (error) {
+        } catch (_error) {
           // Backup cleanup failure shouldn't fail the main operation
           console.warn(`Failed to cleanup backup file ${backupPath}:`, error);
         }
@@ -299,7 +299,7 @@ export class AtomicFileWriter {
 
       this.updateMetrics("write", true, result.duration, result.bytesProcessed);
       return result;
-    } catch (error) {
+    } catch (_error) {
       // Handle failure
       result.success = false;
       result.duration = Math.max(Date.now() - startTime, 0.1);
@@ -347,7 +347,7 @@ export class AtomicFileWriter {
         ...options,
         encoding: "utf8",
       });
-    } catch (error) {
+    } catch (_error) {
       const startTime = Date.now();
       const result: AtomicOperationResult = {
         success: false,
@@ -431,7 +431,7 @@ export class AtomicFileWriter {
           await this.rollbackFiles(successfulFiles);
           break;
         }
-      } catch (error) {
+      } catch (_error) {
         const startTime = Date.now();
         const failedResult: AtomicOperationResult = {
           success: false,
@@ -476,7 +476,7 @@ export class AtomicFileWriter {
     for (const filePath of filePaths) {
       try {
         await fs.unlink(filePath);
-      } catch (error) {
+      } catch (_error) {
         // Log but don't throw - rollback should be best effort
         console.warn(`Failed to rollback file ${filePath}:`, error);
       }
@@ -605,7 +605,7 @@ export class AtomicFileWriter {
           toDelete.map((backup) => fs.unlink(backup.path)),
         );
       }
-    } catch (error) {
+    } catch (_error) {
       // Backup cleanup failure shouldn't fail the main operation
       console.warn("Failed to cleanup old backups:", error);
     }
@@ -636,7 +636,7 @@ export class AtomicFileWriter {
   ): Promise<void> {
     if (content.length > options.bufferSize) {
       // Use streaming for large content
-      await this.writeStreamingToTempFile(tempPath, content, options);
+      await this.writeStreamingToTempFile(tempPath, content, _options);
     } else {
       // Direct write for small content
       await fs.writeFile(tempPath, content, {
@@ -716,7 +716,7 @@ export class AtomicFileWriter {
           await fd.close();
         }
       }
-    } catch (error) {
+    } catch (_error) {
       // Clean up on error
       try {
         await fs.unlink(tempPath);
@@ -757,7 +757,7 @@ export class AtomicFileWriter {
       const checksum = hash.digest("hex");
 
       return { success: true, checksum };
-    } catch (error) {
+    } catch (_error) {
       return {
         success: false,
         error: error instanceof Error ? error.message : "Verification failed",
@@ -789,7 +789,7 @@ export class AtomicFileWriter {
   ): Promise<void> {
     try {
       await fs.chmod(filePath, mode);
-    } catch (error) {
+    } catch (_error) {
       // Permission setting is not critical
       console.warn(`Failed to set permissions on ${filePath}:`, error);
     }
@@ -818,7 +818,7 @@ export class AtomicFileWriter {
             await fs.unlink(rollbackOp.filePath).catch(() => {});
             break;
         }
-      } catch (error) {
+      } catch (_error) {
         console.error(`Rollback step ${step.stepNumber} failed:`, error);
       }
     }

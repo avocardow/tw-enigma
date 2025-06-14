@@ -149,7 +149,7 @@ export class IntegrationManager extends EventEmitter {
           if (!stats.isDirectory()) {
             throw new Error(`Project root is not a directory: ${this.config.projectRoot}`);
           }
-        } catch (error) {
+        } catch (_error) {
           throw new Error(`Project root does not exist: ${this.config.projectRoot}`);
         }
       } else if (this.config.projectRoot === '/non-existent') {
@@ -179,7 +179,7 @@ export class IntegrationManager extends EventEmitter {
         detectedTools: this.status.detectedTools,
         activePlugins: this.status.activePlugins.length,
       });
-    } catch (error) {
+    } catch (_error) {
       this.status.errors++;
       logger.error("Failed to initialize integration manager", { error });
       throw error;
@@ -224,7 +224,7 @@ export class IntegrationManager extends EventEmitter {
       for (const error of result.errors) {
         logger.error("Detection error", { error });
       }
-    } catch (error) {
+    } catch (_error) {
       logger.error("Build tool detection failed", { error });
       throw error;
     }
@@ -279,7 +279,7 @@ export class IntegrationManager extends EventEmitter {
       this.emit("plugin-loaded", { name, buildTool: config.buildTool.type });
 
       logger.debug(`Plugin loaded successfully: ${name}`);
-    } catch (error) {
+    } catch (_error) {
       this.status.errors++;
       logger.error(`Failed to load plugin: ${name}`, { error });
       this.emit("plugin-error", { name, error: error as Error });
@@ -338,7 +338,7 @@ export class IntegrationManager extends EventEmitter {
           logger.warn(`Unknown build tool type: ${buildTool}`);
           return null;
       }
-    } catch (error) {
+    } catch (_error) {
       logger.error(`Failed to create plugin for ${buildTool}`, { error });
       return null;
     }
@@ -377,7 +377,7 @@ export class IntegrationManager extends EventEmitter {
         ...options,
       };
 
-      this.activeContexts.set(buildTool, context);
+      this.activeContexts.set(buildTool, _context);
       this.emit("build-started", { context });
 
       // Execute build with relevant plugins
@@ -413,7 +413,7 @@ export class IntegrationManager extends EventEmitter {
           if (pluginResult.optimization) {
             result.optimization = pluginResult.optimization;
           }
-        } catch (error) {
+        } catch (_error) {
           this.status.errors++;
           logger.error(
             `Plugin error during build: ${plugin.constructor.name}`,
@@ -438,7 +438,7 @@ export class IntegrationManager extends EventEmitter {
       });
 
       return result;
-    } catch (error) {
+    } catch (_error) {
       this.status.errors++;
       logger.error(`Build failed for ${buildTool}`, { error });
 
@@ -484,16 +484,16 @@ export class IntegrationManager extends EventEmitter {
           for (const plugin of relevantPlugins) {
             // Check for both onFileChange (test mock) and onHMRUpdate (real plugin) hooks
             if (plugin.hooks.onFileChange) {
-              await plugin.hooks.onFileChange(filePath, context);
+              await plugin.hooks.onFileChange(filePath, _context);
             } else if (plugin.hooks.onHMRUpdate) {
-              await plugin.hooks.onHMRUpdate(filePath, context);
+              await plugin.hooks.onHMRUpdate(filePath, _context);
             }
           }
 
           this.emit("hmr-update", { filePath, buildTool });
         }
       }
-    } catch (error) {
+    } catch (_error) {
       logger.error("Error handling file change", { filePath, error });
     }
   }
@@ -539,7 +539,7 @@ export class IntegrationManager extends EventEmitter {
         name,
         buildTool: plugin.supportedBuildTools[0] || "custom",
       });
-    } catch (error) {
+    } catch (_error) {
       this.status.errors++;
       logger.error(`Failed to register plugin: ${name}`, { error });
       this.emit("plugin-error", { name, error: error as Error });
@@ -608,7 +608,7 @@ export class IntegrationManager extends EventEmitter {
       this.status.lastUpdate = Date.now();
 
       logger.info("Integration manager shutdown completed");
-    } catch (error) {
+    } catch (_error) {
       logger.error("Error during shutdown", { error });
       throw error;
     }

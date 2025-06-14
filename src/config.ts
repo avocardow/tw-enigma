@@ -779,7 +779,7 @@ function validateConfig(config: unknown, filepath?: string): EnigmaConfig {
     const validatedConfig = EnigmaConfigSchema.parse(config);
     // Always return all top-level fields with defaults
     return validatedConfig;
-  } catch (error) {
+  } catch (_error) {
     if (error instanceof z.ZodError) {
       const issues = error.issues
         .map((issue) => `  - ${issue.path.join('.')}: ${issue.message}`)
@@ -846,7 +846,7 @@ async function loadConfigFromFile(
       filepath: result.filepath,
       isEmpty: result.isEmpty,
     };
-  } catch (error) {
+  } catch (_error) {
     configLogger.error("Failed to load configuration file", {
       configFile,
       searchFrom,
@@ -908,7 +908,7 @@ function loadConfigFromFileSync(
       filepath: result.filepath,
       isEmpty: result.isEmpty,
     };
-  } catch (error) {
+  } catch (_error) {
     configLogger.error("Failed to load configuration file (sync)", {
       configFile,
       searchFrom,
@@ -1060,7 +1060,7 @@ export class EnhancedConfigManager {
         backupId
       };
 
-    } catch (error) {
+    } catch (_error) {
       logger.error('Failed to load configuration', { error: error instanceof Error ? error.message : String(error) });
       throw error;
     }
@@ -1136,7 +1136,7 @@ export class EnhancedConfigManager {
         validation
       };
 
-    } catch (error) {
+    } catch (_error) {
       logger.error('Failed to update configuration', { error: error instanceof Error ? error.message : String(error) });
       return {
         success: false,
@@ -1198,7 +1198,7 @@ export class EnhancedConfigManager {
 
       return result;
 
-    } catch (error) {
+    } catch (_error) {
       logger.error('Failed to restore from backup', { error: error instanceof Error ? error.message : String(error) });
       return {
         success: false,
@@ -1217,7 +1217,7 @@ export class EnhancedConfigManager {
       }
 
       logger.info('Configuration manager cleaned up');
-    } catch (error) {
+    } catch (_error) {
       logger.error('Error during cleanup', { error: error instanceof Error ? error.message : String(error) });
     }
   }
@@ -1277,7 +1277,7 @@ export class EnhancedConfigManager {
         return { migrated: false, result };
       }
 
-    } catch (error) {
+    } catch (_error) {
       logger.error('Error during migration', { error: error instanceof Error ? error.message : String(error) });
       return { migrated: false };
     }
@@ -1343,7 +1343,7 @@ export class EnhancedConfigManager {
         // Reload and validate configuration
         await this.loadConfig();
         logger.info('Configuration reloaded successfully');
-      } catch (error) {
+      } catch (_error) {
         logger.error('Failed to reload configuration after change', { error: error instanceof Error ? error.message : String(error) });
       }
     });
@@ -1430,7 +1430,7 @@ export function createEnhancedConfigManager(
     createBackupOnLoad?: boolean;
   }
 ): EnhancedConfigManager {
-  return new EnhancedConfigManager(environment, options);
+  return new EnhancedConfigManager(environment, _options);
 }
 
 /**
@@ -1476,7 +1476,7 @@ export async function loadConfig(cliArgs?: CliArguments, searchFrom?: string): P
       filepath,
       isEmpty
     };
-  } catch (error) {
+  } catch (_error) {
     // If error is already a ConfigError, rethrow
     if (error instanceof ConfigError) throw error;
     // If loading fails, create default config with CLI args, but only if valid
@@ -1520,7 +1520,7 @@ export function loadConfigSync(cliArgs?: CliArguments, searchFrom?: string): Con
       filepath,
       isEmpty
     };
-  } catch (error) {
+  } catch (_error) {
     // If error is already a ConfigError, rethrow
     if (error instanceof ConfigError) throw error;
     // If loading fails, create default config with CLI args, but only if valid

@@ -234,7 +234,7 @@ export class CssOutputOrchestrator {
     try {
       await this.ensureOutputDirectory(options.outputDir);
       outputDirectories.push(options.outputDir);
-    } catch (error) {
+    } catch (_error) {
       outputDirAvailable = false;
       warnings.push(
         `Failed to create output directory ${options.outputDir}: ${error instanceof Error ? error.message : String(error)}. File outputs will be skipped.`,
@@ -253,7 +253,7 @@ export class CssOutputOrchestrator {
 
         // Collect warnings
         warnings.push(...this.validateBundleResult(result));
-      } catch (error) {
+      } catch (_error) {
         warnings.push(
           `Failed to process bundle ${bundle.id}: ${error instanceof Error ? error.message : String(error)}`,
         );
@@ -287,7 +287,7 @@ export class CssOutputOrchestrator {
       try {
         const manifestPath = path.join(options.outputDir, "css-manifest.json");
         await this.manifestGenerator.saveManifest(manifest, manifestPath);
-      } catch (error) {
+      } catch (_error) {
         warnings.push(
           `Failed to save manifest: ${error instanceof Error ? error.message : String(error)}`,
         );
@@ -326,7 +326,7 @@ export class CssOutputOrchestrator {
     const startTime = Date.now();
 
     // Step 1: Generate chunks based on strategy (move this before analysis)
-    const chunks = await this.generateChunks(bundle, options);
+    const chunks = await this.generateChunks(bundle, _options);
 
     // Step 2: Analyze chunks if needed (after chunks are created)
     // Note: CSS analysis is optional and primarily for reporting
@@ -337,7 +337,7 @@ export class CssOutputOrchestrator {
         analyzeMediaQueries: true,
         analyzeDuplicates: true,
       });
-    } catch (error) {
+    } catch (_error) {
       console.warn('CSS analysis failed:', error instanceof Error ? error.message : String(error));
       // Continue without analysis - it's not critical for processing
     }
@@ -366,7 +366,7 @@ export class CssOutputOrchestrator {
     }
 
     // Step 6: Extract critical CSS if enabled
-    const criticalCss = await this.extractCriticalCss(bundle, chunks, options);
+    const criticalCss = await this.extractCriticalCss(bundle, chunks, _options);
 
     // Step 7: Write output files
     const outputPaths = await this.writeOutputFiles(
@@ -379,7 +379,7 @@ export class CssOutputOrchestrator {
 
     // Step 8: Generate source maps if enabled
     const sourceMaps = options.sourceMaps
-      ? await this.generateSourceMaps(chunks, optimizations, options)
+      ? await this.generateSourceMaps(chunks, optimizations, _options)
       : [];
 
     // Calculate processing statistics
@@ -513,7 +513,7 @@ export class CssOutputOrchestrator {
       }
 
       return chunks;
-    } catch (error) {
+    } catch (_error) {
       console.warn(`Chunking failed for strategy ${strategy}:`, error);
       // Fallback to single chunk on error
       return [
@@ -889,7 +889,7 @@ export class CssOutputOrchestrator {
   private async ensureOutputDirectory(dir: string): Promise<void> {
     try {
       await mkdir(dir, { recursive: true });
-    } catch (error) {
+    } catch (_error) {
       if (error instanceof Error) {
         // Handle permission errors gracefully for test scenarios
         if (error.code === 'EACCES' || error.code === 'EPERM') {

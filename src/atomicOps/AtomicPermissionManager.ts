@@ -135,7 +135,7 @@ export class AtomicPermissionManager {
       this.updateMetrics("write", true, result.duration, 0);
 
       return result;
-    } catch (error) {
+    } catch (_error) {
       result.error = {
         code: "PERMISSION_FAILED",
         message: error instanceof Error ? error.message : "Permission change failed",
@@ -213,7 +213,7 @@ export class AtomicPermissionManager {
       this.updateMetrics("write", true, result.duration, 0);
 
       return result;
-    } catch (error) {
+    } catch (_error) {
       result.error = {
         code: "OWNERSHIP_FAILED",
         message: error instanceof Error ? error.message : "Ownership change failed",
@@ -269,7 +269,7 @@ export class AtomicPermissionManager {
       }
 
       return result;
-    } catch (error) {
+    } catch (_error) {
       return {
         success: false,
         operation: "write", // Use valid operation type

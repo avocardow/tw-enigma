@@ -828,7 +828,7 @@ export class FileIntegrityValidator {
     // Validate and merge options with defaults
     try {
       this.options = FileIntegrityOptionsSchema.parse(options);
-    } catch (error) {
+    } catch (_error) {
       throw new ConfigError(
         "Invalid file integrity validation options",
         undefined,
@@ -1009,7 +1009,7 @@ export class FileIntegrityValidator {
           );
         });
       });
-    } catch (error) {
+    } catch (_error) {
       const processingTime = Date.now() - startTime;
       this.logger.error("Checksum calculation failed", {
         filePath: resolvedPath,
@@ -1100,7 +1100,7 @@ export class FileIntegrityValidator {
       });
 
       return checksumInfo;
-    } catch (error) {
+    } catch (_error) {
       const processingTime = Date.now() - startTime;
       this.logger.error("Checksum calculation failed (sync)", {
         filePath: resolvedPath,
@@ -1222,7 +1222,7 @@ export class FileIntegrityValidator {
       }
 
       return result;
-    } catch (error) {
+    } catch (_error) {
       const processingTime = Date.now() - startTime;
       this.logger.error("File integrity validation error", {
         filePath: resolvedPath,
@@ -1307,7 +1307,7 @@ export class FileIntegrityValidator {
       });
 
       return batchResult;
-    } catch (error) {
+    } catch (_error) {
       const totalProcessingTime = Date.now() - startTime;
       this.logger.error("Batch validation failed", {
         error: error instanceof Error ? error.message : String(error),
@@ -1366,7 +1366,7 @@ export class FileIntegrityValidator {
         checksum2,
         processingTime,
       };
-    } catch (error) {
+    } catch (_error) {
       const processingTime = Date.now() - startTime;
       this.logger.error("File comparison failed", {
         file1: filePath1,
@@ -1414,7 +1414,7 @@ export class FileIntegrityValidator {
         readable: true,
         size: stats.size,
       };
-    } catch (error) {
+    } catch (_error) {
       this.logger.debug("File access verification failed", {
         filePath: resolvedPath,
         error: error instanceof Error ? error.message : String(error),
@@ -1605,7 +1605,7 @@ export class FileIntegrityValidator {
         indexPath: this.deduplicationIndexPath,
         totalEntries: this.deduplicationIndex.totalEntries,
       });
-    } catch (error) {
+    } catch (_error) {
       this.logger.error("Failed to save deduplication index", {
         indexPath: this.deduplicationIndexPath,
         error: error instanceof Error ? error.message : String(error),
@@ -1711,7 +1711,7 @@ export class FileIntegrityValidator {
           );
         });
       });
-    } catch (error) {
+    } catch (_error) {
       throw new IntegrityError(
         `Content hash calculation failed: ${error instanceof Error ? error.message : String(error)}`,
         "CONTENT_HASH_ERROR",
@@ -1759,7 +1759,7 @@ export class FileIntegrityValidator {
       // Check if file exists first
       try {
         await stat(resolvedPath);
-      } catch (error) {
+      } catch (_error) {
         const processingTime = Date.now() - startTime;
         return {
           deduplicated: false,
@@ -1813,7 +1813,7 @@ export class FileIntegrityValidator {
               source: existingEntry.storagePath,
               target: finalTargetPath,
             });
-          } catch (error) {
+          } catch (_error) {
             // Fallback to copy if hard linking fails
             await copyFile(existingEntry.storagePath, finalTargetPath);
             this.logger.debug(
@@ -1892,7 +1892,7 @@ export class FileIntegrityValidator {
                   target: finalTargetPath,
                 },
               );
-            } catch (error) {
+            } catch (_error) {
               await copyFile(storagePath, finalTargetPath);
               this.logger.debug(
                 "Hard link failed, used copy for new deduplicated content",
@@ -1930,7 +1930,7 @@ export class FileIntegrityValidator {
           processingTime,
         };
       }
-    } catch (error) {
+    } catch (_error) {
       const processingTime = Date.now() - startTime;
       this.logger.error("File deduplication failed", {
         filePath: resolvedPath,
@@ -2031,7 +2031,7 @@ export class FileIntegrityValidator {
         chainLength: this.incrementalIndex.stats.chainLength,
         lastBackup: this.incrementalIndex.stats.lastBackupAt,
       });
-    } catch (error) {
+    } catch (_error) {
       // Initialize new index if file doesn't exist
       this.incrementalIndex = {
         version: "1.0.0",
@@ -2088,7 +2088,7 @@ export class FileIntegrityValidator {
         indexPath: this.incrementalIndexPath,
         backupCount: this.incrementalIndex.stats.totalBackups,
       });
-    } catch (error) {
+    } catch (_error) {
       this.logger.error("Failed to save incremental index", {
         error: error instanceof Error ? error.message : String(error),
         indexPath: this.incrementalIndexPath,
@@ -2163,7 +2163,7 @@ export class FileIntegrityValidator {
       });
 
       return currentState;
-    } catch (error) {
+    } catch (_error) {
       this.logger.error("File change detection failed", {
         filePath: resolvedPath,
         error: error instanceof Error ? error.message : String(error),
@@ -2372,7 +2372,7 @@ export class FileIntegrityValidator {
       });
 
       return result;
-    } catch (error) {
+    } catch (_error) {
       const processingTime = Date.now() - startTime;
       this.logger.error("Incremental backup creation failed", {
         filePath: resolvedPath,
@@ -2522,7 +2522,7 @@ export class FileIntegrityValidator {
         this.logger.debug("Created new differential index");
         return this.differentialIndex;
       }
-    } catch (error) {
+    } catch (_error) {
       this.logger.error("Failed to load differential index", {
         error: error instanceof Error ? error.message : String(error),
       });
@@ -2550,7 +2550,7 @@ export class FileIntegrityValidator {
         totalDifferentials: this.differentialIndex.stats.totalDifferentials,
         cumulativeSize: this.differentialIndex.stats.cumulativeSize,
       });
-    } catch (error) {
+    } catch (_error) {
       this.logger.error("Failed to save differential index", {
         error: error instanceof Error ? error.message : String(error),
       });
@@ -2928,7 +2928,7 @@ export class FileIntegrityValidator {
         success: true,
         createdAt: currentTime,
       };
-    } catch (error) {
+    } catch (_error) {
       const processingTime = Date.now() - startTime;
       this.logger.error("Differential backup failed", {
         filePath: resolvedPath,
@@ -3284,7 +3284,7 @@ export class FileIntegrityValidator {
             try {
               const result = await processor(filePath);
               return { result, filePath };
-            } catch (error) {
+            } catch (_error) {
               return {
                 error: error instanceof Error ? error.message : String(error),
                 filePath,
@@ -3299,7 +3299,7 @@ export class FileIntegrityValidator {
             try {
               const result = await processor(filePath);
               batchResults.push({ result, filePath });
-            } catch (error) {
+            } catch (_error) {
               batchResults.push({
                 error: error instanceof Error ? error.message : String(error),
                 filePath,
@@ -3409,7 +3409,7 @@ export class FileIntegrityValidator {
       });
 
       return result;
-    } catch (error) {
+    } catch (_error) {
       const totalTime = Date.now() - startTime;
 
       this.logger.error(`Batch operation failed: ${operation}`, {
@@ -3585,7 +3585,7 @@ export class FileIntegrityValidator {
       });
 
       return result;
-    } catch (error) {
+    } catch (_error) {
       const processingTime = Date.now() - startTime;
       this.logger.error("Backup creation failed", {
         filePath: resolvedPath,
@@ -3625,7 +3625,7 @@ export class FileIntegrityValidator {
         backupPath,
         algorithm: this.options.compressionAlgorithm,
       });
-    } catch (error) {
+    } catch (_error) {
       // Clean up incomplete backup file
       try {
         await unlink(backupPath);
@@ -3672,7 +3672,7 @@ export class FileIntegrityValidator {
         backupPath,
         targetPath,
       });
-    } catch (error) {
+    } catch (_error) {
       // Clean up incomplete restored file
       try {
         await unlink(targetPath);
@@ -3727,7 +3727,7 @@ export class FileIntegrityValidator {
             originalPath: resolvedPath,
             safetyBackupPath: currentFileBackupPath,
           });
-        } catch (error) {
+        } catch (_error) {
           this.logger.warn(
             "Failed to create safety backup, proceeding anyway",
             {
@@ -3799,7 +3799,7 @@ export class FileIntegrityValidator {
               );
             }
           }
-        } catch (error) {
+        } catch (_error) {
           this.logger.error("Rollback verification failed", {
             error: error instanceof Error ? error.message : String(error),
           });
@@ -3834,7 +3834,7 @@ export class FileIntegrityValidator {
       });
 
       return result;
-    } catch (error) {
+    } catch (_error) {
       const processingTime = Date.now() - startTime;
       this.logger.error("Rollback failed", {
         filePath: resolvedPath,
@@ -3921,7 +3921,7 @@ export class FileIntegrityValidator {
               size: stats.size,
             });
           }
-        } catch (error) {
+        } catch (_error) {
           const errorMsg = `Failed to clean backup ${file}: ${error instanceof Error ? error.message : String(error)}`;
           errors.push(errorMsg);
           this.logger.warn("Backup cleanup error", { file, error: errorMsg });
@@ -3938,7 +3938,7 @@ export class FileIntegrityValidator {
       });
 
       return { cleaned, errors, totalSize };
-    } catch (error) {
+    } catch (_error) {
       this.logger.error("Backup cleanup failed", {
         backupDirectory: backupDir,
         error: error instanceof Error ? error.message : String(error),
@@ -4105,7 +4105,7 @@ export class FileIntegrityValidator {
       });
 
       return largeProjectResult;
-    } catch (error) {
+    } catch (_error) {
       this.logger.error("Large project processing failed", {
         operation,
         error: error instanceof Error ? error.message : String(error),

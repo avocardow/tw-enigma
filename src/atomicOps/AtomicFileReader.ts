@@ -177,7 +177,7 @@ export class AtomicFileReader {
       result.fileStats = stats;
 
       this.updateMetrics("read", true, Date.now() - startTime, stats.size);
-    } catch (error) {
+    } catch (_error) {
       result.error = {
         code: this.getErrorCode(error),
         message: error instanceof Error ? error.message : String(error),
@@ -235,7 +235,7 @@ export class AtomicFileReader {
       }
 
       return { ...readResult, content: data };
-    } catch (error) {
+    } catch (_error) {
       return {
         ...readResult,
         success: false,

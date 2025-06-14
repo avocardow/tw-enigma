@@ -185,7 +185,7 @@ export class AtomicRollbackManager {
       }, 1000);
 
       this.updateMetrics("write", true, Date.now() - transaction.startTime, 0);
-    } catch (error) {
+    } catch (_error) {
       transaction.status = "failed";
       this.updateMetrics(
         "write",
@@ -262,7 +262,7 @@ export class AtomicRollbackManager {
         try {
           await this.executeRollbackOperation(operation);
           totalBytesProcessed += operation.fileSize || 0;
-        } catch (error) {
+        } catch (_error) {
           errors.push(error as Error);
           console.warn(
             `Failed to rollback operation ${operation.operationId}:`,
@@ -300,7 +300,7 @@ export class AtomicRollbackManager {
       );
 
       return result;
-    } catch (error) {
+    } catch (_error) {
       transaction.status = "failed";
       result.error = {
         code: "ROLLBACK_ERROR",
@@ -328,7 +328,7 @@ export class AtomicRollbackManager {
         // Delete the created file
         try {
           await fs.unlink(operation.filePath);
-        } catch (error) {
+        } catch (_error) {
           if (!(error && typeof error === 'object' && 'code' in error && error.code === "ENOENT")) {
             throw error;
           }
@@ -374,7 +374,7 @@ export class AtomicRollbackManager {
         // Remove the created directory
         try {
           await fs.rmdir(operation.filePath);
-        } catch (error) {
+        } catch (_error) {
           if (!(error && typeof error === 'object' && 'code' in error && error.code === "ENOENT")) {
             throw error;
           }
@@ -441,7 +441,7 @@ export class AtomicRollbackManager {
     for (const transactionId of activeTransactionIds) {
       try {
         await this.rollbackTransaction(transactionId);
-      } catch (error) {
+      } catch (_error) {
         console.warn(
           `Failed to rollback transaction ${transactionId} during shutdown:`,
           error,

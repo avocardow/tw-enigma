@@ -120,7 +120,7 @@ export class MyCustomPlugin extends BaseEnigmaPlugin {
 
       this.logger.debug("Plugin validation passed");
       return true;
-    } catch (error) {
+    } catch (_error) {
       this.logger.error("Plugin validation failed", { error });
       return false;
     }

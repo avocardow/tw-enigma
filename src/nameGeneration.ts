@@ -399,7 +399,7 @@ export function validateNameGenerationOptions(
 ): NameGenerationOptions {
   try {
     return NameGenerationOptionsSchema.parse(options);
-  } catch (error) {
+  } catch (_error) {
     throw new NameGenerationError(
       `Invalid name generation options: ${error instanceof Error ? error.message : String(error)}`,
       error instanceof Error ? error : undefined,
@@ -741,7 +741,7 @@ export function validateBaseConversions(
           `Base-36 conversion failed for ${i}: ${base36} -> ${back36}`,
         );
       }
-    } catch (error) {
+    } catch (_error) {
       errors.push(
         `Error testing conversion for ${i}: ${error instanceof Error ? error.message : String(error)}`,
       );
@@ -1199,7 +1199,7 @@ function handlePrettyNameExhaustion(
         };
       }
 
-      const sequentialName = generateSequentialName(index, options);
+      const sequentialName = generateSequentialName(index, _options);
       return {
         name: sequentialName,
         length: sequentialName.length,
@@ -1226,8 +1226,8 @@ function handlePrettyNameExhaustion(
       }
 
       // Use hybrid approach: try to make sequential names more aesthetic
-      const baseName = generateSequentialName(index, options);
-      const enhancedName = enhanceNameAesthetics(baseName, options);
+      const baseName = generateSequentialName(index, _options);
+      const enhancedName = enhanceNameAesthetics(baseName, _options);
       return {
         name: enhancedName,
         length: enhancedName.length,
@@ -1398,7 +1398,7 @@ export function batchGenerateAvailableNames(
   const startTime = Date.now();
 
   for (let i = 0; i < count; i++) {
-    const result = generateNextAvailableName(cache, options);
+    const result = generateNextAvailableName(cache, _options);
     results.push(result);
 
     // Performance monitoring for large batches
@@ -2183,7 +2183,7 @@ function generateSequentialMapping(
   const cache = createNameCollisionCache(options);
 
   for (const className of classNames) {
-    const result = generateNextAvailableName(cache, options);
+    const result = generateNextAvailableName(cache, _options);
     nameMap.set(className, result.name);
   }
 
@@ -2198,7 +2198,7 @@ function generateHybridMapping(
   options: NameGenerationOptions,
 ): Map<string, string> {
   const nameMap = new Map<string, string>();
-  const sortedClasses = sortByFrequency(frequencyMap, options);
+  const sortedClasses = sortByFrequency(frequencyMap, _options);
 
   // Use frequency optimization for top 50%, sequential for rest
   const splitPoint = Math.floor(sortedClasses.length * 0.5);
@@ -2209,7 +2209,7 @@ function generateHybridMapping(
   const highFreqMap = new Map(
     highFrequencyClasses.map((item) => [item.name, item.data]),
   );
-  const optimizedMap = optimizeByFrequency(highFreqMap, options);
+  const optimizedMap = optimizeByFrequency(highFreqMap, _options);
 
   // Add to result
   for (const [className, optimizedName] of optimizedMap.entries()) {
@@ -2224,7 +2224,7 @@ function generateHybridMapping(
   }
 
   for (const item of lowFrequencyClasses) {
-    const result = generateNextAvailableName(cache, options);
+    const result = generateNextAvailableName(cache, _options);
     nameMap.set(item.name, result.name);
   }
 
@@ -2239,7 +2239,7 @@ function generatePrettyMapping(
   options: NameGenerationOptions,
 ): Map<string, string> {
   const nameMap = new Map<string, string>();
-  const sortedClasses = sortByFrequency(frequencyMap, options);
+  const sortedClasses = sortByFrequency(frequencyMap, _options);
 
   // Create a shared pretty name cache for efficient permutation management
   const prettyCache = createPrettyNameCache(
@@ -2275,7 +2275,7 @@ function generatePrettyMapping(
 
       nameMap.set(classItem.name, prettyResult.name);
       index++;
-    } catch (error) {
+    } catch (_error) {
       // If pretty name generation fails completely, fall back to sequential
       if (
         error instanceof PrettyNameExhaustionError &&
@@ -2285,7 +2285,7 @@ function generatePrettyMapping(
       }
 
       // Fallback to sequential generation
-      const fallbackResult = generateNextAvailableName(collisionCache, options);
+      const fallbackResult = generateNextAvailableName(collisionCache, _options);
       nameMap.set(classItem.name, fallbackResult.name);
       statistics.fallbackCount++;
       index++;

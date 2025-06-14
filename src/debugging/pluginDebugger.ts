@@ -111,7 +111,7 @@ export class PluginDebugger {
       // Process the input
       let output: string;
       if (plugin.processCss) {
-        output = await plugin.processCss(input, context);
+        output = await plugin.processCss(input, _context);
       } else {
         throw new Error("Plugin does not implement processCss method");
       }
@@ -151,7 +151,7 @@ export class PluginDebugger {
         outputLength: output.length,
         reduction: input.length - output.length,
       });
-    } catch (error) {
+    } catch (_error) {
       result.error = error instanceof Error ? error : new Error(String(error));
       result.success = false;
 
@@ -219,7 +219,7 @@ export class PluginDebugger {
         };
 
         results.push(result);
-      } catch (error) {
+      } catch (_error) {
         const failedResult: DebugResult = {
           pluginName: plugin.meta?.name || "unknown",
           success: false,
@@ -270,8 +270,8 @@ export class PluginDebugger {
     });
 
     const [resultA, resultB] = await Promise.all([
-      this.testPlugin(pluginA, input, context),
-      this.testPlugin(pluginB, input, context),
+      this.testPlugin(pluginA, input, _context),
+      this.testPlugin(pluginB, input, _context),
     ]);
 
     const comparison = {
@@ -315,7 +315,7 @@ export class PluginDebugger {
       });
 
       return testCases;
-    } catch (error) {
+    } catch (_error) {
       this.logger.error(`Failed to load test cases from ${filePath}`, {
         error,
       });
@@ -388,7 +388,7 @@ export class PluginDebugger {
 
       await fs.writeFile(filepath, JSON.stringify(debugData, null, 2));
       this.logger.debug(`Debug result saved to ${filepath}`);
-    } catch (error) {
+    } catch (_error) {
       this.logger.error("Failed to save debug result", { error });
     }
   }
@@ -425,7 +425,7 @@ export class PluginDebugger {
 
       await fs.writeFile(filepath, JSON.stringify(suiteData, null, 2));
       this.logger.debug(`Test suite results saved to ${filepath}`);
-    } catch (error) {
+    } catch (_error) {
       this.logger.error("Failed to save test suite results", { error });
     }
   }
@@ -529,5 +529,5 @@ export async function quickTestPlugin(
     utils: {} as any, // Simplified for testing
   };
 
-  return pluginDebugger.testPlugin(plugin, css, context);
+  return pluginDebugger.testPlugin(plugin, css, _context);
 }

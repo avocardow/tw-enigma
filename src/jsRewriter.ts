@@ -477,7 +477,7 @@ export class JSRewriter {
 
       this.updateStatistics(result, Date.now() - startTime);
       return result;
-    } catch (error) {
+    } catch (_error) {
       const errorResult: JSReplacementResult = {
         modified: false,
         code: content,
@@ -670,7 +670,7 @@ export class JSRewriter {
         errors,
         performance: performanceMetrics,
       };
-    } catch (error) {
+    } catch (_error) {
       const errorMessage =
         error instanceof Error ? error.message : "Unknown error";
 
@@ -748,7 +748,7 @@ export class JSRewriter {
       }
 
       return ast;
-    } catch (error) {
+    } catch (_error) {
       throw new Error(
         `Failed to parse ${filePath}: ${error instanceof Error ? error.message : "Unknown error"}`,
       );
@@ -812,7 +812,7 @@ export class JSRewriter {
             fileType,
             transformationErrors,
           );
-        } catch (error) {
+        } catch (_error) {
           if (this.config.errorHandling.continueOnError) {
             const errorMessage =
               error instanceof Error
@@ -838,7 +838,7 @@ export class JSRewriter {
             filePath,
             fileType,
           );
-        } catch (error) {
+        } catch (_error) {
           if (this.config.errorHandling.continueOnError) {
             const errorMessage =
               error instanceof Error
@@ -864,7 +864,7 @@ export class JSRewriter {
             filePath,
             fileType,
           );
-        } catch (error) {
+        } catch (_error) {
           if (this.config.errorHandling.continueOnError) {
             const errorMessage =
               error instanceof Error
@@ -891,7 +891,7 @@ export class JSRewriter {
             fileType,
             transformationErrors,
           );
-        } catch (error) {
+        } catch (_error) {
           if (this.config.errorHandling.continueOnError) {
             const errorMessage =
               error instanceof Error
@@ -936,7 +936,7 @@ export class JSRewriter {
     // Phase 4: Apply resolved matches to AST
     try {
       this.applyMatchesToAST(resolvedMatches);
-    } catch (error) {
+    } catch (_error) {
       if (this.config.errorHandling.continueOnError) {
         const errorMessage =
           error instanceof Error ? error.message : "AST application error";
@@ -1241,11 +1241,11 @@ export class JSRewriter {
       case "priority":
         return this.resolvePriorityStrategy(matches, conflicts);
       case "merge":
-        return this.resolveMergeStrategy(matches, conflicts, context);
+        return this.resolveMergeStrategy(matches, conflicts, _context);
       case "split":
         return this.resolveSplitStrategy(matches, conflicts);
       case "auto":
-        return this.resolveAutoStrategy(matches, conflicts, context);
+        return this.resolveAutoStrategy(matches, conflicts, _context);
       default:
         return this.resolvePriorityStrategy(matches, conflicts);
     }
@@ -1452,7 +1452,7 @@ export class JSRewriter {
    */
   private setupErrorHandling(): void {
     if (!this.config.errorHandling.onError) {
-      this.config.errorHandling.onError = (error, context) => {
+      this.config.errorHandling.onError = (error, _context) => {
         console.error(
           `Error in ${context.phase} for ${context.filePath}:`,
           error.message,
@@ -1876,7 +1876,7 @@ export class JSRewriter {
     const originalValue = stringNode.value || "";
 
     for (const rule of this.getApplicableRules(context)) {
-      const ruleMatches = this.findPatternMatches(originalValue, rule, context);
+      const ruleMatches = this.findPatternMatches(originalValue, rule, _context);
 
       for (const match of ruleMatches) {
         if (this.validateReplacementContext(match, context, attributePath)) {
@@ -2009,8 +2009,8 @@ export class JSRewriter {
         let replacement: string;
         if (typeof rule.replacement === "function") {
           try {
-            replacement = rule.replacement(matchedText, context);
-          } catch (error) {
+            replacement = rule.replacement(matchedText, _context);
+          } catch (_error) {
             // Collect error for reporting
             if (errors) {
               const errorMessage =
@@ -2047,7 +2047,7 @@ export class JSRewriter {
           globalPattern.lastIndex++;
         }
       }
-    } catch (error) {
+    } catch (_error) {
       // Collect error for reporting
       if (errors) {
         const errorMessage =

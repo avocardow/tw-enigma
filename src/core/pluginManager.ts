@@ -183,7 +183,7 @@ export class EnigmaPluginManager implements PluginManager {
             });
           });
         }
-      } catch (error) {
+      } catch (_error) {
         logger.error(`Error during plugin ${pluginName} cleanup`, { error });
       }
     }
@@ -238,7 +238,7 @@ export class EnigmaPluginManager implements PluginManager {
         const sandboxResult = await this.sandbox.createSandbox(plugin, config);
         context.sandboxId = sandboxResult.sandboxId;
         this.activeSandboxes.set(pluginName, sandboxResult.sandboxId);
-      } catch (error) {
+      } catch (_error) {
         logger.error(`Failed to create sandbox for plugin ${pluginName}`, {
           error,
         });
@@ -276,9 +276,9 @@ export class EnigmaPluginManager implements PluginManager {
       // Record successful execution
       this.recordSuccessfulExecution(context);
       return result as T;
-    } catch (error) {
+    } catch (_error) {
       // Record failed execution
-      this.recordFailedExecution(context, error);
+      this.recordFailedExecution(context, _error);
       throw error;
     } finally {
       // Clean up sandbox if it was created for this execution
@@ -585,7 +585,7 @@ export class EnigmaPluginManager implements PluginManager {
         });
 
         logger.debug(`Plugin ${config.name} initialized successfully`);
-      } catch (error) {
+      } catch (_error) {
         const errorMessage =
           error instanceof Error ? error.message : String(error);
         logger.error(`Failed to initialize plugin ${config.name}`, {
@@ -620,7 +620,7 @@ export class EnigmaPluginManager implements PluginManager {
       async ([pluginName, sandboxId]) => {
         try {
           await this.sandbox.terminateSandbox(sandboxId, "Manager cleanup");
-        } catch (error) {
+        } catch (_error) {
           logger.error(`Error terminating sandbox for ${pluginName}`, {
             error,
           });
@@ -636,7 +636,7 @@ export class EnigmaPluginManager implements PluginManager {
             await plugin.cleanup();
           }
           logger.debug(`Plugin ${name} cleaned up successfully`);
-        } catch (error) {
+        } catch (_error) {
           logger.error(`Error cleaning up plugin ${name}`, { error });
         }
       },
@@ -675,7 +675,7 @@ export class EnigmaPluginManager implements PluginManager {
       try {
         const plugins = await this.discoverFromDirectory(searchPath);
         discoveredPlugins.push(...plugins);
-      } catch (error) {
+      } catch (_error) {
         logger.warn(`Failed to discover plugins from ${searchPath}`, { error });
       }
     }
@@ -685,7 +685,7 @@ export class EnigmaPluginManager implements PluginManager {
       try {
         const plugins = await this.discoverFromNpm(options.npmPrefixes);
         discoveredPlugins.push(...plugins);
-      } catch (error) {
+      } catch (_error) {
         logger.warn("Failed to discover npm plugins", { error });
       }
     }
@@ -697,7 +697,7 @@ export class EnigmaPluginManager implements PluginManager {
         if (plugin) {
           discoveredPlugins.push(plugin);
         }
-      } catch (error) {
+      } catch (_error) {
         logger.warn(`Failed to load local plugin ${localPlugin}`, { error });
       }
     }
@@ -961,12 +961,12 @@ export class EnigmaPluginManager implements PluginManager {
             if (plugin) {
               plugins.push(plugin);
             }
-          } catch (error) {
+          } catch (_error) {
             logger.debug(`Failed to load plugin from ${fullPath}`, { error });
           }
         }
       }
-    } catch (error) {
+    } catch (_error) {
       logger.debug(`Cannot read directory ${searchPath}`, { error });
     }
 
@@ -1006,7 +1006,7 @@ export class EnigmaPluginManager implements PluginManager {
 
       logger.debug(`File ${filePath} does not export a valid EnigmaPlugin`);
       return null;
-    } catch (error) {
+    } catch (_error) {
       logger.debug(`Failed to load plugin from ${filePath}`, { error });
       return null;
     }
@@ -1026,7 +1026,7 @@ export class EnigmaPluginManager implements PluginManager {
       );
       const builtins = await this.discoverFromDirectory(builtinsPath);
       plugins.push(...builtins);
-    } catch (error) {
+    } catch (_error) {
       logger.debug("No built-in plugins directory found", { error });
     }
 

@@ -323,7 +323,7 @@ export class BatchCoordinator extends EventEmitter {
       });
 
       return results;
-    } catch (error) {
+    } catch (_error) {
       logger.error("Batch execution failed", {
         error: error instanceof Error ? error.message : String(error),
         processedJobs: results.length,
@@ -442,7 +442,7 @@ export class BatchCoordinator extends EventEmitter {
           this.processJob(job);
         }
       }
-    } catch (error) {
+    } catch (_error) {
       logger.error("Processing loop error", {
         error: error instanceof Error ? error.message : String(error),
       });
@@ -459,7 +459,7 @@ export class BatchCoordinator extends EventEmitter {
     const processor = this.processors.get(job.type) as JobProcessor<T, R>;
 
     if (!processor) {
-      const error = new Error(`No processor found for job type: ${job.type}`);
+      const _error = new Error(`No processor found for job type: ${job.type}`);
       this.handleJobResult(job, { success: false, error, duration: 0 });
       return;
     }
@@ -486,7 +486,7 @@ export class BatchCoordinator extends EventEmitter {
     try {
       const result = await processingPromise;
       this.handleJobResult(job, result);
-    } catch (error) {
+    } catch (_error) {
       this.handleJobResult(job, {
         success: false,
         error: error instanceof Error ? error : new Error(String(error)),
@@ -535,7 +535,7 @@ export class BatchCoordinator extends EventEmitter {
           retryCount: job.retryCount || 0,
           metadata: job.metadata,
         });
-      } catch (error) {
+      } catch (_error) {
         clearTimeout(timeout);
         const duration = (performance.now() - startTime) / 1000;
 

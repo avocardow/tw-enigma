@@ -211,7 +211,7 @@ export class AtomicOperationsSystem {
       }
 
       return result;
-    } catch (error) {
+    } catch (_error) {
       // Rollback on error
       await this.rollbackManager.rollbackTransaction(transactionId);
       throw error;

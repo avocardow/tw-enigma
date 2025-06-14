@@ -162,7 +162,7 @@ export class OptimizationCacheIntegration extends EventEmitter {
       bypassCache: options.bypassCache,
     };
 
-    this.activeOperations.set(operationId, context);
+    this.activeOperations.set(operationId, _context);
 
     try {
       // Check if cache should be bypassed
@@ -198,7 +198,7 @@ export class OptimizationCacheIntegration extends EventEmitter {
         return null;
       }
 
-    } catch (error) {
+    } catch (_error) {
       this.handleCircuitBreakerFailure();
       this.recordFailedGet(startTime);
       this.emit('cache-error', { operationId, error, operation: 'get' });
@@ -236,7 +236,7 @@ export class OptimizationCacheIntegration extends EventEmitter {
       startTime,
     };
 
-    this.activeOperations.set(operationId, context);
+    this.activeOperations.set(operationId, _context);
 
     try {
       // Check if cache is available
@@ -270,7 +270,7 @@ export class OptimizationCacheIntegration extends EventEmitter {
         return false;
       }
 
-    } catch (error) {
+    } catch (_error) {
       this.handleCircuitBreakerFailure();
       this.recordFailedSet(startTime);
       this.emit('cache-error', { operationId, error, operation: 'set' });
@@ -311,7 +311,7 @@ export class OptimizationCacheIntegration extends EventEmitter {
       this.emit('cache-invalidated', { reason, files, config, count: invalidatedCount });
       return invalidatedCount;
 
-    } catch (error) {
+    } catch (_error) {
       this.handleCircuitBreakerFailure();
       this.emit('cache-error', { error, operation: 'invalidate' });
       return 0;
@@ -369,7 +369,7 @@ export class OptimizationCacheIntegration extends EventEmitter {
       // Layer 3: Return null to trigger fallback to original optimization
       return null;
 
-    } catch (error) {
+    } catch (_error) {
       // Log error and re-throw to trigger circuit breaker
       this.emit('cache-retrieval-error', { context, error });
       throw error;
@@ -387,7 +387,7 @@ export class OptimizationCacheIntegration extends EventEmitter {
     
     try {
       return await this.cache.set(inputFiles, config, result, framework);
-    } catch (error) {
+    } catch (_error) {
       this.emit('cache-storage-error', { context, error });
       throw error;
     }

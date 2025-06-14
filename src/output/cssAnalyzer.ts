@@ -207,7 +207,7 @@ export class CssAnalyzer {
 
     // Analyze chunks
     const chunkAnalyses = await Promise.all(
-      chunks.map((chunk) => this.analyzeChunk(chunk, options)),
+      chunks.map((chunk) => this.analyzeChunk(chunk, _options)),
     );
 
     // Analyze assets

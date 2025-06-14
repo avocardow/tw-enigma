@@ -174,7 +174,7 @@ export class ConfigSafeUpdater {
       });
 
       return result;
-    } catch (error) {
+    } catch (_error) {
       logger.error("Safe configuration update failed", {
         filepath,
         transactionId,
@@ -260,7 +260,7 @@ export class ConfigSafeUpdater {
             }
             break;
           }
-        } catch (error) {
+        } catch (_error) {
           logger.error("Batch update item failed", { filepath: update.filepath, error });
           
           results.push({
@@ -282,7 +282,7 @@ export class ConfigSafeUpdater {
       }
 
       return results;
-    } catch (error) {
+    } catch (_error) {
       logger.error("Batch configuration update failed", { error });
 
       // Rollback all transactions
@@ -374,7 +374,7 @@ export class ConfigSafeUpdater {
       });
 
       return result;
-    } catch (error) {
+    } catch (_error) {
       logger.error("Configuration restore failed", { backupPath, error });
 
       return {
@@ -446,7 +446,7 @@ export class ConfigSafeUpdater {
     try {
       const content = await readFile(filepath, this.options.encoding);
       return JSON.parse(content);
-    } catch (error) {
+    } catch (_error) {
       throw new ConfigError(
         `Failed to load current configuration: ${error instanceof Error ? error.message : String(error)}`,
         filepath,
@@ -575,7 +575,7 @@ export class ConfigSafeUpdater {
         rollbackAvailable: this.options.createBackup,
         changes: this.calculateChanges(transaction.originalContent, transaction.newContent),
       };
-    } catch (error) {
+    } catch (_error) {
       transaction.status = "failed";
       throw error;
     }
@@ -607,7 +607,7 @@ export class ConfigSafeUpdater {
 
       logger.info("Transaction rolled back successfully", { transactionId: transaction.id });
       return true;
-    } catch (error) {
+    } catch (_error) {
       logger.error("Transaction rollback failed", { transactionId: transaction.id, error });
       return false;
     }
@@ -625,7 +625,7 @@ export class ConfigSafeUpdater {
       if (JSON.stringify(writtenConfig) !== JSON.stringify(expectedConfig)) {
         throw new ConfigError("Write verification failed - content mismatch", filepath);
       }
-    } catch (error) {
+    } catch (_error) {
       throw new ConfigError(
         `Write verification failed: ${error instanceof Error ? error.message : String(error)}`,
         filepath,
@@ -653,7 +653,7 @@ export class ConfigSafeUpdater {
           await unlink(backup.backupPath);
         }
         this.backupHistory = this.backupHistory.filter(b => b !== backup);
-      } catch (error) {
+      } catch (_error) {
         logger.warn("Failed to clean up old backup", { backupPath: backup.backupPath, error });
       }
     }
@@ -688,7 +688,7 @@ export class ConfigSafeUpdater {
       }
 
       return { added, modified, removed };
-    } catch (error) {
+    } catch (_error) {
       logger.warn("Failed to calculate configuration changes", { error });
       return { added: [], modified: [], removed: [] };
     }

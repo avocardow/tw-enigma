@@ -109,7 +109,7 @@ const taskHandlers = {
             .map((match) => match[0])
             .filter((match, index, array) => array.indexOf(match) === index);
           results[pattern] = matches;
-        } catch (error) {
+        } catch (_error) {
           // Invalid regex, skip
           results[pattern] = [];
         }
@@ -207,7 +207,7 @@ const taskHandlers = {
         }
 
         results.push(result);
-      } catch (error) {
+      } catch (_error) {
         results.push({
           error: error instanceof Error ? error.message : String(error),
         });
@@ -250,7 +250,7 @@ const taskHandlers = {
             result = data.input.filter(
               (item) => typeof item === "string" && item.includes(condition),
             );
-          } catch (error) {
+          } catch (_error) {
             result = { error: "Invalid filter condition" };
           }
         } else {
@@ -374,7 +374,7 @@ if (parentPort) {
 
         parentPort!.postMessage(response);
       }
-    } catch (error) {
+    } catch (_error) {
       const executionTime = performance.now() - startTime;
       const memoryUsage = getMemoryUsage() - startMemory;
 

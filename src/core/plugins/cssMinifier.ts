@@ -57,39 +57,39 @@ export class CssMinifier extends BaseEnigmaPlugin {
       try {
         // Remove comments
         if (config.removeComments) {
-          this.removeComments(root, context);
+          this.removeComments(root, _context);
         }
 
         // Optimize declarations
         if (config.optimizeDeclarations) {
-          this.optimizeDeclarations(root, context);
+          this.optimizeDeclarations(root, _context);
         }
 
         // Compress colors
         if (config.compressColors) {
-          this.compressColors(root, context);
+          this.compressColors(root, _context);
         }
 
         // Compress numbers
         if (config.compressNumbers) {
-          this.compressNumbers(root, context);
+          this.compressNumbers(root, _context);
         }
 
         // Remove empty rules
         if (config.removeEmptyRules) {
-          this.removeEmptyRules(root, context);
+          this.removeEmptyRules(root, _context);
         }
 
         // Merge duplicate rules (if enabled)
         if (config.mergeRules) {
-          this.mergeDuplicateRules(root, context);
+          this.mergeDuplicateRules(root, _context);
         }
 
         const endMemory = this.getMemoryUsage();
         context.metrics.recordMemory(Math.max(0, endMemory - startMemory));
 
         this.logger.debug("CSS minification completed");
-      } catch (error) {
+      } catch (_error) {
         this.addWarning(
           context,
           `CSS minification failed: ${error instanceof Error ? error.message : String(error)}`,
