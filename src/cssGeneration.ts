@@ -1268,7 +1268,7 @@ export function validateApplyDirective(
 
 export function optimizeApplyDirective(
   directive: ApplyDirective,
-  options: CssGenerationOptions,
+  _options: CssGenerationOptions,
 ): ApplyDirective {
   try {
     // Create optimized copy
@@ -4059,7 +4059,7 @@ export class EnhancedCSSGenerator {
    */
   private async processWithPostCSS(
     css: string,
-    options: CssGenerationOptions,
+    _options: CssGenerationOptions,
   ): Promise<{
     css: string;
     sourceMap?: any;

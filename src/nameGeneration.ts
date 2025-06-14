@@ -1249,7 +1249,7 @@ function handlePrettyNameExhaustion(
  */
 function enhanceNameAesthetics(
   name: string,
-  options: NameGenerationOptions,
+  _options: NameGenerationOptions,
 ): string {
   // Simple enhancement: try to add vowels or replace awkward combinations
   // This is a fallback, so we keep it simple
@@ -1592,7 +1592,7 @@ export function createFrequencyBuckets(
     frequency: number;
     data: AggregatedClassData;
   }>,
-  options: NameGenerationOptions,
+  _options: NameGenerationOptions,
 ): FrequencyBucket[] {
   if (sortedClasses.length === 0) {
     return [];
