@@ -9,9 +9,6 @@ import {
   FrameworkDetector,
   createFrameworkDetector,
   detectFramework,
-  FrameworkDetectionError,
-  type DetectionResult,
-  type FrameworkType,
 } from "../../src/frameworkDetector.ts";
 
 describe("FrameworkDetector", () => {
@@ -339,7 +336,7 @@ export default defineConfig({
         const result = await detector.detect();
         // If we get here, the system handled the permission error gracefully
         expect(result).toBeDefined();
-      } catch (error) {
+      } catch {
         // Permission setup failed, skip this test
         expect(true).toBe(true);
       }

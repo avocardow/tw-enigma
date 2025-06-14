@@ -26,9 +26,7 @@ import {
 } from "../../src/integrations/core/integrationManager.ts";
 import type {
   BuildToolType,
-  BuildToolPlugin,
   BuildToolPluginConfig,
-  BuildToolContext,
 } from "../../src/integrations/core/buildToolPlugin.ts";
 
 // Mock filesystem
@@ -542,7 +540,7 @@ describe("IntegrationManager", () => {
 
       try {
         await manager.startBuild("vite");
-      } catch (error) {
+      } catch {
         // Expected to fail
       }
 
@@ -613,7 +611,7 @@ describe("IntegrationManager", () => {
           priority: 10,
           buildTool: { type: "vite", autoDetect: true },
         });
-      } catch (error) {
+      } catch {
         // Expected to fail
       }
 

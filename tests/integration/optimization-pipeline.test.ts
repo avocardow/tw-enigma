@@ -7,13 +7,12 @@ import {
   beforeEach,
   afterEach,
 } from "vitest";
-import { join, resolve } from "path";
+import { join } from "path";
 import { mkdtemp, rm, writeFile, mkdir } from "fs/promises";
 import { tmpdir } from "os";
 
 import { FixtureLoader, FixtureProject } from "../utils/fixture-loader";
 import {
-  PerformanceMonitor,
   PerformanceUtils,
   performanceMonitor,
 } from "../utils/performance-monitor";
@@ -308,7 +307,7 @@ describe("Optimization Pipeline Integration Tests", () => {
 
         // Verify class names are properly formatted
         for (const className of metrics.result.extractedClasses) {
-          expect(className).toMatch(/^[a-zA-Z0-9\-_:\/\[\]%\.]+$/); // Valid CSS class name
+          expect(className).toMatch(/^[a-zA-Z0-9\-_:/[\]%.]+$/); // Valid CSS class name
           expect(className).not.toContain(" "); // No spaces in class names
         }
       }
@@ -488,7 +487,7 @@ describe("Optimization Pipeline Integration Tests", () => {
                 // Skip single characters or very short strings
                 if (cls.length < 2) return false;
                 // Must be valid CSS class format - relaxed regex for development
-                return /^[a-zA-Z][a-zA-Z0-9\-_:\/\[\]%\.]*$/.test(cls);
+                return /^[a-zA-Z][a-zA-Z0-9\-_:/[\]%.]*$/.test(cls);
               });
 
               // Debug logging to understand what's being extracted

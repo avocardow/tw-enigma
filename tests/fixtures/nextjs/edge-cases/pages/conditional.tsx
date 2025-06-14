@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/router";
 
 interface ConditionalPageProps {
   theme: "light" | "dark";
@@ -11,10 +10,9 @@ const ConditionalPage: React.FC<ConditionalPageProps> = ({
   variant,
 }) => {
   const [isLoading, setIsLoading] = useState(true);
-  const [userPreference, _setUserPreference] = useState<"compact" | "expanded">(
+  const [userPreference] = useState<"compact" | "expanded">(
     "expanded",
   );
-  const _router = useRouter();
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 1000);

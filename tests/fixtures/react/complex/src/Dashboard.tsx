@@ -18,7 +18,7 @@ const Dashboard: React.FC<DashboardProps> = ({ users, theme }) => {
   const [selectedView, setSelectedView] = useState<"grid" | "list">("grid");
   const [filterRole, setFilterRole] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
 
   const filteredUsers = useMemo(() => {

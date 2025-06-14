@@ -437,7 +437,7 @@ describe("StreamOptimizer", () => {
     });
 
     it("should handle empty file list", async () => {
-      const processor = async (filePath: string, _content: Buffer) => ({
+      const processor = async (filePath: string) => ({
         path: filePath,
       });
       const result = await streamOptimizer.processBatchStream([], processor);

@@ -260,7 +260,7 @@ export function ConditionalClasses({
 }
 
 // Additional edge case: HOC with conditional classes
-export function withConditionalStyling<T extends Record<string, any>>(
+export function withConditionalStyling<T extends Record<string, unknown>>(
   WrappedComponent: React.ComponentType<T>,
 ) {
   return function ConditionalStyledComponent(
