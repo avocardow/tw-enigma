@@ -13,9 +13,9 @@ import { tmpdir } from 'os';
 // Import all validation components
 import { createConfigValidator, validateConfigSchema } from '../src/configValidator.js';
 import { createRuntimeValidator, validateConfigRuntime } from '../src/runtimeValidator.js';
-import { createConfigWatcher } from '../src/configWatcher.js';
+// import { createConfigWatcher } from '../src/configWatcher.js';
 import { createConfigDefaults, getEnvironmentDefaults } from '../src/configDefaults.js';
-import { createConfigMigration, migrateConfig, needsConfigMigration } from '../src/configMigration.js';
+import { createConfigMigration, migrateConfig } from '../src/configMigration.js';
 import { createPerformanceValidator, analyzeConfigPerformance } from '../src/performanceValidator.js';
 import { createConfigBackup, backupConfig, restoreConfig } from '../src/configBackup.js';
 import { type EnigmaConfig } from '../src/config.js';
@@ -430,7 +430,6 @@ describe('Configuration Validation System', () => {
         mergeDuplicates: false // Old format
       };
 
-      const _needsMigration = needsConfigMigration(configPath);
       writeFileSync(configPath, JSON.stringify(oldConfig, null, 2));
       
       const migration = createConfigMigration(configPath);
@@ -777,7 +776,7 @@ describe('Configuration Validation System', () => {
 
       // 5. Migration check
       const migration = createConfigMigration(configPath);
-      const _result = await migration.migrate({ autoMigrate: true });
+      await migration.migrate({ autoMigrate: true });
       const needsMigration = migration.needsMigration(config);
       expect(typeof needsMigration).toBe('boolean');
     });
@@ -815,9 +814,7 @@ describe('Configuration Validation System', () => {
 
       // Test all validation systems
       const validator = createConfigValidator();
-      const _runtimeValidator = createRuntimeValidator(config);
-      const _performanceValidator = createPerformanceValidator(config);
-      const _backupManager = createConfigBackup(configPath);
+      const performanceValidator = createPerformanceValidator(config);
 
       // Run validations
       const schemaValidation = await validator.validateConfiguration(config);

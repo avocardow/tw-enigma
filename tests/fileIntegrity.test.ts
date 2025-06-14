@@ -4,16 +4,14 @@ import {
   writeFile,
   mkdir,
   stat,
-  unlink,
   access,
   rm,
 } from "node:fs/promises";
 import { createReadStream } from "node:fs";
 import { pipeline } from "node:stream/promises";
-import { createGunzip, createInflate, createBrotliDecompress } from "node:zlib";
+import { createGunzip } from "node:zlib";
 import { resolve, join } from "node:path";
 import { tmpdir } from "node:os";
-import { createHash } from "node:crypto";
 import {
   FileIntegrityValidator,
   createFileIntegrityValidator,
@@ -25,7 +23,6 @@ import {
   ChecksumError,
   ValidationError,
   RollbackError,
-  type FileIntegrityOptions,
 } from "../src/fileIntegrity.ts";
 
 describe("FileIntegrityValidator", () => {
@@ -58,7 +55,7 @@ describe("FileIntegrityValidator", () => {
     try {
       const { rm } = await import("node:fs/promises");
       await rm(testDir, { recursive: true, force: true });
-    } catch (error) {
+    } catch {
       // Ignore cleanup errors in tests
     }
   });
@@ -615,7 +612,7 @@ describe("FileIntegrityValidator", () => {
       const regularFile = join(backupDir, "regular-file.txt");
       await writeFile(regularFile, "Regular file content", "utf8");
 
-      const result = await validator.cleanupBackups();
+      await validator.cleanupBackups();
 
       // Regular file should not be cleaned up
       const stats = await stat(regularFile);
@@ -1839,7 +1836,7 @@ describe("Compression Feature Tests", () => {
       const differentialIndexPath = join(testDir, ".differential", "differential-index.json");
       try {
         await rm(differentialIndexPath, { force: true });
-      } catch (error) {
+      } catch {
         // Ignore file not found errors
       }
 
@@ -1860,7 +1857,7 @@ describe("Compression Feature Tests", () => {
       const differentialIndexPath = join(testDir, ".differential", "differential-index.json");
       try {
         await rm(differentialIndexPath, { force: true });
-      } catch (error) {
+      } catch {
         // Ignore file not found errors
       }
     });
@@ -1929,7 +1926,7 @@ describe("Compression Feature Tests", () => {
         const differentialIndexPath = join(".differential-fresh2", "differential-index.json");
         try {
           await rm(differentialIndexPath, { force: true });
-        } catch (error) {
+        } catch {
           // Ignore file not found errors
         }
 
@@ -1961,7 +1958,7 @@ describe("Compression Feature Tests", () => {
         const differentialIndexPath = join(".differential-multi", "differential-index.json");
         try {
           await rm(differentialIndexPath, { force: true });
-        } catch (error) {
+        } catch {
           // Ignore file not found errors
         }
 
@@ -2003,7 +2000,7 @@ describe("Compression Feature Tests", () => {
         const differentialIndexPath = join(".differential-cumulative", "differential-index.json");
         try {
           await rm(differentialIndexPath, { force: true });
-        } catch (error) {
+        } catch {
           // Ignore file not found errors
         }
 
@@ -2053,7 +2050,7 @@ describe("Compression Feature Tests", () => {
         const differentialIndexPath = join(".differential-force-full", "differential-index.json");
         try {
           await rm(differentialIndexPath, { force: true });
-        } catch (error) {
+        } catch {
           // Ignore file not found errors
         }
 
@@ -2085,7 +2082,7 @@ describe("Compression Feature Tests", () => {
         const differentialIndexPath = join(".differential-isolated", "differential-index.json");
         try {
           await rm(differentialIndexPath, { force: true });
-        } catch (error) {
+        } catch {
           // Ignore file not found errors
         }
 
@@ -2122,7 +2119,7 @@ describe("Compression Feature Tests", () => {
         const differentialIndexPath = join(".differential-skip", "differential-index.json");
         try {
           await rm(differentialIndexPath, { force: true });
-        } catch (error) {
+        } catch {
           // Ignore file not found errors
         }
 
@@ -2182,7 +2179,7 @@ describe("Compression Feature Tests", () => {
         const differentialIndexPath = join(".differential-stats", "differential-index.json");
         try {
           await rm(differentialIndexPath, { force: true });
-        } catch (error) {
+        } catch {
           // Ignore file not found errors
         }
 
@@ -2264,7 +2261,7 @@ describe("Compression Feature Tests", () => {
         const differentialIndexPath = join(".differential-corruption", "differential-index.json");
         try {
           await rm(differentialIndexPath, { force: true });
-        } catch (error) {
+        } catch {
           // Ignore file not found errors
         }
 
@@ -2313,7 +2310,7 @@ describe("Compression Feature Tests", () => {
         const differentialIndexPath = join(".differential-compressed", "differential-index.json");
         try {
           await rm(differentialIndexPath, { force: true });
-        } catch (error) {
+        } catch {
           // Ignore file not found errors
         }
 
@@ -2354,7 +2351,7 @@ describe("Compression Feature Tests", () => {
         const differentialIndexPath = join(".differential-dedup", "differential-index.json");
         try {
           await rm(differentialIndexPath, { force: true });
-        } catch (error) {
+        } catch {
           // Ignore file not found errors
         }
 
@@ -2395,7 +2392,7 @@ describe("Compression Feature Tests", () => {
         const differentialIndexPath = join(".differential-time", "differential-index.json");
         try {
           await rm(differentialIndexPath, { force: true });
-        } catch (error) {
+        } catch {
           // Ignore file not found errors
         }
 
@@ -2428,7 +2425,7 @@ describe("Compression Feature Tests", () => {
         const differentialIndexPath = join(".differential-perf", "differential-index.json");
         try {
           await rm(differentialIndexPath, { force: true });
-        } catch (error) {
+        } catch {
           // Ignore file not found errors
         }
 
@@ -2436,8 +2433,7 @@ describe("Compression Feature Tests", () => {
         await writeFile(testFileLocal, "Initial content for performance test");
 
         // Create full backup
-        const fullResult =
-          await testValidator.createDifferentialBackup(testFileLocal);
+        await testValidator.createDifferentialBackup(testFileLocal);
 
         // Create multiple differential backups
         for (let i = 0; i < 3; i++) {
@@ -2800,7 +2796,7 @@ describe("Compression Feature Tests", () => {
           mixedFiles,
           "checksum",
           {
-            errorHandler: (error, filePath) => {
+            errorHandler: (_error, _filePath) => {
               errorCount++;
               return true; // Continue processing
             },

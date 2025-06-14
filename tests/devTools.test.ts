@@ -5,9 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi, Mock } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { EventEmitter } from 'events';
-import { promises as fs } from 'fs';
 import { DevDiagnostics, createDevDiagnostics } from '../src/devDiagnostics.js';
 import { DevPreview, createDevPreview } from '../src/devPreview.js';
 import { SourceMapGenerator, createSourceMapGenerator } from '../src/sourceMapGenerator.js';
@@ -40,12 +39,12 @@ const mockFileWatcher = {
 // Mock chokidar with proper named export and parameter handling
 vi.mock('chokidar', () => ({
   default: {
-    watch: vi.fn().mockImplementation((patterns, options) => {
+    watch: vi.fn().mockImplementation((_patterns, _options) => {
       // Always return the mock file watcher regardless of parameters
       return mockFileWatcher;
     }),
   },
-  watch: vi.fn().mockImplementation((patterns, options) => {
+  watch: vi.fn().mockImplementation((_patterns, _options) => {
     // Always return the mock file watcher regardless of parameters
     return mockFileWatcher;
   }),

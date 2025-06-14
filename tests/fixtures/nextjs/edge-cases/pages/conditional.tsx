@@ -11,10 +11,10 @@ const ConditionalPage: React.FC<ConditionalPageProps> = ({
   variant,
 }) => {
   const [isLoading, setIsLoading] = useState(true);
-  const [userPreference, setUserPreference] = useState<"compact" | "expanded">(
+  const [userPreference, _setUserPreference] = useState<"compact" | "expanded">(
     "expanded",
   );
-  const router = useRouter();
+  const _router = useRouter();
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 1000);

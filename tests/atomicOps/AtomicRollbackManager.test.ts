@@ -53,7 +53,7 @@ describe("AtomicRollbackManager", () => {
 
     it("should create transaction with description", () => {
       const description = "Test transaction with description";
-      const _transactionId = manager.beginTransaction(description);
+      manager.beginTransaction(description);
 
       const activeTransactions = manager.getActiveTransactions();
       expect(activeTransactions[0].metadata.description).toBe(description);

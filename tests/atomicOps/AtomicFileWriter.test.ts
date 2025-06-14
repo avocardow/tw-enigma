@@ -17,7 +17,7 @@ import * as path from "path";
 import { AtomicFileWriter } from "../../src/atomicOps/AtomicFileWriter";
 import {
   // AtomicOperationResult,
-  AtomicOperationError,
+  // AtomicOperationError,
 } from "../../src/types/atomicOps";
 
 // Test directories and files
@@ -74,7 +74,7 @@ describe("AtomicFileWriter", () => {
     for (const file of filesToClean) {
       try {
         await fs.unlink(file);
-      } catch (_error) {
+      } catch {
         // Ignore errors - file might not exist
       }
     }
@@ -87,7 +87,7 @@ describe("AtomicFileWriter", () => {
           await fs.unlink(path.join(TEST_DIR, file));
         }
       }
-    } catch (_error) {
+    } catch {
       // Ignore errors
     }
   });

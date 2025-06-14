@@ -401,24 +401,8 @@ describe('DevIdeIntegration', () => {
 describe('DevDashboardEnhanced', () => {
   let dashboardEnhanced: DevDashboardEnhanced;
   let baseDashboard: DevDashboard;
-  let _mockConfig: EnigmaConfig;
 
   beforeEach(() => {
-    _mockConfig = {
-      dev: {
-        enabled: true,
-        dashboard: {
-          enabled: true,
-          port: 3001,
-          host: 'localhost',
-          updateInterval: 1000,
-          showMetrics: true,
-          showLogs: true,
-          maxLogEntries: 100,
-        },
-      },
-    } as EnigmaConfig;
-
     // Create base dashboard
     baseDashboard = new DevDashboard({
       enabled: true,
@@ -660,7 +644,6 @@ describe('Integration Tests', () => {
 
     it('should handle multiple rapid session operations', async () => {
       const promises = [];
-      const _files = ['test1.css', 'test2.css'];
 
       // Create multiple sessions rapidly
       for (let i = 0; i < 5; i++) {

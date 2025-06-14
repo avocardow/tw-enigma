@@ -130,7 +130,7 @@ describe("DryRun Integration Tests", () => {
       // Simulate some processing that might throw
       try {
         throw new Error("Simulated processing error");
-      } catch (error) {
+      } catch {
         // Error is caught and handled
       }
 

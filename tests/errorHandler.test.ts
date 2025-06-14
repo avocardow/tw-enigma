@@ -3,8 +3,7 @@
  * Tests circuit breaker functionality, error categorization, and recovery strategies
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi, Mock } from "vitest";
-import { EventEmitter } from "events";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import {
   CircuitBreaker,
   CircuitBreakerRegistry,
@@ -304,7 +303,7 @@ describe("CircuitBreakerRegistry", () => {
   });
 
   it("should provide overall health status", () => {
-    const circuit1 = registry.getCircuit("healthy");
+    registry.getCircuit("healthy");
     const circuit2 = registry.getCircuit("unhealthy");
 
     // Force one circuit to be unhealthy
