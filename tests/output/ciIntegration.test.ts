@@ -15,7 +15,6 @@ import type { CssPerformanceReport } from "../../src/output/cssReportGenerator.t
 
 describe("CiIntegration", () => {
   let config: CssOutputConfig;
-  let ciIntegration: CiIntegration;
   let originalEnv: NodeJS.ProcessEnv;
 
   beforeEach(() => {

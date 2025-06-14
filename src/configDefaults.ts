@@ -1,5 +1,5 @@
-import { z } from 'zod';
-import { join } from 'path';
+
+import { join, resolve } from 'path';
 import { homedir, tmpdir, cpus } from 'os';
 import { existsSync } from 'fs';
 import { EnigmaConfigSchema, type EnigmaConfig } from './config.ts';
@@ -440,6 +440,8 @@ export class ConfigDefaults {
     for (const configPath of GLOBAL_CONFIG_PATHS) {
       if (existsSync(configPath)) {
         try {
+          // Use dynamic require for config files  
+          // eslint-disable-next-line @typescript-eslint/no-require-imports
           const globalConfig = require(configPath);
           logger.debug(`Loaded global defaults from: ${configPath}`);
           return globalConfig;
@@ -458,6 +460,7 @@ export class ConfigDefaults {
     for (const configPath of PROJECT_CONFIG_PATHS) {
       if (existsSync(configPath)) {
         try {
+          // eslint-disable-next-line @typescript-eslint/no-require-imports
           const projectConfig = require(configPath);
           logger.debug(`Loaded project defaults from: ${configPath}`);
           return projectConfig;
@@ -579,7 +582,7 @@ export class ConfigDefaults {
    * Check if path is safe for configuration
    */
   public isSafePath(path: string): boolean {
-    const normalizedPath = require('path').resolve(path);
+    const normalizedPath = resolve(path);
     const cwd = process.cwd();
     const home = homedir();
     

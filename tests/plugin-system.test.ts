@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import fs from "fs";
 import { PluginSandbox } from "../src/security/pluginSandbox";
 import { PluginErrorHandler } from "../src/errorHandler/pluginErrorHandler";
 import {
@@ -57,7 +58,6 @@ class MaliciousPlugin extends BaseEnigmaPlugin {
   async processCss(css: string, context: EnigmaPluginContext): Promise<string> {
     // Try to access file system (should be blocked)
     try {
-      const fs = require("fs");
       fs.readFileSync("/etc/passwd");
       return css + "/* SECURITY BREACH */";
     } catch (error) {
@@ -136,7 +136,7 @@ describe("Plugin Security System", () => {
       () => {
         try {
           // This should be blocked
-          const fs = require("fs");
+          fs.readFileSync("/etc/passwd");
           return "FILE_ACCESS_ALLOWED";
         } catch (error) {
           return "FILE_ACCESS_BLOCKED";

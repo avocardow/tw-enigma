@@ -32,16 +32,12 @@ import { createLogger } from "./logger.ts";
 
 // Create a logger instance for this module
 const logger = createLogger('config');
-import { validateConfig as enhancedValidateConfig } from "./configValidator.ts";
 import { createRuntimeValidator } from "./runtimeValidator.ts";
 import { createConfigWatcher } from "./configWatcher.ts";
-import { createConfigSafeUpdater } from "./configSafeUpdater.ts";
 import type { ValidationResult } from "./configValidator.ts";
 import type { RuntimeValidator } from "./runtimeValidator.ts";
 import type { ConfigWatcher } from "./configWatcher.ts";
 import type { ConfigSafeUpdater } from "./configSafeUpdater.ts";
-import { join, resolve, isAbsolute } from 'path';
-import { existsSync } from 'fs';
 import { createConfigValidator } from './configValidator.ts';
 import { createConfigMigration, type ConfigMigration } from './configMigration.ts';
 import { createPerformanceValidator, type PerformanceMetrics } from './performanceValidator.ts';
