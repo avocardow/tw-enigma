@@ -20,7 +20,7 @@ export class NextjsDetector implements IFrameworkDetector {
   readonly frameworkType: FrameworkType = "nextjs";
   readonly name = "Next.js Detector";
 
-  canDetect(context: DetectionContext): boolean {
+  canDetect(_context: DetectionContext): boolean {
     // Can always attempt Next.js detection
     return true;
   }
