@@ -495,7 +495,7 @@ export function formatCssDeclaration(property: string, value: string): string {
 
 export function formatCssRule(
   rule: CssRule,
-  options: CssGenerationOptions,
+  _options: CssGenerationOptions,
 ): string {
   const { formatOutput } = options;
   const indent = formatOutput ? "  " : "";
@@ -681,7 +681,7 @@ export function generateCssRules(
  */
 function generateCssSelector(
   pattern: AggregatedClassData,
-  options: CssGenerationOptions,
+  _options: CssGenerationOptions,
 ): string {
   // Use custom naming function if provided
   if (options.customNamingFunction) {
@@ -1149,7 +1149,7 @@ function convertTailwindColor(color: string): string {
 
 export function generateApplyDirective(
   classes: string[],
-  options: CssGenerationOptions,
+  _options: CssGenerationOptions,
 ): ApplyDirective {
   try {
     // Validate input
@@ -1268,7 +1268,7 @@ export function validateApplyDirective(
 
 export function optimizeApplyDirective(
   directive: ApplyDirective,
-  options: CssGenerationOptions,
+  _options: CssGenerationOptions,
 ): ApplyDirective {
   try {
     // Create optimized copy
@@ -1564,7 +1564,7 @@ function getCssProperty(coreClass: string): string | null {
  */
 function optimizeClassOrder(
   groupedClasses: string[],
-  options: CssGenerationOptions,
+  _options: CssGenerationOptions,
 ): string[] {
   if (!options.enableOptimizations) {
     return groupedClasses;
@@ -1719,7 +1719,7 @@ export function classifyPattern(
 ): PatternClassification {
   try {
     // Handle different input formats
-    let options: CssGenerationOptions;
+    let _options: CssGenerationOptions;
 
     if (
       optionsOrContext &&
@@ -2007,7 +2007,7 @@ function generateRecommendedStrategy(
   type: "atomic" | "utility" | "component",
   frequency: number,
   complexity: number,
-  options: CssGenerationOptions,
+  _options: CssGenerationOptions,
 ): string {
   const strategies: string[] = [];
 
@@ -2137,7 +2137,7 @@ function analyzePatternCharacteristics(classes: string[]): {
 
 export function sortCssRulesAdvanced(
   rules: CssRule[],
-  options: CssGenerationOptions,
+  _options: CssGenerationOptions,
   criteria: Array<
     | { field: string; weight: number; order: "asc" | "desc" }
     | { type: string; weight: number; direction: "asc" | "desc" }
@@ -3340,7 +3340,7 @@ function generateRuleComment(
 function generateCssDocumentation(
   rules: CssRule[],
   statistics: CssGenerationStatistics,
-  options: CssGenerationOptions,
+  _options: CssGenerationOptions,
 ): string {
   const docs: string[] = [];
 
@@ -3378,7 +3378,7 @@ function generateCssDocumentation(
 
 export function integrateCssGeneration(
   analysisResult: FrequencyAnalysisResult,
-  options: CssGenerationOptions,
+  _options: CssGenerationOptions,
 ): CssGenerationResult;
 export function integrateCssGeneration(
   frequencyMap: PatternFrequencyMap,
@@ -3396,7 +3396,7 @@ export function integrateCssGeneration(
 
     // Handle different input formats
     let analysisResult: FrequencyAnalysisResult;
-    let options: CssGenerationOptions;
+    let _options: CssGenerationOptions;
 
     if (cssOptions) {
       // Test format: 3 parameters (frequencyMap, nameOptions, cssOptions)
@@ -3802,7 +3802,7 @@ export function generateOptimizedCss(
 
 export function formatCssOutput(
   result: CssGenerationResult,
-  options: CssGenerationOptions,
+  _options: CssGenerationOptions,
 ): string {
   try {
     const lines: string[] = [];
@@ -4021,7 +4021,7 @@ export class EnhancedCSSGenerator {
    */
   private async generateBasicCSS(
     classFrequencies: Map<string, number>,
-    options: CssGenerationOptions,
+    _options: CssGenerationOptions,
   ): Promise<GeneratedCSS> {
     // Convert frequency map to patterns
     const patterns: AggregatedClassData[] = [];
@@ -4060,7 +4060,7 @@ export class EnhancedCSSGenerator {
    */
   private async processWithPostCSS(
     css: string,
-    options: CssGenerationOptions,
+    _options: CssGenerationOptions,
   ): Promise<{
     css: string;
     sourceMap?: any;

@@ -101,7 +101,7 @@ export interface NameGenerationResult {
     collisionCount: number;
     generationTime: number;
     strategy: NameGenerationOptions["strategy"];
-    options: NameGenerationOptions;
+    _options: NameGenerationOptions;
   };
   statistics: {
     lengthDistribution: Map<number, number>; // length -> count
@@ -772,7 +772,7 @@ export function validateBaseConversions(
  */
 export function generateSequentialName(
   index: number,
-  options: NameGenerationOptions,
+  _options: NameGenerationOptions,
 ): string {
   if (index < 0) {
     throw new NameGenerationError(
@@ -818,7 +818,7 @@ export function generateSequentialName(
  */
 export function generateSequentialNames(
   count: number,
-  options: NameGenerationOptions,
+  _options: NameGenerationOptions,
   startIndex: number = 0,
 ): string[] {
   if (count <= 0) {
@@ -1074,7 +1074,7 @@ const globalPrettyCache = new Map<string, PrettyNameCache>();
 
 export function generatePrettyName(
   index: number,
-  options: NameGenerationOptions,
+  _options: NameGenerationOptions,
 ): PrettyNameResult {
   if (index < 0) {
     throw new NameGenerationError(
@@ -1169,7 +1169,7 @@ export function generatePrettyName(
  */
 function handlePrettyNameExhaustion(
   index: number,
-  options: NameGenerationOptions,
+  _options: NameGenerationOptions,
   cache: PrettyNameCache,
 ): PrettyNameResult {
   const strategy = options.prettyNameExhaustionStrategy || "fallback-hybrid";
@@ -1249,7 +1249,7 @@ function handlePrettyNameExhaustion(
  */
 function enhanceNameAesthetics(
   name: string,
-  options: NameGenerationOptions,
+  _options: NameGenerationOptions,
 ): string {
   // Simple enhancement: try to add vowels or replace awkward combinations
   // This is a fallback, so we keep it simple
@@ -1295,7 +1295,7 @@ function enhanceNameAesthetics(
  * @returns Initialized collision cache
  */
 export function createNameCollisionCache(
-  options: NameGenerationOptions,
+  _options: NameGenerationOptions,
 ): NameCollisionCache {
   const reservedNames = new Set([
     ...CSS_RESERVED_KEYWORDS,
@@ -1335,7 +1335,7 @@ export function hasNameCollision(
  */
 export function generateNextAvailableName(
   cache: NameCollisionCache,
-  options: NameGenerationOptions,
+  _options: NameGenerationOptions,
 ): { name: string; index: number } {
   let attempts = 0;
   const maxAttempts = Math.min(10000, options.alphabet.length * 100); // More aggressive for small alphabets
@@ -1389,7 +1389,7 @@ export function generateNextAvailableName(
 export function batchGenerateAvailableNames(
   count: number,
   cache: NameCollisionCache,
-  options: NameGenerationOptions,
+  _options: NameGenerationOptions,
 ): Array<{ name: string; index: number }> {
   if (count <= 0) {
     throw new NameGenerationError(`Invalid count: ${count}. Must be positive.`);
@@ -1428,7 +1428,7 @@ export function batchGenerateAvailableNames(
  */
 export function calculateGenerationStatistics(
   count: number,
-  options: NameGenerationOptions,
+  _options: NameGenerationOptions,
 ): {
   expectedLength: number;
   minLength: number;
@@ -1469,7 +1469,7 @@ export function calculateGenerationStatistics(
  * @returns Validation result with any warnings
  */
 export function validateGenerationSetup(
-  options: NameGenerationOptions,
+  _options: NameGenerationOptions,
   cache?: NameCollisionCache,
 ): {
   valid: boolean;
@@ -1565,7 +1565,7 @@ export function validateGenerationSetup(
  */
 export function sortByFrequency(
   frequencyMap: PatternFrequencyMap,
-  options: NameGenerationOptions,
+  _options: NameGenerationOptions,
 ): Array<{ name: string; frequency: number; data: AggregatedClassData }> {
   const entries = Array.from(frequencyMap.entries())
     .filter(([_, data]) => data.totalFrequency >= options.frequencyThreshold)
@@ -1592,7 +1592,7 @@ export function createFrequencyBuckets(
     frequency: number;
     data: AggregatedClassData;
   }>,
-  options: NameGenerationOptions,
+  _options: NameGenerationOptions,
 ): FrequencyBucket[] {
   if (sortedClasses.length === 0) {
     return [];
@@ -1673,7 +1673,7 @@ export function createFrequencyBuckets(
  */
 export function optimizeByFrequency(
   frequencyMap: PatternFrequencyMap,
-  options: NameGenerationOptions,
+  _options: NameGenerationOptions,
 ): Map<string, string> {
   // Ensure options are properly validated with defaults applied
   const validatedOptions = validateNameGenerationOptions(options);
@@ -1967,11 +1967,11 @@ export function analyzeFrequencyDistribution(
  */
 export class NameCollisionManager {
   private cache: NameCollisionCache;
-  private options: NameGenerationOptions;
+  private _options: NameGenerationOptions;
   private persistenceEnabled: boolean;
 
   constructor(
-    options: NameGenerationOptions,
+    _options: NameGenerationOptions,
     persistenceEnabled: boolean = false,
   ) {
     this.options = options;
@@ -2177,7 +2177,7 @@ export async function generateOptimizedNames(
  */
 function generateSequentialMapping(
   frequencyMap: PatternFrequencyMap,
-  options: NameGenerationOptions,
+  _options: NameGenerationOptions,
 ): Map<string, string> {
   const nameMap = new Map<string, string>();
   const classNames = Array.from(frequencyMap.keys()).sort(); // Alphabetical order
@@ -2196,7 +2196,7 @@ function generateSequentialMapping(
  */
 function generateHybridMapping(
   frequencyMap: PatternFrequencyMap,
-  options: NameGenerationOptions,
+  _options: NameGenerationOptions,
 ): Map<string, string> {
   const nameMap = new Map<string, string>();
   const sortedClasses = sortByFrequency(frequencyMap, options);
@@ -2237,7 +2237,7 @@ function generateHybridMapping(
  */
 function generatePrettyMapping(
   frequencyMap: PatternFrequencyMap,
-  options: NameGenerationOptions,
+  _options: NameGenerationOptions,
 ): Map<string, string> {
   const nameMap = new Map<string, string>();
   const sortedClasses = sortByFrequency(frequencyMap, options);
@@ -2306,7 +2306,7 @@ function generatePrettyMapping(
  */
 function generatePrettyNameWithCache(
   index: number,
-  options: NameGenerationOptions,
+  _options: NameGenerationOptions,
   prettyCache: PrettyNameCache,
   collisionCache: NameCollisionCache,
 ): PrettyNameResult {
@@ -2357,7 +2357,7 @@ function generatePrettyNameWithCache(
  */
 function generatePrettyNameFromCache(
   index: number,
-  options: NameGenerationOptions,
+  _options: NameGenerationOptions,
   cache: PrettyNameCache,
 ): PrettyNameResult {
   const {
