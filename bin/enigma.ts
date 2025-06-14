@@ -920,7 +920,7 @@ const argv = await yargs(hideBin(process.argv))
 
               // Import plugin manager
               const { createPluginManager } = await import(
-                "../src/core/pluginManager.ts"
+                "../src/core/pluginManager"
               );
               const pluginManager = createPluginManager();
 
@@ -1012,7 +1012,7 @@ const argv = await yargs(hideBin(process.argv))
               cliLogger.info("🩺 Checking plugin health");
 
               const { createPluginManager } = await import(
-                "../src/core/pluginManager.ts"
+                "../src/core/pluginManager"
               );
               const pluginManager = createPluginManager();
 
@@ -1112,7 +1112,7 @@ const argv = await yargs(hideBin(process.argv))
               cliLogger.info(`🔓 Enabling plugin: ${argv.plugin}`);
 
               const { createPluginManager } = await import(
-                "../src/core/pluginManager.ts"
+                "../src/core/pluginManager"
               );
               const pluginManager = createPluginManager();
 
@@ -1151,7 +1151,7 @@ const argv = await yargs(hideBin(process.argv))
               cliLogger.info(`🔒 Disabling plugin: ${argv.plugin}`);
 
               const { createPluginManager } = await import(
-                "../src/core/pluginManager.ts"
+                "../src/core/pluginManager"
               );
               const pluginManager = createPluginManager();
 
@@ -1280,7 +1280,7 @@ const argv = await yargs(hideBin(process.argv))
               cliLogger.info("🧪 Testing plugin functionality");
 
               const { createPluginManager } = await import(
-                "../src/core/pluginManager.ts"
+                "../src/core/pluginManager"
               );
               const pluginManager = createPluginManager();
 
@@ -1427,10 +1427,10 @@ const argv = await yargs(hideBin(process.argv))
 
               // Import marketplace modules
               const { createPluginRegistry } = await import(
-                "../src/registry/pluginRegistry.ts"
+                "../src/registry/pluginRegistry"
               );
               const { createPluginMarketplace } = await import(
-                "../src/marketplace/pluginMarketplace.ts"
+                "../src/marketplace/pluginMarketplace"
               );
 
               // Create registry and marketplace
@@ -1511,10 +1511,10 @@ const argv = await yargs(hideBin(process.argv))
 
               // Import marketplace modules
               const { createPluginRegistry } = await import(
-                "../src/registry/pluginRegistry.ts"
+                "../src/registry/pluginRegistry"
               );
               const { createPluginMarketplace } = await import(
-                "../src/marketplace/pluginMarketplace.ts"
+                "../src/marketplace/pluginMarketplace"
               );
 
               // Create registry and marketplace
@@ -1568,10 +1568,10 @@ const argv = await yargs(hideBin(process.argv))
 
               // Import marketplace modules
               const { createPluginRegistry } = await import(
-                "../src/registry/pluginRegistry.ts"
+                "../src/registry/pluginRegistry"
               );
               const { createPluginMarketplace } = await import(
-                "../src/marketplace/pluginMarketplace.ts"
+                "../src/marketplace/pluginMarketplace"
               );
 
               // Create registry and marketplace
@@ -1606,10 +1606,10 @@ const argv = await yargs(hideBin(process.argv))
             try {
               // Import marketplace modules
               const { createPluginRegistry } = await import(
-                "../src/registry/pluginRegistry.ts"
+                "../src/registry/pluginRegistry"
               );
               const { createPluginMarketplace } = await import(
-                "../src/marketplace/pluginMarketplace.ts"
+                "../src/marketplace/pluginMarketplace"
               );
 
               // Create registry and marketplace
@@ -1689,10 +1689,10 @@ const argv = await yargs(hideBin(process.argv))
 
               // Import marketplace modules
               const { createPluginRegistry } = await import(
-                "../src/registry/pluginRegistry.ts"
+                "../src/registry/pluginRegistry"
               );
               const { createPluginMarketplace } = await import(
-                "../src/marketplace/pluginMarketplace.ts"
+                "../src/marketplace/pluginMarketplace"
               );
 
               // Create registry and marketplace
@@ -1775,10 +1775,10 @@ const argv = await yargs(hideBin(process.argv))
 
               // Import marketplace modules
               const { createPluginRegistry } = await import(
-                "../src/registry/pluginRegistry.ts"
+                "../src/registry/pluginRegistry"
               );
               const { createPluginMarketplace } = await import(
-                "../src/marketplace/pluginMarketplace.ts"
+                "../src/marketplace/pluginMarketplace"
               );
 
               // Create registry and marketplace
