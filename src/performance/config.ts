@@ -21,7 +21,7 @@ export type CacheStrategy = "lru" | "lfu" | "ttl" | "arc";
 /**
  * Worker task types for type-safe worker communication
  */
-export interface WorkerTask<T = unknown, R = unknown> {
+export interface WorkerTask<T = unknown, _R = unknown> {
   id: string;
   type: string;
   data: T;

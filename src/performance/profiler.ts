@@ -16,7 +16,7 @@
 
 import { performance, PerformanceObserver } from "perf_hooks";
 import { EventEmitter } from "events";
-import { execSync, spawn, ChildProcess } from "child_process";
+import { spawn, ChildProcess } from "child_process";
 import { writeFileSync, existsSync, mkdirSync } from "fs";
 import { join } from "path";
 import { createLogger } from "../logger.ts";
@@ -249,7 +249,6 @@ export class PerformanceProfiler extends EventEmitter {
       analysis,
     });
 
-    const sessionId = this.currentSession.id;
     this.currentSession = undefined;
 
     return analysis;
@@ -340,7 +339,7 @@ export class PerformanceProfiler extends EventEmitter {
       const result = await fn();
       const measurement = this.markEnd(name, detail);
       return { result, measurement };
-    } catch (_) {
+    } catch {
       this.markEnd(name, {
         ...(detail && typeof detail === "object" ? detail : {}),
         error: true,

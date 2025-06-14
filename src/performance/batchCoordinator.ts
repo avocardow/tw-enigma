@@ -459,7 +459,7 @@ export class BatchCoordinator extends EventEmitter {
     const processor = this.processors.get(job.type) as JobProcessor<T, R>;
 
     if (!processor) {
-      const _ = new Error(`No processor found for job type: ${job.type}`);
+      const error = new Error(`No processor found for job type: ${job.type}`);
       this.handleJobResult(job, { success: false, error, duration: 0 });
       return;
     }

@@ -22,7 +22,7 @@
  * - Memory budget enforcement
  */
 
-import { performance, PerformanceObserver } from "perf_hooks";
+import { PerformanceObserver } from "perf_hooks";
 import { EventEmitter } from "events";
 import v8 from "v8";
 import process from "process";
@@ -502,7 +502,7 @@ export class MemoryProfiler extends EventEmitter {
       });
 
       this.gcObserver.observe({ entryTypes: ["gc"] });
-    } catch (_) {
+    } catch {
       this.emit(
         "warning",
         "GC observation not available in this Node.js version",
