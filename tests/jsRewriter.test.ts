@@ -8,9 +8,7 @@
  * @version 1.0.0
  */
 
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import fs from "fs/promises";
-import path from "path";
+import { describe, it, expect, beforeEach } from "vitest";
 import {
   JSRewriter,
   JSRewriterUtils,
@@ -18,8 +16,6 @@ import {
   JSRewriterConfig,
   JSPatternRule,
   JSReplacementContext,
-  JSReplacementResult,
-  JavaScriptFileType,
   DEFAULT_JS_REWRITER_CONFIG,
 } from "../src/jsRewriter.ts";
 
@@ -463,7 +459,7 @@ describe("JSRewriterUtils - Step 1: Utility Functions", () => {
     });
 
     it("should handle function replacement in rules", () => {
-      const replacementFn = (match: string, context: JSReplacementContext) => {
+      const replacementFn = (match: string, _context: JSReplacementContext) => {
         return match.replace("blue", "primary");
       };
 
@@ -976,7 +972,7 @@ describe("Step 2: Pattern Recognition and Matching", () => {
             id: "function-replacement",
             description: "Function replacement rule",
             pattern: /text-(\w+)-(\d+)/g,
-            replacement: (match, context) => {
+            replacement: (match, _context) => {
               return match.replace(/text-/g, "color-");
             },
             priority: 100,

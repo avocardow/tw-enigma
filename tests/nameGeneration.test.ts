@@ -52,8 +52,6 @@ import {
   type NameGenerationOptions,
   type PatternFrequencyMap,
   type AggregatedClassData,
-  type PrettyNameCache,
-  type PrettyNameResult,
 } from "../src/nameGeneration.ts";
 
 // Mock data for testing

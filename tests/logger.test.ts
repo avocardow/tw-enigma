@@ -1,9 +1,8 @@
-import { describe, it, expect, beforeEach, afterEach, vi, Mock } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import {
   Logger,
   LogLevel,
   LogLevelNames,
-  logger,
   createLogger,
   ErrorContext,
 } from "../src/logger.ts";
@@ -506,7 +505,7 @@ describe("Enhanced Logger Features", () => {
         fs.unlinkSync(tempLogFile);
       }
       fs.rmdirSync(tempLogDir);
-    } catch (error) {
+    } catch {
       // Ignore cleanup errors
     }
 
@@ -899,8 +898,6 @@ describe("Enhanced Logger Features", () => {
 
   describe("Logger Cleanup", () => {
     it("should clean up file streams and progress states", async () => {
-      const fs = await import("fs");
-
       const testLogger = new Logger({
         fileOutput: {
           filePath: tempLogFile,

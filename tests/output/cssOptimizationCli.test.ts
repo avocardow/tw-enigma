@@ -5,10 +5,10 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { spawn, exec } from "child_process";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { exec } from "child_process";
 import { promisify } from "util";
-import { writeFile, mkdtemp, rmdir, readFile, mkdir } from "fs/promises";
+import { writeFile, mkdtemp, rmdir } from "fs/promises";
 import { tmpdir } from "os";
 import { join } from "path";
 
@@ -159,7 +159,7 @@ describe("CSS Optimization CLI Commands", () => {
       const command = `node ${cliPath} css-optimize ${sampleCssFile} --output=${outputDir} --performance-budget=5KB --max-chunks=3`;
 
       try {
-        const { stdout, stderr } = await execAsync(command);
+        const { stdout } = await execAsync(command);
 
         expect(stdout).toContain("Performance budget");
         // Should warn about budget constraints if CSS is larger than 5KB
@@ -175,7 +175,7 @@ describe("CSS Optimization CLI Commands", () => {
       const command = `node ${cliPath} css-optimize ${sampleCssFile} --output=${outputDir} --preset=cdn --env=production`;
 
       try {
-        const { stdout, stderr } = await execAsync(command);
+        const { stdout } = await execAsync(command);
 
         expect(stdout).toContain("CDN");
         expect(stdout).toContain("optimized");
@@ -191,7 +191,7 @@ describe("CSS Optimization CLI Commands", () => {
       const command = `node ${cliPath} css-optimize ${sampleCssFile} --output=${outputDir} --compress=gzip --minify`;
 
       try {
-        const { stdout, stderr } = await execAsync(command);
+        const { stdout } = await execAsync(command);
 
         expect(stdout).toContain("compression");
         // Should indicate gzip compression was applied
@@ -207,7 +207,7 @@ describe("CSS Optimization CLI Commands", () => {
       const command = `node ${cliPath} css-optimize ${sampleCssFile} --output=${outputDir} --source-map`;
 
       try {
-        const { stdout, stderr } = await execAsync(command);
+        const { stdout } = await execAsync(command);
 
         expect(stdout).toContain("source map");
 
@@ -226,7 +226,7 @@ describe("CSS Optimization CLI Commands", () => {
       const command = `node ${cliPath} css-optimize ${sampleCssFile} --output=${outputDir} --critical-css --html=${sampleHtmlFile}`;
 
       try {
-        const { stdout, stderr } = await execAsync(command);
+        const { stdout } = await execAsync(command);
 
         expect(stdout).toContain("critical");
         expect(stdout).toContain("CSS");

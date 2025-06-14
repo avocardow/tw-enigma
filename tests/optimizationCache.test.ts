@@ -7,7 +7,6 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { promises as fs } from 'fs';
-import path from 'path';
 import { 
   OptimizationCache, 
   createOptimizationCache,
@@ -433,7 +432,7 @@ describe('OptimizationCache', () => {
       await new Promise(resolve => setTimeout(resolve, 10));
       
       // Entry should be expired (handled by underlying cache manager)
-      const result = await shortTtlCache.get(['ttl-test.css'], mockConfig);
+      await shortTtlCache.get(['ttl-test.css'], mockConfig);
       // Note: TTL is handled by the underlying cache manager, so we can't easily test this
       
       await shortTtlCache.destroy();
