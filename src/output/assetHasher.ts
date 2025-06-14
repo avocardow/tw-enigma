@@ -8,10 +8,10 @@
 import { createHash } from "crypto";
 import { gzip, brotliCompress } from "zlib";
 import { promisify } from "util";
-import { readFile, writeFile, stat } from "fs/promises";
-import { join, dirname, basename, extname } from "path";
+// readFile, writeFile, stat imports removed - not used
+// join, dirname, basename, extname imports removed - not used
 import cssnano from "cssnano";
-import type { CssOutputConfig } from "./cssOutputConfig.ts";
+// CssOutputConfig import removed - not used
 import { z } from "zod";
 import postcss, { type Root, type Plugin } from "postcss";
 import type {
@@ -22,8 +22,7 @@ import type {
 } from "./cssOutputConfig.ts";
 import type { CssChunk } from "./cssChunker.ts";
 
-const gzipAsync = promisify(gzip);
-const brotliCompressAsync = promisify(brotliCompress);
+// gzipAsync and brotliCompressAsync removed - not used
 
 // =============================================================================
 // TYPE DEFINITIONS

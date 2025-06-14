@@ -531,7 +531,7 @@ export function toBase36(num: number, useNumbers: boolean = true): string {
  * @param useNumbers - Whether numbers were used in generation
  * @returns The corresponding number (0-based)
  */
-export function fromBase36(str: string, useNumbers: boolean = true): number {
+export function fromBase36(str: string, _useNumbers: boolean = true): number {
   const letters = "abcdefghijklmnopqrstuvwxyz";
   const numbers = "0123456789";
   const alphabet = useNumbers ? letters + numbers : letters;
@@ -662,7 +662,7 @@ export function calculateOptimalLength(
 
   const base = alphabet.length;
   let length = 1;
-  let totalCapacity = 0;
+  let _ = 0;
   const charactersPerLength: number[] = [];
 
   // Calculate capacity for each length until we can accommodate the count
@@ -1086,7 +1086,6 @@ export function generatePrettyName(
     alphabet,
     prettyNameMaxLength,
     prettyNamePreferShorter,
-    prettyNameExhaustionStrategy,
   } = options;
   const maxLength = prettyNameMaxLength ?? 6; // Use nullish coalescing instead of || to handle 0 properly
 
@@ -1248,7 +1247,7 @@ function handlePrettyNameExhaustion(
  */
 function enhanceNameAesthetics(
   name: string,
-  options: NameGenerationOptions,
+  _options: NameGenerationOptions,
 ): string {
   // Simple enhancement: try to add vowels or replace awkward combinations
   // This is a fallback, so we keep it simple
@@ -1388,7 +1387,7 @@ export function generateNextAvailableName(
 export function batchGenerateAvailableNames(
   count: number,
   cache: NameCollisionCache,
-  options: NameGenerationOptions,
+  _options: NameGenerationOptions,
 ): Array<{ name: string; index: number }> {
   if (count <= 0) {
     throw new NameGenerationError(`Invalid count: ${count}. Must be positive.`);
@@ -2363,7 +2362,6 @@ function generatePrettyNameFromCache(
     alphabet,
     prettyNameMaxLength,
     prettyNamePreferShorter,
-    prettyNameExhaustionStrategy,
   } = options;
   const maxLength = prettyNameMaxLength || 6;
 

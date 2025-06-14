@@ -18,9 +18,9 @@ import { cpus } from "os";
 import { createLogger } from "../logger.ts";
 import type {
   BatchConfig,
-  PerformanceMetrics,
-  WorkerConfig,
-  CacheConfig,
+  // PerformanceMetrics - removed, not used
+  // WorkerConfig - removed, not used
+  // CacheConfig - removed, not used
 } from "./config.ts";
 
 const logger = createLogger("BatchCoordinator");
@@ -28,7 +28,7 @@ const logger = createLogger("BatchCoordinator");
 /**
  * Batch job definition
  */
-interface BatchJob<T = unknown, R = unknown> {
+interface BatchJob<T = unknown> {
   id: string;
   type: string;
   input: T;

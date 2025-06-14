@@ -235,7 +235,7 @@ export class PathUtils {
       this.cacheResult(cacheKey, result);
       return result;
     } catch (error) {
-      const errorResult: RelativePathResult = {
+      const _errorResult: RelativePathResult = {
         relativePath: "",
         isValid: false,
         normalizedPath: "",
@@ -428,8 +428,8 @@ export class PathUtils {
    */
   private performSecurityCheck(
     calculatedPath: string,
-    fromPath: string,
-    toPath: string,
+    _fromPath: string,
+    _toPath: string,
   ): void {
     // Check for path traversal in the result
     if (calculatedPath.includes("..")) {
@@ -527,7 +527,7 @@ export function calculateRelativePath(
  */
 export function validatePath(
   inputPath: string,
-  context = "path",
+  _context = "path",
 ): PathValidationResult {
   const utils = createPathUtils();
   return utils.validatePath(inputPath, _context);

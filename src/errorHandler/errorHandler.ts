@@ -12,7 +12,7 @@
 
 import { EventEmitter } from "events";
 import { createLogger } from "../logger.ts";
-import { CircuitBreakerRegistry, CircuitBreaker } from "./circuitBreaker.ts";
+import { CircuitBreakerRegistry } from "./circuitBreaker.ts";
 import {
   ErrorSeverity,
   ErrorCategory,
@@ -25,7 +25,6 @@ import {
   categorizeError,
   severityToNumber,
 } from "./types.ts";
-import { EnigmaError } from "../errors.ts";
 
 /**
  * Error handling statistics for monitoring

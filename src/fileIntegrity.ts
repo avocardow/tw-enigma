@@ -5,7 +5,6 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-// @ts-nocheck - Temporarily disable TypeScript strict checking for this complex file
 
 import { z } from "zod";
 import { createHash } from "crypto";
@@ -1759,7 +1758,7 @@ export class FileIntegrityValidator {
       // Check if file exists first
       try {
         await stat(resolvedPath);
-      } catch (_) {
+      } catch (_statError) {
         const processingTime = Date.now() - startTime;
         return {
           deduplicated: false,
@@ -2031,7 +2030,7 @@ export class FileIntegrityValidator {
         chainLength: this.incrementalIndex.stats.chainLength,
         lastBackup: this.incrementalIndex.stats.lastBackupAt,
       });
-    } catch (_) {
+    } catch (_loadError) {
       // Initialize new index if file doesn't exist
       this.incrementalIndex = {
         version: "1.0.0",

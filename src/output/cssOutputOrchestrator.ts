@@ -5,14 +5,14 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { z } from "zod";
+// z import removed - not used
 import path from "path";
 import { writeFile, mkdir } from "fs/promises";
 import type {
   CssOutputConfig,
-  OutputStrategy,
-  ChunkingStrategy,
-  CriticalCssStrategy,
+  // OutputStrategy - removed, not used
+  // ChunkingStrategy - removed, not used
+  // CriticalCssStrategy - removed, not used
 } from "./cssOutputConfig.ts";
 import { CssChunker, createCssChunker } from "./cssChunker.ts";
 import type { CssChunk } from "./cssChunker.ts";

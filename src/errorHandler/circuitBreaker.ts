@@ -144,7 +144,7 @@ export class CircuitBreaker extends EventEmitter {
 
     // Check circuit state before executing
     if (this.state === CircuitBreakerState.OPEN) {
-      const _ = new CircuitBreakerOpenError(this.name, this.getLastError());
+      const error = new CircuitBreakerOpenError(this.name, this.getLastError());
 
       if (fallback) {
         circuitLogger.warn("Circuit open, using fallback", {
@@ -166,7 +166,7 @@ export class CircuitBreaker extends EventEmitter {
     } catch (error) {
       const responseTime = Date.now() - startTime;
 
-      await this.onFailure(error as Error, responseTime, _context);
+      await this.onFailure(error as Error, responseTime, context);
 
       // If we have a fallback and the circuit is now open, use it
       if (fallback) {

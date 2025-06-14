@@ -28,8 +28,8 @@ import path from "path";
 import { performance } from "perf_hooks";
 import type {
   CacheConfig,
-  CacheStrategy,
-  PerformanceMetrics,
+  // CacheStrategy - removed, not used
+  // PerformanceMetrics - removed, not used
 } from "./config.ts";
 
 /**

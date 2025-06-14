@@ -15,14 +15,14 @@
 import {
   Worker,
   isMainThread,
-  MessageChannel,
-  MessagePort,
+  // MessageChannel - removed, not used
+  // MessagePort - removed, not used
 } from "worker_threads";
 import { EventEmitter } from "events";
 import { cpus } from "os";
 import { resolve } from "path";
 import { createLogger } from "../logger.ts";
-import type { WorkerConfig, WorkerTask, PerformanceMetrics } from "./config.ts";
+import type { WorkerConfig, WorkerTask /* PerformanceMetrics - removed, not used */ } from "./config.ts";
 
 const logger = createLogger("WorkerManager");
 

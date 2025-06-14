@@ -7,7 +7,7 @@
 
 import type {
   CssPerformanceReport,
-  BudgetViolation,
+  // BudgetViolation - removed, not used
 } from "./cssReportGenerator.ts";
 import type { CssOutputConfig } from "./cssOutputConfig.ts";
 

@@ -11,17 +11,15 @@
  */
 
 import { readFile, access } from "fs/promises";
-import { join, resolve } from "path";
+import { join } from "path";
 import { createLogger } from "../../logger.ts";
 import { FrameworkDetector } from "../../frameworkDetector.ts";
 import type {
   FrameworkInfo,
-  DetectionResult,
 } from "../../frameworkDetector.ts";
 import type {
   BuildToolType,
   BuildToolPluginConfig,
-  BuildToolContext,
   BuildPhase,
 } from "./buildToolPlugin.ts";
 

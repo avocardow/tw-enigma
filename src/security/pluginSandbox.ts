@@ -732,7 +732,7 @@ export class PluginSandbox extends EventEmitter {
   /**
    * Private: Create secure console
    */
-  private createSecureConsole(context: PluginExecutionContext): Console {
+  private createSecureConsole(_context: PluginExecutionContext): Console {
     // Implementation of createSecureConsole method
     return console;
   }
@@ -763,8 +763,8 @@ export class PluginSandbox extends EventEmitter {
    * Private: Handle security violations
    */
   private handleSecurityViolation(
-    context: PluginExecutionContext,
-    error: unknown,
+    _context: PluginExecutionContext,
+    _error: unknown,
   ): void {
     // Implementation of handleSecurityViolation method
   }

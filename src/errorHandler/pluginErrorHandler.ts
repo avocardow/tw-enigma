@@ -14,12 +14,8 @@ import { z } from "zod";
 import { EventEmitter } from "events";
 import { createLogger } from "../logger.ts";
 import type {
-  EnigmaPlugin,
-  PluginConfig,
   PluginResult,
 } from "../types/plugins.ts";
-
-const logger = createLogger("plugin-error-handler");
 
 /**
  * Error categories for classification
@@ -769,7 +765,7 @@ export class PluginErrorHandler extends EventEmitter {
    */
   private recordFallbackExecution(
     pluginName: string,
-    result: "success" | "failure",
+    _result: "success" | "failure",
   ): void {
     const health = this.getPluginHealth(pluginName);
     // Update fallback metrics if needed

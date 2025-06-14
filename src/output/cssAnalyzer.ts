@@ -5,9 +5,9 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { createHash } from "crypto";
+// createHash import removed - not used
 import { writeFile, readFile } from "fs/promises";
-import { join, dirname, basename, extname } from "path";
+// join, dirname, basename, extname imports removed - not used
 import { SourceMapGenerator } from "source-map";
 import type { CssOutputConfig } from "./cssOutputConfig.ts";
 import type { CssChunk } from "./cssChunker.ts";

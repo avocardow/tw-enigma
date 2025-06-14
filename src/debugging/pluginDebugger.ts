@@ -111,7 +111,7 @@ export class PluginDebugger {
       // Process the input
       let output: string;
       if (plugin.processCss) {
-        output = await plugin.processCss(input, _context);
+        output = await plugin.processCss(input, context);
       } else {
         throw new Error("Plugin does not implement processCss method");
       }
@@ -270,8 +270,8 @@ export class PluginDebugger {
     });
 
     const [resultA, resultB] = await Promise.all([
-      this.testPlugin(pluginA, input, _context),
-      this.testPlugin(pluginB, input, _context),
+      this.testPlugin(pluginA, input, context),
+      this.testPlugin(pluginB, input, context),
     ]);
 
     const comparison = {
@@ -529,5 +529,5 @@ export async function quickTestPlugin(
     utils: {} as any, // Simplified for testing
   };
 
-  return pluginDebugger.testPlugin(plugin, css, _context);
+  return pluginDebugger.testPlugin(plugin, css, context);
 }

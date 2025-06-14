@@ -13,7 +13,6 @@
 import { EventEmitter } from "events";
 import { createLogger } from "../../logger.ts";
 import type {
-  HMRUpdate,
   BuildToolContext,
   BuildToolType,
   OptimizationResult,
@@ -366,7 +365,7 @@ export class HMRHandler extends EventEmitter {
    * Stop file watching
    */
   async stopWatching(): Promise<void> {
-    for (const [path, watcher] of Array.from(this.fileWatchers)) {
+    for (const [_path, watcher] of Array.from(this.fileWatchers)) {
       if (watcher && typeof watcher.close === "function") {
         await watcher.close();
       }

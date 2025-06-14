@@ -21,11 +21,9 @@ import type {
   BuildToolType,
   BuildToolResult,
   BuildPhase,
-  createBuildToolContext,
 } from "./buildToolPlugin.ts";
 import type {
   AutoConfigResult,
-  DetectedBuildConfig,
 } from "./configDetector.ts";
 import type { HMRHandler } from "./hmrHandler.ts";
 import fs from "fs/promises";
@@ -149,7 +147,7 @@ export class IntegrationManager extends EventEmitter {
           if (!stats.isDirectory()) {
             throw new Error(`Project root is not a directory: ${this.config.projectRoot}`);
           }
-        } catch (_) {
+        } catch (_statError) {
           throw new Error(`Project root does not exist: ${this.config.projectRoot}`);
         }
       } else if (this.config.projectRoot === '/non-existent') {

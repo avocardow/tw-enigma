@@ -10,17 +10,17 @@
  * Provides the main processor factory and CSS processing pipeline
  */
 
-import postcss, { type Root, type Result, type ProcessOptions } from "postcss";
+import postcss, { /* Root - removed, not used */ type Result, type ProcessOptions } from "postcss";
 import { readFile, writeFile } from "fs/promises";
 import { createLogger } from "./logger.ts";
 import { createPluginMetrics } from "./core/postcssPlugin.ts";
 import type {
   ProcessorConfig,
   ProcessingResult,
-  PluginConfig,
+  // PluginConfig - removed, not used
   PluginContext,
   PluginManager,
-  EnigmaPlugin,
+  // EnigmaPlugin - removed, not used
 } from "./types/plugins.ts";
 import type { EnigmaConfig } from "./config.ts";
 import type {

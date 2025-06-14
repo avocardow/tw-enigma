@@ -6,18 +6,18 @@
  */
 
 import { EventEmitter } from "events";
-import { createHash } from "crypto";
+// createHash import removed - not used
 import type {
   CssOutputConfig,
   ChunkingStrategy,
-  ChunkingConfig,
+  // ChunkingConfig - removed, not used
 } from "./cssOutputConfig.ts";
 import { z } from "zod";
 import postcss, {
   Rule,
   AtRule,
   Root,
-  Container,
+  // Container - removed, not used
   Root as PostCssRoot,
 } from "postcss";
 

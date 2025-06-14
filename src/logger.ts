@@ -13,9 +13,8 @@ import {
   mkdirSync,
   statSync,
   unlinkSync,
-  readdirSync,
 } from "fs";
-import { dirname, join } from "path";
+import { dirname } from "path";
 import { gzipSync } from "zlib";
 
 /**

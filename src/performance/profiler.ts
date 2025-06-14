@@ -20,7 +20,7 @@ import { execSync, spawn, ChildProcess } from "child_process";
 import { writeFileSync, existsSync, mkdirSync } from "fs";
 import { join } from "path";
 import { createLogger } from "../logger.ts";
-import type { ProfilingConfig, PerformanceMetrics } from "./config.ts";
+import type { ProfilingConfig /* PerformanceMetrics - removed, not used */ } from "./config.ts";
 
 const logger = createLogger("PerformanceProfiler");
 

@@ -24,7 +24,6 @@ import type {
   BuildToolHooks,
   HMRUpdate,
   OptimizationResult,
-  createBuildToolContext,
 } from "../core/buildToolPlugin.ts";
 
 const logger = createLogger("webpack-plugin");
@@ -186,7 +185,7 @@ export class EnigmaWebpackPlugin
     // Already handled in constructor
   }
 
-  createPlugin(context: PluginContext): Plugin {
+  createPlugin(_context: PluginContext): Plugin {
     const plugin = {
       postcssPlugin: this.name,
       Once: async (root: any, { result }: { result: any }) => {
@@ -507,7 +506,7 @@ export class EnigmaWebpackPlugin
    */
   private async optimizeCSS(
     css: string,
-    fileName: string,
+    _fileName: string,
   ): Promise<OptimizationResult> {
     const startTime = performance.now();
 
@@ -569,7 +568,7 @@ export class EnigmaWebpackPlugin
       context.metrics.phaseTimings.development = performance.now();
     },
 
-    onHMRUpdate: async (update: HMRUpdate, context: BuildToolContext) => {
+    onHMRUpdate: async (update: HMRUpdate, _context: BuildToolContext) => {
       logger.debug("Webpack HMR update", {
         type: update.type,
         filePath: update.filePath,
@@ -639,7 +638,7 @@ export class EnigmaWebpackPlugin
    * Handle HMR updates
    */
   async handleHMR(update: HMRUpdate, context: BuildToolContext): Promise<void> {
-    await this.hooks.onHMRUpdate?.(update, _context);
+    await this.hooks.onHMRUpdate?.(update, context);
   }
 
   /**
