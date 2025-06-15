@@ -269,7 +269,7 @@ export class ConfigValidator {
     // Validate input/output path differences
     if (config.input && config.output) {
       const inputPath = resolve(config.input);
-      const outputPath = resolve(config.output);
+      const outputPath = typeof config.output === 'string' ? resolve(config.output) : resolve('./dist');
       
       if (inputPath === outputPath) {
         errors.push(new ValidationError(
@@ -325,9 +325,9 @@ export class ConfigValidator {
     let rulesApplied = 0;
 
     // Validate path traversal protection
-    const pathFields = [config.input, config.output];
+    const pathFields = [config.input, typeof config.output === 'string' ? config.output : undefined];
     for (const path of pathFields) {
-      if (path && (path.includes("../") || path.includes("..\\"))) {
+      if (path && typeof path === 'string' && (path.includes("../") || path.includes("..\\"))) {
         errors.push(new ValidationError(
           "Path traversal detected in configuration",
           "path",
@@ -344,7 +344,7 @@ export class ConfigValidator {
     }
 
     // Validate file permissions for output directory
-    if (config.output) {
+    if (config.output && typeof config.output === 'string') {
       try {
         const outputDir = resolve(config.output);
         if (existsSync(outputDir)) {

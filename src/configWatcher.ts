@@ -204,7 +204,7 @@ export class ConfigWatcher extends EventEmitter {
     logger.info("Stopping configuration file watcher");
 
     // Clear all debounce timers
-    for (const tracker of this.fileTrackers.values()) {
+    for (const tracker of Array.from(this.fileTrackers.values())) {
       if (tracker.debounceTimer) {
         clearTimeout(tracker.debounceTimer);
       }

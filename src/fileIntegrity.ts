@@ -29,10 +29,10 @@ import {
   constants as zlibConstants,
 } from "zlib";
 import { EventEmitter } from "events";
-import { resolve, basename, extname, join } from "path";
+import { resolve, basename, extname, join, dirname } from "path";
 import { createLogger } from "./logger";
 import { ConfigError } from "./errors";
-import os from "os";
+import * as os from "os";
 
 /**
  * File integrity validation options schema
@@ -753,11 +753,14 @@ export class IntegrityError extends Error {
     operation?: string,
     cause?: Error,
   ) {
-    super(message, { cause });
+    super(message);
     this.name = "IntegrityError";
     this.code = code;
     this.filePath = filePath;
     this.operation = operation;
+    if (cause) {
+      this.stack = `${this.stack}\nCaused by: ${cause.stack}`;
+    }
   }
 }
 
@@ -1996,7 +1999,7 @@ export class FileIntegrityValidator {
     try {
       await access(this.incrementalIndexPath);
       const data = await readFile(this.incrementalIndexPath, "utf-8");
-      this.incrementalIndex = JSON.parse(data);
+      this.incrementalIndex = JSON.parse(data) as IncrementalIndex;
 
       // Convert date strings back to Date objects
       if (this.incrementalIndex) {
@@ -2026,9 +2029,9 @@ export class FileIntegrityValidator {
       }
 
       this.logger.debug("Incremental index loaded", {
-        totalBackups: this.incrementalIndex.stats.totalBackups,
-        chainLength: this.incrementalIndex.stats.chainLength,
-        lastBackup: this.incrementalIndex.stats.lastBackupAt,
+        totalBackups: this.incrementalIndex?.stats.totalBackups,
+        chainLength: this.incrementalIndex?.stats.chainLength,
+        lastBackup: this.incrementalIndex?.stats.lastBackupAt,
       });
     } catch {
       // Initialize new index if file doesn't exist
@@ -2054,7 +2057,8 @@ export class FileIntegrityValidator {
       });
     }
 
-    return this.incrementalIndex;
+    // Ensure we always return a non-null value
+    return this.incrementalIndex!;
   }
 
   /**
@@ -2345,7 +2349,7 @@ export class FileIntegrityValidator {
       const result: IncrementalBackupResult = {
         backupType: strategy,
         backupId,
-        parentId: backupEntry.parentId,
+        parentId: backupEntry.parentId || undefined,
         filesBackedUp: 1,
         filesChanged: changeState.hasChanged ? 1 : 0,
         filesSkipped: 0,
@@ -2625,7 +2629,7 @@ export class FileIntegrityValidator {
     const cumulativeChanges = Object.keys(index.cumulativeFileStates).filter(
       (path) => {
         const state = index.cumulativeFileStates[path];
-        return state.lastBackup >= index.currentFullBackup.createdAt;
+        return index.currentFullBackup && state.lastBackup >= index.currentFullBackup.createdAt;
       },
     );
 
@@ -3402,10 +3406,10 @@ export class FileIntegrityValidator {
         totalFiles,
         successful,
         failed,
-        processingTime: `${totalTime}ms`,
-        averageTimePerFile: `${(totalTime / processed).toFixed(2)}ms`,
+        processingTime: totalTime,
+        averageTimePerFile: Number((totalTime / processed).toFixed(2)),
         batchSizeAdjustments: this.performanceTracker.batchSizeAdjustments,
-        peakMemoryUsage: `${this.memoryTracker.peak}MB`,
+        peakMemoryUsage: this.memoryTracker.peak,
       });
 
       return result;
@@ -3416,7 +3420,7 @@ export class FileIntegrityValidator {
         error: error instanceof Error ? error.message : String(error),
         processed,
         totalFiles,
-        processingTime: `${totalTime}ms`,
+        processingTime: totalTime,
       });
 
       throw new IntegrityError(

@@ -627,7 +627,7 @@ export class ConfigBackup extends EventEmitter {
   public async cleanupCorruptedBackups(): Promise<string[]> {
     const deleted: string[] = [];
     
-    for (const [backupId] of this.backups) {
+    for (const [backupId] of Array.from(this.backups)) {
       const verification = await this.verifyBackup(backupId);
       if (!verification.isValid) {
         if (await this.deleteBackup(backupId, true)) {

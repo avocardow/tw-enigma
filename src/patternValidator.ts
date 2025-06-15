@@ -746,7 +746,7 @@ export class SimplePatternValidator {
     }
 
     // Remove responsive prefixes
-    for (const prefix of RESPONSIVE_PREFIXES) {
+    for (const prefix of Array.from(RESPONSIVE_PREFIXES)) {
       if (baseClass.startsWith(prefix)) {
         baseClass = baseClass.substring(prefix.length);
         break;
@@ -754,7 +754,7 @@ export class SimplePatternValidator {
     }
 
     // Remove state prefixes
-    for (const prefix of STATE_PREFIXES) {
+    for (const prefix of Array.from(STATE_PREFIXES)) {
       if (baseClass.startsWith(prefix)) {
         baseClass = baseClass.substring(prefix.length);
         break;

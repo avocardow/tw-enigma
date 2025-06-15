@@ -334,17 +334,16 @@ export class PerformanceProfiler extends EventEmitter {
     detail?: unknown,
   ): Promise<{ result: T; measurement: PerformanceMeasurement | null }> {
     this.markStart(name, detail);
-
     try {
       const result = await fn();
       const measurement = this.markEnd(name, detail);
       return { result, measurement };
-    } catch {
+    } catch (err) {
       this.markEnd(name, {
         ...(detail && typeof detail === "object" ? detail : {}),
         error: true,
       });
-      throw error;
+      throw new Error(`Function execution failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
     }
   }
 
@@ -398,24 +397,30 @@ export class PerformanceProfiler extends EventEmitter {
       outputDir,
     });
 
-    (this as any).externalProfiler = spawn(command, commandArgs, {
+    this.externalProfiler = spawn(command, commandArgs, {
       stdio: "pipe",
       env: { ...process.env, NODE_ENV: "development" },
     });
 
-    this.externalProfiler.stdout?.on("data", (data) => {
-      logger.debug("External profiler stdout", { data: data.toString() });
-    });
+    if (this.externalProfiler?.stdout) {
+      this.externalProfiler.stdout.on("data", (data: Buffer) => {
+        logger.debug("External profiler stdout", { data: data.toString() });
+      });
+    }
 
-    this.externalProfiler.stderr?.on("data", (data) => {
-      logger.debug("External profiler stderr", { data: data.toString() });
-    });
+    if (this.externalProfiler?.stderr) {
+      this.externalProfiler.stderr.on("data", (data: Buffer) => {
+        logger.debug("External profiler stderr", { data: data.toString() });
+      });
+    }
 
-    this.externalProfiler.on("close", (code) => {
-      logger.info("External profiler finished", { tool, code, outputDir });
-      (this as any).externalProfiler = undefined;
-      this.emit("externalProfilerFinished", { tool, code, outputDir });
-    });
+    if (this.externalProfiler) {
+      this.externalProfiler.on("close", (code: number | null) => {
+        logger.info("External profiler finished", { tool, code, outputDir });
+        this.externalProfiler = undefined;
+        this.emit("externalProfilerFinished", { tool, code, outputDir });
+      });
+    }
 
     this.emit("externalProfilerStarted", { tool, outputDir });
   }
@@ -426,7 +431,7 @@ export class PerformanceProfiler extends EventEmitter {
   stopExternalProfiler(): void {
     if (this.externalProfiler) {
       this.externalProfiler.kill("SIGTERM");
-      (this as any).externalProfiler = undefined;
+      this.externalProfiler = undefined;
       logger.info("External profiler stopped");
     }
   }

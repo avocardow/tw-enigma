@@ -180,7 +180,7 @@ export interface CssProcessingOptions {
  */
 export class CssOutputOrchestrator {
   private config: CssOutputConfig;
-  private chunker!: CssChunker;
+  private chunker!: any; // PatchedCssChunker from createCssChunker
   private hasher!: AssetHasher;
   private optimizer!: CssOptimizer;
   private compressor!: CompressionEngine;
@@ -275,9 +275,15 @@ export class CssOutputOrchestrator {
         allCompressions.set(key, value);
     }
 
+    // Convert AssetHash objects to strings for manifest generation
+    const hashStrings = new Map<string, string>();
+    for (const [key, assetHash] of allHashes) {
+      hashStrings.set(key, assetHash.hash);
+    }
+
     const manifest = this.manifestGenerator.generateManifest(
       allChunks,
-      allHashes,
+      hashStrings,
       allOptimizations,
       allCompressions,
     );
@@ -451,19 +457,19 @@ export class CssOutputOrchestrator {
     try {
       switch (strategy) {
         case "size":
-          chunks = this.chunker.chunkBySize(bundle.content);
+          chunks = this.chunker.chunkBySizeString(bundle.content);
           break;
 
         case "usage":
-          chunks = this.chunker.chunkByUsage(bundle.content, usageData);
+          chunks = this.chunker.chunkByUsageString(bundle.content, usageData);
           break;
 
         case "route":
-          chunks = this.chunker.chunkByRoute(bundle.content, usageData);
+          chunks = this.chunker.chunkByRouteString(bundle.content, usageData);
           break;
 
         case "component":
-          chunks = this.chunker.chunkByComponent(bundle.content, usageData);
+          chunks = this.chunker.chunkByComponentString(bundle.content, usageData);
           break;
 
         case "hybrid":
@@ -890,16 +896,17 @@ export class CssOutputOrchestrator {
       await mkdir(dir, { recursive: true });
     } catch (error) {
       if (error instanceof Error) {
+        const nodeError = error as NodeJS.ErrnoException;
         // Handle permission errors gracefully for test scenarios
-        if (error.code === 'EACCES' || error.code === 'EPERM') {
+        if (nodeError.code === 'EACCES' || nodeError.code === 'EPERM') {
           throw new Error(`Permission denied creating output directory: ${dir}`);
         }
         // Handle non-existent parent paths more gracefully
-        if (error.code === 'ENOENT' && dir.startsWith('/nonexistent')) {
+        if (nodeError.code === 'ENOENT' && dir.startsWith('/nonexistent')) {
           throw new Error(`Cannot create directory in non-existent path: ${dir}`);
         }
         // For EEXIST errors, the directory already exists, which is fine
-        if (error.code !== 'EEXIST') {
+        if (nodeError.code !== 'EEXIST') {
           throw error;
         }
       } else {
@@ -985,6 +992,12 @@ export function createProductionOrchestrator(
 ): CssOutputOrchestrator {
   const productionConfig: CssOutputConfig = {
     strategy: "chunked",
+    enabled: true,
+    environment: "production",
+    sourceMaps: false,
+    watch: false,
+    verbose: false,
+    plugins: [],
     chunking: {
       strategy: "hybrid",
       maxSize: 50 * 1024,
@@ -1036,44 +1049,54 @@ export function createProductionOrchestrator(
       algorithm: "xxhash",
       length: 8,
       includeContent: true,
-      // includeTimestamp: false, // Remove this property as it doesn't exist in the interface
-      includePath: false,
-      excludeSourceMaps: true,
+      includeMetadata: false,
+      generateIntegrity: true,
+      integrityAlgorithm: "sha384",
     },
     delivery: {
-      preload: true,
-      prefetch: false,
-      async: true,
-      defer: false,
+      method: "preload",
+      priority: "high",
+      cache: {
+        strategy: "immutable",
+        maxAge: 31536000,
+        staleWhileRevalidate: 86400,
+      },
       crossorigin: "anonymous",
       integrity: true,
-      generatePreloadHints: true,
-      generatePrefetchHints: false,
-      http2Push: false,
       resourceHints: {
         preload: true,
         prefetch: false,
         preconnect: false,
       },
     },
-          paths: {
-        // input: "src/css", // Remove this property as it doesn't exist in the interface
-        base: "dist/css",
-      assets: "dist/assets",
+    paths: {
+      base: "dist/css",
       manifest: "dist/css-manifest.json",
       reports: "dist/reports",
-      temp: ".tmp/css",
+      chunks: "dist/css/chunks",
+      sourceMaps: "dist/css/maps",
+      critical: "dist/css/critical",
+      compressed: "dist/css/compressed",
+      publicPath: "/css/",
+      useHashes: true,
+      hashLength: 8,
+      hashAlgorithm: "xxhash",
     },
     reporting: {
       enabled: true,
-      // verbose: false, // Remove this property as it doesn't exist in the interface
+      performance: true,
       format: "json",
-      includeChunkAnalysis: true,
-      includePerformanceMetrics: true,
-      includeOptimizationDetails: true,
-      includeCompressionStats: true,
-      generateHtml: false,
-      outputPath: "dist/reports/css-optimization-report.json",
+      sizeAnalysis: true,
+      compression: true,
+      criticalAnalysis: true,
+      dependencyGraphs: true,
+      perChunkAnalysis: true,
+      budgets: {
+        maxTotalSize: 250000,
+        maxChunkSize: 50000,
+        maxCriticalSize: 14000,
+        maxRequests: 10,
+      },
     },
     ...overrides,
   };
@@ -1089,6 +1112,12 @@ export function createDevelopmentOrchestrator(
 ): CssOutputOrchestrator {
   const developmentConfig: CssOutputConfig = {
     strategy: "single",
+    enabled: true,
+    environment: "development",
+    sourceMaps: true,
+    watch: true,
+    verbose: true,
+    plugins: [],
     chunking: {
       strategy: "size",
       maxSize: 1024 * 1024, // 1MB
@@ -1140,20 +1169,20 @@ export function createDevelopmentOrchestrator(
       algorithm: "md5",
       length: 4,
       includeContent: false,
-      // includeTimestamp: true, // Remove this property as it doesn't exist in the interface
-      includePath: true,
-      excludeSourceMaps: false,
+      includeMetadata: true,
+      generateIntegrity: false,
+      integrityAlgorithm: "sha256",
     },
     delivery: {
-      preload: false,
-      prefetch: false,
-      async: false,
-      defer: false,
+      method: "standard",
+      priority: "low",
+      cache: {
+        strategy: "no-cache",
+        maxAge: 0,
+        staleWhileRevalidate: 0,
+      },
       crossorigin: "use-credentials",
       integrity: false,
-      generatePreloadHints: false,
-      generatePrefetchHints: false,
-      http2Push: false,
       resourceHints: {
         preload: false,
         prefetch: false,
@@ -1161,23 +1190,33 @@ export function createDevelopmentOrchestrator(
       },
     },
     paths: {
-      // input: "src/css", // Remove this property as it doesn't exist in the interface
       base: "dev/css",
-      assets: "dev/assets",
       manifest: "dev/css-manifest.json",
       reports: "dev/reports",
-      temp: ".tmp/css",
+      chunks: "dev/css/chunks",
+      sourceMaps: "dev/css/maps",
+      critical: "dev/css/critical",
+      compressed: "dev/css/compressed",
+      publicPath: "/css/",
+      useHashes: false,
+      hashLength: 4,
+      hashAlgorithm: "md5",
     },
     reporting: {
       enabled: true,
-      // verbose: true, // Remove this property as it doesn't exist in the interface
+      performance: false,
       format: "json",
-      includeChunkAnalysis: false,
-      includePerformanceMetrics: false,
-      includeOptimizationDetails: false,
-      includeCompressionStats: false,
-      generateHtml: true,
-      outputPath: "dev/reports/css-development-report.json",
+      sizeAnalysis: false,
+      compression: false,
+      criticalAnalysis: false,
+      dependencyGraphs: false,
+      perChunkAnalysis: false,
+      budgets: {
+        maxTotalSize: 1000000,
+        maxChunkSize: 1000000,
+        maxCriticalSize: 100000,
+        maxRequests: 50,
+      },
     },
     ...overrides,
   };

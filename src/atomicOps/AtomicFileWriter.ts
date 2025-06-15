@@ -119,7 +119,6 @@ export class AtomicFileWriter {
         backupCreated: false,
         checksumVerified: false,
       },
-      timestamp: startTime,
     };
 
     try {
@@ -596,7 +595,7 @@ export class AtomicFileWriter {
       // Sort by modification time (newest first)
       const validBackups = backupFiles
         .filter((backup) => backup.stat)
-        .sort((a, b) => b.stat.mtime.getTime() - a.stat.mtime.getTime());
+        .sort((a, b) => b.stat!.mtime.getTime() - a.stat!.mtime.getTime());
 
       // Remove old backups beyond the limit
       if (validBackups.length > maxBackups) {

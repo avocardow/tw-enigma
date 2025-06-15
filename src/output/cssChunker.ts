@@ -322,7 +322,7 @@ export class CssDependencyGraph {
    * Detect dependencies between CSS rules
    */
   private detectDependencies(): void {
-    for (const [selector, node] of this.nodes) {
+    for (const [selector, node] of Array.from(this.nodes)) {
       // Check for cascade dependencies (order matters)
       this.detectCascadeDependencies(selector, node);
 
@@ -345,7 +345,7 @@ export class CssDependencyGraph {
     node: CssRuleDependency,
   ): void {
     // Find selectors with same or higher specificity that could override
-    for (const [otherSelector, otherNode] of this.nodes) {
+    for (const [otherSelector, otherNode] of Array.from(this.nodes)) {
       if (otherSelector === selector) continue;
 
       if (this.selectorsCanConflict(selector, otherSelector)) {
@@ -451,7 +451,7 @@ export class CssDependencyGraph {
       onStack.add(node);
 
       const neighbors = this.edges.get(node) || new Set();
-      for (const neighbor of neighbors) {
+      for (const neighbor of Array.from(neighbors)) {
         if (!stack.has(neighbor)) {
           tarjan(neighbor);
           lowLink.set(
@@ -481,7 +481,7 @@ export class CssDependencyGraph {
       }
     };
 
-    for (const node of this.nodes.keys()) {
+    for (const node of Array.from(Array.from(this.nodes.keys()))) {
       if (!visited.has(node)) {
         tarjan(node);
       }
@@ -496,20 +496,22 @@ export class CssDependencyGraph {
     const adjList = new Map<string, string[]>();
     
     // Initialize in-degree and adjacency list
-    for (const id of this.nodes.keys()) {
+    for (const id of Array.from(Array.from(this.nodes.keys()))) {
       inDegree.set(id, 0);
       adjList.set(id, []);
     }
     
     // Build in-degree count and adjacency list
-    for (const edge of this.edges.values()) {
-      // edge.from depends on edge.to, so edge.to should come before edge.from
-      // So edge.to -> edge.from in the topological order
-      inDegree.set(edge.from, (inDegree.get(edge.from) || 0) + 1);
-      
-      const neighbors = adjList.get(edge.to) || [];
-      neighbors.push(edge.from);
-      adjList.set(edge.to, neighbors);
+    for (const [from, dependencies] of Array.from(Array.from(this.edges.entries()))) {
+      for (const to of Array.from(dependencies)) {
+        // from depends on to, so to should come before from
+        // So to -> from in the topological order
+        inDegree.set(from, (inDegree.get(from) || 0) + 1);
+        
+        const neighbors = adjList.get(to) || [];
+        neighbors.push(from);
+        adjList.set(to, neighbors);
+      }
     }
 
     // Kahn's algorithm
@@ -517,7 +519,7 @@ export class CssDependencyGraph {
     const result: string[] = [];
     
     // Find all nodes with in-degree 0
-    for (const [id, degree] of inDegree) {
+    for (const [id, degree] of Array.from(inDegree)) {
       if (degree === 0) {
         queue.push(id);
       }
@@ -542,7 +544,7 @@ export class CssDependencyGraph {
     // If there are unprocessed nodes, there's a cycle
     if (result.length !== this.nodes.size) {
       // Add remaining nodes for cycle handling
-      for (const id of this.nodes.keys()) {
+      for (const id of Array.from(Array.from(this.nodes.keys()))) {
         if (!result.includes(id)) {
           result.push(id);
         }
@@ -588,7 +590,7 @@ export class UsagePatternAnalyzer {
   analyzeStaticUsage(
     css: Root,
     sourceFiles: Map<string, string>,
-    _options: ChunkAnalysisOptions = {},
+    _options: Partial<ChunkAnalysisOptions> = {},
   ): Map<string, UsagePattern> {
     this.usageData.clear();
 
@@ -596,7 +598,7 @@ export class UsagePatternAnalyzer {
     const selectors = this.extractSelectors(css);
 
     // Analyze usage in source files
-    for (const [filePath, content] of sourceFiles) {
+    for (const [filePath, content] of Array.from(sourceFiles)) {
       this.analyzeFileUsage(filePath, content, selectors);
     }
 
@@ -633,7 +635,7 @@ export class UsagePatternAnalyzer {
     const route = this.extractRouteFromPath(filePath);
     const component = this.extractComponentFromPath(filePath);
 
-    for (const selector of selectors) {
+    for (const selector of Array.from(selectors)) {
       const pattern = this.getOrCreatePattern(selector);
 
       // Check if selector is used in this file
@@ -775,7 +777,7 @@ export class UsagePatternAnalyzer {
   private calculateDerivedMetrics(): void {
     const totalFiles = this.calculateTotalFiles();
 
-    for (const pattern of this.usageData.values()) {
+    for (const pattern of Array.from(Array.from(this.usageData.values()))) {
       // Normalize frequency (0-1)
       pattern.frequency = Math.min(pattern.frequency / totalFiles, 1);
 
@@ -790,11 +792,11 @@ export class UsagePatternAnalyzer {
   private calculateTotalFiles(): number {
     const allFiles = new Set<string>();
 
-    for (const pattern of this.usageData.values()) {
-      for (const route of pattern.routes) {
+    for (const pattern of Array.from(Array.from(this.usageData.values()))) {
+      for (const route of Array.from(pattern.routes)) {
         allFiles.add(route);
       }
-      for (const component of pattern.components) {
+      for (const component of Array.from(pattern.components)) {
         allFiles.add(component);
       }
     }
@@ -877,7 +879,7 @@ class CssChunker extends EventEmitter {
    * Chunk CSS by size constraints
    */
   private chunkBySize(css: Root): CssChunk[] {
-    if (!css || css.nodes.size === 0) {
+    if (!css || css.nodes.length === 0) {
       return [];
     }
 
@@ -903,8 +905,9 @@ class CssChunker extends EventEmitter {
         dependencies: new Set(),
         routes: new Set(),
         components: new Set(),
-        loadingStrategy: 'eager',
-        metadata: {
+                  loadingStrategy: 'inline',
+          async: false,
+          metadata: {
           created: new Date().toISOString(),
           chunkType: 'main',
           strategy: config.strategy || "size",
@@ -938,7 +941,7 @@ class CssChunker extends EventEmitter {
           dependencies: new Set(),
           routes: new Set(),
           components: new Set(),
-          loadingStrategy: chunkIndex === 1 ? 'eager' : 'lazy',
+          loadingStrategy: chunkIndex === 1 ? 'inline' : 'lazy',
           async: chunkIndex > 1,
           metadata: {
             created: new Date().toISOString(),
@@ -967,7 +970,7 @@ class CssChunker extends EventEmitter {
         dependencies: new Set(),
         routes: new Set(),
         components: new Set(),
-        loadingStrategy: chunkIndex === 1 ? 'eager' : 'lazy',
+        loadingStrategy: chunkIndex === 1 ? 'inline' : 'lazy',
         async: chunkIndex > 1,
         metadata: {
           created: new Date().toISOString(),
@@ -1016,8 +1019,7 @@ class CssChunker extends EventEmitter {
       for (const rule of highUsageRules) {
         if (
           criticalChunk.size + rule.size <=
-            this.config.chunking?.maxChunkSize ||
-          250 * 1024
+            (this.config.chunking?.maxChunkSize || 250 * 1024)
         ) {
           this.addRuleToChunk(criticalChunk, rule, css);
         }
@@ -1056,7 +1058,7 @@ class CssChunker extends EventEmitter {
     for (const rule of rules) {
       const pattern = this.usagePatterns.get(rule.selector);
       if (pattern && pattern.routes.size > 0) {
-        for (const route of pattern.routes) {
+        for (const route of Array.from(pattern.routes)) {
           if (!routeRules.has(route)) {
             routeRules.set(route, []);
           }
@@ -1066,7 +1068,7 @@ class CssChunker extends EventEmitter {
     }
 
     // Create chunks for each route
-    for (const [route, routeRulesList] of routeRules) {
+    for (const [route, routeRulesList] of Array.from(routeRules)) {
       const chunk = this.createNewChunk(`route-${route}`, "route");
       chunk.routes.add(route);
 
@@ -1100,7 +1102,7 @@ class CssChunker extends EventEmitter {
     for (const rule of rules) {
       const pattern = this.usagePatterns.get(rule.selector);
       if (pattern && pattern.components.size > 0) {
-        for (const component of pattern.components) {
+        for (const component of Array.from(pattern.components)) {
           if (!componentRules.has(component)) {
             componentRules.set(component, []);
           }
@@ -1110,7 +1112,7 @@ class CssChunker extends EventEmitter {
     }
 
     // Create chunks for each component
-    for (const [component, componentRulesList] of componentRules) {
+    for (const [component, componentRulesList] of Array.from(componentRules)) {
       const chunk = this.createNewChunk(`component-${component}`, "component");
       chunk.components.add(component);
 
@@ -1223,15 +1225,15 @@ class CssChunker extends EventEmitter {
     chunk.size += rule.size;
 
     // Merge route and component associations
-    for (const route of rule.routes) {
+    for (const route of Array.from(rule.routes)) {
       chunk.routes.add(route);
     }
-    for (const component of rule.components) {
+    for (const component of Array.from(rule.components)) {
       chunk.components.add(component);
     }
 
     // Add dependencies
-    for (const dep of rule.dependencies) {
+    for (const dep of Array.from(rule.dependencies)) {
       chunk.dependencies.add(dep);
     }
   }
@@ -1251,8 +1253,7 @@ class CssChunker extends EventEmitter {
     for (const rule of rules) {
       if (
         !currentChunk ||
-        currentChunk.size + rule.size > this.config.chunking?.maxChunkSize ||
-        250 * 1024
+        currentChunk.size + rule.size > (this.config.chunking?.maxChunkSize || 250 * 1024)
       ) {
         if (currentChunk) {
           chunks.push(currentChunk);
@@ -1341,9 +1342,9 @@ class CssChunker extends EventEmitter {
         // Preserve chunks with dependencies or that are large enough
         chunksToPreserve.push({
           ...chunk,
-          dependencies: new Set(chunk.dependencies),
-          routes: new Set(chunk.routes),
-          components: new Set(chunk.components),
+          dependencies: new Set<string>(chunk.dependencies),
+          routes: new Set<string>(chunk.routes),
+          components: new Set<string>(chunk.components),
           rules: [...(chunk.rules || [])],
         });
       } else {
@@ -1383,6 +1384,7 @@ class CssChunker extends EventEmitter {
       routes: mergedRoutes,
       components: mergedComponents,
       loadingStrategy: chunksToMerge[0].loadingStrategy,
+      async: chunksToMerge[0].async,
     };
     
     // Return preserved chunks plus merged chunk
@@ -1489,36 +1491,41 @@ class CssChunker extends EventEmitter {
         name: 'default',
         content: cssContent,
         size: Buffer.byteLength(cssContent, 'utf8'),
-        type: 'default',
+        type: 'main',
         priority: 1,
+        rules: [],
         dependencies: new Set(),
         routes: new Set(),
         components: new Set(),
-        loadingStrategy: 'immediate',
+        loadingStrategy: 'inline',
+        async: false,
       }];
     }
+
+    // Parse CSS content to PostCSS Root
+    const css = postcss().process(cssContent, { from: undefined }).root;
 
     let chunks: CssChunk[] = [];
     
     switch (options.strategy) {
       case 'size':
-        chunks = this.chunkBySize(cssContent);
+        chunks = this.chunkBySize(css);
         break;
       case 'route':
-        chunks = this.chunkByRoute(cssContent);
+        chunks = this.chunkByRoute(css);
         break;
       case 'component':
-        chunks = this.chunkByComponent(cssContent);
+        chunks = this.chunkByComponent(css);
         break;
       case 'hybrid':
-        chunks = this.chunkHybrid(cssContent);
+        chunks = this.chunkByHybrid(css);
         break;
       default:
         throw new Error(`Unknown chunking strategy: ${options.strategy}`);
     }
     
     // Apply optimizations if configured
-    if (this.config?.chunking?.optimize) {
+    if (options.optimize) {
       chunks = this.optimizeChunks(chunks);
     }
     
@@ -1725,7 +1732,7 @@ export class TestDependencyGraph {
       stack.push(v);
       onStack.add(v);
 
-      for (const edge of this.edges.values()) {
+      for (const edge of Array.from(this.edges.values())) {
         if (edge.from !== v) continue;
         const w = edge.to;
         if (!indexMap.has(w)) {
@@ -1749,7 +1756,7 @@ export class TestDependencyGraph {
       }
     };
 
-    for (const nodeId of this.nodes.keys()) {
+    for (const nodeId of Array.from(this.nodes.keys())) {
       if (!indexMap.has(nodeId)) {
         strongConnect(nodeId);
       }
@@ -1764,13 +1771,13 @@ export class TestDependencyGraph {
     const adjList = new Map<string, string[]>();
     
     // Initialize in-degree and adjacency list
-    for (const id of this.nodes.keys()) {
+    for (const id of Array.from(this.nodes.keys())) {
       inDegree.set(id, 0);
       adjList.set(id, []);
     }
     
     // Build in-degree count and adjacency list
-    for (const edge of this.edges.values()) {
+    for (const edge of Array.from(this.edges.values())) {
       // edge.from depends on edge.to, so edge.to should come before edge.from
       // So edge.to -> edge.from in the topological order
       inDegree.set(edge.from, (inDegree.get(edge.from) || 0) + 1);
@@ -1785,7 +1792,7 @@ export class TestDependencyGraph {
     const result: string[] = [];
     
     // Find all nodes with in-degree 0
-    for (const [id, degree] of inDegree) {
+    for (const [id, degree] of Array.from(inDegree)) {
       if (degree === 0) {
         queue.push(id);
       }
@@ -1810,7 +1817,7 @@ export class TestDependencyGraph {
     // If there are unprocessed nodes, there's a cycle
     if (result.length !== this.nodes.size) {
       // Add remaining nodes for cycle handling
-      for (const id of this.nodes.keys()) {
+      for (const id of Array.from(this.nodes.keys())) {
         if (!result.includes(id)) {
           result.push(id);
         }
@@ -1925,7 +1932,7 @@ class UsagePatternAnalyzerCompat {
   }
 
   getClassesByFrequency(analysis: UsageAnalysisResult): string[] {
-    return [...analysis.classFrequency.entries()]
+    return [...Array.from(analysis.classFrequency.entries())]
       .sort((a, b) => b[1] - a[1])
       .map(([cls]) => cls);
   }
@@ -1983,8 +1990,8 @@ class PatchedCssChunker extends _OriginalCssChunker {
     super(normalisedConfig as any);
   }
 
-  // string-based overloads matching unit tests
-  chunkBySize(cssContent: string): CssChunk[] {
+  // String-based chunking methods for test compatibility
+  chunkBySizeString(cssContent: string): CssChunk[] {
     if (!cssContent || cssContent.trim().length === 0) {
       return [];
     }
@@ -2004,11 +2011,12 @@ class PatchedCssChunker extends _OriginalCssChunker {
         dependencies: new Set(),
         routes: new Set([]),
         components: new Set([]),
-        loadingStrategy: "eager",
+        loadingStrategy: "inline",
+        async: false,
         metadata: {
           created: new Date().toISOString(),
           chunkType: "main",
-          strategy: config.strategy || "size",
+          strategy: (this as any).config?.chunking?.strategy || "size",
         },
       }];
     }
@@ -2035,7 +2043,8 @@ class PatchedCssChunker extends _OriginalCssChunker {
         dependencies: new Set(),
         routes: new Set([]),
         components: new Set([]),
-        loadingStrategy: "eager",
+        loadingStrategy: "inline",
+        async: false,
         metadata: {
           created: new Date().toISOString(),
           chunkType: "main",
@@ -2067,16 +2076,17 @@ class PatchedCssChunker extends _OriginalCssChunker {
             name: `chunk-${chunkIndex}`,
             content: currentChunk.trim(),
             size: currentSize,
-            type: chunkIndex === 1 ? "main" : "secondary",
+            type: chunkIndex === 1 ? "main" : "utility",
             priority: chunkIndex === 1 ? 1 : 2,
             rules: [],
             dependencies: new Set(),
             routes: new Set([]),
             components: new Set([]),
-            loadingStrategy: "eager",
+            loadingStrategy: "inline",
+            async: chunkIndex > 1,
             metadata: {
               created: new Date().toISOString(),
-              chunkType: chunkIndex === 1 ? "main" : "secondary",
+              chunkType: chunkIndex === 1 ? "main" : "utility",
               strategy: config.strategy || "size",
             },
           });
@@ -2102,16 +2112,17 @@ class PatchedCssChunker extends _OriginalCssChunker {
         name: `chunk-${chunkIndex}`,
         content: currentChunk.trim(),
         size: currentSize,
-        type: chunks.length === 0 ? "main" : "secondary",
+        type: chunks.length === 0 ? "main" : "utility",
         priority: chunks.length === 0 ? 1 : 2,
         rules: [],
         dependencies: new Set(),
         routes: new Set([]),
         components: new Set([]),
-        loadingStrategy: "eager",
+        loadingStrategy: "inline",
+        async: chunks.length > 0,
         metadata: {
           created: new Date().toISOString(),
-          chunkType: chunks.length === 0 ? "main" : "secondary",
+          chunkType: chunks.length === 0 ? "main" : "utility",
           strategy: config.strategy || "size",
         },
       });
@@ -2120,9 +2131,9 @@ class PatchedCssChunker extends _OriginalCssChunker {
     return chunks;
   }
 
-  chunkByUsage(cssContent: string, usageData?: TestUsageData): CssChunk[] {
-    if (!usageData || usageData.files.length === 0) {
-      return this.chunkBySize(cssContent);
+  chunkByUsageString(cssContent: string, usageData?: TestUsageData): CssChunk[] {
+          if (!usageData || usageData.files.length === 0) {
+        return this.chunkBySizeString(cssContent);
     }
     const criticalChunk: CssChunk = {
       id: "critical",
@@ -2155,7 +2166,10 @@ class PatchedCssChunker extends _OriginalCssChunker {
     return [criticalChunk, utilityChunk];
   }
 
-  chunkByRoute(cssContent: string, usageData: TestUsageData): CssChunk[] {
+  chunkByRouteString(cssContent: string, usageData?: TestUsageData): CssChunk[] {
+    if (!usageData) {
+      return this.chunkBySizeString(cssContent);
+    }
     return usageData.routes.map((route) => ({
       id: `route-${route.path}`,
       name: route.path,
@@ -2173,7 +2187,10 @@ class PatchedCssChunker extends _OriginalCssChunker {
     })) as CssChunk[];
   }
 
-  chunkByComponent(cssContent: string, usageData: TestUsageData): CssChunk[] {
+  chunkByComponentString(cssContent: string, usageData?: TestUsageData): CssChunk[] {
+    if (!usageData) {
+      return this.chunkBySizeString(cssContent);
+    }
     return usageData.files.map((file) => {
       const comp =
         /([A-Za-z0-9_-]+)\.[jt]sx?$/.exec(file.path)?.[1] || "Component";
@@ -2196,8 +2213,8 @@ class PatchedCssChunker extends _OriginalCssChunker {
 
   chunkHybrid(cssContent: string, usageData?: TestUsageData): CssChunk[] {
     return [
-      ...this.chunkByUsage(cssContent, usageData),
-      ...this.chunkBySize(cssContent),
+      ...this.chunkByUsageString(cssContent, usageData),
+      ...this.chunkBySizeString(cssContent),
     ];
   }
 
@@ -2228,9 +2245,9 @@ class PatchedCssChunker extends _OriginalCssChunker {
         // Preserve chunks with dependencies or that are large enough
         chunksToPreserve.push({
           ...chunk,
-          dependencies: new Set(chunk.dependencies),
-          routes: new Set(chunk.routes),
-          components: new Set(chunk.components),
+          dependencies: new Set<string>(chunk.dependencies),
+          routes: new Set<string>(chunk.routes),
+          components: new Set<string>(chunk.components),
           rules: [...(chunk.rules || [])],
         });
       } else {
@@ -2270,6 +2287,7 @@ class PatchedCssChunker extends _OriginalCssChunker {
       routes: mergedRoutes,
       components: mergedComponents,
       loadingStrategy: chunksToMerge[0].loadingStrategy,
+      async: chunksToMerge[0].async,
     };
     
     // Return preserved chunks plus merged chunk
@@ -2279,7 +2297,7 @@ class PatchedCssChunker extends _OriginalCssChunker {
   processChunks(
     cssContent: string,
     usageData?: TestUsageData,
-  ): { chunks: CssChunk[]; manifest: Record<string, any> } {
+  ): { chunks: CssChunk[]; manifest: Record<string, any>; metadata: any } {
     const startTime = Date.now();
     
     // Handle empty CSS content
@@ -2306,13 +2324,14 @@ class PatchedCssChunker extends _OriginalCssChunker {
         name: "comments-only",
         content: cssContent,
         size: Buffer.byteLength(cssContent, 'utf8'),
-        type: "main",
+        type: "main" as const,
         priority: 1,
         rules: [],
-        dependencies: new Set(),
-        routes: new Set([]),
-        components: new Set([]),
-        loadingStrategy: "eager",
+        dependencies: new Set<string>(),
+        routes: new Set<string>(),
+        components: new Set<string>(),
+        loadingStrategy: "inline" as const,
+        async: false,
       }];
       
       return { 
@@ -2332,20 +2351,20 @@ class PatchedCssChunker extends _OriginalCssChunker {
     let chunks: CssChunk[] = [];
     switch (strategy) {
       case "usage":
-        chunks = this.chunkByUsage(cssContent, usageData);
+        chunks = this.chunkByUsageString(cssContent, usageData);
         break;
       case "route":
-        chunks = this.chunkByRoute(cssContent, usageData!);
+        chunks = this.chunkByRouteString(cssContent, usageData);
         break;
       case "component":
-        chunks = this.chunkByComponent(cssContent, usageData!);
+        chunks = this.chunkByComponentString(cssContent, usageData);
         break;
       case "hybrid":
         chunks = this.chunkHybrid(cssContent, usageData);
         break;
       case "size":
       default:
-        chunks = this.chunkBySize(cssContent);
+        chunks = this.chunkBySizeString(cssContent);
         break;
     }
     

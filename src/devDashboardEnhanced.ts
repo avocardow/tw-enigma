@@ -495,19 +495,19 @@ export class DevDashboardEnhanced extends EventEmitter {
    * Generate charts from analytics data
    */
   private async generateCharts(): Promise<void> {
-    if (this.config.visualization.charts.performance) {
+    if (this.config.visualization?.charts?.performance) {
       this.charts.set('performance', this.generatePerformanceChart());
     }
 
-    if (this.config.visualization.charts.optimization) {
+    if (this.config.visualization?.charts?.optimization) {
       this.charts.set('optimization', this.generateOptimizationChart());
     }
 
-    if (this.config.visualization.charts.fileChanges) {
+    if (this.config.visualization?.charts?.fileChanges) {
       this.charts.set('fileChanges', this.generateFileChangesChart());
     }
 
-    if (this.config.visualization.charts.classUsage) {
+    if (this.config.visualization?.charts?.classUsage) {
       this.charts.set('classUsage', this.generateClassUsageChart());
     }
 
@@ -915,7 +915,11 @@ export class DevDashboardEnhanced extends EventEmitter {
     // For test compatibility: expose .visualizations.enabled as a top-level boolean
     const visualizations = {
       ...this.config.visualization,
-      enabled: this.config.visualization?.enabled ?? this.config.visualization?.charts?.enabled ?? true,
+      enabled: this.config.visualization?.charts ? 
+        (this.config.visualization.charts.performance || 
+         this.config.visualization.charts.optimization || 
+         this.config.visualization.charts.fileChanges || 
+         this.config.visualization.charts.classUsage) : true,
     };
     return {
       isActive: this.isAnalyticsActive,
@@ -997,7 +1001,7 @@ export class DevDashboardEnhanced extends EventEmitter {
       if (parsed && typeof parsed === 'object') {
         if (Array.isArray(parsed.optimizations)) {
           this.analyticsState.optimizations.total = parsed.optimizations.length;
-          this.analyticsState.optimizations.totalSavings = parsed.optimizations.reduce((sum, o) => sum + (o.savings || 0), 0);
+          this.analyticsState.optimizations.totalSavings = parsed.optimizations.reduce((sum: number, o: any) => sum + (o.savings || 0), 0);
         } else {
           this.analyticsState = { ...this.analyticsState, ...parsed };
         }

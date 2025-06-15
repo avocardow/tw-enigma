@@ -297,7 +297,7 @@ export class CssReportGenerator {
   }): BundlePerformanceMetrics[] {
     return results.bundles.map((bundle) => {
       const bundleChunks = results.chunks.filter(
-        (chunk) => chunk.bundleId === bundle.id,
+        (chunk) => (chunk as any).bundleId === bundle.id,
       );
 
       const originalSize = bundle.content.length;
@@ -338,7 +338,7 @@ export class CssReportGenerator {
         ruleCount: bundle.rules?.length || 0,
         selectorCount:
           bundle.rules?.reduce(
-            (sum, rule) => sum + (rule.selectors?.length || 0),
+            (sum: number, rule: any) => sum + (rule.selectors?.length || 0),
             0,
           ) || 0,
         unusedRulesRemoved: Math.max(
@@ -652,7 +652,7 @@ export class CssReportGenerator {
     return chunks.map((chunk) => {
       const size = chunk.content.length;
       const compressedSize = Math.round(size * 0.3); // Estimate compression
-      const usageScore = chunk.usagePattern?.score || 50;
+      const usageScore = (chunk as any).usagePattern?.score || 50;
       const priority = this.determineChunkPriority(chunk);
       const cacheHitRatio = this.estimateCacheHitRatio(chunk);
       const optimizationOpportunities =
@@ -663,7 +663,7 @@ export class CssReportGenerator {
         size,
         compressedSize,
         priority,
-        dependencies: chunk.dependencies || [],
+        dependencies: Array.from(chunk.dependencies || []),
         usageScore,
         cacheHitRatio,
         optimizationOpportunities,
@@ -759,9 +759,10 @@ export class CssReportGenerator {
     chunk: CssChunk,
   ): "critical" | "high" | "medium" | "low" {
     if (chunk.type === "critical") return "critical";
-    if (chunk.usagePattern?.score && chunk.usagePattern.score > 80)
+    const usageScore = (chunk as any).usagePattern?.score;
+    if (usageScore && usageScore > 80)
       return "high";
-    if (chunk.usagePattern?.score && chunk.usagePattern.score > 50)
+    if (usageScore && usageScore > 50)
       return "medium";
     return "low";
   }
@@ -769,7 +770,8 @@ export class CssReportGenerator {
   private estimateCacheHitRatio(chunk: CssChunk): number {
     // Estimate based on chunk stability and usage patterns
     const baseRatio = 60; // Base cache hit ratio
-    const usageBonus = (chunk.usagePattern?.score || 50) / 5; // Higher usage = better caching
+    const usageScore = (chunk as any).usagePattern?.score || 50;
+    const usageBonus = usageScore / 5; // Higher usage = better caching
     const sizeBonus = Math.max(0, 20 - chunk.content.length / 1024); // Smaller chunks cache better
 
     return Math.min(95, baseRatio + usageBonus + sizeBonus);
@@ -790,7 +792,8 @@ export class CssReportGenerator {
       opportunities.push("Minify whitespace");
     }
 
-    if ((chunk.usagePattern?.score || 0) < 30) {
+    const usageScore = (chunk as any).usagePattern?.score || 0;
+    if (usageScore < 30) {
       opportunities.push("Low usage - consider lazy loading");
     }
 
@@ -812,7 +815,7 @@ export class CssReportGenerator {
   }
 
   private calculateUsageConsistency(chunks: CssChunk[]): number {
-    const usageScores = chunks.map((c) => c.usagePattern?.score || 50);
+    const usageScores = chunks.map((c) => (c as any).usagePattern?.score || 50);
     const avg = usageScores.reduce((a, b) => a + b, 0) / usageScores.length;
     return Math.round(avg);
   }

@@ -1490,7 +1490,7 @@ export async function loadConfig(cliArgs?: CliArguments, searchFrom?: string): P
     } catch (fallbackError) {
       // Always throw a ConfigError for consistency
       if (fallbackError instanceof ConfigError) throw fallbackError;
-      throw new ConfigError("Failed to load configuration and fallback config is invalid", undefined, fallbackError);
+      throw new ConfigError("Failed to load configuration and fallback config is invalid", undefined, fallbackError instanceof Error ? fallbackError : undefined);
     }
   }
 }
@@ -1534,7 +1534,7 @@ export function loadConfigSync(cliArgs?: CliArguments, searchFrom?: string): Con
     } catch (fallbackError) {
       // Always throw a ConfigError for consistency
       if (fallbackError instanceof ConfigError) throw fallbackError;
-      throw new ConfigError("Failed to load configuration and fallback config is invalid", undefined, fallbackError);
+      throw new ConfigError("Failed to load configuration and fallback config is invalid", undefined, fallbackError instanceof Error ? fallbackError : undefined);
     }
   }
 }

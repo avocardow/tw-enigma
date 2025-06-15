@@ -534,13 +534,13 @@ export function toBase36(num: number, useNumbers: boolean = true): string {
 export function fromBase36(str: string, _useNumbers: boolean = true): number {
   const letters = "abcdefghijklmnopqrstuvwxyz";
   const numbers = "0123456789";
-  const alphabet = useNumbers ? letters + numbers : letters;
+  const alphabet = _useNumbers ? letters + numbers : letters;
   const base = alphabet.length;
 
   if (
     !str ||
-    (useNumbers && !/^[a-z][a-z0-9]*$/.test(str)) ||
-    (!useNumbers && !/^[a-z]+$/.test(str))
+    (_useNumbers && !/^[a-z][a-z0-9]*$/.test(str)) ||
+    (!_useNumbers && !/^[a-z]+$/.test(str))
   ) {
     throw new NameGenerationError(
       `Invalid base-36 string: "${str}". Must start with letter and contain only valid characters.`,

@@ -453,6 +453,46 @@ export class AssetHasher {
   }
 
   /**
+   * Optimize CSS content (delegated to CssOptimizer)
+   */
+  async optimizeCss(css: string, filename?: string): Promise<OptimizationResult> {
+    const optimizer = new CssOptimizer({
+      minify: true,
+      purge: true,
+      removeComments: true,
+      mergeDuplicates: true,
+      normalizeColors: true,
+      optimizeCalc: true,
+      autoprefix: false,
+      removeEmpty: true,
+      mergeMedia: false,
+      optimizeFonts: false,
+      sourceMap: false,
+    });
+    return optimizer.optimizeCss(css, filename);
+  }
+
+  /**
+   * Optimize multiple chunks (delegated to CssOptimizer)
+   */
+  async optimizeChunks(chunks: CssChunk[]): Promise<Map<string, OptimizationResult>> {
+    const optimizer = new CssOptimizer({
+      minify: true,
+      purge: true,
+      removeComments: true,
+      mergeDuplicates: true,
+      normalizeColors: true,
+      optimizeCalc: true,
+      autoprefix: false,
+      removeEmpty: true,
+      mergeMedia: false,
+      optimizeFonts: false,
+      sourceMap: false,
+    });
+    return optimizer.optimizeChunks(chunks);
+  }
+
+  /**
    * @deprecated Use optimizeChunks instead
    */
   async minifyChunks(chunks: CssChunk[]): Promise<CssChunk[]> {
@@ -976,11 +1016,11 @@ export class ManifestGenerator {
 
       if (!hashObj) continue;
 
-      const hash = typeof hashObj === 'string' ? hashObj : hashObj.hash;
-      const integrity = typeof hashObj === 'object' ? hashObj.integrity : undefined;
+      const hash = typeof hashObj === 'string' ? hashObj : (hashObj as AssetHash).hash;
+      const integrity = typeof hashObj === 'object' ? (hashObj as AssetHash).integrity : undefined;
       const assetKey = `${chunk.name || chunk.id}.css`;
       // Use size from hash object if available, otherwise calculate from content
-      const originalSize = typeof hashObj === 'object' && hashObj.size ? hashObj.size : Buffer.byteLength(chunk.content, 'utf8');
+      const originalSize = typeof hashObj === 'object' && (hashObj as AssetHash).size ? (hashObj as AssetHash).size : Buffer.byteLength(chunk.content, 'utf8');
       
       // Build asset entry according to AssetManifestEntry interface
       const assetEntry: AssetManifestEntry = {
@@ -991,7 +1031,7 @@ export class ManifestGenerator {
         integrity: integrity || `sha384-${hash}`,
         type: "css",
         priority: chunk.priority || 1,
-        loading: chunk.loadingStrategy || "eager",
+        loading: (chunk.loadingStrategy === "inline" ? "eager" : chunk.loadingStrategy) || "eager",
       };
 
       // Add routes and components only if they exist and are not empty
@@ -1010,14 +1050,14 @@ export class ManifestGenerator {
         assetEntry.compressed = {};
         
         for (const comp of compression) {
-          if (comp.compressionType === 'gzip') {
+          if (comp.type === 'gzip') {
             assetEntry.compressed.gzip = {
-              file: comp.compressedPath,
+              file: `${chunk.name || chunk.id}.gz`,
               size: comp.compressedSize,
             };
-          } else if (comp.compressionType === 'brotli') {
+          } else if (comp.type === 'brotli') {
             assetEntry.compressed.brotli = {
-              file: comp.compressedPath,
+              file: `${chunk.name || chunk.id}.br`,
               size: comp.compressedSize,
             };
           }
@@ -1031,7 +1071,7 @@ export class ManifestGenerator {
       // Calculate compressed size - only include files that actually have compression
       if (Array.isArray(compression) && compression.length > 0) {
         // Use the smallest compressed size
-        const minCompressedSize = Math.min(...compression.map(c => c.compressedSize || c.size || originalSize));
+        const minCompressedSize = Math.min(...compression.map(c => c.compressedSize || originalSize));
         manifest.stats.compressedSize += minCompressedSize;
       }
       // Note: Files without compression don't contribute to compressedSize
@@ -1043,7 +1083,7 @@ export class ManifestGenerator {
       if (chunk.type === 'critical' || routes.includes('/')) {
         const hashObj = hashes.get(chunk.id);
         if (hashObj) {
-          const hash = typeof hashObj === 'string' ? hashObj : hashObj.hash;
+          const hash = typeof hashObj === 'string' ? hashObj : (hashObj as AssetHash).hash;
           manifest.entrypoints[chunk.name || chunk.id] = [`${chunk.name || chunk.id}.${hash}.css`];
         }
       }
@@ -1126,7 +1166,10 @@ export function createCompressionEngine(
  * Create a manifest generator with paths
  */
 export function createManifestGenerator(paths: OutputPaths): ManifestGenerator {
-  return new ManifestGenerator(paths);
+  return new ManifestGenerator({
+    manifestPath: paths.manifest || 'dist/manifest.json',
+    assetsPath: paths.base || 'dist'
+  });
 }
 
 /**
@@ -1162,11 +1205,8 @@ export function createCssMinifier(config: OptimizationConfig): CssMinifier {
  * Class alias for CssOptimizer to maintain API compatibility
  */
 export class CssMinifier extends CssOptimizer {
-  private config: OptimizationConfig;
-
   constructor(config: OptimizationConfig) {
     super(config);
-    this.config = config;
   }
 
   async minifyCss(
@@ -1174,7 +1214,8 @@ export class CssMinifier extends CssOptimizer {
     filename?: string
   ): Promise<{ minified: string; sourceMap?: string; stats?: any }> {
     try {
-      if (!this.config.minify) {
+      const config = this.getConfig();
+      if (!config.minify) {
         return {
           minified: css,
           stats: {
@@ -1188,28 +1229,28 @@ export class CssMinifier extends CssOptimizer {
       let processed = css;
 
       // Remove comments based on configuration
-      if (this.config.removeComments) {
+      if (config.removeComments) {
         // Remove regular comments but preserve important comments (/*! ... */)
         processed = processed.replace(/\/\*(?![!])[\s\S]*?\*\//g, '');
       }
 
       // Merge duplicate selectors
-      if (this.config.mergeDuplicates) {
+      if (config.mergeDuplicates) {
         processed = this.mergeDuplicateSelectors(processed);
       }
 
       // Remove empty rules
-      if (this.config.removeEmpty) {
+      if (config.removeEmpty) {
         processed = processed.replace(/[^{}]*\{\s*\}/g, '');
       }
 
       // Normalize colors
-      if (this.config.normalizeColors) {
+      if (config.normalizeColors) {
         processed = this.normalizeColors(processed);
       }
 
       // Optimize calc() expressions
-      if (this.config.optimizeCalc) {
+      if (config.optimizeCalc) {
         processed = this.optimizeCalc(processed);
       }
 
@@ -1237,7 +1278,7 @@ export class CssMinifier extends CssOptimizer {
         stats,
       };
 
-      if (this.config.sourceMap) {
+      if (config.sourceMap) {
         result.sourceMap = this.generateSourceMap(css, processed, filename);
       }
 
@@ -1326,26 +1367,25 @@ export class CssMinifier extends CssOptimizer {
  * Class alias for CompressionEngine to maintain API compatibility  
  */
 export class CssCompressor extends CompressionEngine {
-  private config: CompressionConfig;
-
   constructor(config: CompressionConfig) {
     super(config);
-    this.config = config;
   }
 
   async compressContent(
-    content: string,
-    filename: string,
-    type?: CompressionType
-  ): Promise<CssCompressionResult[]> {
-    const useType = type || this.config.type;
-    const results: CssCompressionResult[] = [];
+    content: string
+  ): Promise<CompressionResult[]> {
+    // Access config through parent class method to avoid private property conflict
+    const config = (this as any).config as CompressionConfig;
+    const useType = config.type;
+    const results: CompressionResult[] = [];
 
     // Check threshold - if content is too small, skip compression
     const contentSize = Buffer.byteLength(content, 'utf8');
-    if (contentSize < this.config.threshold) {
+    if (contentSize < config.threshold) {
       return results;
     }
+
+    const originalBuffer = Buffer.from(content, 'utf8');
 
     try {
       if (useType === 'gzip' || useType === 'auto') {
@@ -1353,15 +1393,14 @@ export class CssCompressor extends CompressionEngine {
         // Only include if compression actually reduces size
         if (compressedBuffer.length < contentSize) {
           results.push({
-            originalPath: filename,
-            compressedPath: `${filename}.gz`,
-            compressionType: 'gzip',
+            original: originalBuffer,
+            compressed: compressedBuffer,
+            type: 'gzip',
             originalSize: contentSize,
             compressedSize: compressedBuffer.length,
-            compressionRatio: contentSize / compressedBuffer.length,
-            compressionLevel: this.config.level,
-            isMinified: true,
-            data: compressedBuffer,
+            ratio: compressedBuffer.length / contentSize,
+            level: config.level,
+            compressionTime: 0, // Simplified for now
           });
         }
       }
@@ -1371,15 +1410,14 @@ export class CssCompressor extends CompressionEngine {
         // Only include if compression actually reduces size
         if (compressedBuffer.length < contentSize) {
           results.push({
-            originalPath: filename,
-            compressedPath: `${filename}.br`,
-            compressionType: 'brotli',
+            original: originalBuffer,
+            compressed: compressedBuffer,
+            type: 'brotli',
             originalSize: contentSize,
             compressedSize: compressedBuffer.length,
-            compressionRatio: contentSize / compressedBuffer.length,
-            compressionLevel: this.config.level,
-            isMinified: true,
-            data: compressedBuffer,
+            ratio: compressedBuffer.length / contentSize,
+            level: config.level,
+            compressionTime: 0, // Simplified for now
           });
         }
       }
@@ -1391,13 +1429,12 @@ export class CssCompressor extends CompressionEngine {
     }
   }
 
-  async compressChunk(chunk: CssChunk): Promise<CssCompressionResult[]> {
-    const filename = chunk.name ? `${chunk.name}.css` : 'chunk.css';
-    return this.compressContent(chunk.content, filename);
+  async compressChunk(chunk: CssChunk): Promise<CompressionResult[]> {
+    return this.compressContent(chunk.content);
   }
 
-  async compressChunks(chunks: CssChunk[]): Promise<Map<string, CssCompressionResult[]>> {
-    const results = new Map<string, CssCompressionResult[]>();
+  async compressChunks(chunks: CssChunk[]): Promise<Map<string, CompressionResult[]>> {
+    const results = new Map<string, CompressionResult[]>();
     
     const compressionPromises = chunks.map(async (chunk) => {
       const compressedResults = await this.compressChunk(chunk);

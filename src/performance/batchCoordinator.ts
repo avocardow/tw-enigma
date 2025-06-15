@@ -28,7 +28,7 @@ const logger = createLogger("BatchCoordinator");
 /**
  * Batch job definition
  */
-interface BatchJob<T = unknown> {
+interface BatchJob<T = unknown, R = unknown> {
   id: string;
   type: string;
   input: T;
@@ -452,104 +452,76 @@ export class BatchCoordinator extends EventEmitter {
   }
 
   /**
-   * Process a single job
+   * Process a single job with error handling and retries
    */
   private async processJob<T, R>(job: BatchJob<T, R>): Promise<void> {
-    const startTime = performance.now();
     const processor = this.processors.get(job.type) as JobProcessor<T, R>;
-
     if (!processor) {
-      const error = new Error(`No processor found for job type: ${job.type}`);
-      this.handleJobResult(job, { success: false, error, duration: 0 });
-      return;
+      throw new Error(`No processor found for job type: ${job.type}`);
     }
 
-    this.stats.currentConcurrency++;
-    this.stats.resourceUtilization.activeWorkers++;
-
-    const processingPromise = this.executeJobWithTimeout(
-      job,
-      processor,
-      startTime,
-    );
-    this.processingJobs.set(job.id, processingPromise);
-
-    logger.debug("Job processing started", {
-      jobId: job.id,
-      type: job.type,
-      priority: job.priority,
-      retryCount: job.retryCount,
-    });
-
-    this.emit("jobStarted", { job });
+    const startTime = performance.now();
 
     try {
-      const result = await processingPromise;
+      const result = await this.executeJobWithTimeout(job, processor, startTime);
       this.handleJobResult(job, result);
     } catch (error) {
-      this.handleJobResult(job, {
+      const duration = performance.now() - startTime;
+      const result: BatchResult<R> = {
+        jobId: job.id,
         success: false,
         error: error instanceof Error ? error : new Error(String(error)),
-        duration: (performance.now() - startTime) / 1000,
-      });
-    } finally {
-      this.processingJobs.delete(job.id);
-      this.jobQueue.delete(job.id);
-      this.removeFromPriorityQueues(job.id);
-      this.stats.currentConcurrency--;
-      this.stats.resourceUtilization.activeWorkers--;
-      this.stats.queueLength = this.jobQueue.size;
+        duration,
+        retryCount: job.retryCount || 0,
+      };
+
+      // Handle retry logic
+      if ((job.retryCount || 0) < (job.maxRetries || 0)) {
+        job.retryCount = (job.retryCount || 0) + 1;
+        logger.warn("Job failed, retrying", {
+          jobId: job.id,
+          retryCount: job.retryCount,
+          maxRetries: job.maxRetries,
+          error: error instanceof Error ? error.message : String(error),
+        });
+
+        // Add back to queue for retry
+        this.addToPriorityQueue(job, true);
+      } else {
+        this.handleJobResult(job, result);
+      }
     }
   }
 
   /**
-   * Execute a job with timeout protection
+   * Execute job with timeout handling
    */
   private async executeJobWithTimeout<T, R>(
     job: BatchJob<T, R>,
     processor: JobProcessor<T, R>,
     startTime: number,
   ): Promise<BatchResult<R>> {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
-        const duration = (performance.now() - startTime) / 1000;
-        resolve({
-          jobId: job.id,
-          success: false,
-          error: new Error(`Job timeout after ${duration}s`),
-          duration,
-          retryCount: job.retryCount || 0,
-        });
+        reject(new Error(`Job ${job.id} timed out after ${job.timeout}ms`));
       }, job.timeout || this.config.queueTimeout);
 
-      // Execute the processor asynchronously
-      (async () => {
-        try {
-          const result = await processor(job.input, job);
-          const duration = (performance.now() - startTime) / 1000;
-
+      Promise.resolve(processor(job.input, job))
+        .then((result) => {
           clearTimeout(timeout);
+          const duration = performance.now() - startTime;
           resolve({
             jobId: job.id,
             success: true,
             result,
             duration,
             retryCount: job.retryCount || 0,
-            metadata: job.metadata,
           });
-        } catch (error) {
+        })
+        .catch((error) => {
           clearTimeout(timeout);
-          const duration = (performance.now() - startTime) / 1000;
-
-          resolve({
-            jobId: job.id,
-            success: false,
-            error: error instanceof Error ? error : new Error(String(error)),
-            duration,
-            retryCount: job.retryCount || 0,
-          });
-        }
-      })();
+          reject(error);
+        });
     });
   }
 

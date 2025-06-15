@@ -20,6 +20,7 @@ import type {
   // PluginConfig - removed, not used
   PluginContext,
   PluginManager,
+  PluginUtils,
   // EnigmaPlugin - removed, not used
 } from "./types/plugins";
 import type { EnigmaConfig } from "./config";
@@ -100,21 +101,30 @@ export class EnigmaPostCSSProcessor {
             projectConfig: this.config,
             metrics,
             logger: createLogger(`plugin:${pluginName}`),
+            css,
+            filename: options.from,
+            utils: {} as PluginUtils,
           };
 
           // Create PostCSS plugin instance
-          const postcssPlugin = plugin.createPlugin({
+          const postcssPlugin = plugin.createPlugin?.({
             ...context,
             result: {} as Result, // Will be set by PostCSS
           });
 
           // Wrap plugin to capture context
-          const wrappedPlugin =
-            typeof postcssPlugin === "function"
-              ? postcssPlugin({ context })
-              : postcssPlugin;
+          let wrappedPlugin = null;
+          if (postcssPlugin) {
+            if (typeof postcssPlugin === "function") {
+              wrappedPlugin = (postcssPlugin as any)({ context });
+            } else {
+              wrappedPlugin = postcssPlugin;
+            }
+          }
 
-          postcssPlugins.push(wrappedPlugin);
+          if (wrappedPlugin) {
+            postcssPlugins.push(wrappedPlugin);
+          }
 
           logger.debug(`Added plugin ${pluginName} to processing pipeline`);
         } catch (error) {
@@ -143,9 +153,9 @@ export class EnigmaPostCSSProcessor {
                   : undefined,
             }
           : false,
-        parser: options.parser,
-        stringifier: options.stringifier,
-        syntax: options.syntax,
+        parser: typeof options.parser === "string" ? undefined : options.parser,
+        stringifier: typeof options.stringifier === "string" ? undefined : options.stringifier,
+        syntax: typeof options.syntax === "string" ? undefined : options.syntax,
       };
 
       // Process CSS

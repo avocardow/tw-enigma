@@ -286,7 +286,7 @@ export class RuntimeValidator extends EventEmitter {
   }
 
   /**
-   * Validate file system paths (expected by tests)
+   * Validate file paths and directories
    */
   public async validatePaths(): Promise<{ isValid: boolean; errors: string[]; warnings: string[] }> {
     const errors: string[] = [];
@@ -294,16 +294,19 @@ export class RuntimeValidator extends EventEmitter {
 
     try {
       // Validate input path
-      if (this.config.input) {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        if (!require('fs').existsSync(this.config.input)) {
+      if (this.config.input && !existsSync(this.config.input)) {
+        if (typeof this.config.input === "string") {
           errors.push(`Input path does not exist: ${this.config.input}`);
         }
       }
 
       // Validate output path
       if (this.config.output) {
-        const outputDir = dirname(this.config.output);
+        // Handle union type: string | object
+        const outputPath = typeof this.config.output === 'string' 
+          ? this.config.output 
+          : this.config.output.filename;
+        const outputDir = dirname(outputPath);
         if (!existsSync(outputDir)) {
           warnings.push(`Output directory does not exist and will be created: ${outputDir}`);
         }
@@ -496,9 +499,17 @@ export class RuntimeValidator extends EventEmitter {
     // Check for path traversal in current configuration
     const pathFields = [this.config.input, this.config.output];
     for (const path of pathFields) {
-      if (path && (path.includes("../") || path.includes("..\\"))) {
+      // Handle different path types
+      let pathString: string | undefined;
+      if (typeof path === 'string') {
+        pathString = path;
+      } else if (path && typeof path === 'object' && 'filename' in path) {
+        pathString = (path as any).filename;
+      }
+      
+      if (pathString && (pathString.includes("../") || pathString.includes("..\\"))) {
         this.emitSecurityAlert("path-traversal", "Path traversal detected in runtime configuration", {
-          path,
+          path: pathString,
           field: path === this.config.input ? "input" : "output",
         }, "high", true);
       }
@@ -634,7 +645,7 @@ export class RuntimeValidator extends EventEmitter {
     };
 
     this.emit("resource-threshold", alert);
-    logger.warn("Resource threshold exceeded", alert);
+    logger.warn("Resource threshold exceeded", alert as any);
   }
 
   private emitPerformanceAlert(metric: PerformanceAlert["metric"], baseline: number, current: number, degradation: number, suggestions: string[]): void {
@@ -649,7 +660,7 @@ export class RuntimeValidator extends EventEmitter {
     };
 
     this.emit("performance-degradation", alert);
-    logger.warn("Performance degradation detected", alert);
+    logger.warn("Performance degradation detected", alert as any);
   }
 
   private emitSecurityAlert(violation: SecurityAlert["violation"], message: string, details: Record<string, unknown>, severity: SecurityAlert["severity"], blocked: boolean): void {
@@ -663,7 +674,7 @@ export class RuntimeValidator extends EventEmitter {
     };
 
     this.emit("security-violation", alert);
-    logger.error("Security violation detected", alert);
+    logger.error("Security violation detected", alert as any);
   }
 
   private emitValidationWarning(type: RuntimeValidationWarning["type"], message: string, options: Partial<RuntimeValidationWarning>): void {
@@ -677,7 +688,7 @@ export class RuntimeValidator extends EventEmitter {
     };
 
     this.emit("validation-warning", warning);
-    logger.warn("Runtime validation warning", warning);
+    logger.warn("Runtime validation warning", warning as any);
   }
 }
 

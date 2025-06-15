@@ -44,7 +44,7 @@ interface WorkerState {
  * Task execution context
  */
 interface TaskContext<T = unknown, R = unknown> {
-  task: WorkerTask<T, R>;
+  task: WorkerTask<T>;
   resolve: (value: R) => void;
   reject: (error: Error) => void;
   startTime: number;
@@ -154,7 +154,7 @@ export class WorkerManager extends EventEmitter {
    * Execute a task using worker threads
    */
   async executeTask<T = unknown, R = unknown>(
-    task: WorkerTask<T, R>,
+    task: WorkerTask<T>,
   ): Promise<R> {
     if (!this.config.enabled) {
       throw new Error("Worker execution is disabled. Use fallback mode.");
@@ -204,7 +204,7 @@ export class WorkerManager extends EventEmitter {
    * Execute multiple tasks in parallel with optional concurrency limit
    */
   async executeTasks<T = unknown, R = unknown>(
-    tasks: WorkerTask<T, R>[],
+    tasks: WorkerTask<T>[],
     concurrency = this.config.poolSize,
   ): Promise<R[]> {
     const results: R[] = [];
@@ -212,12 +212,12 @@ export class WorkerManager extends EventEmitter {
     let index = 0;
 
     for (const task of tasks) {
-      const promise = this.executeTask(task).then(
+      const promise = this.executeTask<T, R>(task).then(
         (result) => {
           results[index] = result;
         },
         (error) => {
-          results[index] = error;
+          results[index] = error as R;
         },
       );
 

@@ -13,6 +13,7 @@
 import { z } from "zod";
 import { EventEmitter } from "events";
 import { createLogger } from "../logger";
+import { CircuitBreakerState } from "./types";
 import type {
   PluginResult,
 } from "../types/plugins";
@@ -46,15 +47,10 @@ export const ErrorSeverity = {
 export type ErrorSeverity = typeof ErrorSeverity[keyof typeof ErrorSeverity];
 
 /**
- * Circuit breaker states
+ * Circuit breaker states - using shared type from types.ts
  */
-export const CircuitState = {
-  CLOSED: "closed", // Normal operation
-  OPEN: "open", // Failing fast
-  HALF_OPEN: "half_open", // Testing recovery
-} as const;
-
-export type CircuitState = typeof CircuitState[keyof typeof CircuitState];
+export const CircuitState = CircuitBreakerState;
+export type CircuitState = CircuitBreakerState;
 
 /**
  * Plugin error details
@@ -133,7 +129,7 @@ export interface FallbackStrategy {
  * Circuit breaker for individual plugins
  */
 class PluginCircuitBreaker {
-  private state = CircuitState.CLOSED;
+  private state: CircuitState = CircuitState.CLOSED;
   private failureCount = 0;
   private lastFailureTime = 0;
   private halfOpenCalls = 0;

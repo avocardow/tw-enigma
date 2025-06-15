@@ -7,7 +7,7 @@
 
 import { z } from "zod";
 import { cosmiconfig } from "cosmiconfig";
-import path from "path";
+import * as path from "path";
 import { CliArguments } from "../config";
 
 // Extended CLI arguments interface for CSS output configuration
@@ -523,11 +523,21 @@ export const PRODUCTION_PRESET: Partial<CssOutputConfig> = {
     generateReports: true,
   },
   critical: {
+    timeout: 30000,
     strategy: "preload",
     enabled: true,
+    fallback: false,
+    ignore: [],
     maxSize: 14 * 1024,
+    components: [],
+    routes: [],
+    viewport: { width: 1920, height: 1080 },
     includeFonts: true,
     includeMedia: true,
+    viewports: [],
+    forceInclude: [],
+    inlineThreshold: 4096,
+    extractionMethod: "automatic"
   },
   delivery: {
     method: "preload",
@@ -546,6 +556,14 @@ export const PRODUCTION_PRESET: Partial<CssOutputConfig> = {
     },
   },
   paths: {
+    compressed: "dist/css/compressed",
+    sourceMaps: "dist/css/maps",
+    critical: "dist/css/critical",
+    base: "dist/css",
+    manifest: "dist/css/manifest.json",
+    chunks: "dist/css/chunks",
+    reports: "dist/css/reports",
+    publicPath: "/css/",
     useHashes: true,
     hashLength: 8,
     hashAlgorithm: "xxhash",
@@ -575,14 +593,35 @@ export const DEVELOPMENT_PRESET: Partial<CssOutputConfig> = {
   },
   compression: {
     type: "none",
+    level: 1,
+    threshold: 1024,
+    includeOriginal: false,
     generateReports: false,
   },
   hashing: {
+    length: 4,
+    algorithm: "md5",
+    includeMetadata: false,
+    includeContent: false,
     generateIntegrity: false,
+    integrityAlgorithm: "sha256",
   },
   critical: {
+    timeout: 30000,
     strategy: "inline",
     enabled: false,
+    fallback: false,
+    ignore: [],
+    maxSize: 50 * 1024,
+    components: [],
+    routes: [],
+    viewport: { width: 1920, height: 1080 },
+    includeFonts: false,
+    includeMedia: false,
+    viewports: [],
+    forceInclude: [],
+    inlineThreshold: 4096,
+    extractionMethod: "automatic"
   },
   delivery: {
     method: "standard",
@@ -601,8 +640,17 @@ export const DEVELOPMENT_PRESET: Partial<CssOutputConfig> = {
     },
   },
   paths: {
+    compressed: "dev/css/compressed",
+    sourceMaps: "dev/css/maps",
+    critical: "dev/css/critical",
+    base: "dev/css",
+    manifest: "dev/css/manifest.json",
+    chunks: "dev/css/chunks",
+    reports: "dev/css/reports",
+    publicPath: "/css/",
     useHashes: false,
     hashLength: 4, // Changed from 0 to 4 to meet schema minimum requirement
+    hashAlgorithm: "md5",
   },
   sourceMaps: true,
   watch: true,
@@ -946,8 +994,8 @@ export class CssOutputConfigManager {
       } else if (args.environment === 'production') {
         baseConfig = deepMerge(baseConfig, {
           optimization: { minify: true, sourceMap: false },
-          compression: { type: 'auto' },
-          hashing: { includeContent: true },
+          compression: { type: 'auto', level: 6, threshold: 1024, includeOriginal: false, generateReports: true },
+          hashing: { includeContent: true, length: 8, algorithm: 'xxhash', includeMetadata: false, generateIntegrity: true, integrityAlgorithm: 'sha384' },
           sourceMaps: false,
         });
       }
@@ -988,9 +1036,9 @@ export class CssOutputConfigManager {
     
     // Handle compression
     if (args.compress !== undefined) {
-      let compressType: string;
+      let compressType: CompressionType;
       if (typeof args.compress === 'string') {
-        compressType = args.compress;
+        compressType = args.compress as CompressionType;
       } else {
         compressType = args.compress ? 'auto' : 'none';
       }
@@ -1173,8 +1221,8 @@ export function createProductionConfig(
       strategy: "chunked" as const,
       optimization: { minify: true, sourceMap: false },
       compression: { type: "auto" as const },
-      hashing: { includeContent: true, length: 8 },
-      critical: { enabled: true },
+      hashing: { includeContent: true, length: 8, algorithm: 'xxhash', includeMetadata: false, generateIntegrity: true, integrityAlgorithm: 'sha384' },
+      critical: { enabled: true, strategy: 'preload', maxSize: 14336, viewport: { width: 1280, height: 720 }, includeFonts: true, includeMedia: true, ignore: [], forceInclude: [], routes: [], components: [], inlineThreshold: 4096, extractionMethod: 'automatic', viewports: [{ width: 1280, height: 720 }], timeout: 30000, fallback: true },
       chunking: {
         strategy: "size" as const,
         maxSize: 50 * 1024,
@@ -1407,15 +1455,48 @@ export class ProductionCssConfigManager {
       case 'cdn':
         return {
           ...PRODUCTION_PRESET,
-          compression: { type: 'gzip', level: 9 },
-          paths: { useHashes: true, hashLength: 8 },
-          delivery: { method: 'preload', priority: 'high' }
+          compression: { 
+            type: 'gzip', 
+            level: 9,
+            threshold: 1024,
+            includeOriginal: false,
+            generateReports: true
+          },
+                      paths: { 
+              compressed: "dist/css/compressed",
+              sourceMaps: "dist/css/maps",
+              critical: "dist/css/critical",
+              base: "dist/css",
+              manifest: "dist/css/manifest.json",
+              chunks: "dist/css/chunks",
+              reports: "dist/css/reports",
+              publicPath: "/css/",
+              useHashes: true, 
+              hashLength: 8,
+              hashAlgorithm: "xxhash"
+            },
+                      delivery: { 
+              method: 'preload', 
+              priority: 'high',
+              cache: {
+                strategy: "immutable",
+                maxAge: 31536000,
+                staleWhileRevalidate: 86400,
+              },
+              crossorigin: "anonymous",
+              integrity: true,
+              resourceHints: {
+                preload: true,
+                prefetch: false,
+                preconnect: true,
+              }
+            }
         };
       case 'serverless':
         return {
           ...PRODUCTION_PRESET,
           strategy: 'single',
-          compression: { type: 'brotli', level: 11 }
+          compression: { type: 'brotli', level: 11, threshold: 1024, includeOriginal: false, generateReports: true }
         };
       default:
         return PRODUCTION_PRESET;
@@ -1683,32 +1764,48 @@ export function applyDeploymentPreset(config: any, preset: string): any {
   switch (preset) {
     case 'cdn':
       presetConfig = {
-        hashing: { includeContent: true, length: 8 },
-        compression: { type: 'auto' },
-        critical: { enabled: true },
-        optimization: { minify: true },
+        hashing: { includeContent: true, length: 8, algorithm: 'xxhash', includeMetadata: false, generateIntegrity: true, integrityAlgorithm: 'sha384' },
+        compression: { type: 'auto', level: 6, threshold: 1024, includeOriginal: false, generateReports: true },
+        critical: { enabled: true, strategy: 'preload', maxSize: 14336, viewport: { width: 1280, height: 720 }, includeFonts: true, includeMedia: true, ignore: [], forceInclude: [], routes: [], components: [], inlineThreshold: 4096, extractionMethod: 'automatic', viewports: [{ width: 1280, height: 720 }], timeout: 30000, fallback: true },
+        optimization: { minify: true, purge: true, autoprefix: true, mergeDuplicates: true, removeComments: true, optimizeCalc: true, mergeMedia: true, normalizeColors: true, removeEmpty: true, optimizeFonts: false, sourceMap: false },
       };
       break;
     case 'serverless':
       presetConfig = {
         strategy: 'single',
-        compression: { type: 'auto' },
-        optimization: { minify: true },
-        critical: { enabled: true },
+        compression: { type: 'auto', level: 6, threshold: 1024, includeOriginal: false, generateReports: true },
+        optimization: { minify: true, purge: true, autoprefix: true, mergeDuplicates: true, removeComments: true, optimizeCalc: true, mergeMedia: true, normalizeColors: true, removeEmpty: true, optimizeFonts: false, sourceMap: false },
+        critical: { enabled: true, strategy: 'preload', maxSize: 14336, viewport: { width: 1280, height: 720 }, includeFonts: true, includeMedia: true, ignore: [], forceInclude: [], routes: [], components: [], inlineThreshold: 4096, extractionMethod: 'automatic', viewports: [{ width: 1280, height: 720 }], timeout: 30000, fallback: true },
       };
       break;
     case 'spa':
       presetConfig = {
         strategy: 'chunked',
-        critical: { enabled: true, strategy: 'inline' },
-        hashing: { includeContent: true },
+        critical: { enabled: true, strategy: 'inline', maxSize: 14336, viewport: { width: 1280, height: 720 }, includeFonts: true, includeMedia: true, ignore: [], forceInclude: [], routes: [], components: [], inlineThreshold: 4096, extractionMethod: 'automatic', viewports: [{ width: 1280, height: 720 }], timeout: 30000, fallback: true },
+        hashing: { includeContent: true, length: 8, algorithm: 'xxhash', includeMetadata: false, generateIntegrity: true, integrityAlgorithm: 'sha384' },
       };
       break;
     case 'ssr':
       presetConfig = {
         strategy: 'modular',
-        critical: { enabled: true, strategy: 'extract' },
-        optimization: { removeUnused: true },
+        critical: { 
+          timeout: 30000,
+          enabled: true, 
+          strategy: 'async',
+          fallback: false,
+          ignore: [],
+          maxSize: 50 * 1024,
+          components: [],
+          routes: [],
+          viewport: { width: 1920, height: 1080 },
+          includeFonts: true,
+          includeMedia: true,
+          viewports: [],
+          forceInclude: [],
+          inlineThreshold: 4096,
+          extractionMethod: 'automatic'
+        },
+        optimization: { minify: true, purge: true, autoprefix: true, mergeDuplicates: true, removeComments: true, optimizeCalc: true, mergeMedia: true, normalizeColors: true, removeEmpty: true, optimizeFonts: false, sourceMap: false },
       };
       break;
     default:
@@ -1719,7 +1816,7 @@ export function applyDeploymentPreset(config: any, preset: string): any {
   // If a value differs from the production preset defaults, preserve it
   const PRODUCTION_DEFAULTS = {
     strategy: 'chunked',
-    optimization: { minify: true },
+    optimization: { minify: true, purge: true, autoprefix: true, mergeDuplicates: true, removeComments: true, optimizeCalc: true, mergeMedia: true, normalizeColors: true, removeEmpty: true, optimizeFonts: false, sourceMap: false },
     hashing: { length: 8 },
   };
   
