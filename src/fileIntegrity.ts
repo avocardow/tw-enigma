@@ -481,7 +481,7 @@ export interface IncrementalBackupResult {
   /** Backup ID */
   backupId: string;
   /** Parent backup ID (for incremental) */
-  parentId?: string;
+  parentId: string | null;
   /** Number of files backed up */
   filesBackedUp: number;
   /** Number of files changed since last backup */
@@ -745,6 +745,7 @@ export class IntegrityError extends Error {
   public readonly code: string;
   public readonly filePath?: string;
   public readonly operation?: string;
+  public readonly cause?: Error;
 
   constructor(
     message: string,
@@ -758,6 +759,7 @@ export class IntegrityError extends Error {
     this.code = code;
     this.filePath = filePath;
     this.operation = operation;
+    this.cause = cause;
     if (cause) {
       this.stack = `${this.stack}\nCaused by: ${cause.stack}`;
     }
@@ -2349,7 +2351,7 @@ export class FileIntegrityValidator {
       const result: IncrementalBackupResult = {
         backupType: strategy,
         backupId,
-        parentId: backupEntry.parentId || undefined,
+        parentId: backupEntry.parentId,
         filesBackedUp: 1,
         filesChanged: changeState.hasChanged ? 1 : 0,
         filesSkipped: 0,
@@ -2386,6 +2388,7 @@ export class FileIntegrityValidator {
       return {
         backupType: "incremental",
         backupId: "",
+        parentId: null,
         filesBackedUp: 0,
         filesChanged: 0,
         filesSkipped: 0,

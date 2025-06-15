@@ -2218,6 +2218,34 @@ class PatchedCssChunker extends _OriginalCssChunker {
     ];
   }
 
+  // Wrapper methods for test compatibility - delegate to string-based implementations
+  chunkBySize(cssContent: string, options?: { routes?: Set<string>; components?: Set<string> }): CssChunk[] {
+    const chunks = this.chunkBySizeString(cssContent);
+    
+    // Apply route and component metadata if provided
+    if (options?.routes || options?.components) {
+      return chunks.map(chunk => ({
+        ...chunk,
+        routes: options.routes ? new Set([...chunk.routes, ...options.routes]) : chunk.routes,
+        components: options.components ? new Set([...chunk.components, ...options.components]) : chunk.components,
+      }));
+    }
+    
+    return chunks;
+  }
+
+  chunkByUsage(cssContent: string, usageData?: TestUsageData): CssChunk[] {
+    return this.chunkByUsageString(cssContent, usageData);
+  }
+
+  chunkByRoute(cssContent: string, usageData?: TestUsageData): CssChunk[] {
+    return this.chunkByRouteString(cssContent, usageData);
+  }
+
+  chunkByComponent(cssContent: string, usageData?: TestUsageData): CssChunk[] {
+    return this.chunkByComponentString(cssContent, usageData);
+  }
+
   // Add optimizeChunks method with dependency preservation
   optimizeChunks(chunks: CssChunk[]): CssChunk[] {
     const config = (this as any).config?.chunking || {};

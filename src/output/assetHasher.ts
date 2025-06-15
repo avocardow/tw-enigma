@@ -970,11 +970,11 @@ export class ManifestGenerator {
     chunks: CssChunk[],
     hashes: Map<string, string>,
     optimizations?: Map<string, any> | any[],
-    compressions?: Map<string, CompressionResult[]> | any[]
+    compressions?: Map<string, CssCompressionResult[]> | any[]
   ): AssetManifest {
     // Handle backward compatibility for 3-parameter calls
     let actualOptimizations: Map<string, any>;
-    let actualCompressions: Map<string, CompressionResult[]> | undefined;
+    let actualCompressions: Map<string, CssCompressionResult[]> | undefined;
 
     if (arguments.length === 3) {
       // Old format: generateManifest(chunks, hashes, compressions)
@@ -1050,14 +1050,14 @@ export class ManifestGenerator {
         assetEntry.compressed = {};
         
         for (const comp of compression) {
-          if (comp.type === 'gzip') {
+          if (comp.compressionType === 'gzip') {
             assetEntry.compressed.gzip = {
-              file: `${chunk.name || chunk.id}.gz`,
+              file: `${chunk.name || chunk.id}.css.gz`,
               size: comp.compressedSize,
             };
-          } else if (comp.type === 'brotli') {
+          } else if (comp.compressionType === 'brotli') {
             assetEntry.compressed.brotli = {
-              file: `${chunk.name || chunk.id}.br`,
+              file: `${chunk.name || chunk.id}.css.br`,
               size: comp.compressedSize,
             };
           }
@@ -1097,7 +1097,7 @@ export class ManifestGenerator {
     return manifest;
   }
 
-  private normalizeCompressions(compressions: any): Map<string, CompressionResult[]> | undefined {
+  private normalizeCompressions(compressions: any): Map<string, CssCompressionResult[]> | undefined {
     if (!compressions) return undefined;
     
     if (compressions instanceof Map) {
@@ -1105,7 +1105,7 @@ export class ManifestGenerator {
     }
     
     if (Array.isArray(compressions)) {
-      const map = new Map<string, CompressionResult[]>();
+      const map = new Map<string, CssCompressionResult[]>();
       for (const item of compressions) {
         if (item.id) {
           map.set(item.id, Array.isArray(item.results) ? item.results : [item]);
@@ -1372,12 +1372,13 @@ export class CssCompressor extends CompressionEngine {
   }
 
   async compressContent(
-    content: string
-  ): Promise<CompressionResult[]> {
+    content: string,
+    filename?: string
+  ): Promise<CssCompressionResult[]> {
     // Access config through parent class method to avoid private property conflict
     const config = (this as any).config as CompressionConfig;
     const useType = config.type;
-    const results: CompressionResult[] = [];
+    const results: CssCompressionResult[] = [];
 
     // Check threshold - if content is too small, skip compression
     const contentSize = Buffer.byteLength(content, 'utf8');
@@ -1385,22 +1386,21 @@ export class CssCompressor extends CompressionEngine {
       return results;
     }
 
-    const originalBuffer = Buffer.from(content, 'utf8');
-
     try {
       if (useType === 'gzip' || useType === 'auto') {
         const compressedBuffer = await this.compressGzip(content);
         // Only include if compression actually reduces size
         if (compressedBuffer.length < contentSize) {
           results.push({
-            original: originalBuffer,
-            compressed: compressedBuffer,
-            type: 'gzip',
+            originalPath: filename || 'input.css',
+            compressedPath: `${filename || 'input.css'}.gz`,
             originalSize: contentSize,
             compressedSize: compressedBuffer.length,
-            ratio: compressedBuffer.length / contentSize,
-            level: config.level,
-            compressionTime: 0, // Simplified for now
+            compressionRatio: compressedBuffer.length / contentSize,
+            compressionType: 'gzip',
+            compressionLevel: config.level,
+            isMinified: true,
+            data: compressedBuffer,
           });
         }
       }
@@ -1410,14 +1410,15 @@ export class CssCompressor extends CompressionEngine {
         // Only include if compression actually reduces size
         if (compressedBuffer.length < contentSize) {
           results.push({
-            original: originalBuffer,
-            compressed: compressedBuffer,
-            type: 'brotli',
+            originalPath: filename || 'input.css',
+            compressedPath: `${filename || 'input.css'}.br`,
             originalSize: contentSize,
             compressedSize: compressedBuffer.length,
-            ratio: compressedBuffer.length / contentSize,
-            level: config.level,
-            compressionTime: 0, // Simplified for now
+            compressionRatio: compressedBuffer.length / contentSize,
+            compressionType: 'brotli',
+            compressionLevel: config.level,
+            isMinified: true,
+            data: compressedBuffer,
           });
         }
       }
@@ -1429,12 +1430,12 @@ export class CssCompressor extends CompressionEngine {
     }
   }
 
-  async compressChunk(chunk: CssChunk): Promise<CompressionResult[]> {
-    return this.compressContent(chunk.content);
+  async compressChunk(chunk: CssChunk): Promise<CssCompressionResult[]> {
+    return this.compressContent(chunk.content, chunk.name + '.css');
   }
 
-  async compressChunks(chunks: CssChunk[]): Promise<Map<string, CompressionResult[]>> {
-    const results = new Map<string, CompressionResult[]>();
+  async compressChunks(chunks: CssChunk[]): Promise<Map<string, CssCompressionResult[]>> {
+    const results = new Map<string, CssCompressionResult[]>();
     
     const compressionPromises = chunks.map(async (chunk) => {
       const compressedResults = await this.compressChunk(chunk);

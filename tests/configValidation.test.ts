@@ -13,7 +13,7 @@ import { tmpdir } from 'os';
 // Import all validation components
 import { createConfigValidator, validateConfigSchema } from '../src/configValidator.js';
 import { createRuntimeValidator, validateConfigRuntime } from '../src/runtimeValidator.js';
-// import { createConfigWatcher } from '../src/configWatcher.js';
+import { watchConfigFile } from '../src/configWatcher.js';
 import { createConfigDefaults, getEnvironmentDefaults } from '../src/configDefaults.js';
 import { createConfigMigration, migrateConfig } from '../src/configMigration.js';
 import { createPerformanceValidator, analyzeConfigPerformance } from '../src/performanceValidator.js';

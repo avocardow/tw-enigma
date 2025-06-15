@@ -238,7 +238,7 @@ describe("ProductionCssConfigManager", () => {
       expect(cdnConfig.hashing.includeContent).toBe(true);
       expect(cdnConfig.hashing.length).toBeGreaterThanOrEqual(8);
       expect(cdnConfig.compression.type).toBe("auto");
-      expect(cdnConfig.criticalCss.enabled).toBe(true);
+      expect(cdnConfig.critical.enabled).toBe(true);
       expect(cdnConfig.optimization.minify).toBe(true);
     });
 
@@ -249,7 +249,7 @@ describe("ProductionCssConfigManager", () => {
       expect(serverlessConfig.strategy).toBe("single");
       expect(serverlessConfig.compression.type).not.toBe("none");
       expect(serverlessConfig.optimization.minify).toBe(true);
-      expect(serverlessConfig.criticalCss.enabled).toBe(true);
+      expect(serverlessConfig.critical.enabled).toBe(true);
     });
 
     it("should apply SPA preset correctly", () => {
@@ -257,8 +257,8 @@ describe("ProductionCssConfigManager", () => {
       const spaConfig = applyDeploymentPreset(baseConfig, "spa");
 
       expect(spaConfig.strategy).toBe("chunked");
-      expect(spaConfig.criticalCss.enabled).toBe(true);
-      expect(spaConfig.criticalCss.strategy).toBe("inline");
+      expect(spaConfig.critical.enabled).toBe(true);
+      expect(spaConfig.critical.strategy).toBe("inline");
       expect(spaConfig.hashing.includeContent).toBe(true);
     });
 
@@ -266,10 +266,10 @@ describe("ProductionCssConfigManager", () => {
       const baseConfig = createProductionConfig();
       const ssrConfig = applyDeploymentPreset(baseConfig, "ssr");
 
-      expect(ssrConfig.criticalCss.enabled).toBe(true);
-      expect(ssrConfig.criticalCss.strategy).toBe("extract");
+      expect(ssrConfig.critical.enabled).toBe(true);
+      expect(ssrConfig.critical.strategy).toBe("async");
       expect(ssrConfig.strategy).toBe("modular");
-      expect(ssrConfig.optimization.removeUnused).toBe(true);
+      expect(ssrConfig.optimization.purge).toBe(true);
     });
 
     it("should preserve custom configurations when applying presets", () => {
@@ -296,7 +296,7 @@ describe("ProductionCssConfigManager", () => {
       expect(config.strategy).toBeDefined();
       expect(config.optimization.minify).toBe(sampleCliArgs.minify);
       expect(config.compression.type).toBe(sampleCliArgs.compress);
-      expect(config.criticalCss.enabled).toBe(sampleCliArgs["critical-css"]);
+      expect(config.critical.enabled).toBe(sampleCliArgs["critical-css"]);
       expect(config.hashing.includeContent).toBe(sampleCliArgs["asset-hash"]);
       expect(config.hashing.length).toBe(sampleCliArgs["hash-length"]);
     });

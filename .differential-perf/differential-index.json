@@ -1,0 +1,90 @@
+{
+  "version": "1.0.0",
+  "currentFullBackup": {
+    "id": "backup_1749960365941_rwrky6",
+    "createdAt": "2025-06-15T04:06:05.941Z",
+    "filePath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749960365939/.backups-perf/diff-performance.2025-06-15T04-06-05-941Z.txt.backup",
+    "size": 36
+  },
+  "differentialChain": [
+    {
+      "id": "backup_1749960365952_14y3if",
+      "type": "differential",
+      "baseFullBackupId": "backup_1749960365941_rwrky6",
+      "backupPath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749960365939/.backups-perf/diff-performance.2025-06-15T04-06-05-952Z.txt.backup",
+      "originalPath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749960365939/diff-performance.txt",
+      "createdAt": "2025-06-15T04:06:05.952Z",
+      "cumulativeFiles": [
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749960365939/diff-performance.txt"
+      ],
+      "cumulativeSize": 9,
+      "currentFiles": [
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749960365939/diff-performance.txt"
+      ],
+      "currentSize": 9,
+      "changeDetectionMethod": "mtime",
+      "compressed": false,
+      "deduplicated": false,
+      "timeSinceFullBackup": 0.000002777777777777778
+    },
+    {
+      "id": "backup_1749960365964_a8vmpe",
+      "type": "differential",
+      "baseFullBackupId": "backup_1749960365941_rwrky6",
+      "backupPath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749960365939/.backups-perf/diff-performance.2025-06-15T04-06-05-963Z.txt.backup",
+      "originalPath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749960365939/diff-performance.txt",
+      "createdAt": "2025-06-15T04:06:05.964Z",
+      "cumulativeFiles": [
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749960365939/diff-performance.txt"
+      ],
+      "cumulativeSize": 18,
+      "currentFiles": [
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749960365939/diff-performance.txt"
+      ],
+      "currentSize": 9,
+      "changeDetectionMethod": "mtime",
+      "compressed": false,
+      "deduplicated": false,
+      "timeSinceFullBackup": 0.000006111111111111111
+    },
+    {
+      "id": "backup_1749960365975_6vn59v",
+      "type": "differential",
+      "baseFullBackupId": "backup_1749960365941_rwrky6",
+      "backupPath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749960365939/.backups-perf/diff-performance.2025-06-15T04-06-05-975Z.txt.backup",
+      "originalPath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749960365939/diff-performance.txt",
+      "createdAt": "2025-06-15T04:06:05.975Z",
+      "cumulativeFiles": [
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749960365939/diff-performance.txt"
+      ],
+      "cumulativeSize": 27,
+      "currentFiles": [
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749960365939/diff-performance.txt"
+      ],
+      "currentSize": 9,
+      "changeDetectionMethod": "mtime",
+      "compressed": false,
+      "deduplicated": false,
+      "timeSinceFullBackup": 0.000009444444444444445
+    }
+  ],
+  "cumulativeFileStates": {
+    "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749960365939/diff-performance.txt": {
+      "filePath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749960365939/diff-performance.txt",
+      "size": 9,
+      "mtime": "2025-06-15T04:06:05.975Z",
+      "lastBackup": "2025-06-15T04:06:05.975Z",
+      "hasChanged": true
+    }
+  },
+  "stats": {
+    "totalDifferentials": 3,
+    "currentChainLength": 3,
+    "cumulativeSize": 27,
+    "cumulativeSizeRatio": 0.75,
+    "totalSpaceSaved": 0,
+    "lastBackupAt": "2025-06-15T04:06:05.975Z",
+    "timeSinceFullBackup": 0.000009444444444444445
+  },
+  "lastUpdated": "2025-06-15T04:06:05.975Z"
+}

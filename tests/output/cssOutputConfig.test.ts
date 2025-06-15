@@ -95,6 +95,17 @@ const validCompleteConfig: CssOutputConfig = {
     manifest: "dist/manifest.json",
     reports: "dist/reports",
   },
+  reporting: {
+    enabled: true,
+    sizeAnalysis: true,
+    performance: true,
+    compression: true,
+    criticalAnalysis: true,
+    dependencyGraphs: false,
+    format: "json",
+    perChunkAnalysis: true,
+    budgets: {},
+  },
 };
 
 const minimalValidConfig: CssOutputConfig = {
@@ -166,6 +177,17 @@ const minimalValidConfig: CssOutputConfig = {
     assets: "build/assets",
     manifest: "build/manifest.json",
     reports: "build/reports",
+  },
+  reporting: {
+    enabled: false,
+    sizeAnalysis: false,
+    performance: false,
+    compression: false,
+    criticalAnalysis: false,
+    dependencyGraphs: false,
+    format: "json",
+    perChunkAnalysis: false,
+    budgets: {},
   },
 };
 

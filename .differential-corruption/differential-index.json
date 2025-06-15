@@ -1,1 +1,29 @@
-corrupted json
+{
+  "version": "1.0.0",
+  "currentFullBackup": {
+    "id": "backup_1749960365907_l4sjym",
+    "createdAt": "2025-06-15T04:06:05.907Z",
+    "filePath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749960365893/.backups-corruption/diff-corruption.2025-06-15T04-06-05-906Z.txt.backup",
+    "size": 33
+  },
+  "differentialChain": [],
+  "cumulativeFileStates": {
+    "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749960365893/diff-corruption.txt": {
+      "filePath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749960365893/diff-corruption.txt",
+      "size": 33,
+      "mtime": "2025-06-15T04:06:05.906Z",
+      "lastBackup": "2025-06-15T04:06:05.907Z",
+      "hasChanged": false
+    }
+  },
+  "stats": {
+    "totalDifferentials": 0,
+    "currentChainLength": 0,
+    "cumulativeSize": 0,
+    "cumulativeSizeRatio": 0,
+    "totalSpaceSaved": 0,
+    "lastBackupAt": "2025-06-15T04:06:05.907Z",
+    "timeSinceFullBackup": 0
+  },
+  "lastUpdated": "2025-06-15T04:06:05.907Z"
+}

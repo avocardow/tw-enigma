@@ -502,6 +502,18 @@ export type PerformanceBudget = {
 export const PRODUCTION_PRESET: Partial<CssOutputConfig> = {
   strategy: "chunked",
   environment: "production",
+  chunking: {
+    strategy: "hybrid",
+    maxChunkSize: 50000,
+    minChunkSize: 10000,
+    targetChunks: 3,
+    enableTreeShaking: true,
+    preserveComments: false,
+    splitVendor: true,
+    splitCritical: true,
+    routeBased: true,
+    componentBased: true,
+  },
   optimization: {
     minify: true,
     purge: true,
@@ -521,6 +533,14 @@ export const PRODUCTION_PRESET: Partial<CssOutputConfig> = {
     threshold: 1024,
     includeOriginal: false,
     generateReports: true,
+  },
+  hashing: {
+    algorithm: "xxhash",
+    length: 8,
+    includeContent: true,
+    includeMetadata: false,
+    generateIntegrity: true,
+    integrityAlgorithm: "sha384",
   },
   critical: {
     timeout: 30000,
@@ -568,6 +588,17 @@ export const PRODUCTION_PRESET: Partial<CssOutputConfig> = {
     hashLength: 8,
     hashAlgorithm: "xxhash",
   },
+  reporting: {
+    enabled: true,
+    sizeAnalysis: true,
+    performance: true,
+    compression: true,
+    criticalAnalysis: true,
+    dependencyGraphs: false,
+    format: "json",
+    perChunkAnalysis: true,
+    budgets: {},
+  },
   sourceMaps: false,
   verbose: false,
 };
@@ -578,6 +609,18 @@ export const PRODUCTION_PRESET: Partial<CssOutputConfig> = {
 export const DEVELOPMENT_PRESET: Partial<CssOutputConfig> = {
   strategy: "single",
   environment: "development",
+  chunking: {
+    strategy: "size",
+    maxChunkSize: 100000,
+    minChunkSize: 5000,
+    targetChunks: 1,
+    enableTreeShaking: false,
+    preserveComments: true,
+    splitVendor: false,
+    splitCritical: false,
+    routeBased: false,
+    componentBased: false,
+  },
   optimization: {
     minify: false,
     purge: false,
@@ -651,6 +694,17 @@ export const DEVELOPMENT_PRESET: Partial<CssOutputConfig> = {
     useHashes: false,
     hashLength: 4, // Changed from 0 to 4 to meet schema minimum requirement
     hashAlgorithm: "md5",
+  },
+  reporting: {
+    enabled: false,
+    sizeAnalysis: false,
+    performance: false,
+    compression: false,
+    criticalAnalysis: false,
+    dependencyGraphs: false,
+    format: "json",
+    perChunkAnalysis: false,
+    budgets: {},
   },
   sourceMaps: true,
   watch: true,
@@ -941,8 +995,20 @@ export class CssOutputConfigManager {
     config: Partial<CssOutputConfig>,
   ): CssOutputConfig {
     try {
+      // Start with a complete preset based on strategy to ensure all required fields are present
+      let baseConfig: Partial<CssOutputConfig>;
+      
+      if (config.strategy === "single" || config.environment === "development") {
+        baseConfig = { ...DEVELOPMENT_PRESET };
+      } else {
+        baseConfig = { ...PRODUCTION_PRESET };
+      }
+      
+      // Merge the provided config over the base preset
+      const mergedConfig = deepMerge(baseConfig, config);
+      
       // Parse and validate with Zod schema - this will apply defaults
-      const validatedConfig = CssOutputConfigSchema.parse(config);
+      const validatedConfig = CssOutputConfigSchema.parse(mergedConfig);
 
       // If this.config exists, merge with it; otherwise just return validated config
       if (this.config && Object.keys(this.config).length > 0) {
@@ -1174,7 +1240,20 @@ export function validateCssOutputConfig(config: unknown): CssOutputConfig {
   }
   
   try {
-    const validated = CssOutputConfigSchema.parse(config);
+    // Start with a complete preset based on strategy to ensure all required fields are present
+    let baseConfig: Partial<CssOutputConfig>;
+    const configObj = config as any;
+    
+    if (configObj?.strategy === "single" || configObj?.environment === "development") {
+      baseConfig = { ...DEVELOPMENT_PRESET };
+    } else {
+      baseConfig = { ...PRODUCTION_PRESET };
+    }
+    
+    // Merge the provided config over the base preset
+    const mergedConfig = deepMerge(baseConfig, config);
+    
+    const validated = CssOutputConfigSchema.parse(mergedConfig);
     
     // Additional manual checks for logical constraints after parsing
     if (validated.chunking.minSize >= validated.chunking.maxSize) {

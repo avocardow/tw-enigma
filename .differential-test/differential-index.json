@@ -1,47 +1,47 @@
 {
   "version": "1.0.0",
   "currentFullBackup": {
-    "id": "backup_1749886697011_xv9b3f",
-    "createdAt": "2025-06-14T07:38:17.011Z",
-    "filePath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749886697010/.backups/diff-test1.2025-06-14T07-38-17-011Z.txt.backup",
+    "id": "backup_1749960365873_xk5u7m",
+    "createdAt": "2025-06-15T04:06:05.873Z",
+    "filePath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749960365871/.backups/diff-test1.2025-06-15T04-06-05-873Z.txt.backup",
     "size": 17
   },
   "differentialChain": [
     {
-      "id": "backup_1749886697011_r9gwja",
+      "id": "backup_1749960365874_39polk",
       "type": "differential",
-      "baseFullBackupId": "backup_1749886697011_xv9b3f",
-      "backupPath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749886697010/.backups/diff-test2.2025-06-14T07-38-17-011Z.txt.backup",
-      "originalPath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749886697010/diff-test2.txt",
-      "createdAt": "2025-06-14T07:38:17.011Z",
+      "baseFullBackupId": "backup_1749960365873_xk5u7m",
+      "backupPath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749960365871/.backups/diff-test2.2025-06-15T04-06-05-874Z.txt.backup",
+      "originalPath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749960365871/diff-test2.txt",
+      "createdAt": "2025-06-15T04:06:05.874Z",
       "cumulativeFiles": [
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749886697010/diff-test1.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749886697010/diff-test2.txt"
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749960365871/diff-test1.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749960365871/diff-test2.txt"
       ],
       "cumulativeSize": 1000,
       "currentFiles": [
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749886697010/diff-test2.txt"
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749960365871/diff-test2.txt"
       ],
       "currentSize": 1000,
       "changeDetectionMethod": "mtime",
       "compressed": false,
       "deduplicated": false,
-      "timeSinceFullBackup": 0
+      "timeSinceFullBackup": 2.7777777777777776e-7
     }
   ],
   "cumulativeFileStates": {
-    "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749886697010/diff-test1.txt": {
-      "filePath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749886697010/diff-test1.txt",
+    "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749960365871/diff-test1.txt": {
+      "filePath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749960365871/diff-test1.txt",
       "size": 17,
-      "mtime": "2025-06-14T07:38:17.011Z",
-      "lastBackup": "2025-06-14T07:38:17.011Z",
+      "mtime": "2025-06-15T04:06:05.872Z",
+      "lastBackup": "2025-06-15T04:06:05.873Z",
       "hasChanged": false
     },
-    "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749886697010/diff-test2.txt": {
-      "filePath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749886697010/diff-test2.txt",
+    "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749960365871/diff-test2.txt": {
+      "filePath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749960365871/diff-test2.txt",
       "size": 1000,
-      "mtime": "2025-06-14T07:38:17.012Z",
-      "lastBackup": "2025-06-14T07:38:17.011Z",
+      "mtime": "2025-06-15T04:06:05.874Z",
+      "lastBackup": "2025-06-15T04:06:05.874Z",
       "hasChanged": true
     }
   },
@@ -51,8 +51,8 @@
     "cumulativeSize": 1000,
     "cumulativeSizeRatio": 58.8235294117647,
     "totalSpaceSaved": 0,
-    "lastBackupAt": "2025-06-14T07:38:17.011Z",
-    "timeSinceFullBackup": 0
+    "lastBackupAt": "2025-06-15T04:06:05.874Z",
+    "timeSinceFullBackup": 2.7777777777777776e-7
   },
-  "lastUpdated": "2025-06-14T07:38:17.011Z"
+  "lastUpdated": "2025-06-15T04:06:05.874Z"
 }

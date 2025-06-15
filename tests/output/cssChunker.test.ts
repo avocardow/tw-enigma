@@ -11,6 +11,7 @@ import {
   CssChunk,
   ChunkingStrategy,
   UsagePatternAnalyzer,
+  TestDependencyGraph,
   createCssChunker,
   validateChunkingStrategy,
 } from "../../src/output/cssChunker.ts";
@@ -422,10 +423,10 @@ describe("UsagePatternAnalyzer", () => {
 // =============================================================================
 
 describe("CssChunker", () => {
-  let chunker: CssChunker;
+  let chunker: any; // Use any type since PatchedCssChunker has different interface
 
   beforeEach(() => {
-    chunker = new CssChunker(mockChunkingConfig);
+    chunker = createCssChunker(mockChunkingConfig);
   });
 
   describe("constructor", () => {

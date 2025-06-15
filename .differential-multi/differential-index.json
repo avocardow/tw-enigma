@@ -1,0 +1,58 @@
+{
+  "version": "1.0.0",
+  "currentFullBackup": {
+    "id": "backup_1749960365812_6jvx8p",
+    "createdAt": "2025-06-15T04:06:05.812Z",
+    "filePath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749960365810/.backups-multi/diff-multi1.2025-06-15T04-06-05-812Z.txt.backup",
+    "size": 14
+  },
+  "differentialChain": [
+    {
+      "id": "backup_1749960365824_k3zkys",
+      "type": "differential",
+      "baseFullBackupId": "backup_1749960365812_6jvx8p",
+      "backupPath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749960365810/.backups-multi/diff-multi2.2025-06-15T04-06-05-823Z.txt.backup",
+      "originalPath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749960365810/diff-multi2.txt",
+      "createdAt": "2025-06-15T04:06:05.824Z",
+      "cumulativeFiles": [
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749960365810/diff-multi1.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749960365810/diff-multi2.txt"
+      ],
+      "cumulativeSize": 14,
+      "currentFiles": [
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749960365810/diff-multi2.txt"
+      ],
+      "currentSize": 14,
+      "changeDetectionMethod": "mtime",
+      "compressed": false,
+      "deduplicated": false,
+      "timeSinceFullBackup": 0.0000030555555555555556
+    }
+  ],
+  "cumulativeFileStates": {
+    "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749960365810/diff-multi1.txt": {
+      "filePath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749960365810/diff-multi1.txt",
+      "size": 14,
+      "mtime": "2025-06-15T04:06:05.812Z",
+      "lastBackup": "2025-06-15T04:06:05.812Z",
+      "hasChanged": false
+    },
+    "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749960365810/diff-multi2.txt": {
+      "filePath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749960365810/diff-multi2.txt",
+      "size": 14,
+      "mtime": "2025-06-15T04:06:05.812Z",
+      "lastBackup": "2025-06-15T04:06:05.824Z",
+      "hasChanged": true
+    }
+  },
+  "stats": {
+    "totalDifferentials": 1,
+    "currentChainLength": 1,
+    "cumulativeSize": 14,
+    "cumulativeSizeRatio": 1,
+    "totalSpaceSaved": 0,
+    "lastBackupAt": "2025-06-15T04:06:05.824Z",
+    "timeSinceFullBackup": 0.0000030555555555555556
+  },
+  "lastUpdated": "2025-06-15T04:06:05.824Z"
+}

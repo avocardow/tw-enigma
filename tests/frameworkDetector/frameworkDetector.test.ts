@@ -7,6 +7,7 @@ import * as fs from "fs/promises";
 import * as path from "path";
 import {
   FrameworkDetector,
+  FrameworkDetectionError,
   createFrameworkDetector,
   detectFramework,
 } from "../../src/frameworkDetector.ts";
