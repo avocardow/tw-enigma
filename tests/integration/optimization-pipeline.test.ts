@@ -216,7 +216,9 @@ describe("Optimization Pipeline Integration Tests", () => {
         const variance =
           (benchmark.summary.maxDuration - benchmark.summary.minDuration) /
           benchmark.summary.averageDuration;
-        expect(variance).toBeLessThan(2.0); // Less than 200% variance (very forgiving for integration tests)
+        // Increased tolerance for CI environments where timing can be more variable
+        const varianceThreshold = process.env.CI ? 3.0 : 2.0; // 300% for CI, 200% for local
+        expect(variance).toBeLessThan(varianceThreshold);
       }
     });
 
