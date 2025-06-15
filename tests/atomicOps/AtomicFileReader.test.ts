@@ -434,7 +434,9 @@ describe("AtomicFileReader", () => {
     });
 
     it("should provide detailed error information", async () => {
-      const result = await reader.readFile("/invalid/path/file.txt");
+      // Use a path with null byte which is invalid on all platforms
+      const invalidPath = "invalid\x00path.txt";
+      const result = await reader.readFile(invalidPath);
 
       expect(result.success).toBe(false);
       expect(result.error).toBeDefined();

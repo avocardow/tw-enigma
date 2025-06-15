@@ -7,6 +7,17 @@ import * as fs from "fs/promises";
 import * as path from "path";
 import { AtomicOperationsSystem } from "../../src/atomicOps";
 
+// Cross-platform permission validation helper
+function expectPermissions(actualMode: number, expectedMode: number): void {
+  if (process.platform === "win32") {
+    // Windows permissions work differently - just check that file has some permissions
+    expect(actualMode).toBeGreaterThan(0);
+  } else {
+    // Unix-like systems - check exact octal permissions
+    expect(actualMode).toBe(expectedMode);
+  }
+}
+
 describe("AtomicOperationsSystem Integration", () => {
   let system: AtomicOperationsSystem;
   let testDir: string;
@@ -59,9 +70,9 @@ describe("AtomicOperationsSystem Integration", () => {
       const fileContent = await fs.readFile(testFile, "utf8");
       expect(fileContent).toBe(content);
 
-      // Verify permissions
+      // Verify permissions using cross-platform helper
       const stats = await fs.stat(testFile);
-      expect(stats.mode & 0o777).toBe(0o644);
+      expectPermissions(stats.mode & 0o777, 0o644);
     });
 
     it("should perform atomic read operation", async () => {
@@ -101,14 +112,14 @@ describe("AtomicOperationsSystem Integration", () => {
       const fileContent = await fs.readFile(testFile, "utf8");
       expect(fileContent).toBe(newContent);
 
-      // Verify permissions
+      // Verify permissions using cross-platform helper
       const stats = await fs.stat(testFile);
-      expect(stats.mode & 0o777).toBe(0o755);
+      expectPermissions(stats.mode & 0o777, 0o755);
     });
 
     it("should handle operation failures with rollback", async () => {
-      // Use an invalid file path that will actually fail (not just missing directory)
-      const invalidPath = process.platform === "win32" ? "CON" : "/dev/null/invalid";
+      // Use a path with null byte which is invalid on all platforms
+      const invalidPath = "rollback\x00test.txt";
 
       // This should fail due to invalid path
       await expect(

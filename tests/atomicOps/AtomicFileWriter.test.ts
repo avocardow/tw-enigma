@@ -548,7 +548,8 @@ describe("AtomicFileWriter", () => {
 
   describe("Error Handling and Rollback", () => {
     it("should handle directory creation errors gracefully", async () => {
-      const invalidPath = path.join("/invalid/deep/path/file.txt");
+      // Use a path with null byte which is invalid on all platforms
+      const invalidPath = "invalid\x00directory/file.txt";
       const result = await writer.writeFile(invalidPath, TEST_CONTENT);
 
       expect(result.success).toBe(false);
@@ -557,10 +558,9 @@ describe("AtomicFileWriter", () => {
     });
 
     it("should provide detailed error information", async () => {
-      const result = await writer.writeFile(
-        "/root/restricted.txt",
-        TEST_CONTENT,
-      );
+      // Use a path with null byte which is invalid on all platforms
+      const invalidPath = "restricted\x00file.txt";
+      const result = await writer.writeFile(invalidPath, TEST_CONTENT);
 
       expect(result.success).toBe(false);
       expect(result.error).toBeDefined();
@@ -585,8 +585,9 @@ describe("AtomicFileWriter", () => {
     });
 
     it("should clean up temp files on failure", async () => {
-      // Attempt to write to invalid location
-      await writer.writeFile("/invalid/path/file.txt", TEST_CONTENT);
+      // Attempt to write to invalid location using path with null byte
+      const invalidPath = "temp\x00cleanup.txt";
+      await writer.writeFile(invalidPath, TEST_CONTENT);
 
       // Check that no temp files remain in test directory
       const files = await fs.readdir(TEST_DIR);
