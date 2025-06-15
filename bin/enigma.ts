@@ -2006,9 +2006,9 @@ try {
           "Tip: Run 'enigma init-config' to create a sample configuration file",
         );
       }
-                  } catch (defaultError) {
-        cliLogger.fatal("Failed to create default configuration", {
-          message: defaultError instanceof Error ? defaultError.message : String(defaultError),
+    } catch (defaultError) {
+      cliLogger.fatal("Failed to create default configuration", {
+        message: defaultError instanceof Error ? defaultError.message : String(defaultError),
       });
       process.exit(1);
     }

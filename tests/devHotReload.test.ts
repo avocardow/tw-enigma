@@ -261,7 +261,7 @@ describe('DevHotReload', () => {
       
       const { WebSocketServer } = await import('ws');
       expect(WebSocketServer).toHaveBeenCalledWith({
-        port: 3002,
+        port: 0, // Dynamic port allocation
         host: 'localhost',
       });
       

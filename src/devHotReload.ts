@@ -156,7 +156,7 @@ export class DevHotReload extends EventEmitter {
     
     this.config = {
       enabled: true,
-      port: 3002,
+      port: config.port || 0, // Use 0 for dynamic port allocation
       host: 'localhost',
       debounceMs: 300,
       includeSourceMaps: true,

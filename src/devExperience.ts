@@ -500,7 +500,7 @@ export class DevExperienceManager extends EventEmitter {
 
     const hotReloadConfig = (config.dev as any)?.hotReload || {
       enabled: true,
-      port: 3002,
+      port: 0, // Use dynamic port allocation
       host: 'localhost',
       debounceMs: 300,
       watchPatterns: ['src/**/*.css', 'src/**/*.html'],

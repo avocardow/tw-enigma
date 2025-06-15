@@ -6,6 +6,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { createServer } from 'net';
 import { DevExperienceManager } from '../src/devExperience.js';
 import { DevHotReload } from '../src/devHotReload.js';
 import { DevIdeIntegration } from '../src/devIdeIntegration.js';
@@ -13,18 +14,48 @@ import { DevDashboardEnhanced } from '../src/devDashboardEnhanced.js';
 import { DevDashboard } from '../src/devDashboard.js';
 import { EnigmaConfig } from '../src/config.js';
 
+/**
+ * Find an available port starting from the given port number
+ */
+async function findAvailablePort(startPort: number = 3000): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const server = createServer();
+    
+    server.listen(startPort, () => {
+      const port = (server.address() as any)?.port;
+      server.close(() => {
+        resolve(port);
+      });
+    });
+    
+    server.on('error', (err: any) => {
+      if (err.code === 'EADDRINUSE') {
+        // Try next port
+        findAvailablePort(startPort + 1).then(resolve).catch(reject);
+      } else {
+        reject(err);
+      }
+    });
+  });
+}
+
 describe('DevExperienceManager', () => {
   let devExperience: DevExperienceManager;
   let mockConfig: EnigmaConfig;
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    // Use dynamic port allocation to prevent conflicts
+    const serverPort = await findAvailablePort(3000);
+    const dashboardPort = await findAvailablePort(serverPort + 1);
+    const hotReloadPort = await findAvailablePort(dashboardPort + 1);
+
     mockConfig = {
       dev: {
         enabled: true,
         watch: true,
         server: {
           enabled: true,
-          port: 3000,
+          port: serverPort,
           host: 'localhost',
           open: false,
         },
@@ -49,12 +80,17 @@ describe('DevExperienceManager', () => {
         },
         dashboard: {
           enabled: true,
-          port: 3001,
+          port: dashboardPort,
           host: 'localhost',
           updateInterval: 1000,
           showMetrics: true,
           showLogs: true,
           maxLogEntries: 100,
+        },
+        hotReload: {
+          enabled: true,
+          port: hotReloadPort,
+          host: 'localhost',
         },
       },
     } as EnigmaConfig;
@@ -503,14 +539,19 @@ describe('Integration Tests', () => {
   let ideIntegration: DevIdeIntegration;
   let mockConfig: EnigmaConfig;
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    // Use dynamic port allocation to prevent conflicts
+    const serverPort = await findAvailablePort(4000);
+    const dashboardPort = await findAvailablePort(serverPort + 1);
+    const hotReloadPort = await findAvailablePort(dashboardPort + 1);
+
     mockConfig = {
       dev: {
         enabled: true,
         watch: true,
         server: {
           enabled: true,
-          port: 3000,
+          port: serverPort,
           host: 'localhost',
           open: false,
         },
@@ -535,12 +576,17 @@ describe('Integration Tests', () => {
         },
         dashboard: {
           enabled: true,
-          port: 3001,
+          port: dashboardPort,
           host: 'localhost',
           updateInterval: 1000,
           showMetrics: true,
           showLogs: true,
           maxLogEntries: 100,
+        },
+        hotReload: {
+          enabled: true,
+          port: hotReloadPort,
+          host: 'localhost',
         },
       },
     } as EnigmaConfig;
