@@ -518,7 +518,19 @@ export class DevExperienceManager extends EventEmitter {
     try {
       // Initialize diagnostics if performance monitoring is enabled
       if (this.config.enablePerformanceMonitoring) {
-        this.tools.diagnostics = new DevDiagnostics(config);
+        this.tools.diagnostics = new DevDiagnostics({
+          enabled: true,
+          performance: true,
+          memory: true,
+          fileWatcher: this.config.enableFileWatcher,
+          classAnalysis: true,
+          thresholds: {
+            memoryWarning: this.config.performance.memoryThreshold || 512,
+            memoryError: 1024,
+            cpuWarning: this.config.performance.cpuThreshold || 80,
+            cpuError: 95,
+          },
+        });
       }
 
       // Initialize dashboard if enabled
@@ -528,7 +540,7 @@ export class DevExperienceManager extends EventEmitter {
 
       // Initialize preview if real-time preview is enabled
       if (this.config.enableRealTimePreview && config.dev?.preview) {
-        this.tools.preview = new DevPreview(config.dev.preview, config);
+        this.tools.preview = new DevPreview(config.dev.preview);
       }
 
       // Initialize debug utils if debug console is enabled

@@ -1999,7 +1999,7 @@ export class JSRewriter {
           : rule.pattern.flags + "g",
       );
 
-      let match;
+      let match: RegExpExecArray | null;
       while ((match = globalPattern.exec(text)) !== null) {
         const matchedText = match[0];
         const start = match.index;
@@ -2030,7 +2030,7 @@ export class JSRewriter {
           // Handle capture group replacements for string patterns
           replacement = rule.replacement.replace(/\$(\d+)/g, (_, groupNum) => {
             const groupIndex = parseInt(groupNum, 10);
-            return match[groupIndex] || '';
+            return match?.[groupIndex] || '';
           });
         }
 
@@ -2137,7 +2137,7 @@ export class JSRewriter {
     }
 
     // Walk up the AST to check for TypeScript type contexts
-    let current = nodePath.parent;
+    let current: any = nodePath.parent;
     let depth = 0;
     const maxDepth = 5; // Prevent infinite loops
 

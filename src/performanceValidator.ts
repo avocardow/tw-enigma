@@ -491,7 +491,7 @@ export class PerformanceValidator extends EventEmitter {
     const recommendations: PerformanceRecommendation[] = [];
     
     // Memory optimization recommendations
-    const memoryLimit = this.parseMemoryLimit(this.config.performance?.maxMemoryUsage || '256MB');
+    const memoryLimit = this.parseMemoryLimit('256MB'); // Default since performance.maxMemoryUsage doesn't exist
     const optimalMemory = Math.min(this.systemResources.freeMemory * 0.6, 2 * 1024 * 1024 * 1024); // Max 2GB
     
     if (memoryLimit < optimalMemory * 0.5) {
@@ -508,20 +508,20 @@ export class PerformanceValidator extends EventEmitter {
     
     // Concurrency optimization
     const optimalConcurrency = Math.min(this.systemResources.cpuCores, 8);
-    if ((this.config.concurrency || 1) < optimalConcurrency) {
+    if ((this.config.maxConcurrency || 1) < optimalConcurrency) {
       recommendations.push({
         type: 'configuration',
         priority: 'high',
         title: 'Optimize Concurrency',
         description: 'Increase concurrency to better utilize available CPU cores',
         impact: 'Significantly faster processing for large projects',
-        implementation: `Set concurrency to ${optimalConcurrency}`,
+        implementation: `Set maxConcurrency to ${optimalConcurrency}`,
         estimatedImprovement: 30
       });
     }
     
     // Cache optimization
-    if (!this.config.cacheDir) {
+    if (!this.config.output) { // Use output as a proxy for cache configuration
       recommendations.push({
         type: 'configuration',
         priority: 'high',
