@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/15</span>
+                <span class='fraction'>15/15</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>1/1</span>
+                <span class='fraction'>0/0</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>1/1</span>
+                <span class='fraction'>0/0</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/15</span>
+                <span class='fraction'>15/15</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -890,21 +890,21 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1325,21 +1325,21 @@ export interface BatchOperationResult {
 }
 &nbsp;
 /** Error types for atomic operations */
-<span class="cstat-no" title="statement not covered" >export const AtomicOperationError = {</span>
-<span class="cstat-no" title="statement not covered" >  FILE_NOT_FOUND: "FILE_NOT_FOUND",</span>
-<span class="cstat-no" title="statement not covered" >  PERMISSION_DENIED: "PERMISSION_DENIED",</span>
-<span class="cstat-no" title="statement not covered" >  TEMP_FILE_CREATION_FAILED: "TEMP_FILE_CREATION_FAILED",</span>
-<span class="cstat-no" title="statement not covered" >  WRITE_FAILED: "WRITE_FAILED",</span>
-<span class="cstat-no" title="statement not covered" >  FSYNC_FAILED: "FSYNC_FAILED",</span>
-<span class="cstat-no" title="statement not covered" >  RENAME_FAILED: "RENAME_FAILED",</span>
-<span class="cstat-no" title="statement not covered" >  CLEANUP_FAILED: "CLEANUP_FAILED",</span>
-<span class="cstat-no" title="statement not covered" >  TIMEOUT: "TIMEOUT",</span>
-<span class="cstat-no" title="statement not covered" >  ROLLBACK_FAILED: "ROLLBACK_FAILED",</span>
-<span class="cstat-no" title="statement not covered" >  WAL_CORRUPTION: "WAL_CORRUPTION",</span>
-<span class="cstat-no" title="statement not covered" >  INVALID_OPERATION: "INVALID_OPERATION",</span>
-<span class="cstat-no" title="statement not covered" >  DISK_FULL: "DISK_FULL",</span>
-<span class="cstat-no" title="statement not covered" >  LOCK_FAILED: "LOCK_FAILED",</span>
-<span class="cstat-no" title="statement not covered" >} as const;</span>
+export const AtomicOperationError = {
+  FILE_NOT_FOUND: "FILE_NOT_FOUND",
+  PERMISSION_DENIED: "PERMISSION_DENIED",
+  TEMP_FILE_CREATION_FAILED: "TEMP_FILE_CREATION_FAILED",
+  WRITE_FAILED: "WRITE_FAILED",
+  FSYNC_FAILED: "FSYNC_FAILED",
+  RENAME_FAILED: "RENAME_FAILED",
+  CLEANUP_FAILED: "CLEANUP_FAILED",
+  TIMEOUT: "TIMEOUT",
+  ROLLBACK_FAILED: "ROLLBACK_FAILED",
+  WAL_CORRUPTION: "WAL_CORRUPTION",
+  INVALID_OPERATION: "INVALID_OPERATION",
+  DISK_FULL: "DISK_FULL",
+  LOCK_FAILED: "LOCK_FAILED",
+} as const;
 &nbsp;
 export type AtomicOperationError = typeof AtomicOperationError[keyof typeof AtomicOperationError];
 &nbsp;
@@ -1375,7 +1375,7 @@ export interface AtomicOperationResultMetadata {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-06-15T05:08:12.825Z
+                at 2025-06-15T05:36:39.793Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

@@ -474,12 +474,57 @@ export class AtomicFileWriter {
   private async rollbackFiles(filePaths: string[]): Promise<void> {
     for (const filePath of filePaths) {
       try {
-        await fs.unlink(filePath);
+        // On Windows, files might be locked, so retry with delay
+        await this.retryFileOperation(async () => {
+          await fs.unlink(filePath);
+        }, 3, 100);
       } catch (error) {
         // Log but don't throw - rollback should be best effort
         console.warn(`Failed to rollback file ${filePath}:`, error);
       }
     }
+  }
+
+  /**
+   * Retries a file operation with exponential backoff
+   * @param operation - The operation to retry
+   * @param maxRetries - Maximum number of retries
+   * @param baseDelay - Base delay in milliseconds
+   */
+  private async retryFileOperation<T>(
+    operation: () => Promise<T>,
+    maxRetries: number = 3,
+    baseDelay: number = 100,
+  ): Promise<T> {
+    let lastError: Error | undefined;
+    
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        return await operation();
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error));
+        
+        // Don't retry on the last attempt
+        if (attempt === maxRetries) {
+          break;
+        }
+        
+        // Check if it's a retryable error (file locked, permission issues)
+        const isRetryable = lastError.message.includes('EBUSY') || 
+                           lastError.message.includes('EPERM') ||
+                           lastError.message.includes('EACCES');
+        
+        if (!isRetryable) {
+          break;
+        }
+        
+        // Wait with exponential backoff
+        const delay = baseDelay * Math.pow(2, attempt);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+    
+    throw lastError;
   }
 
   /**

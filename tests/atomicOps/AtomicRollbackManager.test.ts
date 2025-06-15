@@ -25,13 +25,28 @@ describe("AtomicRollbackManager", () => {
   afterEach(async () => {
     await manager.shutdown();
 
-    // Clean up test directory
-    try {
-      await fs.rm(testDir, { recursive: true });
-    } catch {
-      // Ignore cleanup errors
-    }
+    // Clean up test directory with retry for Windows
+    await cleanupTestDirectoryWithRetry(testDir);
   });
+
+  // Helper function for robust test directory cleanup on Windows
+  async function cleanupTestDirectoryWithRetry(dir: string, maxRetries: number = 3): Promise<void> {
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        await fs.rm(dir, { recursive: true, force: true });
+        return;
+      } catch (error) {
+        if (attempt === maxRetries - 1) {
+          // On final attempt, just log and continue
+          console.warn(`Failed to cleanup test directory ${dir}:`, error);
+          return;
+        }
+        
+        // Wait before retry (Windows file locking issues)
+        await new Promise(resolve => setTimeout(resolve, 100 * (attempt + 1)));
+      }
+    }
+  }
 
   describe("Transaction Management", () => {
     it("should create new transaction with unique ID", () => {

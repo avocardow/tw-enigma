@@ -63,7 +63,7 @@ describe("AtomicFileWriter", () => {
   afterEach(async () => {
     await writer.cleanup();
 
-    // Clean up any test files
+    // Clean up any test files with retry for Windows
     const filesToClean = [
       TEST_FILE,
       TEST_JSON_FILE,
@@ -71,26 +71,49 @@ describe("AtomicFileWriter", () => {
       APPEND_FILE,
       LARGE_FILE,
     ];
+    
     for (const file of filesToClean) {
-      try {
-        await fs.unlink(file);
-      } catch {
-        // Ignore errors - file might not exist
-      }
+      await cleanupFileWithRetry(file);
     }
 
-    // Clean up backup files
+    // Clean up backup files with retry
     try {
       const files = await fs.readdir(TEST_DIR);
       for (const file of files) {
         if (file.includes(".backup-") || file.startsWith(".tmp-")) {
-          await fs.unlink(path.join(TEST_DIR, file));
+          await cleanupFileWithRetry(path.join(TEST_DIR, file));
         }
       }
     } catch {
       // Ignore errors
     }
   });
+
+  // Helper function for robust file cleanup on Windows
+  async function cleanupFileWithRetry(filePath: string, maxRetries: number = 3): Promise<void> {
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        await fs.unlink(filePath);
+        return;
+      } catch (error) {
+        if (attempt === maxRetries - 1) {
+          // On final attempt, just continue (file might not exist)
+          return;
+        }
+        
+        // Check if it's a retryable error (Windows file locking)
+        const isRetryable = error && typeof error === 'object' && 'code' in error &&
+          (error.code === 'EBUSY' || error.code === 'EPERM' || error.code === 'EACCES');
+        
+        if (!isRetryable) {
+          return; // Not retryable, just continue
+        }
+        
+        // Wait before retry
+        await new Promise(resolve => setTimeout(resolve, 50 * (attempt + 1)));
+      }
+    }
+  }
 
   describe("Basic File Writing", () => {
     it("should write a new file successfully", async () => {
@@ -326,9 +349,14 @@ describe("AtomicFileWriter", () => {
     });
 
     it("should handle mixed success/failure in batch", async () => {
+      // Create a cross-platform invalid path
+      const invalidPath = process.platform === "win32" 
+        ? "Z:\\nonexistent\\invalid\\path\\file.txt"
+        : "/invalid/path/file.txt";
+      
       const files = [
         { path: TEST_FILE, content: TEST_CONTENT },
-        { path: "/invalid/path/file.txt", content: "invalid" }, // This will fail
+        { path: invalidPath, content: "invalid" }, // This will fail
         { path: TEST_JSON_FILE, content: JSON.stringify(TEST_JSON_DATA) },
       ];
 
@@ -341,9 +369,14 @@ describe("AtomicFileWriter", () => {
     });
 
     it("should stop on error when configured", async () => {
+      // Create a cross-platform invalid path
+      const invalidPath = process.platform === "win32" 
+        ? "Z:\\nonexistent\\invalid\\path\\file.txt"
+        : "/invalid/path/file.txt";
+      
       const files = [
         { path: TEST_FILE, content: TEST_CONTENT },
-        { path: "/invalid/path/file.txt", content: "invalid" },
+        { path: invalidPath, content: "invalid" },
         { path: TEST_JSON_FILE, content: JSON.stringify(TEST_JSON_DATA) },
       ];
 

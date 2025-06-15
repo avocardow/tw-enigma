@@ -210,7 +210,26 @@ export class AtomicRollbackManager {
   ): Promise<AtomicOperationResult> {
     const transaction = this.activeTransactions.get(transactionId);
     if (!transaction) {
-      throw new Error(`Transaction ${transactionId} not found`);
+      return {
+        success: false,
+        operation: "delete",
+        filePath: "",
+        bytesProcessed: 0,
+        duration: 0,
+        error: {
+          code: "TRANSACTION_NOT_FOUND",
+          message: `Transaction ${transactionId} not found`,
+        },
+        metadata: {
+          startTime: Date.now(),
+          endTime: Date.now(),
+          fsyncUsed: false,
+          retryAttempts: 0,
+          walUsed: false,
+          backupCreated: false,
+          checksumVerified: false,
+        },
+      };
     }
 
     const startTime = Date.now();
