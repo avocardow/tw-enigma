@@ -855,9 +855,6 @@ export class AtomicFileWriter {
       // On Windows, verify the permissions were set correctly
       // Windows may not support all Unix permission bits
       if (process.platform === "win32") {
-        const stats = await fs.stat(filePath);
-        const actualMode = stats.mode & 0o777;
-        
         // Windows typically only supports read/write flags effectively
         // If we expected 0o755 or 0o644, Windows might set 0o666 or similar
         // This is normal behavior and shouldn't be treated as an error
