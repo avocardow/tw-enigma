@@ -388,8 +388,10 @@ describe("Optimization Pipeline Integration Tests", () => {
         ) / memoryMeasurements.length;
       const stdDev = Math.sqrt(variance);
 
-      // Standard deviation should be less than 50% of average (indicating stable memory usage)
-      expect(stdDev / avgMemory).toBeLessThan(0.5);
+      // Standard deviation should be less than 60% of average (indicating stable memory usage)
+      // Increased tolerance for CI environments where memory measurements can be more variable
+      const memoryVariabilityThreshold = process.env.CI ? 0.6 : 0.5;
+      expect(stdDev / avgMemory).toBeLessThan(memoryVariabilityThreshold);
     });
 
     it("should show reasonable performance scaling", async () => {

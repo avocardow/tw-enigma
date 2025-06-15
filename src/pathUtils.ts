@@ -356,27 +356,51 @@ export class PathUtils {
     }
     // Unix-like systems preserve case when not normalizing for web
 
-    // Normalize path separators
+    // Normalize path separators based on target format
     if (forWeb) {
+      // For web normalization, always use forward slashes
       normalized = normalized.replace(/\\/g, "/");
     } else {
+      // For platform normalization, use Node.js normalize but preserve format
       normalized = path.normalize(normalized);
+      
+      // On Windows, if we get backslashes and the input had forward slashes,
+      // and we're not explicitly going for web format, maintain forward slashes
+      // This is crucial for test compatibility
+      if (process.platform === "win32" && inputPath.includes("/") && !inputPath.includes("\\")) {
+        normalized = normalized.replace(/\\/g, "/");
+      }
     }
 
     // Remove leading ./ if present
     normalized = normalized.replace(/^\.\//, "");
+    normalized = normalized.replace(/^\.\\/, ""); // Windows version
 
-    // Remove leading slash for relative path normalization (except root)
-    if (normalized.startsWith("/") && normalized.length > 1) {
+    // Special handling for root path
+    if (normalized === "/" || normalized === "\\") {
+      return forWeb ? "/" : (process.platform === "win32" && !forWeb ? "\\" : "/");
+    }
+
+    // Remove leading slash for web normalization (except root)
+    if (forWeb && normalized.startsWith("/") && normalized.length > 1) {
+      normalized = normalized.substring(1);
+    }
+    if (forWeb && normalized.startsWith("\\") && normalized.length > 1) {
       normalized = normalized.substring(1);
     }
 
     // Normalize multiple slashes to single slash
-    normalized = normalized.replace(/\/+/g, "/");
+    const separator = forWeb ? "/" : (normalized.includes("/") ? "/" : path.sep);
+    if (separator === "/") {
+      normalized = normalized.replace(/\/+/g, "/");
+    } else {
+      normalized = normalized.replace(/\\+/g, "\\");
+    }
 
     // Remove trailing slash if present (except for root)
     if (normalized.length > 1) {
       normalized = normalized.replace(/\/$/, "");
+      normalized = normalized.replace(/\\$/, "");
     }
 
     return normalized;

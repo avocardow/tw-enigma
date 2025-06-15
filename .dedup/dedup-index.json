@@ -1,15 +1,15 @@
 {
   "version": "1.0.0",
   "totalEntries": 1,
-  "spaceSaved": 17500,
-  "lastUpdated": "2025-06-15T05:36:27.816Z",
+  "spaceSaved": 21500,
+  "lastUpdated": "2025-06-15T05:58:16.098Z",
   "entries": {
     "c38c2bf3055c516a98ac5d97f30e7c364e827bc0199e1c3415b794afbe55dcad": {
       "hash": "c38c2bf3055c516a98ac5d97f30e7c364e827bc0199e1c3415b794afbe55dcad",
       "algorithm": "sha256",
       "size": 500,
       "storagePath": "/Users/rowan/github/tw-enigma/core/.dedup/c38c2bf3055c516a98ac5d97f30e7c364e827bc0199e1c3415b794afbe55dcad.txt",
-      "referenceCount": 36,
+      "referenceCount": 44,
       "referencePaths": [
         "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749894249144/test1.txt",
         "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749894249144/test2.txt",
@@ -46,17 +46,25 @@
         "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749965176955/test1.txt",
         "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749965176955/test2.txt",
         "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749965787776/test1.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749965787776/test2.txt"
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749965787776/test2.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749966429421/test1.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749966429421/test2.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749966713593/test1.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749966713593/test2.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749966968583/test1.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749966968583/test2.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749967096057/test1.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749967096057/test2.txt"
       ],
       "firstSeen": "2025-06-14T09:44:09.146Z",
-      "lastAccessed": "2025-06-15T05:36:27.815Z",
+      "lastAccessed": "2025-06-15T05:58:16.098Z",
       "compressed": false
     }
   },
   "stats": {
-    "totalOriginalSize": 18000,
+    "totalOriginalSize": 22000,
     "totalDeduplicatedSize": 500,
-    "duplicatesFound": 35,
-    "averageReferenceCount": 36
+    "duplicatesFound": 43,
+    "averageReferenceCount": 44
   }
 }

@@ -284,7 +284,9 @@ describe("File Discovery Module", () => {
       const result = discoverFilesSync(options);
 
       expect(result.files).toContain("index.html");
-      expect(result.files).toContain("nested/deep.html");
+      // Handle both Unix and Windows path separators
+      const expectedNestedFile = process.platform === "win32" ? "nested\\deep.html" : "nested/deep.html";
+      expect(result.files).toContain(expectedNestedFile);
       expect(result.count).toBe(2);
     });
 
@@ -346,7 +348,12 @@ describe("File Discovery Module", () => {
       };
       const result = discoverFilesSync(options);
 
-      expect(result.files[0]).toMatch(/^\/.*index\.html$/);
+      // Handle both Unix and Windows absolute path formats
+      if (process.platform === "win32") {
+        expect(result.files[0]).toMatch(/^[A-Za-z]:\\.*index\.html$/);
+      } else {
+        expect(result.files[0]).toMatch(/^\/.*index\.html$/);
+      }
     });
   });
 

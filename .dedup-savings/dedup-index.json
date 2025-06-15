@@ -1,15 +1,15 @@
 {
   "version": "1.0.0",
   "totalEntries": 1,
-  "spaceSaved": 267000,
-  "lastUpdated": "2025-06-15T05:36:28.585Z",
+  "spaceSaved": 327000,
+  "lastUpdated": "2025-06-15T05:58:16.837Z",
   "entries": {
     "e1630f843370f402870799e14abbf2b06af2d23b0153658e1211dffabc61ad8f": {
       "hash": "e1630f843370f402870799e14abbf2b06af2d23b0153658e1211dffabc61ad8f",
       "algorithm": "sha256",
       "size": 3000,
       "storagePath": "/Users/rowan/github/tw-enigma/core/.dedup-savings/e1630f843370f402870799e14abbf2b06af2d23b0153658e1211dffabc61ad8f.txt",
-      "referenceCount": 90,
+      "referenceCount": 110,
       "referencePaths": [
         "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749894249427/integration-tests/duplicate-1.txt",
         "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749894249427/integration-tests/duplicate-2.txt",
@@ -100,17 +100,37 @@
         "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749965788578/integration-tests/duplicate-2.txt",
         "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749965788578/integration-tests/duplicate-3.txt",
         "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749965788578/integration-tests/duplicate-4.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749965788578/integration-tests/duplicate-5.txt"
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749965788578/integration-tests/duplicate-5.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749966430248/integration-tests/duplicate-1.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749966430248/integration-tests/duplicate-2.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749966430248/integration-tests/duplicate-3.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749966430248/integration-tests/duplicate-4.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749966430248/integration-tests/duplicate-5.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749966714646/integration-tests/duplicate-1.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749966714646/integration-tests/duplicate-2.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749966714646/integration-tests/duplicate-3.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749966714646/integration-tests/duplicate-4.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749966714646/integration-tests/duplicate-5.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749966969295/integration-tests/duplicate-1.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749966969295/integration-tests/duplicate-2.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749966969295/integration-tests/duplicate-3.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749966969295/integration-tests/duplicate-4.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749966969295/integration-tests/duplicate-5.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749967096820/integration-tests/duplicate-1.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749967096820/integration-tests/duplicate-2.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749967096820/integration-tests/duplicate-3.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749967096820/integration-tests/duplicate-4.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749967096820/integration-tests/duplicate-5.txt"
       ],
       "firstSeen": "2025-06-14T09:44:09.431Z",
-      "lastAccessed": "2025-06-15T05:36:28.584Z",
+      "lastAccessed": "2025-06-15T05:58:16.837Z",
       "compressed": false
     }
   },
   "stats": {
-    "totalOriginalSize": 270000,
+    "totalOriginalSize": 330000,
     "totalDeduplicatedSize": 3000,
-    "duplicatesFound": 89,
-    "averageReferenceCount": 90
+    "duplicatesFound": 109,
+    "averageReferenceCount": 110
   }
 }

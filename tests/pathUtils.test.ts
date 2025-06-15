@@ -377,6 +377,7 @@ describe("PathUtils", () => {
 
       it("preserves root slash", () => {
         const normalized = pathUtils.normalizePath("/");
+        // On Windows, root path behavior may differ, but for consistency we expect forward slash
         expect(normalized).toBe("/");
       });
     });
