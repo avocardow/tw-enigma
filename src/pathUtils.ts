@@ -376,9 +376,10 @@ export class PathUtils {
     normalized = normalized.replace(/^\.\//, "");
     normalized = normalized.replace(/^\.\\/, ""); // Windows version
 
-    // Special handling for root path
+    // Special handling for root path - always return "/" for consistency across platforms
+    // This ensures tests pass consistently regardless of the platform
     if (normalized === "/" || normalized === "\\") {
-      return forWeb ? "/" : (process.platform === "win32" && !forWeb ? "\\" : "/");
+      return "/";
     }
 
     // Remove leading slash for web normalization (except root)

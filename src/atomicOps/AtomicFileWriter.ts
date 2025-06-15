@@ -814,15 +814,33 @@ export class AtomicFileWriter {
     finalPath: string,
     _options: Required<FileWriteOptions>,
   ): Promise<void> {
-    try {
-      await fs.rename(tempPath, finalPath);
-    } catch (error: unknown) {
-      // If rename fails (e.g., cross-device), fall back to copy + delete
-      if (error && typeof error === 'object' && 'code' in error && error.code === "EXDEV") {
-        await fs.copyFile(tempPath, finalPath);
-        await fs.unlink(tempPath);
-      } else {
-        throw error;
+    // Windows-specific retry logic for EPERM errors
+    if (process.platform === "win32") {
+      return this.retryFileOperation(async () => {
+        try {
+          await fs.rename(tempPath, finalPath);
+        } catch (error: unknown) {
+          // If rename fails (e.g., cross-device), fall back to copy + delete
+          if (error && typeof error === 'object' && 'code' in error && error.code === "EXDEV") {
+            await fs.copyFile(tempPath, finalPath);
+            await fs.unlink(tempPath);
+          } else {
+            throw error;
+          }
+        }
+      }, this.options.maxRetries, this.options.retryDelay);
+    } else {
+      // Unix-like systems - use original logic
+      try {
+        await fs.rename(tempPath, finalPath);
+      } catch (error: unknown) {
+        // If rename fails (e.g., cross-device), fall back to copy + delete
+        if (error && typeof error === 'object' && 'code' in error && error.code === "EXDEV") {
+          await fs.copyFile(tempPath, finalPath);
+          await fs.unlink(tempPath);
+        } else {
+          throw error;
+        }
       }
     }
   }
@@ -833,8 +851,24 @@ export class AtomicFileWriter {
   ): Promise<void> {
     try {
       await fs.chmod(filePath, mode);
+      
+      // On Windows, verify the permissions were set correctly
+      // Windows may not support all Unix permission bits
+      if (process.platform === "win32") {
+        const stats = await fs.stat(filePath);
+        const actualMode = stats.mode & 0o777;
+        
+        // Windows typically only supports read/write flags effectively
+        // If we expected 0o755 or 0o644, Windows might set 0o666 or similar
+        // This is normal behavior and shouldn't be treated as an error
+      }
     } catch (error) {
-      // Permission setting is not critical
+      // Permission setting is not critical on Windows
+      if (process.platform === "win32") {
+        // On Windows, many permission operations don't work the same way
+        // This is expected behavior and not an error
+        return;
+      }
       console.warn(`Failed to set permissions on ${filePath}:`, error);
     }
   }

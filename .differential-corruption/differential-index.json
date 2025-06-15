@@ -1,18 +1,18 @@
 {
   "version": "1.0.0",
   "currentFullBackup": {
-    "id": "backup_1749967096226_sg5mwx",
-    "createdAt": "2025-06-15T05:58:16.226Z",
-    "filePath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749967096213/.backups-corruption/diff-corruption.2025-06-15T05-58-16-226Z.txt.backup",
+    "id": "backup_1749968147895_bw1n2b",
+    "createdAt": "2025-06-15T06:15:47.895Z",
+    "filePath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749968147881/.backups-corruption/diff-corruption.2025-06-15T06-15-47-895Z.txt.backup",
     "size": 33
   },
   "differentialChain": [],
   "cumulativeFileStates": {
-    "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749967096213/diff-corruption.txt": {
-      "filePath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749967096213/diff-corruption.txt",
+    "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749968147881/diff-corruption.txt": {
+      "filePath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749968147881/diff-corruption.txt",
       "size": 33,
-      "mtime": "2025-06-15T05:58:16.226Z",
-      "lastBackup": "2025-06-15T05:58:16.226Z",
+      "mtime": "2025-06-15T06:15:47.895Z",
+      "lastBackup": "2025-06-15T06:15:47.895Z",
       "hasChanged": false
     }
   },
@@ -22,8 +22,8 @@
     "cumulativeSize": 0,
     "cumulativeSizeRatio": 0,
     "totalSpaceSaved": 0,
-    "lastBackupAt": "2025-06-15T05:58:16.226Z",
+    "lastBackupAt": "2025-06-15T06:15:47.895Z",
     "timeSinceFullBackup": 0
   },
-  "lastUpdated": "2025-06-15T05:58:16.226Z"
+  "lastUpdated": "2025-06-15T06:15:47.895Z"
 }

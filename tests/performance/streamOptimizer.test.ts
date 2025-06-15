@@ -42,12 +42,53 @@ describe("StreamOptimizer", () => {
     }
   });
 
-  afterEach(() => {
-    // Cleanup test files
-    if (existsSync(testDir)) {
-      rmSync(testDir, { recursive: true, force: true });
-    }
+  afterEach(async () => {
+    // Enhanced cleanup with retry logic for Windows
+    await cleanupWithRetry(testDir);
   });
+
+  // Helper function for robust cleanup on Windows
+  async function cleanupWithRetry(dir: string, maxRetries: number = 5): Promise<void> {
+    if (!existsSync(dir)) return;
+
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        // Force close any remaining file handles
+        if (global.gc) {
+          global.gc();
+        }
+
+        // Use async removal with force flag
+        await new Promise<void>((resolve, reject) => {
+          // Add a small delay to allow file handles to be released
+          setTimeout(() => {
+            try {
+              rmSync(dir, { recursive: true, force: true });
+              resolve();
+            } catch (error) {
+              reject(error);
+            }
+          }, 50 * (attempt + 1));
+        });
+        return; // Success
+      } catch (error: any) {
+        const isRetryable = error?.code === 'EBUSY' || 
+                           error?.code === 'EPERM' || 
+                           error?.code === 'ENOTEMPTY' ||
+                           error?.code === 'EACCES';
+
+        if (attempt === maxRetries - 1 || !isRetryable) {
+          // On final attempt or non-retryable error, log and continue
+          // Don't fail the test due to cleanup issues
+          console.warn(`Cleanup warning (attempt ${attempt + 1}):`, error?.message || error);
+          return;
+        }
+
+        // Wait longer between retries
+        await new Promise(resolve => setTimeout(resolve, 100 * (attempt + 1)));
+      }
+    }
+  }
 
   describe("constructor", () => {
     it("should initialize with default configuration", () => {

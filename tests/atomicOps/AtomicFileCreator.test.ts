@@ -663,8 +663,11 @@ describe("AtomicFileCreator", () => {
 
   describe("edge cases and error conditions", () => {
     it("should handle invalid file paths gracefully", async () => {
-      const invalidPath =
-        process.platform === "win32" ? "CON" : "/dev/null/invalid";
+      // Use truly invalid paths that will fail on all platforms
+      const invalidPath = process.platform === "win32" 
+        ? "Z:\\nonexistent\\deeply\\nested\\invalid\\path.txt"
+        : "/nonexistent/deeply/nested/invalid/path.txt";
+      
       const result = await creator.createFile(invalidPath, "content");
 
       expect(result.success).toBe(false);

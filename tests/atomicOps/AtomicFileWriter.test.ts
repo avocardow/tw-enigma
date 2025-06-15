@@ -115,6 +115,34 @@ describe("AtomicFileWriter", () => {
     }
   }
 
+  // Helper function for cross-platform permission expectations
+  function expectPermissions(actualMode: number, expectedMode: number): void {
+    if (process.platform === "win32") {
+      // Windows has different permission handling
+      // Common Windows permissions: 0o666 (read/write) or 0o444 (readonly)
+      // For 0o755 (rwxr-xr-x), Windows might give 0o666 (rw-rw-rw-)
+      // For 0o644 (rw-r--r--), Windows might give 0o666 (rw-rw-rw-)  
+      // For 0o600 (rw-------), Windows might give 0o666 (rw-rw-rw-)
+      
+      const isWriteable = (expectedMode & 0o200) !== 0; // Owner write permission
+      const isReadable = (expectedMode & 0o400) !== 0;  // Owner read permission
+      
+      if (isWriteable && isReadable) {
+        // For any read/write permission, Windows typically gives 0o666
+        expect(actualMode).toBe(0o666);
+      } else if (isReadable && !isWriteable) {
+        // For readonly, Windows might give 0o444
+        expect([0o444, 0o666]).toContain(actualMode);
+      } else {
+        // For other cases, accept Windows defaults
+        expect([0o666, 0o644, 0o755, 0o600].includes(actualMode)).toBe(true);
+      }
+    } else {
+      // Unix-like systems should have exact permissions
+      expect(actualMode).toBe(expectedMode);
+    }
+  }
+
   describe("Basic File Writing", () => {
     it("should write a new file successfully", async () => {
       const result = await writer.writeFile(TEST_FILE, TEST_CONTENT);
@@ -176,7 +204,7 @@ describe("AtomicFileWriter", () => {
       expect(result.success).toBe(true);
 
       const stats = await fs.stat(TEST_FILE);
-      expect(stats.mode & 0o777).toBe(0o755);
+      expectPermissions(stats.mode & 0o777, 0o755);
     });
   });
 
@@ -222,7 +250,7 @@ describe("AtomicFileWriter", () => {
       expect(result.success).toBe(true);
 
       const stats = await fs.stat(EXISTING_FILE);
-      expect(stats.mode & 0o777).toBe(0o600);
+      expectPermissions(stats.mode & 0o777, 0o600);
     });
   });
 
@@ -418,7 +446,7 @@ describe("AtomicFileWriter", () => {
 
       // Verify custom permissions were applied
       const stats = await fs.stat(TEST_FILE);
-      expect(stats.mode & 0o777).toBe(0o755);
+      expectPermissions(stats.mode & 0o777, 0o755);
     });
   });
 
@@ -462,8 +490,11 @@ describe("AtomicFileWriter", () => {
       await writer.writeFile(TEST_FILE, TEST_CONTENT);
       await writer.writeJsonFile(TEST_JSON_FILE, TEST_JSON_DATA);
 
-      // Attempt an operation that will fail
-      await writer.writeFile("/invalid/path/file.txt", "content");
+      // Attempt an operation that will fail with a cross-platform invalid path
+      const invalidPath = process.platform === "win32"
+        ? "Z:\\nonexistent\\deeply\\nested\\invalid\\path.txt"
+        : "/nonexistent/deeply/nested/invalid/path.txt";
+      await writer.writeFile(invalidPath, "content");
 
       const metrics = writer.getMetrics();
 
