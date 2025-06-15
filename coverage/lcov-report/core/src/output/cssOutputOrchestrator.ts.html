@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">88.4% </span>
+                <span class="strong">88.41% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>732/828</span>
+                <span class='fraction'>733/829</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">88.4% </span>
+                <span class="strong">88.41% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>732/828</span>
+                <span class='fraction'>733/829</span>
             </div>
         
             
@@ -1288,7 +1288,10 @@
 <a name='L1223'></a><a href='#L1223'>1223</a>
 <a name='L1224'></a><a href='#L1224'>1224</a>
 <a name='L1225'></a><a href='#L1225'>1225</a>
-<a name='L1226'></a><a href='#L1226'>1226</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L1226'></a><a href='#L1226'>1226</a>
+<a name='L1227'></a><a href='#L1227'>1227</a>
+<a name='L1228'></a><a href='#L1228'>1228</a>
+<a name='L1229'></a><a href='#L1229'>1229</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1307,6 +1310,7 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1656,6 +1660,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">27x</span>
 <span class="cline-any cline-yes">28x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">71x</span>
 <span class="cline-any cline-yes">71x</span>
 <span class="cline-any cline-yes">71x</span>
 <span class="cline-any cline-yes">71x</span>
@@ -2543,6 +2549,7 @@ import {
   type AssetHash,
   type OptimizationResult,
   type CompressionResult,
+  type CssCompressionResult,
   type AssetManifest,
 } from "./assetHasher";
 import {
@@ -2598,7 +2605,7 @@ export interface CssOutputResult {
   optimizations: Map&lt;string, OptimizationResult&gt;;
 &nbsp;
   /** Compression results */
-  compressions: Map&lt;string, CompressionResult[]&gt;;
+  compressions: Map&lt;string, CssCompressionResult[]&gt;;
 &nbsp;
   /** Critical CSS extractions */
   criticalCss?: {
@@ -2779,7 +2786,7 @@ export class CssOutputOrchestrator {
     const allChunks: CssChunk[] = [];
     const allHashes = new Map&lt;string, AssetHash&gt;();
     const allOptimizations = new Map&lt;string, OptimizationResult&gt;();
-    const allCompressions = new Map&lt;string, CompressionResult[]&gt;();
+    const allCompressions = new Map&lt;string, CssCompressionResult[]&gt;();
 &nbsp;
     for (const result of results.values()) {
       allChunks.push(...result.chunks);
@@ -2879,9 +2886,11 @@ export class CssOutputOrchestrator {
     const hashes = this.hasher.hashChunks(chunks);
 &nbsp;
     // Step 5: Compress optimized outputs
-    const compressions = new Map&lt;string, CompressionResult[]&gt;();
+    const compressions = new Map&lt;string, CssCompressionResult[]&gt;();
     for (const chunk of chunks) {
-      const compression = await this.compressor.compressChunk(chunk);
+      // Use CssCompressor instead of CompressionEngine for CSS-specific compression
+      const cssCompressor = this.compressor as any; // Cast to access CssCompressor methods
+      const compression = await cssCompressor.compressChunk(chunk);
       compressions.set(chunk.id, compression);
     }
 &nbsp;
@@ -3115,7 +3124,7 @@ export class CssOutputOrchestrator {
   private async writeOutputFiles(
     chunks: CssChunk[],
     optimizations: Map&lt;string, OptimizationResult&gt;,
-    compressions: Map&lt;string, CompressionResult[]&gt;,
+    compressions: Map&lt;string, CssCompressionResult[]&gt;,
     hashes: Map&lt;string, AssetHash&gt;,
     options: CssProcessingOptions,
   ): Promise&lt;string[]&gt; {
@@ -3152,9 +3161,9 @@ export class CssOutputOrchestrator {
         for (const result of compression) {
           const compressedPath = path.join(
             options.outputDir,
-            `${hashedFilename}.${result.type}`,
+            `${hashedFilename}.${result.compressionType}`,
           );
-          await writeFile(compressedPath, result.compressed);
+          await writeFile(compressedPath, result.data || Buffer.from(''));
           outputPaths.push(compressedPath);
         }
       }
@@ -3197,7 +3206,7 @@ export class CssOutputOrchestrator {
     bundle: CssBundle,
     chunks: CssChunk[],
     optimizations: Map&lt;string, OptimizationResult&gt;,
-    compressions: Map&lt;string, CompressionResult[]&gt;,
+    compressions: Map&lt;string, CssCompressionResult[]&gt;,
     processingTime: number,
   ): CssOutputResult["stats"] {
     const originalSize = Buffer.byteLength(bundle.content, "utf8");
@@ -3745,7 +3754,7 @@ export function createDevelopmentOrchestrator(
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-06-15T04:06:15.703Z
+                at 2025-06-15T04:23:48.090Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

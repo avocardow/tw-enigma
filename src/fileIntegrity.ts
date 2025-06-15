@@ -2267,6 +2267,7 @@ export class FileIntegrityValidator {
         return {
           backupType: "skipped",
           backupId: "",
+          parentId: null,
           filesBackedUp: 0,
           filesChanged: 0,
           filesSkipped: 1,

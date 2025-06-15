@@ -1364,25 +1364,25 @@ export class CssMinifier extends CssOptimizer {
 }
 
 /**
- * Class alias for CompressionEngine to maintain API compatibility  
+ * CSS-specific compression engine with enhanced result interface
  */
-export class CssCompressor extends CompressionEngine {
+export class CssCompressor {
+  private config: CompressionConfig;
+
   constructor(config: CompressionConfig) {
-    super(config);
+    this.config = config;
   }
 
   async compressContent(
     content: string,
     filename?: string
   ): Promise<CssCompressionResult[]> {
-    // Access config through parent class method to avoid private property conflict
-    const config = (this as any).config as CompressionConfig;
-    const useType = config.type;
+    const useType = this.config.type;
     const results: CssCompressionResult[] = [];
 
     // Check threshold - if content is too small, skip compression
     const contentSize = Buffer.byteLength(content, 'utf8');
-    if (contentSize < config.threshold) {
+    if (contentSize < this.config.threshold) {
       return results;
     }
 
@@ -1398,7 +1398,7 @@ export class CssCompressor extends CompressionEngine {
             compressedSize: compressedBuffer.length,
             compressionRatio: compressedBuffer.length / contentSize,
             compressionType: 'gzip',
-            compressionLevel: config.level,
+            compressionLevel: this.config.level,
             isMinified: true,
             data: compressedBuffer,
           });
@@ -1416,7 +1416,7 @@ export class CssCompressor extends CompressionEngine {
             compressedSize: compressedBuffer.length,
             compressionRatio: compressedBuffer.length / contentSize,
             compressionType: 'brotli',
-            compressionLevel: config.level,
+            compressionLevel: this.config.level,
             isMinified: true,
             data: compressedBuffer,
           });

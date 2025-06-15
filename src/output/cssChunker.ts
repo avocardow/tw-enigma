@@ -1968,7 +1968,9 @@ if (!_proto.analyzeUsage) {
 
 const _OriginalCssChunker = CssChunker; // preserve original implementation
 
-class PatchedCssChunker extends _OriginalCssChunker {
+class PatchedCssChunker {
+  private config: any;
+
   constructor(config: any) {
     if (
       config?.strategy &&
@@ -1978,7 +1980,7 @@ class PatchedCssChunker extends _OriginalCssChunker {
     ) {
       throw new Error(`Invalid chunking strategy: ${config.strategy}`);
     }
-    const normalisedConfig: any = {
+    this.config = {
       chunking: {
         strategy: config.strategy ?? "hybrid",
         maxChunkSize: config.maxChunkSize ?? config.maxSize ?? 50 * 1024,
@@ -1987,7 +1989,6 @@ class PatchedCssChunker extends _OriginalCssChunker {
         usageThreshold: config.usageThreshold ?? 0.7,
       },
     };
-    super(normalisedConfig as any);
   }
 
   // String-based chunking methods for test compatibility
@@ -2219,7 +2220,8 @@ class PatchedCssChunker extends _OriginalCssChunker {
   }
 
   // Wrapper methods for test compatibility - delegate to string-based implementations
-  chunkBySize(cssContent: string, options?: { routes?: Set<string>; components?: Set<string> }): CssChunk[] {
+  chunkBySize(css: Root | string, options?: { routes?: Set<string>; components?: Set<string> }): CssChunk[] {
+    const cssContent = typeof css === 'string' ? css : css.toString();
     const chunks = this.chunkBySizeString(cssContent);
     
     // Apply route and component metadata if provided
@@ -2234,15 +2236,18 @@ class PatchedCssChunker extends _OriginalCssChunker {
     return chunks;
   }
 
-  chunkByUsage(cssContent: string, usageData?: TestUsageData): CssChunk[] {
+  chunkByUsage(css: Root | string, usageData?: TestUsageData): CssChunk[] {
+    const cssContent = typeof css === 'string' ? css : css.toString();
     return this.chunkByUsageString(cssContent, usageData);
   }
 
-  chunkByRoute(cssContent: string, usageData?: TestUsageData): CssChunk[] {
+  chunkByRoute(css: Root | string, usageData?: TestUsageData): CssChunk[] {
+    const cssContent = typeof css === 'string' ? css : css.toString();
     return this.chunkByRouteString(cssContent, usageData);
   }
 
-  chunkByComponent(cssContent: string, usageData?: TestUsageData): CssChunk[] {
+  chunkByComponent(css: Root | string, usageData?: TestUsageData): CssChunk[] {
+    const cssContent = typeof css === 'string' ? css : css.toString();
     return this.chunkByComponentString(cssContent, usageData);
   }
 

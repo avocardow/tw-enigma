@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">81.05% </span>
+                <span class="strong">81.02% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>1142/1409</span>
+                <span class='fraction'>1140/1407</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">75.57% </span>
+                <span class="strong">77.27% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>198/262</span>
+                <span class='fraction'>204/264</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">81.05% </span>
+                <span class="strong">81.02% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>1142/1409</span>
+                <span class='fraction'>1140/1407</span>
             </div>
         
             
@@ -2217,9 +2217,7 @@
 <a name='L2152'></a><a href='#L2152'>2152</a>
 <a name='L2153'></a><a href='#L2153'>2153</a>
 <a name='L2154'></a><a href='#L2154'>2154</a>
-<a name='L2155'></a><a href='#L2155'>2155</a>
-<a name='L2156'></a><a href='#L2156'>2156</a>
-<a name='L2157'></a><a href='#L2157'>2157</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L2155'></a><a href='#L2155'>2155</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -2822,12 +2820,10 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
@@ -3596,15 +3592,15 @@
 <span class="cline-any cline-yes">2011x</span>
 <span class="cline-any cline-yes">2011x</span>
 <span class="cline-any cline-yes">2011x</span>
-<span class="cline-any cline-yes">13503x</span>
-<span class="cline-any cline-yes">13503x</span>
-<span class="cline-any cline-yes">13503x</span>
+<span class="cline-any cline-yes">12815x</span>
+<span class="cline-any cline-yes">12815x</span>
+<span class="cline-any cline-yes">12815x</span>
 <span class="cline-any cline-yes">1700x</span>
-<span class="cline-any cline-yes">13503x</span>
+<span class="cline-any cline-yes">12815x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">11803x</span>
-<span class="cline-any cline-yes">11803x</span>
-<span class="cline-any cline-yes">13503x</span>
+<span class="cline-any cline-yes">11115x</span>
+<span class="cline-any cline-yes">11115x</span>
+<span class="cline-any cline-yes">12815x</span>
 <span class="cline-any cline-yes">2011x</span>
 <span class="cline-any cline-yes">2011x</span>
 <span class="cline-any cline-yes">2011x</span>
@@ -3956,14 +3952,14 @@
 <span class="cline-any cline-yes">1109x</span>
 <span class="cline-any cline-yes">1109x</span>
 <span class="cline-any cline-yes">1109x</span>
-<span class="cline-any cline-yes">7801x</span>
-<span class="cline-any cline-yes">7801x</span>
-<span class="cline-any cline-yes">7801x</span>
+<span class="cline-any cline-yes">7720x</span>
+<span class="cline-any cline-yes">7720x</span>
+<span class="cline-any cline-yes">7720x</span>
 <span class="cline-any cline-yes">995x</span>
-<span class="cline-any cline-yes">7801x</span>
-<span class="cline-any cline-yes">6806x</span>
-<span class="cline-any cline-yes">6806x</span>
-<span class="cline-any cline-yes">7801x</span>
+<span class="cline-any cline-yes">7720x</span>
+<span class="cline-any cline-yes">6725x</span>
+<span class="cline-any cline-yes">6725x</span>
+<span class="cline-any cline-yes">7720x</span>
 <span class="cline-any cline-yes">1109x</span>
 <span class="cline-any cline-yes">1109x</span>
 <span class="cline-any cline-yes">1109x</span>
@@ -4881,15 +4877,14 @@ export const PRODUCTION_PRESET: Partial&lt;CssOutputConfig&gt; = {
   environment: "production",
   chunking: {
     strategy: "hybrid",
-    maxChunkSize: 50000,
-    minChunkSize: 10000,
+    maxSize: 50000,
+    minSize: 10000,
+    maxChunks: 10,
     targetChunks: 3,
-    enableTreeShaking: true,
-    preserveComments: false,
-    splitVendor: true,
-    splitCritical: true,
-    routeBased: true,
-    componentBased: true,
+    usageThreshold: 0.7,
+    dynamicImports: true,
+    separateVendor: true,
+    inlineCritical: true,
   },
   optimization: {
     minify: true,
@@ -4988,15 +4983,14 @@ export const DEVELOPMENT_PRESET: Partial&lt;CssOutputConfig&gt; = {
   environment: "development",
   chunking: {
     strategy: "size",
-    maxChunkSize: 100000,
-    minChunkSize: 5000,
+    maxSize: 100000,
+    minSize: 5000,
+    maxChunks: 1,
     targetChunks: 1,
-    enableTreeShaking: false,
-    preserveComments: true,
-    splitVendor: false,
-    splitCritical: false,
-    routeBased: false,
-    componentBased: false,
+    usageThreshold: 0.7,
+    dynamicImports: false,
+    separateVendor: false,
+    inlineCritical: false,
   },
   optimization: {
     minify: false,
@@ -5607,8 +5601,8 @@ export function validateCssOutputConfig(config: unknown): CssOutputConfig {
     
     // Check for invalid chunk size ranges before schema processing
     if (configObj.chunking) {
-      const maxChunk = configObj.chunking.<span class="branch-0 cbranch-no" title="branch not covered" >maxChunkSize || configObj.chunking.maxSize;</span>
-      const minChunk = configObj.chunking.<span class="branch-0 cbranch-no" title="branch not covered" >minChunkSize || configObj.chunking.minSize;</span>
+      const maxChunk = configObj.chunking.maxChunkSize || configObj.chunking.maxSize;
+      const minChunk = configObj.chunking.minChunkSize || configObj.chunking.minSize;
       
       if (maxChunk &amp;&amp; minChunk &amp;&amp; minChunk &gt;= maxChunk) {
         throw new Error('minChunkSize must be less than maxChunkSize');
@@ -5638,8 +5632,8 @@ export function validateCssOutputConfig(config: unknown): CssOutputConfig {
 <span class="cstat-no" title="statement not covered" >    }</span>
     
     // Check maxChunkSize vs minChunkSize if both are provided  
-    const maxChunk = validated.chunking.<span class="branch-0 cbranch-no" title="branch not covered" >maxChunkSize || validated.chunking.maxSize;</span>
-    const minChunk = validated.chunking.<span class="branch-0 cbranch-no" title="branch not covered" >minChunkSize || validated.chunking.minSize;</span>
+    const maxChunk = validated.chunking.maxChunkSize || validated.chunking.maxSize;
+    const minChunk = validated.chunking.minChunkSize || validated.chunking.minSize;
     
     if (maxChunk &amp;&amp; minChunk &amp;&amp; minChunk &gt;= maxChunk) <span class="branch-0 cbranch-no" title="branch not covered" >{</span>
 <span class="cstat-no" title="statement not covered" >      throw new Error('minChunkSize must be less than maxChunkSize');</span>
@@ -6538,7 +6532,7 @@ export <span class="fstat-no" title="function not covered" >function generateCon
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-06-15T04:06:15.703Z
+                at 2025-06-15T04:23:48.090Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

@@ -28,6 +28,7 @@ import {
   type AssetHash,
   type OptimizationResult,
   type CompressionResult,
+  type CssCompressionResult,
   type AssetManifest,
 } from "./assetHasher";
 import {
@@ -83,7 +84,7 @@ export interface CssOutputResult {
   optimizations: Map<string, OptimizationResult>;
 
   /** Compression results */
-  compressions: Map<string, CompressionResult[]>;
+  compressions: Map<string, CssCompressionResult[]>;
 
   /** Critical CSS extractions */
   criticalCss?: {
@@ -264,7 +265,7 @@ export class CssOutputOrchestrator {
     const allChunks: CssChunk[] = [];
     const allHashes = new Map<string, AssetHash>();
     const allOptimizations = new Map<string, OptimizationResult>();
-    const allCompressions = new Map<string, CompressionResult[]>();
+    const allCompressions = new Map<string, CssCompressionResult[]>();
 
     for (const result of results.values()) {
       allChunks.push(...result.chunks);
@@ -364,9 +365,11 @@ export class CssOutputOrchestrator {
     const hashes = this.hasher.hashChunks(chunks);
 
     // Step 5: Compress optimized outputs
-    const compressions = new Map<string, CompressionResult[]>();
+    const compressions = new Map<string, CssCompressionResult[]>();
     for (const chunk of chunks) {
-      const compression = await this.compressor.compressChunk(chunk);
+      // Use CssCompressor instead of CompressionEngine for CSS-specific compression
+      const cssCompressor = this.compressor as any; // Cast to access CssCompressor methods
+      const compression = await cssCompressor.compressChunk(chunk);
       compressions.set(chunk.id, compression);
     }
 
@@ -600,7 +603,7 @@ export class CssOutputOrchestrator {
   private async writeOutputFiles(
     chunks: CssChunk[],
     optimizations: Map<string, OptimizationResult>,
-    compressions: Map<string, CompressionResult[]>,
+    compressions: Map<string, CssCompressionResult[]>,
     hashes: Map<string, AssetHash>,
     options: CssProcessingOptions,
   ): Promise<string[]> {
@@ -637,9 +640,9 @@ export class CssOutputOrchestrator {
         for (const result of compression) {
           const compressedPath = path.join(
             options.outputDir,
-            `${hashedFilename}.${result.type}`,
+            `${hashedFilename}.${result.compressionType}`,
           );
-          await writeFile(compressedPath, result.compressed);
+          await writeFile(compressedPath, result.data || Buffer.from(''));
           outputPaths.push(compressedPath);
         }
       }
@@ -682,7 +685,7 @@ export class CssOutputOrchestrator {
     bundle: CssBundle,
     chunks: CssChunk[],
     optimizations: Map<string, OptimizationResult>,
-    compressions: Map<string, CompressionResult[]>,
+    compressions: Map<string, CssCompressionResult[]>,
     processingTime: number,
   ): CssOutputResult["stats"] {
     const originalSize = Buffer.byteLength(bundle.content, "utf8");
