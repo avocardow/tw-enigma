@@ -28,7 +28,7 @@ const logger = createLogger("BatchCoordinator");
 /**
  * Batch job definition
  */
-interface BatchJob<T = unknown, R = unknown> {
+interface BatchJob<T = unknown> {
   id: string;
   type: string;
   input: T;
@@ -98,7 +98,7 @@ interface BatchExecutionOptions {
  */
 type JobProcessor<T = unknown, R = unknown> = (
   input: T,
-  job: BatchJob<T, R>,
+  job: BatchJob<T>,
 ) => Promise<R> | R;
 
 /**
@@ -188,7 +188,7 @@ export class BatchCoordinator extends EventEmitter {
   /**
    * Add a single job to the batch queue
    */
-  addJob<T, R>(job: BatchJob<T, R>): string {
+  addJob<T>(job: BatchJob<T>): string {
     if (!this.processors.has(job.type)) {
       throw new Error(`No processor registered for job type: ${job.type}`);
     }
@@ -234,11 +234,11 @@ export class BatchCoordinator extends EventEmitter {
   /**
    * Add multiple jobs to the batch queue
    */
-  addBatch<T, R>(jobs: Array<Omit<BatchJob<T, R>, "id">>): string[] {
+  addBatch<T>(jobs: Array<Omit<BatchJob<T>, "id">>): string[] {
     const jobIds: string[] = [];
 
     for (const jobData of jobs) {
-      const job: BatchJob<T, R> = {
+      const job: BatchJob<T> = {
         id: `batch-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         ...jobData,
       };
@@ -454,7 +454,7 @@ export class BatchCoordinator extends EventEmitter {
   /**
    * Process a single job with error handling and retries
    */
-  private async processJob<T, R>(job: BatchJob<T, R>): Promise<void> {
+  private async processJob<T, R>(job: BatchJob<T>): Promise<void> {
     const processor = this.processors.get(job.type) as JobProcessor<T, R>;
     if (!processor) {
       throw new Error(`No processor found for job type: ${job.type}`);
@@ -497,7 +497,7 @@ export class BatchCoordinator extends EventEmitter {
    * Execute job with timeout handling
    */
   private async executeJobWithTimeout<T, R>(
-    job: BatchJob<T, R>,
+    job: BatchJob<T>,
     processor: JobProcessor<T, R>,
     startTime: number,
   ): Promise<BatchResult<R>> {

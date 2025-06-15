@@ -14,7 +14,7 @@ import type {
   // ChunkingStrategy - removed, not used
   // CriticalCssStrategy - removed, not used
 } from "./cssOutputConfig";
-import { CssChunker, createCssChunker } from "./cssChunker";
+import { createCssChunker } from "./cssChunker";
 import type { CssChunk } from "./cssChunker";
 import {
   AssetHasher,
