@@ -2,8 +2,8 @@
 
 **Dramatically shrink your HTML and JavaScript bundle sizes by replacing repetitive Tailwind class patterns with short, optimized class names.**
 
-[![npm version](https://badge.fury.io/js/@tw-enigma%2Fcore.svg)](https://badge.fury.io/js/@tw-enigma%2Fcore)
-[![Downloads](https://img.shields.io/npm/dm/@tw-enigma/core.svg)](https://npmjs.org/package/@tw-enigma/core)
+[![npm version](https://badge.fury.io/js/tw-enigma.svg)](https://badge.fury.io/js/tw-enigma)
+[![Downloads](https://img.shields.io/npm/dm/tw-enigma.svg)](https://npmjs.org/package/tw-enigma)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![Tests](https://img.shields.io/badge/tests-1779%20passing-brightgreen.svg)](#)
 
@@ -42,7 +42,7 @@
 
 ```bash
 # 1. Install it
-npm install -g @tw-enigma/core
+npm install -g tw-enigma
 
 # 2. Build your project first
 npm run build
@@ -104,19 +104,19 @@ enigma css-optimize "dist/**/*.{html,js}"
 
 ### Option 1: Global Install (Recommended)
 ```bash
-npm install -g @tw-enigma/core
+npm install -g tw-enigma
 # Then use anywhere: enigma css-optimize ...
 ```
 
 ### Option 2: Project Install
 ```bash
-npm install @tw-enigma/core
+npm install tw-enigma
 # Then use: npx enigma css-optimize ...
 ```
 
 ### Option 3: One-time use
 ```bash
-npx @tw-enigma/core css-optimize "dist/**/*.{html,js}"
+npx tw-enigma css-optimize "dist/**/*.{html,js}"
 ```
 
 ---
@@ -199,7 +199,7 @@ enigma css-optimize
 - name: Build and optimize
   run: |
     npm run build
-    npx @tw-enigma/core css-optimize "dist/**/*.{html,js}"
+    npx tw-enigma css-optimize "dist/**/*.{html,js}"
     
 - name: Deploy optimized build
   uses: actions/deploy@v3
@@ -208,7 +208,7 @@ enigma css-optimize
 ### With Vercel
 ```json
 {
-  "buildCommand": "npm run build && npx @tw-enigma/core css-optimize 'dist/**/*.{html,js}'"
+  "buildCommand": "npm run build && npx tw-enigma css-optimize 'dist/**/*.{html,js}'"
 }
 ```
 
@@ -269,10 +269,10 @@ ls dist/**/*.html
 ### "Command not found: enigma"
 ```bash
 # Install globally first
-npm install -g @tw-enigma/core
+npm install -g tw-enigma
 
 # Or use npx
-npx @tw-enigma/core css-optimize "dist/**/*.html"
+npx tw-enigma css-optimize "dist/**/*.html"
 ```
 
 ### "CSS not working"
