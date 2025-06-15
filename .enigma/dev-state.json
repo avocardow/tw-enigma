@@ -9,32 +9,18 @@
   },
   "sessions": {
     "history": [
-      "debug-mbx95lnr-mao5kz",
-      "debug-mbx95lnr-wtn0xr",
-      "debug-mbx95lnr-yhr17x",
-      "debug-mbx95lnr-skimap",
-      "debug-mbx95lnr-b2qnbb",
-      "debug-mbx98b9t-kidyof",
-      "debug-mbx98baa-d5ui6m",
-      "debug-mbx98bep-vkyw63",
-      "debug-mbx98bep-svy66t",
-      "debug-mbx98bep-ne6ky9",
-      "debug-mbx98bep-ricbjj",
-      "debug-mbx98bep-z7lw81",
-      "debug-mbx9uvki-iarvla",
-      "debug-mbx9uvko-79gj7u",
-      "debug-mbx9uvoq-vdf92j",
-      "debug-mbx9uvoq-0z3w3v",
-      "debug-mbx9uvoq-gukwe4",
-      "debug-mbx9uvoq-iiqwlc",
-      "debug-mbx9uvoq-ye3wz9"
+      "debug-mbxcwf57-loqfgc",
+      "debug-mbxcwf57-g841mz",
+      "debug-mbxcwf57-75ts8t",
+      "debug-mbxcwf57-7c9ns3",
+      "debug-mbxcwf57-d6f3xz"
     ]
   },
   "metrics": {
-    "totalOptimizations": 3,
-    "totalErrors": 3,
+    "totalOptimizations": 1,
+    "totalErrors": 1,
     "averageProcessingTime": 0,
-    "uptime": 1
+    "uptime": 2
   },
   "files": {
     "watched": 0,
