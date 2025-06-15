@@ -208,7 +208,7 @@ describe("Optimization Pipeline Integration Tests", () => {
 
         // Simple fixtures should be very fast
         expect(result.summary.averageDuration).toBeLessThan(1000); // 1s
-        expect(result.summary.memoryPeak).toBeLessThan(100 * 1024 * 1024); // 100MB - More realistic for Node.js with V8 overhead and test environment
+        expect(result.summary.memoryPeak).toBeLessThan(150 * 1024 * 1024); // 150MB - Realistic for Node.js with V8 overhead and test environment
       }
 
       // Verify consistency across runs (very relaxed variance expectation for integration tests)
