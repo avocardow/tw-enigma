@@ -1,4 +1,4 @@
-# Tailwind Enigma Core 🪄
+# Tailwind Enigma �
 
 **Dramatically shrink your HTML and JavaScript bundle sizes by replacing repetitive Tailwind class patterns with short, optimized class names.**
 
@@ -520,7 +520,6 @@ npm run test:e2e           # End-to-end tests
 
 - **🐛 Bug Reports**: [GitHub Issues](https://github.com/avocardow/tw-enigma/issues)
 - **💬 Discussions**: [GitHub Discussions](https://github.com/avocardow/tw-enigma/discussions)
-- **📧 Email**: support@tw-enigma.dev
 
 ---
 
@@ -529,7 +528,3 @@ npm run test:e2e           # End-to-end tests
 MIT License - see [LICENSE](LICENSE) file for details.
 
 ---
-
-**Made with ❤️ by [Rowan Cardow](https://github.com/avocardow)**
-
-*Tailwind Enigma Core - Making the web faster, one pattern at a time.* ⚡

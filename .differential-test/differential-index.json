@@ -1,26 +1,26 @@
 {
   "version": "1.0.0",
   "currentFullBackup": {
-    "id": "backup_1749974239357_g58lup",
-    "createdAt": "2025-06-15T07:57:19.357Z",
-    "filePath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749974239356/.backups/diff-test1.2025-06-15T07-57-19-357Z.txt.backup",
+    "id": "backup_1749976615423_z0otl1",
+    "createdAt": "2025-06-15T08:36:55.423Z",
+    "filePath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749976615422/.backups/diff-test1.2025-06-15T08-36-55-423Z.txt.backup",
     "size": 17
   },
   "differentialChain": [
     {
-      "id": "backup_1749974239358_m3z6b4",
+      "id": "backup_1749976615424_x4vjzy",
       "type": "differential",
-      "baseFullBackupId": "backup_1749974239357_g58lup",
-      "backupPath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749974239356/.backups/diff-test2.2025-06-15T07-57-19-358Z.txt.backup",
-      "originalPath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749974239356/diff-test2.txt",
-      "createdAt": "2025-06-15T07:57:19.358Z",
+      "baseFullBackupId": "backup_1749976615423_z0otl1",
+      "backupPath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749976615422/.backups/diff-test2.2025-06-15T08-36-55-424Z.txt.backup",
+      "originalPath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749976615422/diff-test2.txt",
+      "createdAt": "2025-06-15T08:36:55.424Z",
       "cumulativeFiles": [
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749974239356/diff-test1.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749974239356/diff-test2.txt"
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749976615422/diff-test1.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749976615422/diff-test2.txt"
       ],
       "cumulativeSize": 1000,
       "currentFiles": [
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749974239356/diff-test2.txt"
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749976615422/diff-test2.txt"
       ],
       "currentSize": 1000,
       "changeDetectionMethod": "mtime",
@@ -30,18 +30,18 @@
     }
   ],
   "cumulativeFileStates": {
-    "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749974239356/diff-test1.txt": {
-      "filePath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749974239356/diff-test1.txt",
+    "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749976615422/diff-test1.txt": {
+      "filePath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749976615422/diff-test1.txt",
       "size": 17,
-      "mtime": "2025-06-15T07:57:19.357Z",
-      "lastBackup": "2025-06-15T07:57:19.357Z",
+      "mtime": "2025-06-15T08:36:55.423Z",
+      "lastBackup": "2025-06-15T08:36:55.423Z",
       "hasChanged": false
     },
-    "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749974239356/diff-test2.txt": {
-      "filePath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749974239356/diff-test2.txt",
+    "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749976615422/diff-test2.txt": {
+      "filePath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749976615422/diff-test2.txt",
       "size": 1000,
-      "mtime": "2025-06-15T07:57:19.358Z",
-      "lastBackup": "2025-06-15T07:57:19.358Z",
+      "mtime": "2025-06-15T08:36:55.424Z",
+      "lastBackup": "2025-06-15T08:36:55.424Z",
       "hasChanged": true
     }
   },
@@ -51,8 +51,8 @@
     "cumulativeSize": 1000,
     "cumulativeSizeRatio": 58.8235294117647,
     "totalSpaceSaved": 0,
-    "lastBackupAt": "2025-06-15T07:57:19.358Z",
+    "lastBackupAt": "2025-06-15T08:36:55.424Z",
     "timeSinceFullBackup": 2.7777777777777776e-7
   },
-  "lastUpdated": "2025-06-15T07:57:19.358Z"
+  "lastUpdated": "2025-06-15T08:36:55.424Z"
 }

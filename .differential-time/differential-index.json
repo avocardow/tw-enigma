@@ -1,18 +1,18 @@
 {
   "version": "1.0.0",
   "currentFullBackup": {
-    "id": "backup_1749974239423_z4l95a",
-    "createdAt": "2025-06-15T07:57:19.423Z",
-    "filePath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749974239422/.backups-time/diff-time.2025-06-15T07-57-19-423Z.txt.backup",
+    "id": "backup_1749976615487_7nqa1r",
+    "createdAt": "2025-06-15T08:36:55.487Z",
+    "filePath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749976615485/.backups-time/diff-time.2025-06-15T08-36-55-487Z.txt.backup",
     "size": 29
   },
   "differentialChain": [],
   "cumulativeFileStates": {
-    "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749974239422/diff-time.txt": {
-      "filePath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749974239422/diff-time.txt",
+    "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749976615485/diff-time.txt": {
+      "filePath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1749976615485/diff-time.txt",
       "size": 29,
-      "mtime": "2025-06-15T07:57:19.423Z",
-      "lastBackup": "2025-06-15T07:57:19.423Z",
+      "mtime": "2025-06-15T08:36:55.487Z",
+      "lastBackup": "2025-06-15T08:36:55.487Z",
       "hasChanged": false
     }
   },
@@ -22,8 +22,8 @@
     "cumulativeSize": 0,
     "cumulativeSizeRatio": 0,
     "totalSpaceSaved": 0,
-    "lastBackupAt": "2025-06-15T07:57:19.423Z",
+    "lastBackupAt": "2025-06-15T08:36:55.487Z",
     "timeSinceFullBackup": 0
   },
-  "lastUpdated": "2025-06-15T07:57:19.423Z"
+  "lastUpdated": "2025-06-15T08:36:55.487Z"
 }

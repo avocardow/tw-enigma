@@ -1,6 +1,6 @@
 {
-  "name": "tw-enigma",
-  "version": "1.0.1",
+  "name": "@tw-enigma/core",
+  "version": "1.0.2",
   "description": "A post-build optimizer for Tailwind CSS that bundles utility classes into single, obfuscated identifiers.",
   "author": "Rowan Cardow",
   "license": "MIT",
