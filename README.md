@@ -1,4 +1,4 @@
-# Tailwind Enigma �
+# � Tailwind Enigma �
 
 **Dramatically shrink your HTML and JavaScript bundle sizes by replacing repetitive Tailwind class patterns with short, optimized class names.**
 
