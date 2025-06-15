@@ -1090,7 +1090,7 @@ export class CiIntegration {
    * Check if analysis should fail CI
    */
   shouldFailCi(report: CssAnalysisReport): boolean {
-    const maxEntrypointSize = this.config.reporting?.maxEntrypointSize || 500000; // 500KB default
+    const maxEntrypointSize = this.config.reporting?.budgets?.maxTotalSize || 500000; // 500KB default
     
     // Fail if bundle size exceeds limit
     if (report.summary.totalSize > maxEntrypointSize) {

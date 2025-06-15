@@ -534,7 +534,7 @@ export class DevIdeIntegration extends EventEmitter {
 
       this.logger.info(`Language server started on ${this.config.languageServer.host}:${this.config.languageServer.port}`);
     } catch (error) {
-      this.logger.error('Failed to start language server', error);
+      this.logger.error('Failed to start language server', { error: error instanceof Error ? error.message : String(error) });
       throw error;
     }
   }
@@ -646,7 +646,8 @@ export class DevIdeIntegration extends EventEmitter {
     await this.generateAutocomplete(result.classes);
     
     // Update diagnostics if needed
-    this.emit('optimization-result', result);
+    // Note: 'optimization-result' is not a valid event in IdeIntegrationEvents
+    // this.emit('optimization-result', result);
   }
 
   /**

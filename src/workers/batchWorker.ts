@@ -217,8 +217,8 @@ const taskHandlers = {
     return {
       results,
       totalItems: data.items.length,
-      successCount: results.filter((r) => !r.error).length,
-      errorCount: results.filter((r) => r.error).length,
+      successCount: results.filter((r) => !('error' in r)).length,
+      errorCount: results.filter((r) => 'error' in r).length,
       processingTime: performance.now() - startTime,
     };
   },

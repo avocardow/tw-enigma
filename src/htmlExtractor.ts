@@ -291,7 +291,7 @@ export class HtmlExtractor {
    */
   private calculateDepth($element: cheerio.Cheerio<Node>): number {
     let depth = 0;
-    let current = $element.parent();
+    let current = ($element as any).parent();
 
     while (current.length > 0 && current.prop("tagName") !== "HTML") {
       depth++;

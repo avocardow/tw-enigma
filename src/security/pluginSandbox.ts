@@ -535,7 +535,7 @@ export class PluginSandbox extends EventEmitter {
       return [PluginPermission.READ_FILES, PluginPermission.WRITE_FILES];
     }
 
-    return this.config.permissions;
+    return this.config.permissions as PluginPermission[];
   }
 
   /**

@@ -149,7 +149,7 @@ export function getSystemHealth() {
   const circuitHealth = circuitRegistry.getOverallHealth();
 
   // Determine overall health status
-  let overall = HealthStatus.HEALTHY;
+  let overall: HealthStatus = HealthStatus.HEALTHY;
 
   if (
     analytics.systemHealth === HealthStatus.UNHEALTHY ||

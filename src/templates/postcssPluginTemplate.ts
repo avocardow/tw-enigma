@@ -13,7 +13,7 @@ import { Root, Rule, Declaration, AtRule } from "postcss";
  * Copy this file and modify it to implement your custom PostCSS optimization.
  */
 
-interface MyPostCSSPluginOptions {
+interface MyPostCSSPluginOptions extends Record<string, unknown> {
   // Define your plugin-specific options here
   enabled?: boolean;
   removeComments?: boolean;
@@ -33,7 +33,7 @@ export class MyPostCSSPlugin extends BasePostCSSEnigmaPlugin {
   private options: MyPostCSSPluginOptions;
   private logger = createLogger(`plugin:${this.meta.name}`);
 
-  constructor(config: PluginConfig = {}) {
+  constructor(config: PluginConfig = { name: "my-postcss-plugin" }) {
     super(config);
 
     // Merge default options with provided config
@@ -265,7 +265,7 @@ export default MyPostCSSPlugin;
 export function createMyPostCSSPlugin(
   options: MyPostCSSPluginOptions = {},
 ): MyPostCSSPlugin {
-  return new MyPostCSSPlugin({ options });
+  return new MyPostCSSPlugin({ name: "my-postcss-plugin", options });
 }
 
 /**

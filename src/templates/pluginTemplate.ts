@@ -12,7 +12,7 @@ import { createLogger } from "../logger";
  * Copy this file and modify it to implement your custom plugin.
  */
 
-interface MyCustomPluginOptions {
+interface MyCustomPluginOptions extends Record<string, unknown> {
   // Define your plugin-specific options here
   enabled?: boolean;
   customOption?: string;
@@ -31,7 +31,7 @@ export class MyCustomPlugin extends BaseEnigmaPlugin {
   private options: MyCustomPluginOptions;
   private logger = createLogger(`plugin:${this.meta.name}`);
 
-  constructor(config: PluginConfig = {}) {
+  constructor(config: PluginConfig = { name: "my-custom-plugin" }) {
     super(config);
 
     // Merge default options with provided config
@@ -166,7 +166,7 @@ export default MyCustomPlugin;
 export function createMyCustomPlugin(
   options: MyCustomPluginOptions = {},
 ): MyCustomPlugin {
-  return new MyCustomPlugin({ options });
+  return new MyCustomPlugin({ name: "my-custom-plugin", options });
 }
 
 /**

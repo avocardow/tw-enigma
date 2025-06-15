@@ -21,6 +21,7 @@ import type {
   BuildToolType,
   BuildToolResult,
   BuildPhase,
+  HMRUpdate,
 } from "./buildToolPlugin.ts";
 import type {
   AutoConfigResult,
@@ -484,7 +485,13 @@ export class IntegrationManager extends EventEmitter {
             if (plugin.hooks.onFileChange) {
               await plugin.hooks.onFileChange(filePath, context);
             } else if (plugin.hooks.onHMRUpdate) {
-              await plugin.hooks.onHMRUpdate(filePath, context);
+              const hmrUpdate: HMRUpdate = {
+                filePath,
+                type: filePath.endsWith('.css') ? 'css' : filePath.endsWith('.js') || filePath.endsWith('.ts') ? 'js' : 'asset',
+                content: '', // Content would be read from file in real implementation
+                timestamp: Date.now(),
+              };
+              await plugin.hooks.onHMRUpdate(hmrUpdate, context);
             }
           }
 

@@ -41,5 +41,3 @@ export const pluginUtils: PluginUtils = {
       ),
   },
 };
-
-export type { PluginUtils };

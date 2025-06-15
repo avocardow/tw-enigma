@@ -383,8 +383,8 @@ export abstract class BasePostCSSEnigmaPlugin extends BaseEnigmaPlugin {
     const plugin = this.createPostCSSPlugin();
 
     const result = await postcss.default([plugin]).process(css, {
-      from: context.filePath || "unknown",
-      to: context.filePath || "unknown",
+      from: _context.filePath || "unknown",
+      to: _context.filePath || "unknown",
     });
 
     return result.css;
