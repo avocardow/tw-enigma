@@ -821,6 +821,8 @@ export class UsagePatternAnalyzer {
  *
  * Main class for intelligent CSS chunking and optimization
  */
+// Original CssChunker class - kept for reference but not used directly
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 class CssChunker extends EventEmitter {
   private config: CssOutputConfig;
   private dependencyGraph: DependencyGraph | null = null;
@@ -1965,8 +1967,6 @@ if (!_proto.analyzeUsage) {
 // ---------------------------------------------------------------------------
 // Patched CssChunker compatible with test expectations
 // ---------------------------------------------------------------------------
-
-const _OriginalCssChunker = CssChunker; // preserve original implementation
 
 class PatchedCssChunker {
   private config: any;

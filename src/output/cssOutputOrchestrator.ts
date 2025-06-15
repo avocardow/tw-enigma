@@ -27,7 +27,6 @@ import {
   createManifestGenerator,
   type AssetHash,
   type OptimizationResult,
-  type CompressionResult,
   type CssCompressionResult,
   type AssetManifest,
 } from "./assetHasher";
