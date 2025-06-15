@@ -64,14 +64,14 @@ describe("Enhanced CLI Tests", () => {
       const result = await runCLI(["--version"]);
 
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain("1.0.2");
+      expect(result.stdout).toContain("1.0.3");
     });
 
     it("should display version with -v flag", async () => {
       const result = await runCLI(["-v"]);
 
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain("1.0.2");
+      expect(result.stdout).toContain("1.0.3");
     });
 
     it("should display help with -h flag", async () => {
