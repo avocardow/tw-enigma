@@ -23,6 +23,9 @@ export default defineConfig({
     clearMocks: true,
     restoreMocks: true,
 
+    // Setup files for global configuration
+    setupFiles: ["./tests/setup.ts"],
+
     // Configure test file patterns
     include: ["tests/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
     exclude: ["node_modules", "dist", ".git"],
