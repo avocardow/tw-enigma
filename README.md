@@ -2,9 +2,10 @@
 
 **Dramatically shrink your HTML and JavaScript bundle sizes by replacing repetitive Tailwind class patterns with short, optimized class names.**
 
+[![npm version](https://badge.fury.io/js/@tw-enigma%2Fcore.svg)](https://badge.fury.io/js/@tw-enigma%2Fcore)
+[![Downloads](https://img.shields.io/npm/dm/@tw-enigma/core.svg)](https://npmjs.org/package/@tw-enigma/core)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![Tests](https://img.shields.io/badge/tests-1779%20passing-brightgreen.svg)](#)
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](#)
 
 ---
 
@@ -40,15 +41,14 @@
 ## 30-Second Quick Start ⚡
 
 ```bash
-# 1. Clone and build
-git clone https://github.com/avocardow/tw-enigma.git
-cd tw-enigma/core && npm install && npm run build
+# 1. Install it
+npm install -g @tw-enigma/core
 
 # 2. Build your project first
 npm run build
 
 # 3. Optimize your built files
-node dist/enigma.js css-optimize "dist/**/*.{html,js}"
+enigma css-optimize "dist/**/*.{html,js}"
 
 # Done! Your files now use tiny class names
 ```
@@ -102,27 +102,21 @@ node dist/enigma.js css-optimize "dist/**/*.{html,js}"
 
 ## Installation Options 📦
 
-> **Note:** Package will be available on npm soon! For now, you can clone and build from source.
-
-### Option 1: From Source (Current)
-```bash
-git clone https://github.com/avocardow/tw-enigma.git
-cd tw-enigma/core
-npm install
-npm run build
-# Then use: node dist/enigma.js css-optimize ...
-```
-
-### Option 2: Global Install (Coming Soon)
+### Option 1: Global Install (Recommended)
 ```bash
 npm install -g @tw-enigma/core
 # Then use anywhere: enigma css-optimize ...
 ```
 
-### Option 3: Project Install (Coming Soon)
+### Option 2: Project Install
 ```bash
 npm install @tw-enigma/core
 # Then use: npx enigma css-optimize ...
+```
+
+### Option 3: One-time use
+```bash
+npx @tw-enigma/core css-optimize "dist/**/*.{html,js}"
 ```
 
 ---
@@ -132,28 +126,28 @@ npm install @tw-enigma/core
 ### Basic Optimization
 ```bash
 # Optimize HTML files after build
-node dist/enigma.js css-optimize "dist/**/*.html"
+enigma css-optimize "dist/**/*.html"
 
 # Optimize React/JS files after build
-node dist/enigma.js css-optimize "build/**/*.{js,jsx}"
+enigma css-optimize "build/**/*.{js,jsx}"
 
 # Optimize everything in your build folder
-node dist/enigma.js css-optimize "dist/**/*.{html,js,jsx,tsx}"
+enigma css-optimize "dist/**/*.{html,js,jsx,tsx}"
 ```
 
 ### With Options
 ```bash
 # Use pretty class names (no repeated letters: ab, cd, ef not aa, bb, cc)
-node dist/enigma.js css-optimize "dist/**/*.html" --class-prefix "tw-" --pretty
+enigma css-optimize "dist/**/*.html" --class-prefix "tw-" --pretty
 
 # Custom output location for generated CSS
-node dist/enigma.js css-optimize "dist/**/*.html" --output "dist/optimized.css"
+enigma css-optimize "dist/**/*.html" --output "dist/optimized.css"
 
 # See what it's doing
-node dist/enigma.js css-optimize "dist/**/*.html" --verbose
+enigma css-optimize "dist/**/*.html" --verbose
 
 # Test without making changes
-node dist/enigma.js css-optimize "dist/**/*.html" --dry-run
+enigma css-optimize "dist/**/*.html" --dry-run
 ```
 
 ### Configuration File
@@ -172,7 +166,7 @@ export default {
 
 Then just run:
 ```bash
-node dist/enigma.js css-optimize
+enigma css-optimize
 ```
 
 ---
@@ -194,7 +188,7 @@ node dist/enigma.js css-optimize
 {
   "scripts": {
     "build": "vite build",
-    "optimize": "npm run build && node ../tw-enigma/core/dist/enigma.js css-optimize 'dist/**/*.{html,js}'",
+    "optimize": "npm run build && enigma css-optimize 'dist/**/*.{html,js}'",
     "deploy": "npm run optimize && deploy-to-production"
   }
 }
@@ -202,19 +196,10 @@ node dist/enigma.js css-optimize
 
 ### With GitHub Actions
 ```yaml
-- name: Clone Tailwind Enigma
-  run: git clone https://github.com/avocardow/tw-enigma.git
-
-- name: Build Tailwind Enigma
-  run: |
-    cd tw-enigma/core
-    npm install
-    npm run build
-
 - name: Build and optimize
   run: |
     npm run build
-    node tw-enigma/core/dist/enigma.js css-optimize "dist/**/*.{html,js}"
+    npx @tw-enigma/core css-optimize "dist/**/*.{html,js}"
     
 - name: Deploy optimized build
   uses: actions/deploy@v3
@@ -223,7 +208,7 @@ node dist/enigma.js css-optimize
 ### With Vercel
 ```json
 {
-  "buildCommand": "git clone https://github.com/avocardow/tw-enigma.git && cd tw-enigma/core && npm install && npm run build && cd ../.. && npm run build && node tw-enigma/core/dist/enigma.js css-optimize 'dist/**/*.{html,js}'"
+  "buildCommand": "npm run build && npx @tw-enigma/core css-optimize 'dist/**/*.{html,js}'"
 }
 ```
 
@@ -275,20 +260,19 @@ node dist/enigma.js css-optimize
 ### "No patterns found"
 ```bash
 # Make sure you're running on BUILT files, not source files
-node dist/enigma.js css-optimize "dist/**/*.html" --verbose
+enigma css-optimize "dist/**/*.html" --verbose
 
 # Check your file paths
 ls dist/**/*.html
 ```
 
-### "Command not found: node"
+### "Command not found: enigma"
 ```bash
-# Make sure Node.js is installed
-node --version
+# Install globally first
+npm install -g @tw-enigma/core
 
-# Make sure you're in the tw-enigma/core directory
-pwd
-ls dist/enigma.js
+# Or use npx
+npx @tw-enigma/core css-optimize "dist/**/*.html"
 ```
 
 ### "CSS not working"
@@ -313,10 +297,10 @@ ls dist/enigma.js
 ### Frequency Thresholds
 ```bash
 # Only optimize patterns that appear 5+ times
-node dist/enigma.js css-optimize "dist/**/*.html" --min-frequency 5
+enigma css-optimize "dist/**/*.html" --min-frequency 5
 
 # Analyze pattern frequency first
-node dist/enigma.js css-analyze "dist/**/*.html" --generate-report
+enigma css-analyze "dist/**/*.html" --generate-report
 ```
 
 ### Custom Pattern Detection
