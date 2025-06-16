@@ -34,17 +34,17 @@ export const cliVersion = packageJson.version;
 export const name = packageJson.name;
 
 // Export utilities for use in commands and external packages
-export * from './utils/index.ts';
+export * from './utils/index.js';
 
 // Export command creators for external use
-export * from './commands/index.ts';
+export * from './commands/index.js';
 
 // Export file helpers
-export { CLIUtils } from './utils/cli-helpers.ts';
+export { CLIUtils } from './utils/cli-helpers.js';
 
 // Export CI integration
-export { CiIntegration, createCiIntegration } from './ci-integration.ts';
-export type { CiEnvironment } from './ci-integration.ts';
+export { CiIntegration, createCiIntegration } from './ci-integration.js';
+export type { CiEnvironment } from './ci-integration.js';
 
 // Export Reporter for output formatting
 export type {
@@ -55,7 +55,7 @@ export type {
   ReporterStats,
   SizeReduction,
 } from './reporter';
-export { default as Reporter } from './reporter.ts';
+export { default as Reporter } from './reporter.js';
 
 // Export type definitions
 export type { CssOutputConfig, CssPerformanceReport } from '@tw-enigma/core';

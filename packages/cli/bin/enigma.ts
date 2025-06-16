@@ -9,9 +9,9 @@
 
 import chalk from 'chalk';
 import { Command } from 'commander';
-import { registerCommands } from '../src/commands/index.ts';
-import { cliVersion } from '../src/index.ts';
-import { displayBanner, getPackageInfo } from '../src/utils/index.ts';
+import { registerCommands } from '../src/commands/index.js';
+import { cliVersion } from '../src/index.js';
+import { displayBanner, getPackageInfo } from '../src/utils/index.js';
 
 // Import core version with fallback (synchronous)
 let coreVersion: string = 'unknown';
