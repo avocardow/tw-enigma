@@ -9,14 +9,14 @@ export default defineConfig([
       compilerOptions: {
         incremental: false,
         composite: false,
-      }
+      },
     },
     splitting: false,
     sourcemap: true,
     clean: false,
     target: 'es2020',
     minify: false,
-    external: [],
+    external: ['@tw-enigma/core'],
   },
   // Build bin/enigma.ts with shebang
   {
@@ -26,13 +26,13 @@ export default defineConfig([
       compilerOptions: {
         incremental: false,
         composite: false,
-      }
+      },
     },
     splitting: false,
     sourcemap: true,
     clean: false,
     target: 'es2020',
     minify: false,
-    external: [],
-  }
-]); 
+    external: ['@tw-enigma/core'],
+  },
+]);

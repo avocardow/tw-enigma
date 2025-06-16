@@ -7,12 +7,33 @@
  * providing a command-line interface for tw-enigma CSS optimization.
  */
 
-import { version as coreVersion } from '@tw-enigma/core';
+// Add error handling for unhandled rejections and exceptions
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  process.exit(1);
+});
+
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
+  process.exit(1);
+});
+
 import chalk from 'chalk';
 import { Command } from 'commander';
 import { registerCommands } from '../src/commands';
 import { cliVersion } from '../src/index';
 import { createDefaultCliLogger, displayBanner, getPackageInfo } from '../src/utils';
+
+// Import core version with fallback
+let coreVersion: string = 'unknown';
+try {
+  const { version } = require('@tw-enigma/core');
+  coreVersion = version;
+} catch (error) {
+  // Silent fallback if core package can't be loaded
+  // This can happen in CI environments with Node.js version differences
+  coreVersion = 'unavailable';
+}
 
 // Initialize CLI
 const program = new Command();
@@ -75,8 +96,8 @@ program.action(async (options) => {
       pretty: options.pretty || false,
       input: options.input || null,
       output: options.output || null,
-      minify: options.minify !== false,
-      removeUnused: options.removeUnused !== false,
+      minify: options.minify === 'false' ? false : options.minify !== false,
+      removeUnused: options.removeUnused === 'false' ? false : options.removeUnused !== false,
       format: options.format || 'css',
     };
 
@@ -129,20 +150,12 @@ program
     console.log(`Platform: ${process.platform} ${process.arch}`);
   });
 
-// Error handling
-program.exitOverride();
-
+// Parse command line arguments with error handling
 try {
   program.parse(process.argv);
-} catch (err: any) {
-  if (err.code === 'commander.version') {
-    process.exit(0);
-  } else if (err.code === 'commander.help') {
-    process.exit(0);
-  } else {
-    logger.error(err.message || 'Unknown error occurred');
-    process.exit(1);
-  }
+} catch (error) {
+  console.error('CLI Error:', error);
+  process.exit(1);
 }
 
 // Handle case when no command is specified - the action will handle it
