@@ -34,6 +34,9 @@ try {
 const program = new Command();
 const packageInfo = getPackageInfo();
 
+// Display banner for all CLI invocations
+displayBanner();
+
 // Configure main program
 program.name('enigma').description('tw-enigma CSS optimization tool').helpOption(false); // Disable built-in help to handle it manually
 
@@ -72,7 +75,6 @@ program
   .command('info')
   .description('display version and environment information')
   .action(() => {
-    displayBanner();
     console.log(chalk.blue('tw-enigma CLI Information'));
     console.log(`CLI Version: ${cliVersion}`);
     console.log(`Core Version: ${coreVersion}`);
@@ -83,9 +85,6 @@ program
 
 // Add default action to handle when no subcommand is provided
 program.action((options) => {
-  // Display banner for all successful command executions
-  displayBanner();
-
   // Handle version flag first
   if (options.version) {
     console.log(packageInfo.version);
