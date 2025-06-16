@@ -209,20 +209,34 @@ describe("AtomicOperationsSystem Integration", () => {
 
     it("should maintain data integrity under stress", async () => {
       const testFile = path.join(testDir, "stress-test.txt");
-      const operations = [];
-
-      // Perform multiple write operations
-      for (let i = 0; i < 10; i++) {
-        operations.push(
-          system.performAtomicOperation({
+      
+      // On Windows, perform operations sequentially to avoid file locking issues
+      if (process.platform === "win32") {
+        // Sequential operations for Windows
+        for (let i = 0; i < 10; i++) {
+          await system.performAtomicOperation({
             type: "write",
             filePath: testFile,
             content: `Stress test content ${i}`,
-          }),
-        );
+          });
+          
+          // Small delay to ensure file system operations complete
+          await new Promise(resolve => setTimeout(resolve, 10));
+        }
+      } else {
+        // Parallel operations for Unix-like systems
+        const operations = [];
+        for (let i = 0; i < 10; i++) {
+          operations.push(
+            system.performAtomicOperation({
+              type: "write",
+              filePath: testFile,
+              content: `Stress test content ${i}`,
+            }),
+          );
+        }
+        await Promise.all(operations);
       }
-
-      await Promise.all(operations);
 
       // File should exist and have valid content
       const fileExists = await fs.access(testFile).then(

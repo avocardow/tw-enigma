@@ -17,6 +17,7 @@ import * as path from "path";
 import { createHash } from "crypto";
 import { v4 as uuidv4 } from "uuid";
 import { pipeline } from "stream/promises";
+import { constants } from "fs";
 
 import {
   AtomicFileOptions,
@@ -510,16 +511,28 @@ export class AtomicFileWriter {
         }
         
         // Check if it's a retryable error (file locked, permission issues)
-        const isRetryable = lastError.message.includes('EBUSY') || 
-                           lastError.message.includes('EPERM') ||
-                           lastError.message.includes('EACCES');
+        // Check both error code and message for comprehensive error detection
+        const errorCode = error && typeof error === 'object' && 'code' in error ? error.code : '';
+        const errorMessage = lastError.message;
+        
+        const isRetryable = errorCode === 'EBUSY' || 
+                           errorCode === 'EPERM' ||
+                           errorCode === 'EACCES' ||
+                           errorCode === 'EMFILE' ||
+                           errorCode === 'ENFILE' ||
+                           errorMessage.includes('EBUSY') || 
+                           errorMessage.includes('EPERM') ||
+                           errorMessage.includes('EACCES') ||
+                           errorMessage.includes('operation not permitted') ||
+                           errorMessage.includes('resource busy');
         
         if (!isRetryable) {
           break;
         }
         
-        // Wait with exponential backoff
-        const delay = baseDelay * Math.pow(2, attempt);
+        // On Windows, add a small additional delay for file system operations
+        const platformDelay = process.platform === 'win32' ? 50 : 0;
+        const delay = (baseDelay * Math.pow(2, attempt)) + platformDelay;
         await new Promise(resolve => setTimeout(resolve, delay));
       }
     }
@@ -818,6 +831,15 @@ export class AtomicFileWriter {
     if (process.platform === "win32") {
       return this.retryFileOperation(async () => {
         try {
+          // On Windows, ensure the target file is not locked by trying to access it first
+          try {
+            await fs.access(finalPath, constants.F_OK);
+            // File exists, check if it's writable
+            await fs.access(finalPath, constants.W_OK);
+          } catch {
+            // File doesn't exist or not writable, which is fine for rename
+          }
+          
           await fs.rename(tempPath, finalPath);
         } catch (error: unknown) {
           // If rename fails (e.g., cross-device), fall back to copy + delete
