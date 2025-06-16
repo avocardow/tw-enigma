@@ -34,7 +34,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v3
         with:
-          version: 8
+          version: 10.10.0
 
       - name: Get pnpm version
         id: pnpm-version
@@ -123,7 +123,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v3
         with:
-          version: 8
+          version: 10.10.0
 
       - name: Restore node_modules
         uses: actions/cache@v4
@@ -172,7 +172,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v3
         with:
-          version: 8
+          version: 10.10.0
 
       - name: Restore node_modules
         uses: actions/cache@v4
@@ -218,7 +218,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v3
         with:
-          version: 8
+          version: 10.10.0
 
       - name: Restore node_modules
         uses: actions/cache@v4
@@ -295,7 +295,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v3
         with:
-          version: 8
+          version: 10.10.0
 
       - name: Restore node_modules
         uses: actions/cache@v4
@@ -362,7 +362,7 @@ jobs:
     if: github.event_name == 'push' || github.event.pull_request.draft == false
     strategy:
       matrix:
-        node-version: ['20.x']  # Only run E2E on latest stable
+        node-version: ['20.x'] # Only run E2E on latest stable
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -377,7 +377,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v3
         with:
-          version: 8
+          version: 10.10.0
 
       - name: Restore node_modules
         uses: actions/cache@v4
@@ -417,7 +417,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v3
         with:
-          version: 8
+          version: 10.10.0
 
       - name: Restore node_modules
         uses: actions/cache@v4
@@ -432,7 +432,7 @@ jobs:
         run: pnpm audit --audit-level moderate
 
       - name: Run license check
-        run: pnpm turbo license-check || true  # Non-blocking for now
+        run: pnpm turbo license-check || true # Non-blocking for now
 
   # Job 8: Performance benchmarks (optional, on main branch only)
   performance:
@@ -454,7 +454,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v3
         with:
-          version: 8
+          version: 10.10.0
 
       - name: Restore node_modules
         uses: actions/cache@v4
@@ -475,7 +475,7 @@ jobs:
           fail-on-cache-miss: true
 
       - name: Run performance benchmarks
-        run: pnpm turbo benchmark || true  # Non-blocking for now
+        run: pnpm turbo benchmark || true # Non-blocking for now
 
       - name: Upload benchmark results
         uses: actions/upload-artifact@v4
@@ -512,10 +512,10 @@ jobs:
           echo "| Build | ${{ needs.build.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Test | ${{ needs.test.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Security | ${{ needs.security.result }} |" >> $GITHUB_STEP_SUMMARY
-          
+
           if [[ "${{ needs.lint.result }}" == "failure" || "${{ needs.type-check.result }}" == "failure" || "${{ needs.build.result }}" == "failure" || "${{ needs.test.result }}" == "failure" ]]; then
             echo "❌ CI pipeline failed"
             exit 1
           else
             echo "✅ CI pipeline passed"
-          fi 
+          fi
