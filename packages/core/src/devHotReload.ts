@@ -5,13 +5,13 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { EventEmitter } from "events";
-import { watch, FSWatcher } from "chokidar";
-import { createLogger, Logger } from "./utils/logger";
-import { EnigmaConfig } from "./config";
-import { readFile } from "fs/promises";
-import { extname } from "path";
-import { createHash } from "crypto";
+import { EventEmitter } from 'events';
+import { watch, FSWatcher } from 'chokidar';
+import { createLogger, Logger } from './utils/logger';
+import { EnigmaConfig } from './config';
+import { readFile } from 'fs/promises';
+import { extname } from 'path';
+import { createHash } from 'crypto';
 
 /**
  * Hot reload configuration
@@ -124,7 +124,7 @@ export interface HotReloadEvents {
   'client-disconnected': (clientId: string) => void;
   'css-updated': (cssPath: string, changes: any) => void;
   'reload-requested': (type: 'full' | 'css' | 'partial', files: string[]) => void;
-  'error': (error: Error) => void;
+  error: (error: Error) => void;
   'performance-warning': (metric: string, value: number) => void;
 }
 
@@ -153,7 +153,7 @@ export class DevHotReload extends EventEmitter {
     private optimizationCallback?: (files: string[]) => Promise<any>
   ) {
     super();
-    
+
     this.config = {
       enabled: true,
       port: config.port || 0, // Use 0 for dynamic port allocation
@@ -205,10 +205,10 @@ export class DevHotReload extends EventEmitter {
       ...config,
     };
 
-    this.logger = createLogger("DevHotReload");
+    this.logger = createLogger('DevHotReload');
     this.startTime = Date.now();
 
-    this.logger.debug("Hot reload system initialized", { config: this.config });
+    this.logger.debug('Hot reload system initialized', { config: this.config });
   }
 
   /**
@@ -216,17 +216,17 @@ export class DevHotReload extends EventEmitter {
    */
   async start(): Promise<void> {
     if (this.isActive) {
-      this.logger.warn("Hot reload system already running");
+      this.logger.warn('Hot reload system already running');
       return;
     }
 
     if (!this.config.enabled) {
-      this.logger.info("Hot reload system disabled");
+      this.logger.info('Hot reload system disabled');
       return;
     }
 
     this.isActive = true;
-    this.logger.info("Starting hot reload system", {
+    this.logger.info('Starting hot reload system', {
       port: this.config.port,
       host: this.config.host,
     });
@@ -240,14 +240,15 @@ export class DevHotReload extends EventEmitter {
         await this.startWebSocketServer();
       }
 
-      this.logger.info("Hot reload system started", {
+      this.logger.info('Hot reload system started', {
         watchPatterns: this.config.watchPatterns.length,
         ignorePatterns: this.config.ignorePatterns.length,
-        wsUrl: this.config.notifyBrowser ? `ws://${this.config.host}:${this.config.port}` : undefined,
+        wsUrl: this.config.notifyBrowser
+          ? `ws://${this.config.host}:${this.config.port}`
+          : undefined,
       });
-
     } catch (error) {
-      this.logger.error("Failed to start hot reload system", { error });
+      this.logger.error('Failed to start hot reload system', { error });
       throw error;
     }
   }
@@ -257,12 +258,12 @@ export class DevHotReload extends EventEmitter {
    */
   async stop(): Promise<void> {
     if (!this.isActive) {
-      this.logger.warn("Hot reload system not running");
+      this.logger.warn('Hot reload system not running');
       return;
     }
 
     this.isActive = false;
-    this.logger.info("Stopping hot reload system");
+    this.logger.info('Stopping hot reload system');
 
     try {
       // Stop file watcher
@@ -288,15 +289,14 @@ export class DevHotReload extends EventEmitter {
         try {
           client.socket.close();
         } catch (error) {
-          this.logger.debug("Error closing client connection", { clientId, error });
+          this.logger.debug('Error closing client connection', { clientId, error });
         }
       }
       this.clients.clear();
 
-      this.logger.info("Hot reload system stopped");
-
+      this.logger.info('Hot reload system stopped');
     } catch (error) {
-      this.logger.error("Error stopping hot reload system", { error });
+      this.logger.error('Error stopping hot reload system', { error });
       throw error;
     }
   }
@@ -306,10 +306,10 @@ export class DevHotReload extends EventEmitter {
    */
   async triggerOptimization(files: string[]): Promise<HMROptimizationResult | null> {
     if (!this.isActive) {
-      throw new Error("Hot reload system not active");
+      throw new Error('Hot reload system not active');
     }
 
-    this.logger.debug("Manual optimization triggered", { files });
+    this.logger.debug('Manual optimization triggered', { files });
     return this.processOptimization(files, 'manual');
   }
 
@@ -321,7 +321,7 @@ export class DevHotReload extends EventEmitter {
       return;
     }
 
-    this.logger.debug("Force reload requested", { type, clients: this.clients.size });
+    this.logger.debug('Force reload requested', { type, clients: this.clients.size });
     this.broadcastToClients('reload', { type, timestamp: Date.now() });
     this.emit('reload-requested', type, []);
   }
@@ -343,13 +343,15 @@ export class DevHotReload extends EventEmitter {
     };
   } {
     const recentOptimizations = this.optimizationHistory.filter(
-      result => Date.now() - result.timestamp.getTime() < 300000 // Last 5 minutes
+      (result) => Date.now() - result.timestamp.getTime() < 300000 // Last 5 minutes
     );
 
-    const successfulOptimizations = this.optimizationHistory.filter(r => r.success);
-    const averageOptimizationTime = successfulOptimizations.length > 0
-      ? successfulOptimizations.reduce((sum, r) => sum + r.performance.totalTime, 0) / successfulOptimizations.length
-      : 0;
+    const successfulOptimizations = this.optimizationHistory.filter((r) => r.success);
+    const averageOptimizationTime =
+      successfulOptimizations.length > 0
+        ? successfulOptimizations.reduce((sum, r) => sum + r.performance.totalTime, 0) /
+          successfulOptimizations.length
+        : 0;
 
     return {
       isActive: this.isActive,
@@ -361,9 +363,10 @@ export class DevHotReload extends EventEmitter {
       performance: {
         averageOptimizationTime,
         totalOptimizations: this.optimizationHistory.length,
-        successRate: this.optimizationHistory.length > 0
-          ? (successfulOptimizations.length / this.optimizationHistory.length) * 100
-          : 0,
+        successRate:
+          this.optimizationHistory.length > 0
+            ? (successfulOptimizations.length / this.optimizationHistory.length) * 100
+            : 0,
       },
     };
   }
@@ -382,7 +385,7 @@ export class DevHotReload extends EventEmitter {
    */
   updateConfig(newConfig: Partial<HotReloadConfig>): void {
     this.config = { ...this.config, ...newConfig };
-    this.logger.debug("Configuration updated", { config: this.config });
+    this.logger.debug('Configuration updated', { config: this.config });
   }
 
   /**
@@ -409,11 +412,11 @@ export class DevHotReload extends EventEmitter {
     this.watcher.on('unlink', (path) => this.handleFileChange(path, 'unlink'));
 
     this.watcher.on('error', (error) => {
-      this.logger.error("File watcher error", { error });
+      this.logger.error('File watcher error', { error });
       this.emit('error', error);
     });
 
-    this.logger.debug("File watcher started", {
+    this.logger.debug('File watcher started', {
       watchPatterns: this.config.watchPatterns,
       ignorePatterns: this.config.ignorePatterns,
     });
@@ -424,7 +427,7 @@ export class DevHotReload extends EventEmitter {
    */
   private async startWebSocketServer(): Promise<void> {
     const { WebSocketServer } = await import('ws');
-    
+
     this.server = new WebSocketServer({
       port: this.config.port,
       host: this.config.host,
@@ -435,11 +438,11 @@ export class DevHotReload extends EventEmitter {
     });
 
     this.server.on('error', (error: Error) => {
-      this.logger.error("WebSocket server error", { error });
+      this.logger.error('WebSocket server error', { error });
       this.emit('error', error);
     });
 
-    this.logger.debug("WebSocket server started", {
+    this.logger.debug('WebSocket server started', {
       url: `ws://${this.config.host}:${this.config.port}`,
     });
   }
@@ -450,7 +453,7 @@ export class DevHotReload extends EventEmitter {
   private handleClientConnection(socket: any, request: any): void {
     const clientId = this.generateClientId();
     const userAgent = request.headers['user-agent'] || 'Unknown';
-    
+
     const client: HMRClient = {
       id: clientId,
       socket,
@@ -474,11 +477,11 @@ export class DevHotReload extends EventEmitter {
     socket.on('close', () => {
       this.clients.delete(clientId);
       this.emit('client-disconnected', clientId);
-      this.logger.debug("Client disconnected", { clientId });
+      this.logger.debug('Client disconnected', { clientId });
     });
 
     socket.on('error', (error: Error) => {
-      this.logger.debug("Client socket error", { clientId, error });
+      this.logger.debug('Client socket error', { clientId, error });
     });
 
     // Send welcome message
@@ -493,7 +496,7 @@ export class DevHotReload extends EventEmitter {
     });
 
     this.emit('client-connected', client);
-    this.logger.debug("Client connected", { clientId, userAgent });
+    this.logger.debug('Client connected', { clientId, userAgent });
   }
 
   /**
@@ -503,7 +506,7 @@ export class DevHotReload extends EventEmitter {
     try {
       const message = JSON.parse(data.toString());
       const client = this.clients.get(clientId);
-      
+
       if (!client) {
         return;
       }
@@ -529,10 +532,10 @@ export class DevHotReload extends EventEmitter {
           break;
 
         default:
-          this.logger.debug("Unknown client message type", { clientId, type: message.type });
+          this.logger.debug('Unknown client message type', { clientId, type: message.type });
       }
     } catch (error) {
-      this.logger.debug("Error parsing client message", { clientId, error });
+      this.logger.debug('Error parsing client message', { clientId, error });
     }
   }
 
@@ -548,7 +551,7 @@ export class DevHotReload extends EventEmitter {
     // Calculate file hash for change detection
     let hash: string | undefined;
     let size: number | undefined;
-    
+
     if (type !== 'unlink') {
       try {
         const content = await readFile(path, 'utf-8');
@@ -560,10 +563,10 @@ export class DevHotReload extends EventEmitter {
         if (previousHash === hash) {
           return; // No actual change
         }
-        
+
         this.fileHashes.set(path, hash);
       } catch (error) {
-        this.logger.debug("Error reading file for change detection", { path, error });
+        this.logger.debug('Error reading file for change detection', { path, error });
         return;
       }
     } else {
@@ -582,7 +585,7 @@ export class DevHotReload extends EventEmitter {
       requiresOptimization: isCSS || isHTML || isJS,
     };
 
-    this.logger.debug("File change detected", changeEvent);
+    this.logger.debug('File change detected', changeEvent);
     this.emit('file-changed', changeEvent);
 
     // Add to pending changes
@@ -638,18 +641,18 @@ export class DevHotReload extends EventEmitter {
     const startTime = Date.now();
     const resultId = this.generateOptimizationId();
 
-    this.logger.debug("Starting optimization", { files, trigger, resultId });
+    this.logger.debug('Starting optimization', { files, trigger, resultId });
     this.emit('optimization-started', files);
 
     try {
       // Perform optimization using callback if provided
       let optimizationResult: any = null;
       const analysisStartTime = Date.now();
-      
+
       if (this.optimizationCallback) {
         optimizationResult = await this.optimizationCallback(files);
       }
-      
+
       const analysisTime = Date.now() - analysisStartTime;
       const optimizationTime = Date.now() - analysisStartTime;
       const totalTime = Date.now() - startTime;
@@ -683,7 +686,7 @@ export class DevHotReload extends EventEmitter {
       };
 
       this.optimizationHistory.push(result);
-      
+
       // Keep only recent results
       if (this.optimizationHistory.length > 1000) {
         this.optimizationHistory = this.optimizationHistory.slice(-500);
@@ -696,7 +699,7 @@ export class DevHotReload extends EventEmitter {
         this.notifyClientsOfOptimization(result);
       }
 
-      this.logger.debug("Optimization completed", {
+      this.logger.debug('Optimization completed', {
         resultId,
         totalTime,
         success: result.success,
@@ -704,14 +707,13 @@ export class DevHotReload extends EventEmitter {
       });
 
       return result;
-
     } catch (error) {
-      this.logger.error("Optimization failed", { files, trigger, error });
+      this.logger.error('Optimization failed', { files, trigger, error });
       this.emit('optimization-failed', error as Error, files);
       return null;
     } finally {
       this.isOptimizing = false;
-      
+
       // Process any queued optimizations
       if (this.optimizationQueue.length > 0) {
         const queuedFiles = [...this.optimizationQueue];
@@ -725,7 +727,7 @@ export class DevHotReload extends EventEmitter {
    * Notify clients of optimization result
    */
   private notifyClientsOfOptimization(result: HMROptimizationResult): void {
-    const cssFiles = result.files.modified.filter(file => 
+    const cssFiles = result.files.modified.filter((file) =>
       ['.css', '.scss', '.sass', '.less'].includes(extname(file))
     );
 
@@ -737,8 +739,8 @@ export class DevHotReload extends EventEmitter {
         sourceMap: this.config.includeSourceMaps ? result.sourceMap : undefined,
         timestamp: result.timestamp,
       });
-      
-      cssFiles.forEach(file => this.emit('css-updated', file, result.changes));
+
+      cssFiles.forEach((file) => this.emit('css-updated', file, result.changes));
     } else if (this.config.liveReload) {
       // Full page reload
       this.broadcastToClients('reload', {
@@ -762,7 +764,7 @@ export class DevHotReload extends EventEmitter {
     try {
       client.socket.send(JSON.stringify({ type, data, timestamp: Date.now() }));
     } catch (error) {
-      this.logger.debug("Error sending message to client", { clientId, error });
+      this.logger.debug('Error sending message to client', { clientId, error });
     }
   }
 
@@ -771,13 +773,13 @@ export class DevHotReload extends EventEmitter {
    */
   private broadcastToClients(type: string, data: any): void {
     const message = JSON.stringify({ type, data, timestamp: Date.now() });
-    
+
     for (const [clientId, client] of this.clients) {
       if (client.socket.readyState === 1) {
         try {
           client.socket.send(message);
         } catch (error) {
-          this.logger.debug("Error broadcasting to client", { clientId, error });
+          this.logger.debug('Error broadcasting to client', { clientId, error });
         }
       }
     }
@@ -786,7 +788,9 @@ export class DevHotReload extends EventEmitter {
   /**
    * Check if optimization should be triggered
    */
-  private shouldTriggerOptimization(trigger: keyof HotReloadConfig['optimizationTriggers']): boolean {
+  private shouldTriggerOptimization(
+    trigger: keyof HotReloadConfig['optimizationTriggers']
+  ): boolean {
     return this.config.optimizationTriggers[trigger];
   }
 
@@ -823,4 +827,4 @@ export function createDevHotReload(
 /**
  * Type-safe event emitter interface
  */
-// Interface declaration moved to class definition 
+// Interface declaration moved to class definition

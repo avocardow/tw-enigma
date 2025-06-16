@@ -3,4 +3,4 @@
  * Re-exports from legacy implementation
  */
 
-export * from './legacy/atomicOps'; 
+export * from './legacy/atomicOps';

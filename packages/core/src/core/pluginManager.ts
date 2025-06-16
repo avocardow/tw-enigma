@@ -11,23 +11,23 @@
  * security sandboxing, and error handling with circuit breaker pattern
  */
 
-import { readdir, stat } from "fs/promises";
-import { join, dirname } from "path";
-import { pathToFileURL } from "url";
-import { createLogger } from "../utils/logger";
-import { isEnigmaPlugin, validatePluginConfig } from "./postcssPlugin";
+import { readdir, stat } from 'fs/promises';
+import { join, dirname } from 'path';
+import { pathToFileURL } from 'url';
+import { createLogger } from '../utils/logger';
+import { isEnigmaPlugin, validatePluginConfig } from './postcssPlugin';
 import {
   PluginSandbox,
   createPluginSandbox,
   PluginPermission,
   type SandboxConfig,
-} from "../security/pluginSandbox";
+} from '../security/pluginSandbox';
 import {
   PluginErrorHandler,
   createPluginErrorHandler,
   type ErrorHandlerConfig,
   type PluginHealth,
-} from "../errorHandler/pluginErrorHandler";
+} from '../errorHandler/pluginErrorHandler';
 import type {
   PluginManager,
   EnigmaPlugin,
@@ -35,9 +35,9 @@ import type {
   ValidationResult,
   PluginDiscoveryOptions,
   PluginResult,
-} from "../types/plugins";
+} from '../types/plugins';
 
-const logger = createLogger("plugin-manager");
+const logger = createLogger('plugin-manager');
 
 /**
  * Enhanced plugin execution options
@@ -86,7 +86,7 @@ export class EnigmaPluginManager implements PluginManager {
 
   constructor(
     sandboxConfig?: Partial<SandboxConfig>,
-    errorHandlerConfig?: Partial<ErrorHandlerConfig>,
+    errorHandlerConfig?: Partial<ErrorHandlerConfig>
   ) {
     this.sandbox = createPluginSandbox(sandboxConfig);
     this.errorHandler = createPluginErrorHandler(errorHandlerConfig);
@@ -95,9 +95,9 @@ export class EnigmaPluginManager implements PluginManager {
     // Set up event listeners
     this.setupEventListeners();
 
-    logger.debug("Enhanced plugin manager initialized", {
+    logger.debug('Enhanced plugin manager initialized', {
       securityEnabled: this.securityEnabled,
-      sandboxIsolation: sandboxConfig?.isolationLevel || "basic",
+      sandboxIsolation: sandboxConfig?.isolationLevel || 'basic',
       errorHandling: errorHandlerConfig?.enabled !== false,
     });
   }
@@ -107,13 +107,11 @@ export class EnigmaPluginManager implements PluginManager {
    */
   register(plugin: EnigmaPlugin): void {
     if (!this.isValidEnigmaPlugin(plugin)) {
-      throw new Error("Invalid plugin: must implement EnigmaPlugin interface");
+      throw new Error('Invalid plugin: must implement EnigmaPlugin interface');
     }
 
     if (this.plugins.has(plugin.meta.name)) {
-      logger.warn(
-        `Plugin ${plugin.meta.name} is already registered, overwriting`,
-      );
+      logger.warn(`Plugin ${plugin.meta.name} is already registered, overwriting`);
     }
 
     // Security validation for external plugins
@@ -161,13 +159,11 @@ export class EnigmaPluginManager implements PluginManager {
     // Clean up sandbox if exists
     const sandboxId = this.activeSandboxes.get(pluginName);
     if (sandboxId) {
-      this.sandbox
-        .terminateSandbox(sandboxId, "Plugin unregistered")
-        .catch((error) => {
-          logger.error(`Error terminating sandbox for ${pluginName}`, {
-            error,
-          });
+      this.sandbox.terminateSandbox(sandboxId, 'Plugin unregistered').catch((error) => {
+        logger.error(`Error terminating sandbox for ${pluginName}`, {
+          error,
         });
+      });
       this.activeSandboxes.delete(pluginName);
     }
 
@@ -176,7 +172,7 @@ export class EnigmaPluginManager implements PluginManager {
     if (plugin?.cleanup) {
       try {
         const cleanupResult = plugin.cleanup();
-        if (cleanupResult && typeof cleanupResult.catch === "function") {
+        if (cleanupResult && typeof cleanupResult.catch === 'function') {
           cleanupResult.catch((error) => {
             logger.error(`Error during plugin ${pluginName} cleanup`, {
               error,
@@ -206,7 +202,7 @@ export class EnigmaPluginManager implements PluginManager {
   async executePlugin<T = PluginResult>(
     pluginName: string,
     operation: () => Promise<T>,
-    options: PluginExecutionOptions = {},
+    options: PluginExecutionOptions = {}
   ): Promise<T | null> {
     const plugin = this.plugins.get(pluginName);
     if (!plugin) {
@@ -250,28 +246,25 @@ export class EnigmaPluginManager implements PluginManager {
 
     try {
       // Execute with error handling and monitoring
-      const result = await this.errorHandler.executeWithErrorHandling(
-        pluginName,
-        async () => {
-          if (context.sandboxId) {
-            // Execute in sandbox
-            return await this.sandbox.executeInSandbox(
-              context.sandboxId,
-              operation,
-              context.options.timeout,
-            );
-          } else {
-            // Execute normally with timeout
-            if (context.options.timeout) {
-              return await Promise.race([
-                operation(),
-                this.createTimeoutPromise(context.options.timeout, pluginName),
-              ]);
-            }
-            return await operation();
+      const result = await this.errorHandler.executeWithErrorHandling(pluginName, async () => {
+        if (context.sandboxId) {
+          // Execute in sandbox
+          return await this.sandbox.executeInSandbox(
+            context.sandboxId,
+            operation,
+            context.options.timeout
+          );
+        } else {
+          // Execute normally with timeout
+          if (context.options.timeout) {
+            return await Promise.race([
+              operation(),
+              this.createTimeoutPromise(context.options.timeout, pluginName),
+            ]);
           }
-        },
-      );
+          return await operation();
+        }
+      });
 
       // Record successful execution
       this.recordSuccessfulExecution(context);
@@ -283,10 +276,7 @@ export class EnigmaPluginManager implements PluginManager {
     } finally {
       // Clean up sandbox if it was created for this execution
       if (context.sandboxId && !this.isLongRunningPlugin(pluginName)) {
-        await this.sandbox.terminateSandbox(
-          context.sandboxId,
-          "Execution completed",
-        );
+        await this.sandbox.terminateSandbox(context.sandboxId, 'Execution completed');
         this.activeSandboxes.delete(pluginName);
       }
     }
@@ -306,10 +296,8 @@ export class EnigmaPluginManager implements PluginManager {
     string,
     { executionTime: number; memoryUsage: number; callCount: number }
   > {
-    const stats: Record<
-      string,
-      { executionTime: number; memoryUsage: number; callCount: number }
-    > = {};
+    const stats: Record<string, { executionTime: number; memoryUsage: number; callCount: number }> =
+      {};
 
     for (const [pluginName] of this.plugins) {
       const health = this.getPluginHealth(pluginName);
@@ -391,13 +379,11 @@ export class EnigmaPluginManager implements PluginManager {
       for (const name of pluginNames) {
         const health = this.errorHandler.getPluginHealth(name);
         if (health.isDisabled) {
-          result.warnings.push(
-            `Plugin ${name} is disabled: ${health.disabledReason}`,
-          );
+          result.warnings.push(`Plugin ${name} is disabled: ${health.disabledReason}`);
         }
         if (!health.isHealthy) {
           result.warnings.push(
-            `Plugin ${name} is unhealthy with ${health.consecutiveFailures} consecutive failures`,
+            `Plugin ${name} is unhealthy with ${health.consecutiveFailures} consecutive failures`
           );
         }
       }
@@ -413,9 +399,7 @@ export class EnigmaPluginManager implements PluginManager {
         for (const dep of plugin.dependencies) {
           if (!pluginNames.includes(dep)) {
             result.missingDependencies.push(dep);
-            result.errors.push(
-              `Plugin ${name} requires dependency ${dep} which is not enabled`,
-            );
+            result.errors.push(`Plugin ${name} requires dependency ${dep} which is not enabled`);
             result.valid = false;
           }
         }
@@ -442,12 +426,12 @@ export class EnigmaPluginManager implements PluginManager {
     if (circular.length > 0) {
       result.circularDependencies = circular;
       result.errors.push(
-        `Circular dependencies detected: ${circular.map((c) => c.join(" -> ")).join(", ")}`,
+        `Circular dependencies detected: ${circular.map((c) => c.join(' -> ')).join(', ')}`
       );
       result.valid = false;
     }
 
-    logger.debug("Enhanced plugin dependency validation completed", {
+    logger.debug('Enhanced plugin dependency validation completed', {
       valid: result.valid,
       errorCount: result.errors.length,
       warningCount: result.warnings.length,
@@ -524,7 +508,7 @@ export class EnigmaPluginManager implements PluginManager {
       visit(name);
     }
 
-    logger.debug("Enhanced plugin execution order determined", {
+    logger.debug('Enhanced plugin execution order determined', {
       order: result,
       skipped: pluginNames.length - result.length,
     });
@@ -535,7 +519,7 @@ export class EnigmaPluginManager implements PluginManager {
    * Initialize all plugins with enhanced error handling
    */
   async initializePlugins(configs: PluginConfig[]): Promise<void> {
-    logger.debug("Initializing plugins with enhanced security", {
+    logger.debug('Initializing plugins with enhanced security', {
       count: configs.length,
     });
 
@@ -553,9 +537,7 @@ export class EnigmaPluginManager implements PluginManager {
 
         const plugin = this.plugins.get(config.name);
         if (!plugin) {
-          logger.warn(
-            `Plugin ${config.name} not found, skipping initialization`,
-          );
+          logger.warn(`Plugin ${config.name} not found, skipping initialization`);
           continue;
         }
 
@@ -572,7 +554,7 @@ export class EnigmaPluginManager implements PluginManager {
             timeout: 30000, // 30 second timeout for initialization
             sandbox: this.securityEnabled && !this.isBuiltinPlugin(pluginName),
             retryOnFailure: false, // Don't retry initialization failures
-          },
+          }
         );
 
         this.pluginConfigs.set(config.name, validatedConfig);
@@ -586,70 +568,59 @@ export class EnigmaPluginManager implements PluginManager {
 
         logger.debug(`Plugin ${config.name} initialized successfully`);
       } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : String(error);
+        const errorMessage = error instanceof Error ? error.message : String(error);
         logger.error(`Failed to initialize plugin ${config.name}`, {
           error: errorMessage,
         });
 
         // Disable plugin on initialization failure
         if (this.securityEnabled) {
-          this.errorHandler.disablePlugin(
-            config.name,
-            `Initialization failed: ${errorMessage}`,
-          );
+          this.errorHandler.disablePlugin(config.name, `Initialization failed: ${errorMessage}`);
         }
 
-        throw new Error(
-          `Plugin initialization failed for ${config.name}: ${errorMessage}`,
-        );
+        throw new Error(`Plugin initialization failed for ${config.name}: ${errorMessage}`);
       }
     }
 
-    logger.info("All plugins initialized successfully with enhanced security");
+    logger.info('All plugins initialized successfully with enhanced security');
   }
 
   /**
    * Cleanup all plugins and security systems
    */
   async cleanup(): Promise<void> {
-    logger.debug("Cleaning up enhanced plugin manager");
+    logger.debug('Cleaning up enhanced plugin manager');
 
     // Cleanup all active sandboxes
     const sandboxCleanup = Array.from(this.activeSandboxes.entries()).map(
       async ([pluginName, sandboxId]) => {
         try {
-          await this.sandbox.terminateSandbox(sandboxId, "Manager cleanup");
+          await this.sandbox.terminateSandbox(sandboxId, 'Manager cleanup');
         } catch (error) {
           logger.error(`Error terminating sandbox for ${pluginName}`, {
             error,
           });
         }
-      },
+      }
     );
 
     // Cleanup plugins
-    const pluginCleanup = Array.from(this.plugins.entries()).map(
-      async ([name, plugin]) => {
-        try {
-          if (plugin.cleanup) {
-            await plugin.cleanup();
-          }
-          logger.debug(`Plugin ${name} cleaned up successfully`);
-        } catch (error) {
-          logger.error(`Error cleaning up plugin ${name}`, { error });
+    const pluginCleanup = Array.from(this.plugins.entries()).map(async ([name, plugin]) => {
+      try {
+        if (plugin.cleanup) {
+          await plugin.cleanup();
         }
-      },
-    );
+        logger.debug(`Plugin ${name} cleaned up successfully`);
+      } catch (error) {
+        logger.error(`Error cleaning up plugin ${name}`, { error });
+      }
+    });
 
     // Wait for all cleanups
     await Promise.allSettled([...sandboxCleanup, ...pluginCleanup]);
 
     // Cleanup security systems
-    await Promise.allSettled([
-      this.sandbox.cleanup(),
-      this.errorHandler.cleanup(),
-    ]);
+    await Promise.allSettled([this.sandbox.cleanup(), this.errorHandler.cleanup()]);
 
     // Clear all caches and monitors
     this.pluginCache.clear();
@@ -657,16 +628,14 @@ export class EnigmaPluginManager implements PluginManager {
     this.pluginConfigs.clear();
     this.activeSandboxes.clear();
 
-    logger.info("Enhanced plugin manager cleanup completed");
+    logger.info('Enhanced plugin manager cleanup completed');
   }
 
   /**
    * Discover plugins from various sources
    */
-  async discoverPlugins(
-    options: PluginDiscoveryOptions,
-  ): Promise<EnigmaPlugin[]> {
-    logger.debug("Starting plugin discovery", { options });
+  async discoverPlugins(options: PluginDiscoveryOptions): Promise<EnigmaPlugin[]> {
+    logger.debug('Starting plugin discovery', { options });
 
     const discoveredPlugins: EnigmaPlugin[] = [];
 
@@ -686,7 +655,7 @@ export class EnigmaPluginManager implements PluginManager {
         const plugins = await this.discoverFromNpm(options.npmPrefixes);
         discoveredPlugins.push(...plugins);
       } catch (error) {
-        logger.warn("Failed to discover npm plugins", { error });
+        logger.warn('Failed to discover npm plugins', { error });
       }
     }
 
@@ -719,11 +688,7 @@ export class EnigmaPluginManager implements PluginManager {
   /**
    * Update resource usage for a plugin (enhanced with security monitoring)
    */
-  updateResourceUsage(
-    pluginName: string,
-    memoryUsage: number,
-    executionTime: number,
-  ): void {
+  updateResourceUsage(pluginName: string, memoryUsage: number, executionTime: number): void {
     // Create entry if it doesn't exist
     if (!this.resourceMonitor.has(pluginName)) {
       this.resourceMonitor.set(pluginName, {
@@ -746,10 +711,7 @@ export class EnigmaPluginManager implements PluginManager {
         logger.warn(`Plugin ${pluginName} is using excessive memory`, {
           memoryUsage,
         });
-        this.errorHandler.disablePlugin(
-          pluginName,
-          "Excessive memory usage detected",
-        );
+        this.errorHandler.disablePlugin(pluginName, 'Excessive memory usage detected');
       }
 
       if (executionTime > 30000) {
@@ -784,24 +746,21 @@ export class EnigmaPluginManager implements PluginManager {
     if (!this.securityEnabled) return;
 
     // Listen for security violations
-    this.sandbox.on("securityViolation", (violation) => {
-      logger.error("Security violation detected", violation);
+    this.sandbox.on('securityViolation', (violation) => {
+      logger.error('Security violation detected', violation);
 
       // Auto-disable plugin on critical security violations
-      if (
-        violation.type === "malicious_code" ||
-        violation.type === "signature_invalid"
-      ) {
+      if (violation.type === 'malicious_code' || violation.type === 'signature_invalid') {
         this.errorHandler.disablePlugin(
           violation.pluginName,
-          `Security violation: ${violation.type}`,
+          `Security violation: ${violation.type}`
         );
       }
     });
 
     // Listen for plugin errors
-    this.errorHandler.on("pluginError", (error) => {
-      logger.debug("Plugin error handled by error handler", {
+    this.errorHandler.on('pluginError', (error) => {
+      logger.debug('Plugin error handled by error handler', {
         plugin: error.pluginName,
         category: error.category,
         severity: error.severity,
@@ -809,25 +768,20 @@ export class EnigmaPluginManager implements PluginManager {
     });
 
     // Listen for plugin disable/enable events
-    this.errorHandler.on("pluginDisabled", ({ pluginName, reason }) => {
+    this.errorHandler.on('pluginDisabled', ({ pluginName, reason }) => {
       logger.warn(`Plugin ${pluginName} has been disabled`, { reason });
 
       // Terminate any active sandbox
       const sandboxId = this.activeSandboxes.get(pluginName);
       if (sandboxId) {
-        this.sandbox
-          .terminateSandbox(sandboxId, "Plugin disabled")
-          .catch((error) => {
-            logger.error(
-              `Error terminating sandbox for disabled plugin ${pluginName}`,
-              { error },
-            );
-          });
+        this.sandbox.terminateSandbox(sandboxId, 'Plugin disabled').catch((error) => {
+          logger.error(`Error terminating sandbox for disabled plugin ${pluginName}`, { error });
+        });
         this.activeSandboxes.delete(pluginName);
       }
     });
 
-    this.errorHandler.on("pluginEnabled", ({ pluginName }) => {
+    this.errorHandler.on('pluginEnabled', ({ pluginName }) => {
       logger.info(`Plugin ${pluginName} has been re-enabled`);
     });
   }
@@ -838,14 +792,11 @@ export class EnigmaPluginManager implements PluginManager {
   private validatePluginSecurity(plugin: EnigmaPlugin): void {
     // Basic security validation
     if (!plugin.meta.name || !plugin.meta.version) {
-      throw new Error("Plugin must have valid name and version");
+      throw new Error('Plugin must have valid name and version');
     }
 
     // Check for suspicious patterns in plugin code
-    if (
-      plugin.meta.name.includes("eval") ||
-      plugin.meta.name.includes("unsafe")
-    ) {
+    if (plugin.meta.name.includes('eval') || plugin.meta.name.includes('unsafe')) {
       logger.warn(`Plugin ${plugin.meta.name} has suspicious name patterns`);
     }
 
@@ -858,13 +809,13 @@ export class EnigmaPluginManager implements PluginManager {
    */
   private isValidEnigmaPlugin(value: unknown): value is EnigmaPlugin {
     return (
-      typeof value === "object" &&
+      typeof value === 'object' &&
       value !== null &&
-      "meta" in value &&
-      typeof (value as any).meta === "object" &&
-      typeof (value as any).meta.name === "string" &&
-      typeof (value as any).meta.version === "string" &&
-      typeof (value as any).meta.description === "string"
+      'meta' in value &&
+      typeof (value as any).meta === 'object' &&
+      typeof (value as any).meta.name === 'string' &&
+      typeof (value as any).meta.version === 'string' &&
+      typeof (value as any).meta.description === 'string'
     );
   }
 
@@ -872,9 +823,7 @@ export class EnigmaPluginManager implements PluginManager {
    * Private: Check if plugin is built-in
    */
   private isBuiltinPlugin(pluginName: string): boolean {
-    return ["tailwindOptimizer", "cssMinifier", "sourceMapper"].includes(
-      pluginName,
-    );
+    return ['tailwindOptimizer', 'cssMinifier', 'sourceMapper'].includes(pluginName);
   }
 
   /**
@@ -905,10 +854,7 @@ export class EnigmaPluginManager implements PluginManager {
   /**
    * Private: Record failed execution
    */
-  private recordFailedExecution(
-    context: PluginExecutionContext,
-    error: unknown,
-  ): void {
+  private recordFailedExecution(context: PluginExecutionContext, error: unknown): void {
     const executionTime = performance.now() - context.startTime;
     const errorMessage = error instanceof Error ? error.message : String(error);
 
@@ -922,17 +868,10 @@ export class EnigmaPluginManager implements PluginManager {
   /**
    * Private: Create timeout promise
    */
-  private createTimeoutPromise<T>(
-    timeout: number,
-    pluginName: string,
-  ): Promise<T> {
+  private createTimeoutPromise<T>(timeout: number, pluginName: string): Promise<T> {
     return new Promise((_, reject) => {
       setTimeout(() => {
-        reject(
-          new Error(
-            `Plugin ${pluginName} execution timeout after ${timeout}ms`,
-          ),
-        );
+        reject(new Error(`Plugin ${pluginName} execution timeout after ${timeout}ms`));
       }, timeout);
     });
   }
@@ -940,9 +879,7 @@ export class EnigmaPluginManager implements PluginManager {
   /**
    * Discover plugins from directory
    */
-  private async discoverFromDirectory(
-    searchPath: string,
-  ): Promise<EnigmaPlugin[]> {
+  private async discoverFromDirectory(searchPath: string): Promise<EnigmaPlugin[]> {
     const plugins: EnigmaPlugin[] = [];
 
     try {
@@ -952,10 +889,7 @@ export class EnigmaPluginManager implements PluginManager {
         const fullPath = join(searchPath, entry);
         const stats = await stat(fullPath);
 
-        if (
-          stats.isFile() &&
-          (entry.endsWith(".js") || entry.endsWith(".mjs"))
-        ) {
+        if (stats.isFile() && (entry.endsWith('.js') || entry.endsWith('.mjs'))) {
           try {
             const plugin = await this.loadPluginFromFile(fullPath);
             if (plugin) {
@@ -983,16 +917,14 @@ export class EnigmaPluginManager implements PluginManager {
     // matching the prefixes (e.g., 'enigma-plugin-', 'postcss-enigma-')
     // For now, we'll return empty array as this requires more complex logic
 
-    logger.debug("NPM plugin discovery not yet implemented");
+    logger.debug('NPM plugin discovery not yet implemented');
     return plugins;
   }
 
   /**
    * Load plugin from file
    */
-  private async loadPluginFromFile(
-    filePath: string,
-  ): Promise<EnigmaPlugin | null> {
+  private async loadPluginFromFile(filePath: string): Promise<EnigmaPlugin | null> {
     try {
       const fileUrl = pathToFileURL(filePath).href;
       const module = await import(fileUrl);
@@ -1020,14 +952,11 @@ export class EnigmaPluginManager implements PluginManager {
 
     try {
       // Try to load built-in plugins from plugins directory
-      const builtinsPath = join(
-        dirname(new URL(import.meta.url).pathname),
-        "plugins",
-      );
+      const builtinsPath = join(dirname(new URL(import.meta.url).pathname), 'plugins');
       const builtins = await this.discoverFromDirectory(builtinsPath);
       plugins.push(...builtins);
     } catch (error) {
-      logger.debug("No built-in plugins directory found", { error });
+      logger.debug('No built-in plugins directory found', { error });
     }
 
     return plugins;
@@ -1079,7 +1008,7 @@ export class EnigmaPluginManager implements PluginManager {
    */
   disableSecurity(): void {
     this.securityEnabled = false;
-    logger.debug("Security disabled");
+    logger.debug('Security disabled');
   }
 
   /**
@@ -1087,7 +1016,7 @@ export class EnigmaPluginManager implements PluginManager {
    */
   enableSecurity(): void {
     this.securityEnabled = true;
-    logger.debug("Security enabled");
+    logger.debug('Security enabled');
   }
 
   /**
@@ -1095,16 +1024,16 @@ export class EnigmaPluginManager implements PluginManager {
    */
   getResourceMetrics(): Record<string, any> {
     const metrics: Record<string, any> = {};
-    
+
     for (const [pluginName, stats] of this.resourceMonitor.entries()) {
       metrics[pluginName] = {
         memoryUsage: stats.memoryUsage,
         executionTime: stats.executionTime,
         lastAccess: stats.lastAccess,
-        health: this.getPluginHealth(pluginName)
+        health: this.getPluginHealth(pluginName),
       };
     }
-    
+
     return metrics;
   }
 }
@@ -1114,7 +1043,7 @@ export class EnigmaPluginManager implements PluginManager {
  */
 export function createPluginManager(
   sandboxConfig?: Partial<SandboxConfig>,
-  errorHandlerConfig?: Partial<ErrorHandlerConfig>,
+  errorHandlerConfig?: Partial<ErrorHandlerConfig>
 ): PluginManager {
   return new EnigmaPluginManager(sandboxConfig, errorHandlerConfig);
 }
@@ -1131,7 +1060,7 @@ export function createSecurePluginManager(options?: {
     {
       enabled: options?.enableSandbox !== false,
       strictMode: true,
-      isolationLevel: "basic",
+      isolationLevel: 'basic',
       signatureVerification: false,
       permissions: [PluginPermission.READ_FILES, PluginPermission.WRITE_FILES],
     },
@@ -1141,7 +1070,7 @@ export function createSecurePluginManager(options?: {
       gracefulDegradation: true,
       enableFallbacks: true,
       autoDisableThreshold: 5,
-    },
+    }
   );
 }
 
@@ -1150,8 +1079,8 @@ export function createSecurePluginManager(options?: {
  */
 export function createDefaultDiscoveryOptions(): PluginDiscoveryOptions {
   return {
-    searchPaths: ["./plugins", "./node_modules"],
-    npmPrefixes: ["enigma-plugin-", "postcss-enigma-"],
+    searchPaths: ['./plugins', './node_modules'],
+    npmPrefixes: ['enigma-plugin-', 'postcss-enigma-'],
     localPlugins: [],
     includeBuiltins: true,
   };

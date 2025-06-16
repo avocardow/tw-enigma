@@ -37,12 +37,8 @@
  */
 
 // Core performance components
-export { WorkerManager } from "./workerManager";
-export {
-  CacheManager,
-  createCacheManager,
-  getGlobalCacheManager,
-} from "./cacheManager";
+export { WorkerManager } from './workerManager';
+export { CacheManager, createCacheManager, getGlobalCacheManager } from './cacheManager';
 export {
   RegexOptimizer,
   getGlobalRegexOptimizer,
@@ -50,16 +46,16 @@ export {
   matchOptimized,
   replaceOptimized,
   COMMON_CSS_PATTERNS,
-} from "./regexOptimizer";
-export { StreamOptimizer } from "./streamOptimizer";
-export { BatchCoordinator } from "./batchCoordinator";
+} from './regexOptimizer';
+export { StreamOptimizer } from './streamOptimizer';
+export { BatchCoordinator } from './batchCoordinator';
 export {
   MemoryProfiler,
   getGlobalMemoryProfiler,
   getQuickMemoryStatus,
   forceGarbageCollection,
-} from "./memoryProfiler";
-export { PerformanceProfiler } from "./profiler";
+} from './memoryProfiler';
+export { PerformanceProfiler } from './profiler';
 
 // Configuration and types
 export {
@@ -79,15 +75,15 @@ export {
   ENVIRONMENT_PROFILES,
   validatePerformanceConfig,
   createEnvironmentConfig,
-} from "./config";
+} from './config';
 
 // Import for internal use
-import os from "os";
+import os from 'os';
 import {
   DEFAULT_PERFORMANCE_CONFIG as _DEFAULT_PERFORMANCE_CONFIG,
   type SystemResources as _SystemResources,
   type PerformanceConfig as _PerformanceConfig,
-} from "./config";
+} from './config';
 
 // Performance constants
 export const PERFORMANCE_CONSTANTS = {
@@ -99,7 +95,7 @@ export const PERFORMANCE_CONSTANTS = {
   MEMORY_PRESSURE_THRESHOLD: 0.8, // 80% memory usage threshold
 
   // Cache strategies
-  CACHE_STRATEGIES: ["lru", "lfu", "ttl", "arc"] as const,
+  CACHE_STRATEGIES: ['lru', 'lfu', 'ttl', 'arc'] as const,
 
   // Performance thresholds
   REGEX_COMPILATION_THRESHOLD_MS: 10,
@@ -130,7 +126,7 @@ export const PERFORMANCE_CONSTANTS = {
  */
 export async function measurePerformance<T>(
   fn: () => T | Promise<T>,
-  label?: string,
+  label?: string
 ): Promise<{ result: T; duration: number; memoryUsed: number }> {
   const startTime = performance.now();
   const startMemory = process.memoryUsage().heapUsed;
@@ -144,7 +140,7 @@ export async function measurePerformance<T>(
 
   if (label) {
     console.log(
-      `[Performance] ${label}: ${duration.toFixed(2)}ms, Memory: ${formatBytes(memoryUsed)}`,
+      `[Performance] ${label}: ${duration.toFixed(2)}ms, Memory: ${formatBytes(memoryUsed)}`
     );
   }
 
@@ -167,7 +163,7 @@ export function createPerformanceTimer(label?: string) {
 
       if (label) {
         console.log(
-          `[Timer] ${label}: ${duration.toFixed(2)}ms, Memory: ${formatBytes(memoryUsed)}`,
+          `[Timer] ${label}: ${duration.toFixed(2)}ms, Memory: ${formatBytes(memoryUsed)}`
         );
       }
 
@@ -181,7 +177,7 @@ export function createPerformanceTimer(label?: string) {
  * Format bytes for human-readable output
  */
 export function formatBytes(bytes: number): string {
-  const units = ["B", "KB", "MB", "GB", "TB"];
+  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
   let size = Math.abs(bytes);
   let unitIndex = 0;
 
@@ -191,7 +187,7 @@ export function formatBytes(bytes: number): string {
   }
 
   const formatted = size.toFixed(unitIndex > 0 ? 2 : 0);
-  const sign = bytes < 0 ? "-" : "";
+  const sign = bytes < 0 ? '-' : '';
 
   return `${sign}${formatted} ${units[unitIndex]}`;
 }
@@ -215,7 +211,6 @@ export function formatDuration(milliseconds: number): string {
  * Get current system resource information
  */
 export function getSystemResources(): _SystemResources {
-
   return {
     totalMemory: os.totalmem(),
     freeMemory: os.freemem(),
@@ -246,24 +241,22 @@ export function checkSystemRequirements(): {
   if (resources.freeMemory < PERFORMANCE_CONSTANTS.MIN_MEMORY_FOR_WORKERS) {
     sufficient = false;
     warnings.push(
-      `Low available memory: ${formatBytes(resources.freeMemory)} (minimum: ${formatBytes(PERFORMANCE_CONSTANTS.MIN_MEMORY_FOR_WORKERS)})`,
+      `Low available memory: ${formatBytes(resources.freeMemory)} (minimum: ${formatBytes(PERFORMANCE_CONSTANTS.MIN_MEMORY_FOR_WORKERS)})`
     );
-    recommendations.push(
-      "Consider increasing available memory or reducing worker pool size",
-    );
+    recommendations.push('Consider increasing available memory or reducing worker pool size');
   }
 
   // Check CPU cores for worker pool sizing
   if (resources.cpuCount < 2) {
     warnings.push(
-      "Single-core system detected - worker threads may not provide performance benefits",
+      'Single-core system detected - worker threads may not provide performance benefits'
     );
     recommendations.push(
-      "Consider disabling worker threads or using a machine with more CPU cores",
+      'Consider disabling worker threads or using a machine with more CPU cores'
     );
   } else if (resources.cpuCount >= 8) {
     recommendations.push(
-      "High-core system detected - consider increasing worker pool size for better performance",
+      'High-core system detected - consider increasing worker pool size for better performance'
     );
   }
 
@@ -272,7 +265,7 @@ export function checkSystemRequirements(): {
   if (heapUsagePercent > 80) {
     warnings.push(`High heap usage: ${heapUsagePercent.toFixed(1)}%`);
     recommendations.push(
-      "Consider memory optimization or increasing heap size with --max-old-space-size",
+      'Consider memory optimization or increasing heap size with --max-old-space-size'
     );
   }
 
@@ -289,7 +282,7 @@ export function createOptimizedConfig(): _PerformanceConfig {
   // Optimize worker pool size based on CPU cores
   const workerPoolSize = Math.max(
     2,
-    Math.min(resources.cpuCount, PERFORMANCE_CONSTANTS.MAX_WORKER_POOL_SIZE),
+    Math.min(resources.cpuCount, PERFORMANCE_CONSTANTS.MAX_WORKER_POOL_SIZE)
   );
 
   // Optimize cache size based on available memory
@@ -308,10 +301,7 @@ export function createOptimizedConfig(): _PerformanceConfig {
     },
     memory: {
       ...baseConfig.memory,
-      memoryBudget: Math.min(
-        resources.freeMemory * 0.8,
-        2 * 1024 * 1024 * 1024,
-      ), // 80% of free memory, max 2GB
+      memoryBudget: Math.min(resources.freeMemory * 0.8, 2 * 1024 * 1024 * 1024), // 80% of free memory, max 2GB
     },
   };
 }

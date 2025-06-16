@@ -5,15 +5,15 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { writeFile, readFile, copyFile, unlink } from "fs/promises";
-import { existsSync, mkdirSync } from "fs";
-import { resolve, dirname, basename, join } from "path";
-import { randomUUID } from "crypto";
-import { logger } from "../utils/logger";
-import { ConfigError } from "../utils/errors";
-import { validateConfig } from "./configValidator";
-import type { EnigmaConfig } from "./config";
-import type { ValidationResult } from "./configValidator";
+import { writeFile, readFile, copyFile, unlink } from 'fs/promises';
+import { existsSync, mkdirSync } from 'fs';
+import { resolve, dirname, basename, join } from 'path';
+import { randomUUID } from 'crypto';
+import { logger } from '../utils/logger';
+import { ConfigError } from '../utils/errors';
+import { validateConfig } from './configValidator';
+import type { EnigmaConfig } from './config';
+import type { ValidationResult } from './configValidator';
 
 /**
  * Safe update operation result
@@ -45,7 +45,7 @@ export interface UpdateTransaction {
   newContent: string;
   backupPath: string;
   tempPath: string;
-  status: "pending" | "committed" | "rolled-back" | "failed";
+  status: 'pending' | 'committed' | 'rolled-back' | 'failed';
   validation?: ValidationResult;
 }
 
@@ -69,7 +69,7 @@ export interface SafeUpdateOptions {
 /**
  * Configuration merge strategy
  */
-export type MergeStrategy = "replace" | "merge-deep" | "merge-shallow" | "merge-arrays" | "custom";
+export type MergeStrategy = 'replace' | 'merge-deep' | 'merge-shallow' | 'merge-arrays' | 'custom';
 
 /**
  * Custom merge function
@@ -93,13 +93,13 @@ export class ConfigSafeUpdater {
       verifyAfterWrite: true,
       rollbackOnFailure: true,
       permissions: 0o644,
-      encoding: "utf-8",
+      encoding: 'utf-8',
       retryAttempts: 3,
       retryDelay: 100,
       ...options,
     };
 
-    logger.debug("ConfigSafeUpdater initialized", { options: this.options });
+    logger.debug('ConfigSafeUpdater initialized', { options: this.options });
   }
 
   /**
@@ -108,13 +108,13 @@ export class ConfigSafeUpdater {
   public async updateConfig(
     filepath: string,
     updates: Partial<EnigmaConfig> | ((current: EnigmaConfig) => EnigmaConfig),
-    mergeStrategy: MergeStrategy = "merge-deep",
+    mergeStrategy: MergeStrategy = 'merge-deep',
     customMerge?: CustomMergeFunction
   ): Promise<SafeUpdateResult> {
     const transactionId = randomUUID();
     const timestamp = new Date();
 
-    logger.info("Starting safe configuration update", {
+    logger.info('Starting safe configuration update', {
       filepath,
       transactionId,
       mergeStrategy,
@@ -144,10 +144,10 @@ export class ConfigSafeUpdater {
             timestamp,
             validation,
             error: new ConfigError(
-              `Configuration validation failed: ${validation.errors.map(e => e.message).join(", ")}`,
+              `Configuration validation failed: ${validation.errors.map((e) => e.message).join(', ')}`,
               filepath,
               undefined,
-              { operation: "updateConfig", transactionId }
+              { operation: 'updateConfig', transactionId }
             ),
             rollbackAvailable: false,
             changes: { added: [], modified: [], removed: [] },
@@ -167,7 +167,7 @@ export class ConfigSafeUpdater {
       // Step 7: Clean up old backups
       await this.cleanupOldBackups();
 
-      logger.info("Safe configuration update completed successfully", {
+      logger.info('Safe configuration update completed successfully', {
         filepath,
         transactionId,
         backupPath: result.backupPath,
@@ -175,7 +175,7 @@ export class ConfigSafeUpdater {
 
       return result;
     } catch (error) {
-      logger.error("Safe configuration update failed", {
+      logger.error('Safe configuration update failed', {
         filepath,
         transactionId,
         error,
@@ -187,7 +187,7 @@ export class ConfigSafeUpdater {
         try {
           await this.rollbackTransaction(transaction);
         } catch (rollbackError) {
-          logger.error("Rollback failed", { transactionId, rollbackError });
+          logger.error('Rollback failed', { transactionId, rollbackError });
         }
       }
 
@@ -200,7 +200,7 @@ export class ConfigSafeUpdater {
           `Safe configuration update failed: ${error instanceof Error ? error.message : String(error)}`,
           filepath,
           error as Error,
-          { operation: "updateConfig", transactionId }
+          { operation: 'updateConfig', transactionId }
         ),
         rollbackAvailable: transaction ? true : false,
         changes: { added: [], modified: [], removed: [] },
@@ -219,7 +219,7 @@ export class ConfigSafeUpdater {
       customMerge?: CustomMergeFunction;
     }>
   ): Promise<SafeUpdateResult[]> {
-    logger.info("Starting batch configuration update", { count: updates.length });
+    logger.info('Starting batch configuration update', { count: updates.length });
 
     const results: SafeUpdateResult[] = [];
     const transactions: UpdateTransaction[] = [];
@@ -248,7 +248,7 @@ export class ConfigSafeUpdater {
 
           if (!result.success) {
             // If any update fails, rollback all successful ones
-            logger.warn("Batch update failed, rolling back successful updates", {
+            logger.warn('Batch update failed, rolling back successful updates', {
               failedFile: update.filepath,
               successfulCount: i,
             });
@@ -261,8 +261,8 @@ export class ConfigSafeUpdater {
             break;
           }
         } catch (error) {
-          logger.error("Batch update item failed", { filepath: update.filepath, error });
-          
+          logger.error('Batch update item failed', { filepath: update.filepath, error });
+
           results.push({
             success: false,
             filepath: update.filepath,
@@ -272,7 +272,7 @@ export class ConfigSafeUpdater {
               `Batch update failed for ${update.filepath}: ${error instanceof Error ? error.message : String(error)}`,
               update.filepath,
               error as Error,
-              { operation: "batchUpdate" }
+              { operation: 'batchUpdate' }
             ),
             rollbackAvailable: true,
             changes: { added: [], modified: [], removed: [] },
@@ -283,14 +283,14 @@ export class ConfigSafeUpdater {
 
       return results;
     } catch (error) {
-      logger.error("Batch configuration update failed", { error });
+      logger.error('Batch configuration update failed', { error });
 
       // Rollback all transactions
       for (const transaction of transactions) {
         try {
           await this.rollbackTransaction(transaction);
         } catch (rollbackError) {
-          logger.error("Batch rollback failed", { transactionId: transaction.id, rollbackError });
+          logger.error('Batch rollback failed', { transactionId: transaction.id, rollbackError });
         }
       }
 
@@ -298,7 +298,7 @@ export class ConfigSafeUpdater {
         `Batch configuration update failed: ${error instanceof Error ? error.message : String(error)}`,
         undefined,
         error as Error,
-        { operation: "batchUpdate" }
+        { operation: 'batchUpdate' }
       );
     }
   }
@@ -309,7 +309,7 @@ export class ConfigSafeUpdater {
   public async rollbackByTransactionId(transactionId: string): Promise<boolean> {
     const transaction = this.activeTransactions.get(transactionId);
     if (!transaction) {
-      logger.warn("Transaction not found for rollback", { transactionId });
+      logger.warn('Transaction not found for rollback', { transactionId });
       return false;
     }
 
@@ -319,9 +319,11 @@ export class ConfigSafeUpdater {
   /**
    * Get list of available backups for a file
    */
-  public getBackupHistory(filepath?: string): Array<{ timestamp: Date; filepath: string; backupPath: string }> {
+  public getBackupHistory(
+    filepath?: string
+  ): Array<{ timestamp: Date; filepath: string; backupPath: string }> {
     if (filepath) {
-      return this.backupHistory.filter(backup => backup.filepath === resolve(filepath));
+      return this.backupHistory.filter((backup) => backup.filepath === resolve(filepath));
     }
     return [...this.backupHistory];
   }
@@ -329,11 +331,14 @@ export class ConfigSafeUpdater {
   /**
    * Restore configuration from a backup
    */
-  public async restoreFromBackup(backupPath: string, targetPath?: string): Promise<SafeUpdateResult> {
+  public async restoreFromBackup(
+    backupPath: string,
+    targetPath?: string
+  ): Promise<SafeUpdateResult> {
     const transactionId = randomUUID();
     const timestamp = new Date();
 
-    logger.info("Restoring configuration from backup", { backupPath, targetPath });
+    logger.info('Restoring configuration from backup', { backupPath, targetPath });
 
     try {
       if (!existsSync(backupPath)) {
@@ -343,7 +348,7 @@ export class ConfigSafeUpdater {
       // Determine target path
       const filepath = targetPath || this.getOriginalPathFromBackup(backupPath);
       if (!filepath) {
-        throw new ConfigError("Cannot determine target path for restore", backupPath);
+        throw new ConfigError('Cannot determine target path for restore', backupPath);
       }
 
       // Load and validate backup content
@@ -354,7 +359,7 @@ export class ConfigSafeUpdater {
         const validation = await validateConfig(backupConfig, filepath);
         if (!validation.isValid) {
           throw new ConfigError(
-            `Backup validation failed: ${validation.errors.map(e => e.message).join(", ")}`,
+            `Backup validation failed: ${validation.errors.map((e) => e.message).join(', ')}`,
             backupPath
           );
         }
@@ -367,7 +372,7 @@ export class ConfigSafeUpdater {
       // Commit the restore
       const result = await this.commitTransaction(transaction);
 
-      logger.info("Configuration restored from backup successfully", {
+      logger.info('Configuration restored from backup successfully', {
         backupPath,
         filepath,
         transactionId,
@@ -375,7 +380,7 @@ export class ConfigSafeUpdater {
 
       return result;
     } catch (error) {
-      logger.error("Configuration restore failed", { backupPath, error });
+      logger.error('Configuration restore failed', { backupPath, error });
 
       return {
         success: false,
@@ -386,7 +391,7 @@ export class ConfigSafeUpdater {
           `Configuration restore failed: ${error instanceof Error ? error.message : String(error)}`,
           backupPath,
           error as Error,
-          { operation: "restoreFromBackup" }
+          { operation: 'restoreFromBackup' }
         ),
         rollbackAvailable: false,
         changes: { added: [], modified: [], removed: [] },
@@ -397,12 +402,16 @@ export class ConfigSafeUpdater {
   /**
    * Create a new transaction
    */
-  private async createTransaction(filepath: string, transactionId: string): Promise<UpdateTransaction> {
+  private async createTransaction(
+    filepath: string,
+    transactionId: string
+  ): Promise<UpdateTransaction> {
     const resolvedPath = resolve(filepath);
     const timestamp = new Date();
 
     // Create backup directory if needed
-    const backupDir = this.options.backupDirectory || join(dirname(resolvedPath), ".enigma-backups");
+    const backupDir =
+      this.options.backupDirectory || join(dirname(resolvedPath), '.enigma-backups');
     if (!existsSync(backupDir)) {
       mkdirSync(backupDir, { recursive: true });
     }
@@ -412,7 +421,7 @@ export class ConfigSafeUpdater {
     const tempPath = join(dirname(resolvedPath), `.${basename(resolvedPath)}.${transactionId}.tmp`);
 
     // Read original content
-    let originalContent = "";
+    let originalContent = '';
     if (existsSync(resolvedPath)) {
       originalContent = await readFile(resolvedPath, this.options.encoding);
     }
@@ -422,14 +431,14 @@ export class ConfigSafeUpdater {
       timestamp,
       filepath: resolvedPath,
       originalContent,
-      newContent: "",
+      newContent: '',
       backupPath,
       tempPath,
-      status: "pending",
+      status: 'pending',
     };
 
     this.activeTransactions.set(transactionId, transaction);
-    logger.debug("Transaction created", { transactionId, filepath: resolvedPath });
+    logger.debug('Transaction created', { transactionId, filepath: resolvedPath });
 
     return transaction;
   }
@@ -451,7 +460,7 @@ export class ConfigSafeUpdater {
         `Failed to load current configuration: ${error instanceof Error ? error.message : String(error)}`,
         filepath,
         error as Error,
-        { operation: "loadCurrentConfig" }
+        { operation: 'loadCurrentConfig' }
       );
     }
   }
@@ -465,29 +474,29 @@ export class ConfigSafeUpdater {
     mergeStrategy: MergeStrategy,
     customMerge?: CustomMergeFunction
   ): Promise<EnigmaConfig> {
-    if (typeof updates === "function") {
+    if (typeof updates === 'function') {
       return updates(currentConfig);
     }
 
     switch (mergeStrategy) {
-      case "replace":
+      case 'replace':
         return { ...updates } as EnigmaConfig;
-      
-      case "merge-shallow":
+
+      case 'merge-shallow':
         return { ...currentConfig, ...updates };
-      
-      case "merge-deep":
+
+      case 'merge-deep':
         return this.deepMerge(currentConfig, updates);
-      
-      case "merge-arrays":
+
+      case 'merge-arrays':
         return this.mergeWithArrays(currentConfig, updates);
-      
-      case "custom":
+
+      case 'custom':
         if (!customMerge) {
-          throw new ConfigError("Custom merge function required for custom merge strategy");
+          throw new ConfigError('Custom merge function required for custom merge strategy');
         }
         return customMerge(currentConfig, updates, []) as EnigmaConfig;
-      
+
       default:
         return this.deepMerge(currentConfig, updates);
     }
@@ -500,7 +509,7 @@ export class ConfigSafeUpdater {
     const result = { ...target };
 
     for (const key in source) {
-      if (source[key] !== null && typeof source[key] === "object" && !Array.isArray(source[key])) {
+      if (source[key] !== null && typeof source[key] === 'object' && !Array.isArray(source[key])) {
         result[key] = this.deepMerge(target[key] || {}, source[key]);
       } else {
         result[key] = source[key];
@@ -519,7 +528,7 @@ export class ConfigSafeUpdater {
     for (const key in source) {
       if (Array.isArray(source[key])) {
         result[key] = [...(target[key] || []), ...source[key]];
-      } else if (source[key] !== null && typeof source[key] === "object") {
+      } else if (source[key] !== null && typeof source[key] === 'object') {
         result[key] = this.mergeWithArrays(target[key] || {}, source[key]);
       } else {
         result[key] = source[key];
@@ -562,7 +571,7 @@ export class ConfigSafeUpdater {
         });
       }
 
-      transaction.status = "committed";
+      transaction.status = 'committed';
       this.activeTransactions.delete(transaction.id);
 
       return {
@@ -576,7 +585,7 @@ export class ConfigSafeUpdater {
         changes: this.calculateChanges(transaction.originalContent, transaction.newContent),
       };
     } catch (error) {
-      transaction.status = "failed";
+      transaction.status = 'failed';
       throw error;
     }
   }
@@ -586,7 +595,7 @@ export class ConfigSafeUpdater {
    */
   private async rollbackTransaction(transaction: UpdateTransaction): Promise<boolean> {
     try {
-      logger.info("Rolling back transaction", { transactionId: transaction.id });
+      logger.info('Rolling back transaction', { transactionId: transaction.id });
 
       if (transaction.originalContent) {
         await writeFile(transaction.filepath, transaction.originalContent, this.options.encoding);
@@ -602,13 +611,13 @@ export class ConfigSafeUpdater {
         await unlink(transaction.tempPath);
       }
 
-      transaction.status = "rolled-back";
+      transaction.status = 'rolled-back';
       this.activeTransactions.delete(transaction.id);
 
-      logger.info("Transaction rolled back successfully", { transactionId: transaction.id });
+      logger.info('Transaction rolled back successfully', { transactionId: transaction.id });
       return true;
     } catch (error) {
-      logger.error("Transaction rollback failed", { transactionId: transaction.id, error });
+      logger.error('Transaction rollback failed', { transactionId: transaction.id, error });
       return false;
     }
   }
@@ -623,14 +632,14 @@ export class ConfigSafeUpdater {
 
       // Simple verification - could be enhanced with deep comparison
       if (JSON.stringify(writtenConfig) !== JSON.stringify(expectedConfig)) {
-        throw new ConfigError("Write verification failed - content mismatch", filepath);
+        throw new ConfigError('Write verification failed - content mismatch', filepath);
       }
     } catch (error) {
       throw new ConfigError(
         `Write verification failed: ${error instanceof Error ? error.message : String(error)}`,
         filepath,
         error as Error,
-        { operation: "verifyWrite" }
+        { operation: 'verifyWrite' }
       );
     }
   }
@@ -652,9 +661,9 @@ export class ConfigSafeUpdater {
         if (existsSync(backup.backupPath)) {
           await unlink(backup.backupPath);
         }
-        this.backupHistory = this.backupHistory.filter(b => b !== backup);
+        this.backupHistory = this.backupHistory.filter((b) => b !== backup);
       } catch (error) {
-        logger.warn("Failed to clean up old backup", { backupPath: backup.backupPath, error });
+        logger.warn('Failed to clean up old backup', { backupPath: backup.backupPath, error });
       }
     }
   }
@@ -662,7 +671,10 @@ export class ConfigSafeUpdater {
   /**
    * Calculate changes between configurations
    */
-  private calculateChanges(oldContent: string, newContent: string): { added: string[]; modified: string[]; removed: string[] } {
+  private calculateChanges(
+    oldContent: string,
+    newContent: string
+  ): { added: string[]; modified: string[]; removed: string[] } {
     try {
       const oldConfig = oldContent ? JSON.parse(oldContent) : {};
       const newConfig = JSON.parse(newContent);
@@ -689,7 +701,7 @@ export class ConfigSafeUpdater {
 
       return { added, modified, removed };
     } catch (error) {
-      logger.warn("Failed to calculate configuration changes", { error });
+      logger.warn('Failed to calculate configuration changes', { error });
       return { added: [], modified: [], removed: [] };
     }
   }
@@ -702,7 +714,7 @@ export class ConfigSafeUpdater {
     // In practice, you might store metadata about backups
     const filename = basename(backupPath);
     const match = filename.match(/^(.+)\.\d+\.backup$/);
-    return match ? join(dirname(backupPath), "..", match[1]) : null;
+    return match ? join(dirname(backupPath), '..', match[1]) : null;
   }
 }
 
@@ -711,4 +723,4 @@ export class ConfigSafeUpdater {
  */
 export function createConfigSafeUpdater(options?: Partial<SafeUpdateOptions>): ConfigSafeUpdater {
   return new ConfigSafeUpdater(options);
-} 
+}

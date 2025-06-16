@@ -10,7 +10,7 @@
  * @module types/atomicOps
  */
 
-import { Stats } from "fs";
+import { Stats } from 'fs';
 
 /** Configuration options for atomic file operations */
 export interface AtomicFileOptions {
@@ -60,7 +60,7 @@ export interface AtomicOperationResult {
   success: boolean;
 
   /** Operation type performed */
-  operation: "read" | "write" | "delete" | "create";
+  operation: 'read' | 'write' | 'delete' | 'create';
 
   /** Target file path */
   filePath: string;
@@ -112,7 +112,7 @@ export interface FileCreationOptions extends AtomicFileOptions {
 /** File read options with enhanced features */
 export interface FileReadOptions {
   /** Text encoding for reading files (default: 'utf8', use 'buffer' for binary) */
-  encoding?: BufferEncoding | "buffer";
+  encoding?: BufferEncoding | 'buffer';
 
   /** Whether to verify file checksum (default: false) */
   verifyChecksum?: boolean;
@@ -121,7 +121,7 @@ export interface FileReadOptions {
   expectedChecksum?: string;
 
   /** Checksum algorithm to use (default: 'sha256') */
-  checksumAlgorithm?: "md5" | "sha1" | "sha256" | "sha512";
+  checksumAlgorithm?: 'md5' | 'sha1' | 'sha256' | 'sha512';
 
   /** Buffer size for streaming large files (default: 64KB) */
   bufferSize?: number;
@@ -158,7 +158,7 @@ export interface FileWriteOptions {
   /** Whether to verify content after writing */
   verifyAfterWrite?: boolean;
   /** Checksum algorithm for verification */
-  checksumAlgorithm?: "md5" | "sha1" | "sha256";
+  checksumAlgorithm?: 'md5' | 'sha1' | 'sha256';
   /** Buffer size for streaming operations */
   bufferSize?: number;
   /** Enable compression for large files */
@@ -229,12 +229,7 @@ export interface TempFileInfo {
 /** Rollback operation for atomic file operations */
 export interface RollbackOperation {
   /** Type of rollback operation */
-  type:
-    | "file_create"
-    | "file_overwrite"
-    | "file_delete"
-    | "directory_create"
-    | "permission_change";
+  type: 'file_create' | 'file_overwrite' | 'file_delete' | 'directory_create' | 'permission_change';
   /** Path to the file/directory involved */
   filePath: string;
   /** Optional backup file path */
@@ -268,7 +263,7 @@ export interface RollbackStep {
   description: string;
 
   /** Step type */
-  type: "backup" | "write" | "rename" | "delete" | "permissions";
+  type: 'backup' | 'write' | 'rename' | 'delete' | 'permissions';
 
   /** File path affected by this step */
   filePath: string;
@@ -332,7 +327,7 @@ export interface WALEntry {
   operationId: string;
 
   /** Entry type */
-  type: "begin" | "step" | "commit" | "rollback";
+  type: 'begin' | 'step' | 'commit' | 'rollback';
 
   /** Timestamp */
   timestamp: number;
@@ -391,22 +386,22 @@ export interface BatchOperationResult {
 
 /** Error types for atomic operations */
 export const AtomicOperationError = {
-  FILE_NOT_FOUND: "FILE_NOT_FOUND",
-  PERMISSION_DENIED: "PERMISSION_DENIED",
-  TEMP_FILE_CREATION_FAILED: "TEMP_FILE_CREATION_FAILED",
-  WRITE_FAILED: "WRITE_FAILED",
-  FSYNC_FAILED: "FSYNC_FAILED",
-  RENAME_FAILED: "RENAME_FAILED",
-  CLEANUP_FAILED: "CLEANUP_FAILED",
-  TIMEOUT: "TIMEOUT",
-  ROLLBACK_FAILED: "ROLLBACK_FAILED",
-  WAL_CORRUPTION: "WAL_CORRUPTION",
-  INVALID_OPERATION: "INVALID_OPERATION",
-  DISK_FULL: "DISK_FULL",
-  LOCK_FAILED: "LOCK_FAILED",
+  FILE_NOT_FOUND: 'FILE_NOT_FOUND',
+  PERMISSION_DENIED: 'PERMISSION_DENIED',
+  TEMP_FILE_CREATION_FAILED: 'TEMP_FILE_CREATION_FAILED',
+  WRITE_FAILED: 'WRITE_FAILED',
+  FSYNC_FAILED: 'FSYNC_FAILED',
+  RENAME_FAILED: 'RENAME_FAILED',
+  CLEANUP_FAILED: 'CLEANUP_FAILED',
+  TIMEOUT: 'TIMEOUT',
+  ROLLBACK_FAILED: 'ROLLBACK_FAILED',
+  WAL_CORRUPTION: 'WAL_CORRUPTION',
+  INVALID_OPERATION: 'INVALID_OPERATION',
+  DISK_FULL: 'DISK_FULL',
+  LOCK_FAILED: 'LOCK_FAILED',
 } as const;
 
-export type AtomicOperationError = typeof AtomicOperationError[keyof typeof AtomicOperationError];
+export type AtomicOperationError = (typeof AtomicOperationError)[keyof typeof AtomicOperationError];
 
 /** Metadata about an atomic operation */
 export interface AtomicOperationResultMetadata {

@@ -5,10 +5,10 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import * as cheerio from "cheerio";
-import { Node } from "domhandler";
-import * as fs from "fs/promises";
-import { z } from "zod";
+import * as cheerio from 'cheerio';
+import { Node } from 'domhandler';
+import * as fs from 'fs/promises';
+import { z } from 'zod';
 
 /**
  * Configuration options for HTML class extraction
@@ -63,13 +63,9 @@ export class HtmlParsingError extends Error {
   public source?: string;
   public cause?: Error;
 
-  constructor(
-    message: string,
-    source?: string,
-    cause?: Error,
-  ) {
+  constructor(message: string, source?: string, cause?: Error) {
     super(message);
-    this.name = "HtmlParsingError";
+    this.name = 'HtmlParsingError';
     this.source = source;
     this.cause = cause;
   }
@@ -79,13 +75,9 @@ export class FileReadError extends Error {
   public filePath?: string;
   public cause?: Error;
 
-  constructor(
-    message: string,
-    filePath?: string,
-    cause?: Error,
-  ) {
+  constructor(message: string, filePath?: string, cause?: Error) {
     super(message);
-    this.name = "FileReadError";
+    this.name = 'FileReadError';
     this.filePath = filePath;
     this.cause = cause;
   }
@@ -104,10 +96,7 @@ export class HtmlExtractor {
   /**
    * Extract classes from HTML string
    */
-  async extractFromString(
-    html: string,
-    source = "string",
-  ): Promise<HtmlClassExtractionResult> {
+  async extractFromString(html: string, source = 'string'): Promise<HtmlClassExtractionResult> {
     const startTime = Date.now();
     const metadata = {
       source,
@@ -132,10 +121,10 @@ export class HtmlExtractor {
       let totalClasses = 0;
 
       // Find all elements with class attributes
-      $("[class]").each((index, element) => {
+      $('[class]').each((index, element) => {
         totalElements++;
         const $element = $(element);
-        const classAttr = $element.attr("class");
+        const classAttr = $element.attr('class');
 
         if (!classAttr) return;
 
@@ -144,7 +133,7 @@ export class HtmlExtractor {
         totalClasses += elementClasses.length;
 
         // Get element context
-        const tagName = element.tagName?.toLowerCase() || "unknown";
+        const tagName = element.tagName?.toLowerCase() || 'unknown';
         const attributes = element.attribs || {};
         const depth = this.calculateDepth($element);
 
@@ -186,15 +175,13 @@ export class HtmlExtractor {
         metadata,
       };
     } catch (error) {
-      metadata.errors.push(
-        error instanceof Error ? error.message : String(error),
-      );
+      metadata.errors.push(error instanceof Error ? error.message : String(error));
       metadata.processingTime = Date.now() - startTime;
 
       throw new HtmlParsingError(
         `Failed to parse HTML: ${error instanceof Error ? error.message : String(error)}`,
         source,
-        error instanceof Error ? error : undefined,
+        error instanceof Error ? error : undefined
       );
     }
   }
@@ -209,15 +196,12 @@ export class HtmlExtractor {
       if (stats.size > this.options.maxFileSize) {
         throw new FileReadError(
           `File size (${stats.size} bytes) exceeds maximum allowed size (${this.options.maxFileSize} bytes)`,
-          filePath,
+          filePath
         );
       }
 
       // Read file with timeout
-      const html = await this.readFileWithTimeout(
-        filePath,
-        this.options.timeout,
-      );
+      const html = await this.readFileWithTimeout(filePath, this.options.timeout);
       const result = await this.extractFromString(html, filePath);
 
       // Add file metadata
@@ -232,7 +216,7 @@ export class HtmlExtractor {
       throw new FileReadError(
         `Failed to read file: ${error instanceof Error ? error.message : String(error)}`,
         filePath,
-        error instanceof Error ? error : undefined,
+        error instanceof Error ? error : undefined
       );
     }
   }
@@ -240,9 +224,7 @@ export class HtmlExtractor {
   /**
    * Extract classes from multiple HTML files
    */
-  async extractFromFiles(
-    filePaths: string[],
-  ): Promise<HtmlClassExtractionResult[]> {
+  async extractFromFiles(filePaths: string[]): Promise<HtmlClassExtractionResult[]> {
     const results: HtmlClassExtractionResult[] = [];
 
     for (const filePath of filePaths) {
@@ -293,7 +275,7 @@ export class HtmlExtractor {
     let depth = 0;
     let current = ($element as any).parent();
 
-    while (current.length > 0 && current.prop("tagName") !== "HTML") {
+    while (current.length > 0 && current.prop('tagName') !== 'HTML') {
       depth++;
       current = current.parent();
     }
@@ -304,16 +286,13 @@ export class HtmlExtractor {
   /**
    * Sanitize element attributes to avoid sensitive data exposure
    */
-  private sanitizeAttributes(
-    attributes: Record<string, string>,
-  ): Record<string, string> {
+  private sanitizeAttributes(attributes: Record<string, string>): Record<string, string> {
     const sanitized: Record<string, string> = {};
-    const allowedAttributes = ["id", "class", "data-", "aria-"];
+    const allowedAttributes = ['id', 'class', 'data-', 'aria-'];
 
     Object.entries(attributes).forEach(([key, value]) => {
       if (allowedAttributes.some((allowed) => key.startsWith(allowed))) {
-        sanitized[key] =
-          value.length > 100 ? value.substring(0, 100) + "..." : value;
+        sanitized[key] = value.length > 100 ? value.substring(0, 100) + '...' : value;
       }
     });
 
@@ -323,16 +302,13 @@ export class HtmlExtractor {
   /**
    * Read file with timeout protection
    */
-  private async readFileWithTimeout(
-    filePath: string,
-    timeout: number,
-  ): Promise<string> {
+  private async readFileWithTimeout(filePath: string, timeout: number): Promise<string> {
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
         reject(new Error(`File read timeout after ${timeout}ms`));
       }, timeout);
 
-      fs.readFile(filePath, "utf8")
+      fs.readFile(filePath, 'utf8')
         .then((content) => {
           clearTimeout(timer);
           resolve(content);
@@ -348,9 +324,7 @@ export class HtmlExtractor {
 /**
  * Convenience function to create extractor with default options
  */
-export function createHtmlExtractor(
-  options: Partial<HtmlExtractionOptions> = {},
-): HtmlExtractor {
+export function createHtmlExtractor(options: Partial<HtmlExtractionOptions> = {}): HtmlExtractor {
   return new HtmlExtractor(options);
 }
 
@@ -359,7 +333,7 @@ export function createHtmlExtractor(
  */
 export async function extractClassesFromHtml(
   html: string,
-  options: Partial<HtmlExtractionOptions> = {},
+  options: Partial<HtmlExtractionOptions> = {}
 ): Promise<HtmlClassExtractionResult> {
   const extractor = new HtmlExtractor(options);
   return extractor.extractFromString(html);
@@ -370,7 +344,7 @@ export async function extractClassesFromHtml(
  */
 export async function extractClassesFromFile(
   filePath: string,
-  options: Partial<HtmlExtractionOptions> = {},
+  options: Partial<HtmlExtractionOptions> = {}
 ): Promise<HtmlClassExtractionResult> {
   const extractor = new HtmlExtractor(options);
   return extractor.extractFromFile(filePath);

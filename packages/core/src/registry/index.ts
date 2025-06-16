@@ -3,4 +3,4 @@
  * Manages plugin registration and discovery
  */
 
-export * from './pluginRegistry'; 
+export * from './pluginRegistry';

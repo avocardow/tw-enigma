@@ -5,11 +5,11 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { DevDashboard, DashboardConfig, DashboardMetrics } from "./devDashboard";
-import { DevHotReload, HMROptimizationResult } from "./devHotReload";
-import { DevIdeIntegration } from "./devIdeIntegration";
-import { createLogger, Logger } from "./utils/logger";
-import { writeFile } from "fs/promises";
+import { DevDashboard, DashboardConfig, DashboardMetrics } from './devDashboard';
+import { DevHotReload, HMROptimizationResult } from './devHotReload';
+import { DevIdeIntegration } from './devIdeIntegration';
+import { createLogger, Logger } from './utils/logger';
+import { writeFile } from 'fs/promises';
 import { EventEmitter } from 'events';
 
 /**
@@ -154,7 +154,7 @@ export class DevDashboardEnhanced extends EventEmitter {
     this.baseDashboard = baseDashboard as DevDashboard;
     this.hotReload = hotReload;
     this.ideIntegration = ideIntegration;
-    this.logger = createLogger("DevDashboardEnhanced");
+    this.logger = createLogger('DevDashboardEnhanced');
     // Defensive: use default config if baseDashboard is missing or getDashboardState is not a function
     let baseConfig: any = {};
     if (this.baseDashboard && typeof this.baseDashboard.getDashboardState === 'function') {
@@ -203,7 +203,7 @@ export class DevDashboardEnhanced extends EventEmitter {
       ...config,
     });
     this.config = normalizedConfig;
-    this.logger.debug("Enhanced dashboard initialized", { config: this.config });
+    this.logger.debug('Enhanced dashboard initialized', { config: this.config });
   }
 
   /**
@@ -302,7 +302,7 @@ export class DevDashboardEnhanced extends EventEmitter {
    * Start enhanced dashboard features
    */
   async start(): Promise<void> {
-    this.logger.info("Starting enhanced dashboard features");
+    this.logger.info('Starting enhanced dashboard features');
 
     try {
       // Set up event listeners for data sources
@@ -321,10 +321,9 @@ export class DevDashboardEnhanced extends EventEmitter {
         this.startRealTimeUpdates();
       }
 
-      this.logger.info("Enhanced dashboard features started");
-
+      this.logger.info('Enhanced dashboard features started');
     } catch (error) {
-      this.logger.error("Failed to start enhanced dashboard features", { error });
+      this.logger.error('Failed to start enhanced dashboard features', { error });
       throw error;
     }
   }
@@ -333,7 +332,7 @@ export class DevDashboardEnhanced extends EventEmitter {
    * Stop enhanced dashboard features
    */
   async stop(): Promise<void> {
-    this.logger.info("Stopping enhanced dashboard features");
+    this.logger.info('Stopping enhanced dashboard features');
 
     if (this.analyticsInterval) {
       clearInterval(this.analyticsInterval);
@@ -341,7 +340,7 @@ export class DevDashboardEnhanced extends EventEmitter {
     }
 
     this.isAnalyticsActive = false;
-    this.logger.info("Enhanced dashboard features stopped");
+    this.logger.info('Enhanced dashboard features stopped');
   }
 
   /**
@@ -355,7 +354,7 @@ export class DevDashboardEnhanced extends EventEmitter {
     config: EnhancedDashboardConfig;
   } {
     const baseState = this.baseDashboard?.getDashboardState();
-    
+
     return {
       base: baseState,
       analytics: this.analyticsData.slice(-100), // Last 100 entries
@@ -368,14 +367,18 @@ export class DevDashboardEnhanced extends EventEmitter {
   /**
    * Generate analytics report
    */
-  async generateReport(format: 'json' | 'csv' | 'html' = 'json', options?: any): Promise<{ format: string; content: string }> {
+  async generateReport(
+    format: 'json' | 'csv' | 'html' = 'json',
+    options?: any
+  ): Promise<{ format: string; content: string }> {
     let content = '';
     if (format === 'json') {
       // For test compatibility: wrap analyticsState in 'analytics' and merge options at top level
       const reportObj = { analytics: this.analyticsState, ...(options || {}) };
       content = JSON.stringify(reportObj);
     } else if (format === 'csv') {
-      content = 'Timestamp,file,originalSize,optimizedSize\n2024-01-01T00:00:00.000Z,foo.css,100,80';
+      content =
+        'Timestamp,file,originalSize,optimizedSize\n2024-01-01T00:00:00.000Z,foo.css,100,80';
     } else if (format === 'html') {
       content = '<!DOCTYPE html>\n<html><body>chart</body></html>';
     } else {
@@ -390,7 +393,7 @@ export class DevDashboardEnhanced extends EventEmitter {
   async exportAnalytics(filepath: string, format: 'json' | 'csv' | 'html' = 'json'): Promise<void> {
     const report = await this.generateReport(format);
     await writeFile(filepath, report.content);
-    this.logger.info("Analytics exported", { filepath, format: report.format });
+    this.logger.info('Analytics exported', { filepath, format: report.format });
   }
 
   /**
@@ -402,7 +405,7 @@ export class DevDashboardEnhanced extends EventEmitter {
     bottlenecks: Array<{ issue: string; impact: string; solution: string }>;
   } {
     const recent = this.analyticsData.slice(-50);
-    
+
     return {
       trends: this.calculateTrends(recent),
       recommendations: this.generateRecommendations(recent),
@@ -455,7 +458,7 @@ export class DevDashboardEnhanced extends EventEmitter {
       this.collectAnalytics();
     }, 60000);
 
-    this.logger.debug("Analytics collection started");
+    this.logger.debug('Analytics collection started');
   }
 
   /**
@@ -482,13 +485,18 @@ export class DevDashboardEnhanced extends EventEmitter {
     this.analyticsData.push(analytics);
 
     // Cleanup old data
-    const cutoff = new Date(now.getTime() - (this.config.analytics.retentionDays * 24 * 60 * 60 * 1000));
-    this.analyticsData = this.analyticsData.filter(data => data.timestamp > cutoff);
+    const cutoff = new Date(
+      now.getTime() - this.config.analytics.retentionDays * 24 * 60 * 60 * 1000
+    );
+    this.analyticsData = this.analyticsData.filter((data) => data.timestamp > cutoff);
 
     // Check alerts
     this.checkAlerts(analytics);
 
-    this.logger.debug("Analytics collected", { timestamp: now, dataPoints: this.analyticsData.length });
+    this.logger.debug('Analytics collected', {
+      timestamp: now,
+      dataPoints: this.analyticsData.length,
+    });
   }
 
   /**
@@ -511,7 +519,7 @@ export class DevDashboardEnhanced extends EventEmitter {
       this.charts.set('classUsage', this.generateClassUsageChart());
     }
 
-    this.logger.debug("Charts generated", { count: this.charts.size });
+    this.logger.debug('Charts generated', { count: this.charts.size });
   }
 
   /**
@@ -519,24 +527,24 @@ export class DevDashboardEnhanced extends EventEmitter {
    */
   private generatePerformanceChart(): ChartData {
     const recent = this.analyticsData.slice(-20);
-    
+
     return {
       type: 'line',
       title: 'Performance Over Time',
       description: 'Memory usage and optimization times',
       data: {
-        labels: recent.map(d => d.timestamp.toLocaleTimeString()),
+        labels: recent.map((d) => d.timestamp.toLocaleTimeString()),
         datasets: [
           {
             label: 'Memory Usage (MB)',
-            data: recent.map(d => d.performance.memoryPeak / (1024 * 1024)),
+            data: recent.map((d) => d.performance.memoryPeak / (1024 * 1024)),
             borderColor: '#3b82f6',
             backgroundColor: 'rgba(59, 130, 246, 0.1)',
             fill: true,
           },
           {
             label: 'Avg Optimization Time (ms)',
-            data: recent.map(d => d.optimizations.averageTime),
+            data: recent.map((d) => d.optimizations.averageTime),
             borderColor: '#ef4444',
             backgroundColor: 'rgba(239, 68, 68, 0.1)',
             fill: false,
@@ -559,22 +567,22 @@ export class DevDashboardEnhanced extends EventEmitter {
    */
   private generateOptimizationChart(): ChartData {
     const recent = this.analyticsData.slice(-10);
-    
+
     return {
       type: 'bar',
       title: 'Optimization Results',
       description: 'Success vs failure rates',
       data: {
-        labels: recent.map(d => d.timestamp.toLocaleDateString()),
+        labels: recent.map((d) => d.timestamp.toLocaleDateString()),
         datasets: [
           {
             label: 'Successful',
-            data: recent.map(d => d.optimizations.successful),
+            data: recent.map((d) => d.optimizations.successful),
             backgroundColor: '#10b981',
           },
           {
             label: 'Failed',
-            data: recent.map(d => d.optimizations.failed),
+            data: recent.map((d) => d.optimizations.failed),
             backgroundColor: '#ef4444',
           },
         ],
@@ -595,7 +603,7 @@ export class DevDashboardEnhanced extends EventEmitter {
    */
   private generateFileChangesChart(): ChartData {
     const recent = this.analyticsData.slice(-1)[0];
-    
+
     if (!recent) {
       return {
         type: 'pie',
@@ -631,7 +639,7 @@ export class DevDashboardEnhanced extends EventEmitter {
    */
   private generateClassUsageChart(): ChartData {
     const recent = this.analyticsData.slice(-1)[0];
-    
+
     if (!recent) {
       return {
         type: 'bar',
@@ -691,7 +699,7 @@ export class DevDashboardEnhanced extends EventEmitter {
     }
 
     const total = metrics.length;
-    const successful = metrics.filter(m => m.optimization.processingTime > 0).length;
+    const successful = metrics.filter((m) => m.optimization.processingTime > 0).length;
     const failed = total - successful;
     const averageTime = metrics.reduce((sum, m) => sum + m.optimization.processingTime, 0) / total;
     const sizeReduction = metrics.reduce((sum, m) => sum + m.optimization.sizeReduction, 0) / total;
@@ -707,8 +715,10 @@ export class DevDashboardEnhanced extends EventEmitter {
       return { memoryPeak: 0, cpuAverage: 0, diskIO: 0, networkLatency: 0 };
     }
 
-    const memoryPeak = Math.max(...metrics.map(m => m.system.memoryUsage.heapUsed));
-    const cpuAverage = metrics.reduce((sum, m) => sum + (m.system.cpuUsage.user + m.system.cpuUsage.system), 0) / metrics.length;
+    const memoryPeak = Math.max(...metrics.map((m) => m.system.memoryUsage.heapUsed));
+    const cpuAverage =
+      metrics.reduce((sum, m) => sum + (m.system.cpuUsage.user + m.system.cpuUsage.system), 0) /
+      metrics.length;
 
     return {
       memoryPeak,
@@ -726,7 +736,7 @@ export class DevDashboardEnhanced extends EventEmitter {
     return {
       totalProcessed: 0,
       typesDistribution: { '.css': 10, '.html': 15, '.js': 20, '.tsx': 25 },
-      sizesDistribution: { 'small': 30, 'medium': 20, 'large': 5 },
+      sizesDistribution: { small: 30, medium: 20, large: 5 },
       changeFrequency: {},
     };
   }
@@ -749,16 +759,16 @@ export class DevDashboardEnhanced extends EventEmitter {
    * Calculate error statistics
    */
   private calculateErrorStats(logs: any[]): AnalyticsData['errors'] {
-    const errors = logs.filter(log => log.level === 'error');
+    const errors = logs.filter((log) => log.level === 'error');
     const total = errors.length;
     const byType: Record<string, number> = {};
-    const recent = errors.slice(-10).map(error => ({
+    const recent = errors.slice(-10).map((error) => ({
       time: error.timestamp,
       error: error.message,
       severity: error.level,
     }));
 
-    errors.forEach(error => {
+    errors.forEach((error) => {
       const type = error.module || 'unknown';
       byType[type] = (byType[type] || 0) + 1;
     });
@@ -777,7 +787,7 @@ export class DevDashboardEnhanced extends EventEmitter {
       const alertKey = 'optimization-time-high';
       if (!this.alertsTriggered.has(alertKey)) {
         this.alertsTriggered.add(alertKey);
-        this.logger.warn("Performance alert: Optimization time threshold exceeded", {
+        this.logger.warn('Performance alert: Optimization time threshold exceeded', {
           current: analytics.optimizations.averageTime,
           threshold: performanceThresholds.optimizationTime,
         });
@@ -789,7 +799,7 @@ export class DevDashboardEnhanced extends EventEmitter {
       const alertKey = 'memory-usage-high';
       if (!this.alertsTriggered.has(alertKey)) {
         this.alertsTriggered.add(alertKey);
-        this.logger.warn("Performance alert: Memory usage threshold exceeded", {
+        this.logger.warn('Performance alert: Memory usage threshold exceeded', {
           current: analytics.performance.memoryPeak,
           threshold: performanceThresholds.memoryUsage,
         });
@@ -797,15 +807,16 @@ export class DevDashboardEnhanced extends EventEmitter {
     }
 
     // Check error rate threshold
-    const errorRate = analytics.optimizations.total > 0 
-      ? (analytics.optimizations.failed / analytics.optimizations.total) * 100 
-      : 0;
-    
+    const errorRate =
+      analytics.optimizations.total > 0
+        ? (analytics.optimizations.failed / analytics.optimizations.total) * 100
+        : 0;
+
     if (errorRate > performanceThresholds.errorRate) {
       const alertKey = 'error-rate-high';
       if (!this.alertsTriggered.has(alertKey)) {
         this.alertsTriggered.add(alertKey);
-        this.logger.warn("Performance alert: Error rate threshold exceeded", {
+        this.logger.warn('Performance alert: Error rate threshold exceeded', {
           current: errorRate,
           threshold: performanceThresholds.errorRate,
         });
@@ -818,27 +829,36 @@ export class DevDashboardEnhanced extends EventEmitter {
    */
   private collectAnalyticsFromMetrics(metrics: DashboardMetrics): void {
     // Process metrics for analytics
-    this.logger.debug("Processing metrics for analytics", { timestamp: metrics.timestamp });
+    this.logger.debug('Processing metrics for analytics', { timestamp: metrics.timestamp });
   }
 
   private processLogEntry(entry: any): void {
     // Process log entries for analytics
-    this.logger.debug("Processing log entry for analytics", { level: entry.level, module: entry.module });
+    this.logger.debug('Processing log entry for analytics', {
+      level: entry.level,
+      module: entry.module,
+    });
   }
 
   private collectOptimizationAnalytics(result: HMROptimizationResult): void {
     // Process HMR optimization results
-    this.logger.debug("Processing optimization result for analytics", { id: result.id, success: result.success });
+    this.logger.debug('Processing optimization result for analytics', {
+      id: result.id,
+      success: result.success,
+    });
   }
 
   private collectFileChangeAnalytics(event: any): void {
     // Process file change events
-    this.logger.debug("Processing file change for analytics", { path: event.path, type: event.type });
+    this.logger.debug('Processing file change for analytics', {
+      path: event.path,
+      type: event.type,
+    });
   }
 
   private collectDiagnosticsAnalytics(uri: string, diagnostics: any[]): void {
     // Process IDE diagnostics
-    this.logger.debug("Processing diagnostics for analytics", { uri, count: diagnostics.length });
+    this.logger.debug('Processing diagnostics for analytics', { uri, count: diagnostics.length });
   }
 
   /**
@@ -861,7 +881,9 @@ export class DevDashboardEnhanced extends EventEmitter {
     ];
   }
 
-  private identifyBottlenecks(_data: AnalyticsData[]): Array<{ issue: string; impact: string; solution: string }> {
+  private identifyBottlenecks(
+    _data: AnalyticsData[]
+  ): Array<{ issue: string; impact: string; solution: string }> {
     return [
       {
         issue: 'High memory usage during optimization',
@@ -915,11 +937,12 @@ export class DevDashboardEnhanced extends EventEmitter {
     // For test compatibility: expose .visualizations.enabled as a top-level boolean
     const visualizations = {
       ...this.config.visualization,
-      enabled: this.config.visualization?.charts ? 
-        (this.config.visualization.charts.performance || 
-         this.config.visualization.charts.optimization || 
-         this.config.visualization.charts.fileChanges || 
-         this.config.visualization.charts.classUsage) : true,
+      enabled: this.config.visualization?.charts
+        ? this.config.visualization.charts.performance ||
+          this.config.visualization.charts.optimization ||
+          this.config.visualization.charts.fileChanges ||
+          this.config.visualization.charts.classUsage
+        : true,
     };
     return {
       isActive: this.isAnalyticsActive,
@@ -985,12 +1008,12 @@ export class DevDashboardEnhanced extends EventEmitter {
   }
 
   async handleHotReloadEvent(data?: any) {
-    this.analyticsState.fileChanges.total += (data?.total || 1);
+    this.analyticsState.fileChanges.total += data?.total || 1;
     return Promise.resolve();
   }
 
   async handleIdeEvent(data?: any) {
-    this.analyticsState.classUsage.totalClasses += (data?.totalClasses || 1);
+    this.analyticsState.classUsage.totalClasses += data?.totalClasses || 1;
     return Promise.resolve();
   }
 
@@ -1001,7 +1024,10 @@ export class DevDashboardEnhanced extends EventEmitter {
       if (parsed && typeof parsed === 'object') {
         if (Array.isArray(parsed.optimizations)) {
           this.analyticsState.optimizations.total = parsed.optimizations.length;
-          this.analyticsState.optimizations.totalSavings = parsed.optimizations.reduce((sum: number, o: any) => sum + (o.savings || 0), 0);
+          this.analyticsState.optimizations.totalSavings = parsed.optimizations.reduce(
+            (sum: number, o: any) => sum + (o.savings || 0),
+            0
+          );
         } else {
           this.analyticsState = { ...this.analyticsState, ...parsed };
         }
@@ -1091,4 +1117,4 @@ export function createDevDashboardEnhanced(
   ideIntegration?: DevIdeIntegration
 ): DevDashboardEnhanced {
   return new DevDashboardEnhanced(baseDashboard, config, hotReload, ideIntegration);
-} 
+}

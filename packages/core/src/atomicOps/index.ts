@@ -10,22 +10,22 @@
  * @module atomicOps
  */
 
-import { AtomicFileCreator } from "./AtomicFileCreator";
-import { AtomicFileReader } from "./AtomicFileReader";
-import { AtomicFileWriter } from "./AtomicFileWriter";
-import { AtomicFileManager } from "./AtomicFileManager";
-import { AtomicRollbackManager } from "./AtomicRollbackManager";
-import { AtomicPermissionManager } from "./AtomicPermissionManager";
+import { AtomicFileCreator } from './AtomicFileCreator';
+import { AtomicFileReader } from './AtomicFileReader';
+import { AtomicFileWriter } from './AtomicFileWriter';
+import { AtomicFileManager } from './AtomicFileManager';
+import { AtomicRollbackManager } from './AtomicRollbackManager';
+import { AtomicPermissionManager } from './AtomicPermissionManager';
 
 // Re-export all classes
-export { AtomicFileCreator } from "./AtomicFileCreator";
-export { AtomicFileReader } from "./AtomicFileReader";
-export { AtomicFileWriter } from "./AtomicFileWriter";
-export { AtomicFileManager } from "./AtomicFileManager";
-export { AtomicRollbackManager } from "./AtomicRollbackManager";
-export { AtomicPermissionManager } from "./AtomicPermissionManager";
+export { AtomicFileCreator } from './AtomicFileCreator';
+export { AtomicFileReader } from './AtomicFileReader';
+export { AtomicFileWriter } from './AtomicFileWriter';
+export { AtomicFileManager } from './AtomicFileManager';
+export { AtomicRollbackManager } from './AtomicRollbackManager';
+export { AtomicPermissionManager } from './AtomicPermissionManager';
 
-export * from "../types/legacy/atomicOps";
+export * from '../types/legacy/atomicOps';
 
 /**
  * Comprehensive atomic file operations system
@@ -40,7 +40,7 @@ export class AtomicOperationsSystem {
   private readonly rollbackManager: AtomicRollbackManager;
   private readonly permissionManager: AtomicPermissionManager;
 
-  constructor(options: import("../types/atomicOps").AtomicFileOptions = {}) {
+  constructor(options: import('../types/atomicOps').AtomicFileOptions = {}) {
     // Initialize all components with shared options
     this.fileCreator = new AtomicFileCreator(options);
     this.fileReader = new AtomicFileReader(options);
@@ -98,37 +98,34 @@ export class AtomicOperationsSystem {
    * @returns Promise resolving to operation result
    */
   async performAtomicOperation(operation: {
-    type: "create" | "read" | "write" | "delete";
+    type: 'create' | 'read' | 'write' | 'delete';
     filePath: string;
     content?: string | Buffer;
     permissions?: number;
     options?: any;
-  }): Promise<import("../types/atomicOps").AtomicOperationResult> {
+  }): Promise<import('../types/atomicOps').AtomicOperationResult> {
     const transactionId = this.rollbackManager.beginTransaction(
-      `Atomic ${operation.type} operation on ${operation.filePath}`,
+      `Atomic ${operation.type} operation on ${operation.filePath}`
     );
 
     try {
-      let result: import("../types/atomicOps").AtomicOperationResult;
+      let result: import('../types/atomicOps').AtomicOperationResult;
       let rollbackOperation: any = null;
 
       switch (operation.type) {
-        case "create":
+        case 'create':
           if (!operation.content) {
-            throw new Error("Content required for create operation");
+            throw new Error('Content required for create operation');
           }
           result = await this.fileCreator.createFile(
             operation.filePath,
             operation.content,
-            operation.options,
+            operation.options
           );
           break;
 
-        case "read": {
-          const readResult = await this.fileReader.readFile(
-            operation.filePath,
-            operation.options,
-          );
+        case 'read': {
+          const readResult = await this.fileReader.readFile(operation.filePath, operation.options);
           // Map content to fileContent for API consistency
           result = {
             ...readResult,
@@ -137,33 +134,31 @@ export class AtomicOperationsSystem {
           break;
         }
 
-        case "write":
+        case 'write':
           if (!operation.content) {
-            throw new Error("Content required for write operation");
+            throw new Error('Content required for write operation');
           }
           result = await this.fileWriter.writeFile(
             operation.filePath,
             operation.content,
-            operation.options,
+            operation.options
           );
           break;
 
-        case "delete": {
+        case 'delete': {
           // Create backup before deletion
-          const tempInfo = await this.fileManager.createTempFile(
-            operation.filePath,
-          );
+          const tempInfo = await this.fileManager.createTempFile(operation.filePath);
           // Create rollback operation separately since it's not part of AtomicOperationResult
           rollbackOperation = {
-            type: "file_delete" as const,
+            type: 'file_delete' as const,
             filePath: operation.filePath,
             backupPath: tempInfo.path,
             timestamp: Date.now(),
           };
-          
+
           result = {
             success: true,
-            operation: "delete",
+            operation: 'delete',
             filePath: operation.filePath,
             bytesProcessed: 0,
             duration: 0,
@@ -186,19 +181,13 @@ export class AtomicOperationsSystem {
       }
 
       // Add rollback operation if successful (for delete operations)
-      if (result.success && operation.type === "delete") {
-        this.rollbackManager.addRollbackOperation(
-          transactionId,
-          rollbackOperation,
-        );
+      if (result.success && operation.type === 'delete') {
+        this.rollbackManager.addRollbackOperation(transactionId, rollbackOperation);
       }
 
       // Handle permissions if specified
       if (operation.permissions && result.success) {
-        await this.permissionManager.changePermissions(
-          operation.filePath,
-          operation.permissions,
-        );
+        await this.permissionManager.changePermissions(operation.filePath, operation.permissions);
         // Note: Permission changes would need separate rollback tracking
       }
 
@@ -236,7 +225,7 @@ export class AtomicOperationsSystem {
    * Performs comprehensive system health check
    */
   async healthCheck(): Promise<{
-    status: "healthy" | "degraded" | "unhealthy";
+    status: 'healthy' | 'degraded' | 'unhealthy';
     components: Record<string, boolean>;
     metrics: any;
   }> {
@@ -257,26 +246,18 @@ export class AtomicOperationsSystem {
       Object.keys(components).forEach((key) => {
         const componentMetrics = metrics[key as keyof typeof metrics];
         const errorRate =
-          componentMetrics.failedOperations /
-          (componentMetrics.totalOperations || 1);
+          componentMetrics.failedOperations / (componentMetrics.totalOperations || 1);
         components[key as keyof typeof components] = errorRate < 0.1; // Less than 10% error rate
         if (components[key as keyof typeof components]) healthyCount++;
       });
 
-      const status =
-        healthyCount === 6
-          ? "healthy"
-          : healthyCount >= 4
-            ? "degraded"
-            : "unhealthy";
+      const status = healthyCount === 6 ? 'healthy' : healthyCount >= 4 ? 'degraded' : 'unhealthy';
 
       return { status, components, metrics };
     } catch {
       return {
-        status: "unhealthy",
-        components: Object.fromEntries(
-          Object.keys(components).map((k) => [k, false]),
-        ),
+        status: 'unhealthy',
+        components: Object.fromEntries(Object.keys(components).map((k) => [k, false])),
         metrics: null,
       };
     }
@@ -289,32 +270,26 @@ export class AtomicOperationsSystem {
     const shutdownPromises = [];
 
     // Only call shutdown on components that have the method
-    if (this.fileCreator && typeof this.fileCreator.shutdown === "function") {
+    if (this.fileCreator && typeof this.fileCreator.shutdown === 'function') {
       shutdownPromises.push(this.fileCreator.shutdown());
     }
-    if (this.fileReader && typeof this.fileReader.shutdown === "function") {
+    if (this.fileReader && typeof this.fileReader.shutdown === 'function') {
       shutdownPromises.push(this.fileReader.shutdown());
     }
-    if (this.fileWriter && typeof this.fileWriter.shutdown === "function") {
+    if (this.fileWriter && typeof this.fileWriter.shutdown === 'function') {
       shutdownPromises.push(this.fileWriter.shutdown());
     }
-    if (this.fileManager && typeof this.fileManager.shutdown === "function") {
+    if (this.fileManager && typeof this.fileManager.shutdown === 'function') {
       shutdownPromises.push(this.fileManager.shutdown());
     }
-    if (
-      this.rollbackManager &&
-      typeof this.rollbackManager.shutdown === "function"
-    ) {
+    if (this.rollbackManager && typeof this.rollbackManager.shutdown === 'function') {
       shutdownPromises.push(this.rollbackManager.shutdown());
     }
-    if (
-      this.permissionManager &&
-      typeof this.permissionManager.shutdown === "function"
-    ) {
+    if (this.permissionManager && typeof this.permissionManager.shutdown === 'function') {
       shutdownPromises.push(this.permissionManager.shutdown());
     }
 
     await Promise.all(shutdownPromises);
-    console.log("AtomicOperationsSystem shutdown complete.");
+    console.log('AtomicOperationsSystem shutdown complete.');
   }
 }

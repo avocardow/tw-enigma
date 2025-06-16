@@ -4,4 +4,4 @@
  */
 
 export * from './pluginTemplate';
-export * from './postcssPluginTemplate'; 
+export * from './postcssPluginTemplate';

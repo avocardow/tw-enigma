@@ -10,11 +10,11 @@
  * @module atomicOps/AtomicFileReader
  */
 
-import { promises as fs } from "fs";
-import type { Stats } from "fs";
-import { createReadStream } from "fs";
-import { createHash } from "crypto";
-import { pipeline } from "stream/promises";
+import { promises as fs } from 'fs';
+import type { Stats } from 'fs';
+import { createReadStream } from 'fs';
+import { createHash } from 'crypto';
+import { pipeline } from 'stream/promises';
 
 import {
   AtomicFileOptions,
@@ -22,31 +22,31 @@ import {
   AtomicOperationMetrics,
   AtomicOperationError,
   FileReadOptions,
-} from "../types/legacy/atomicOps";
+} from '../types/legacy/atomicOps';
 
 /** Default options for atomic file operations */
 const DEFAULT_OPTIONS: Required<AtomicFileOptions> = {
   enableFsync: true,
-  tempDirectory: "",
-  tempPrefix: ".tmp-",
-  tempSuffix: ".tmp",
+  tempDirectory: '',
+  tempPrefix: '.tmp-',
+  tempSuffix: '.tmp',
   operationTimeout: 30000,
   preservePermissions: true,
   preserveOwnership: false,
   bufferSize: 64 * 1024, // 64KB
   maxRetryAttempts: 3,
   enableWAL: false,
-  walDirectory: ".wal",
+  walDirectory: '.wal',
   maxRetries: 3,
   retryDelay: 100,
 };
 
 /** Default file read options */
 const DEFAULT_READ_OPTIONS: Required<FileReadOptions> = {
-  encoding: "utf8",
+  encoding: 'utf8',
   verifyChecksum: false,
-  expectedChecksum: "",
-  checksumAlgorithm: "sha256",
+  expectedChecksum: '',
+  checksumAlgorithm: 'sha256',
   bufferSize: 64 * 1024, // 64KB
   enableCaching: false,
   cacheTimeout: 5000, // 5 seconds
@@ -89,14 +89,14 @@ export class AtomicFileReader {
    */
   async readFile(
     filePath: string,
-    options: FileReadOptions = {},
+    options: FileReadOptions = {}
   ): Promise<AtomicOperationResult & { content?: string | Buffer }> {
     const startTime = Date.now();
     const mergedOptions = { ...DEFAULT_READ_OPTIONS, ...options };
 
     const result: AtomicOperationResult & { content?: string | Buffer } = {
       success: false,
-      operation: "read",
+      operation: 'read',
       filePath,
       duration: 0,
       bytesProcessed: 0,
@@ -120,7 +120,7 @@ export class AtomicFileReader {
       // Step 2: Validate file size
       if (stats.size > mergedOptions.maxFileSize) {
         throw new Error(
-          `File size (${stats.size}) exceeds maximum allowed size (${mergedOptions.maxFileSize})`,
+          `File size (${stats.size}) exceeds maximum allowed size (${mergedOptions.maxFileSize})`
         );
       }
 
@@ -135,7 +135,7 @@ export class AtomicFileReader {
           result.metadata.fromCache = true;
           result.metadata.checksumVerified = !!mergedOptions.verifyChecksum;
           result.fileStats = stats;
-          this.updateMetrics("read", true, Date.now() - startTime, stats.size);
+          this.updateMetrics('read', true, Date.now() - startTime, stats.size);
           return result;
         }
       }
@@ -152,13 +152,10 @@ export class AtomicFileReader {
 
       // Step 5: Verify checksum if required
       if (mergedOptions.verifyChecksum && mergedOptions.expectedChecksum) {
-        const actualChecksum = this.calculateChecksum(
-          content,
-          mergedOptions.checksumAlgorithm,
-        );
+        const actualChecksum = this.calculateChecksum(content, mergedOptions.checksumAlgorithm);
         if (actualChecksum !== mergedOptions.expectedChecksum) {
           throw new Error(
-            `Checksum verification failed: expected ${mergedOptions.expectedChecksum}, got ${actualChecksum}`,
+            `Checksum verification failed: expected ${mergedOptions.expectedChecksum}, got ${actualChecksum}`
           );
         }
         result.metadata.checksum = actualChecksum;
@@ -176,7 +173,7 @@ export class AtomicFileReader {
       result.bytesProcessed = stats.size;
       result.fileStats = stats;
 
-      this.updateMetrics("read", true, Date.now() - startTime, stats.size);
+      this.updateMetrics('read', true, Date.now() - startTime, stats.size);
     } catch (error) {
       result.error = {
         code: this.getErrorCode(error),
@@ -184,13 +181,7 @@ export class AtomicFileReader {
         stack: error instanceof Error ? error.stack : undefined,
       };
 
-      this.updateMetrics(
-        "read",
-        false,
-        Date.now() - startTime,
-        0,
-        result.error.code,
-      );
+      this.updateMetrics('read', false, Date.now() - startTime, 0, result.error.code);
     } finally {
       result.metadata.endTime = Date.now();
       result.duration = Math.max(result.metadata.endTime - startTime, 0.1);
@@ -207,11 +198,11 @@ export class AtomicFileReader {
    */
   async readJsonFile(
     filePath: string,
-    options: FileReadOptions = {},
+    options: FileReadOptions = {}
   ): Promise<AtomicOperationResult & { content?: unknown }> {
     const readResult = await this.readFile(filePath, {
       ...options,
-      encoding: "utf8",
+      encoding: 'utf8',
     });
 
     if (!readResult.success || !readResult.content) {
@@ -228,8 +219,8 @@ export class AtomicFileReader {
           success: false,
           content: undefined,
           error: {
-            code: "SCHEMA_VALIDATION_ERROR",
-            message: "Schema validation failed for JSON data",
+            code: 'SCHEMA_VALIDATION_ERROR',
+            message: 'Schema validation failed for JSON data',
           },
         };
       }
@@ -241,11 +232,8 @@ export class AtomicFileReader {
         success: false,
         content: undefined,
         error: {
-          code: "JSON_PARSE_ERROR",
-          message:
-            error instanceof Error
-              ? error.message
-              : "Failed to parse JSON content",
+          code: 'JSON_PARSE_ERROR',
+          message: error instanceof Error ? error.message : 'Failed to parse JSON content',
         },
       };
     }
@@ -259,12 +247,10 @@ export class AtomicFileReader {
    */
   async readMultipleFiles(
     files: Array<{ path: string; options?: FileReadOptions }>,
-    options: { abortOnFirstError?: boolean } = {},
+    options: { abortOnFirstError?: boolean } = {}
   ): Promise<Array<AtomicOperationResult & { content?: string | Buffer }>> {
     const { abortOnFirstError = false } = options;
-    const results: Array<
-      AtomicOperationResult & { content?: string | Buffer }
-    > = [];
+    const results: Array<AtomicOperationResult & { content?: string | Buffer }> = [];
 
     if (abortOnFirstError) {
       // Sequential processing with early termination
@@ -278,24 +264,22 @@ export class AtomicFileReader {
       }
     } else {
       // Parallel processing
-      const promises = files.map((file) =>
-        this.readFile(file.path, file.options),
-      );
+      const promises = files.map((file) => this.readFile(file.path, file.options));
       const allResults = await Promise.allSettled(promises);
 
       results.push(
         ...allResults.map((result) =>
-          result.status === "fulfilled"
+          result.status === 'fulfilled'
             ? result.value
             : {
                 success: false,
-                operation: "read" as const,
-                filePath: "",
+                operation: 'read' as const,
+                filePath: '',
                 duration: 0,
                 bytesProcessed: 0,
                 error: {
-                  code: "UNKNOWN_ERROR",
-                  message: result.reason?.message || "Unknown error",
+                  code: 'UNKNOWN_ERROR',
+                  message: result.reason?.message || 'Unknown error',
                 },
                 metadata: {
                   startTime: Date.now(),
@@ -308,8 +292,8 @@ export class AtomicFileReader {
                   fromCache: false,
                   checksum: undefined,
                 },
-              },
-        ),
+              }
+        )
       );
     }
 
@@ -354,7 +338,7 @@ export class AtomicFileReader {
    */
   async shutdown(): Promise<void> {
     await this.cleanup();
-    console.log("AtomicFileReader shutdown complete.");
+    console.log('AtomicFileReader shutdown complete.');
   }
 
   // Private methods
@@ -398,17 +382,14 @@ export class AtomicFileReader {
     try {
       return await fs.stat(filePath);
     } catch (error: unknown) {
-      if (error && typeof error === 'object' && 'code' in error && error.code === "ENOENT") {
+      if (error && typeof error === 'object' && 'code' in error && error.code === 'ENOENT') {
         throw new Error(`File not found: ${filePath}`);
       }
       throw error;
     }
   }
 
-  private getCachedContent(
-    filePath: string,
-    stats: Stats,
-  ): FileCacheEntry | null {
+  private getCachedContent(filePath: string, stats: Stats): FileCacheEntry | null {
     const entry = this.cache.get(filePath);
     if (!entry) {
       return null;
@@ -429,9 +410,9 @@ export class AtomicFileReader {
 
   private async readFileDirectly(
     filePath: string,
-    options: Required<FileReadOptions>,
+    options: Required<FileReadOptions>
   ): Promise<string | Buffer> {
-    if (options.encoding === "buffer") {
+    if (options.encoding === 'buffer') {
       return await fs.readFile(filePath);
     } else {
       return await fs.readFile(filePath, options.encoding);
@@ -440,7 +421,7 @@ export class AtomicFileReader {
 
   private async readFileStreaming(
     filePath: string,
-    options: Required<FileReadOptions>,
+    options: Required<FileReadOptions>
   ): Promise<string | Buffer> {
     const chunks: Buffer[] = [];
     const readStream = createReadStream(filePath, {
@@ -456,27 +437,24 @@ export class AtomicFileReader {
 
     const buffer = Buffer.concat(chunks);
 
-    if (options.encoding === "buffer") {
+    if (options.encoding === 'buffer') {
       return buffer;
     } else {
       return buffer.toString(options.encoding);
     }
   }
 
-  private calculateChecksum(
-    content: string | Buffer,
-    algorithm: string,
-  ): string {
+  private calculateChecksum(content: string | Buffer, algorithm: string): string {
     const hash = createHash(algorithm);
     hash.update(content);
-    return hash.digest("hex");
+    return hash.digest('hex');
   }
 
   private cacheContent(
     filePath: string,
     content: string | Buffer,
     stats: Stats,
-    options: Required<FileReadOptions>,
+    options: Required<FileReadOptions>
   ): void {
     const checksum = this.calculateChecksum(content, options.checksumAlgorithm);
     const entry: FileCacheEntry = {
@@ -491,11 +469,11 @@ export class AtomicFileReader {
   }
 
   private updateMetrics(
-    operation: "read" | "write" | "delete" | "create",
+    operation: 'read' | 'write' | 'delete' | 'create',
     success: boolean,
     duration: number,
     bytesProcessed: number,
-    errorCode?: string,
+    errorCode?: string
   ): void {
     this.metrics.totalOperations++;
     this.metrics.operationTypes[operation]++;
@@ -505,8 +483,7 @@ export class AtomicFileReader {
     } else {
       this.metrics.failedOperations++;
       if (errorCode) {
-        this.metrics.errorStats[errorCode] =
-          (this.metrics.errorStats[errorCode] || 0) + 1;
+        this.metrics.errorStats[errorCode] = (this.metrics.errorStats[errorCode] || 0) + 1;
       }
     }
 
@@ -520,10 +497,8 @@ export class AtomicFileReader {
       this.metrics.averageDuration = measuredDuration;
     } else {
       const totalDuration =
-        this.metrics.averageDuration * (this.metrics.totalOperations - 1) +
-        measuredDuration;
-      this.metrics.averageDuration =
-        totalDuration / this.metrics.totalOperations;
+        this.metrics.averageDuration * (this.metrics.totalOperations - 1) + measuredDuration;
+      this.metrics.averageDuration = totalDuration / this.metrics.totalOperations;
     }
 
     // Calculate operations per second (simple approximation)
@@ -535,35 +510,40 @@ export class AtomicFileReader {
   private getErrorCode(error: unknown): string {
     if (error && typeof error === 'object' && 'code' in error && typeof error.code === 'string') {
       switch (error.code) {
-        case "ENOENT":
+        case 'ENOENT':
           return AtomicOperationError.FILE_NOT_FOUND;
-        case "EACCES":
+        case 'EACCES':
           return AtomicOperationError.PERMISSION_DENIED;
-        case "EISDIR":
+        case 'EISDIR':
           return AtomicOperationError.INVALID_OPERATION;
-        case "EMFILE":
-        case "ENFILE":
+        case 'EMFILE':
+        case 'ENFILE':
           return AtomicOperationError.TEMP_FILE_CREATION_FAILED;
         default:
           return error.code;
       }
     }
 
-    if (error && typeof error === 'object' && 'message' in error && typeof error.message === 'string') {
-      if (error.message.includes("File not found")) {
+    if (
+      error &&
+      typeof error === 'object' &&
+      'message' in error &&
+      typeof error.message === 'string'
+    ) {
+      if (error.message.includes('File not found')) {
         return AtomicOperationError.FILE_NOT_FOUND;
       }
 
-      if (error.message.includes("timeout")) {
+      if (error.message.includes('timeout')) {
         return AtomicOperationError.TIMEOUT;
       }
 
-      if (error.message.includes("Checksum")) {
-        return "CHECKSUM_MISMATCH";
+      if (error.message.includes('Checksum')) {
+        return 'CHECKSUM_MISMATCH';
       }
 
-      if (error.message.includes("Schema validation")) {
-        return "SCHEMA_VALIDATION_ERROR";
+      if (error.message.includes('Schema validation')) {
+        return 'SCHEMA_VALIDATION_ERROR';
       }
     }
 

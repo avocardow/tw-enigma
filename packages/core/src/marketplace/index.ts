@@ -3,4 +3,4 @@
  * Manages plugin marketplace integration
  */
 
-export * from './pluginMarketplace'; 
+export * from './pluginMarketplace';

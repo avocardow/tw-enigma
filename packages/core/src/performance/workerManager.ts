@@ -17,14 +17,17 @@ import {
   isMainThread,
   // MessageChannel - removed, not used
   // MessagePort - removed, not used
-} from "worker_threads";
-import { EventEmitter } from "events";
-import { cpus } from "os";
-import { resolve } from "path";
-import { createLogger } from "../utils/logger";
-import type { WorkerConfig, WorkerTask /* PerformanceMetrics - removed, not used */ } from "./config";
+} from 'worker_threads';
+import { EventEmitter } from 'events';
+import { cpus } from 'os';
+import { resolve } from 'path';
+import { createLogger } from '../utils/logger';
+import type {
+  WorkerConfig,
+  WorkerTask /* PerformanceMetrics - removed, not used */,
+} from './config';
 
-const logger = createLogger("WorkerManager");
+const logger = createLogger('WorkerManager');
 
 /**
  * Worker state tracking
@@ -100,10 +103,10 @@ export class WorkerManager extends EventEmitter {
 
     // Validate environment
     if (!isMainThread) {
-      throw new Error("WorkerManager can only be used in the main thread");
+      throw new Error('WorkerManager can only be used in the main thread');
     }
 
-    logger.info("WorkerManager initialized", {
+    logger.info('WorkerManager initialized', {
       poolSize: this.config.poolSize,
       taskTimeout: this.config.taskTimeout,
       maxQueueSize: this.config.maxQueueSize,
@@ -115,16 +118,15 @@ export class WorkerManager extends EventEmitter {
    */
   async initialize(): Promise<void> {
     if (!this.config.enabled) {
-      logger.info("Worker threads disabled, using fallback mode");
+      logger.info('Worker threads disabled, using fallback mode');
       return;
     }
 
-    logger.info("Initializing worker pool", { poolSize: this.config.poolSize });
+    logger.info('Initializing worker pool', { poolSize: this.config.poolSize });
 
     // Create worker pool
-    const workerPromises = Array.from(
-      { length: this.config.poolSize },
-      (_, i) => this.createWorker(`worker-${i}`),
+    const workerPromises = Array.from({ length: this.config.poolSize }, (_, i) =>
+      this.createWorker(`worker-${i}`)
     );
 
     await Promise.all(workerPromises);
@@ -132,7 +134,7 @@ export class WorkerManager extends EventEmitter {
     // Start metrics collection
     this.startMetricsCollection();
 
-    logger.info("Worker pool initialized successfully", {
+    logger.info('Worker pool initialized successfully', {
       activeWorkers: this.workers.size,
     });
   }
@@ -144,7 +146,7 @@ export class WorkerManager extends EventEmitter {
     const absolutePath = resolve(scriptPath);
     this.workerScripts.set(taskType, absolutePath);
 
-    logger.debug("Registered worker script", {
+    logger.debug('Registered worker script', {
       taskType,
       scriptPath: absolutePath,
     });
@@ -153,15 +155,13 @@ export class WorkerManager extends EventEmitter {
   /**
    * Execute a task using worker threads
    */
-  async executeTask<T = unknown, R = unknown>(
-    task: WorkerTask<T>,
-  ): Promise<R> {
+  async executeTask<T = unknown, R = unknown>(task: WorkerTask<T>): Promise<R> {
     if (!this.config.enabled) {
-      throw new Error("Worker execution is disabled. Use fallback mode.");
+      throw new Error('Worker execution is disabled. Use fallback mode.');
     }
 
     if (this.isShuttingDown) {
-      throw new Error("Worker pool is shutting down");
+      throw new Error('Worker pool is shutting down');
     }
 
     if (this.taskQueue.length >= this.config.maxQueueSize) {
@@ -170,9 +170,7 @@ export class WorkerManager extends EventEmitter {
 
     return new Promise<R>((resolve, reject) => {
       // Generate unique ID if not provided or override the provided one
-      const uniqueId =
-        task.id ||
-        `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      const uniqueId = task.id || `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
       const taskContext: TaskContext<T, R> = {
         task: { ...task, id: uniqueId },
@@ -192,7 +190,7 @@ export class WorkerManager extends EventEmitter {
       this.taskQueue.push(taskContext as TaskContext<unknown, unknown>);
       this.processQueue();
 
-      logger.debug("Task queued", {
+      logger.debug('Task queued', {
         taskId: taskContext.task.id,
         taskType: taskContext.task.type,
         queueSize: this.taskQueue.length,
@@ -205,7 +203,7 @@ export class WorkerManager extends EventEmitter {
    */
   async executeTasks<T = unknown, R = unknown>(
     tasks: WorkerTask<T>[],
-    concurrency = this.config.poolSize,
+    concurrency = this.config.poolSize
   ): Promise<R[]> {
     const results: R[] = [];
     const executing: Promise<void>[] = [];
@@ -218,7 +216,7 @@ export class WorkerManager extends EventEmitter {
         },
         (error) => {
           results[index] = error as R;
-        },
+        }
       );
 
       executing.push(promise);
@@ -228,7 +226,7 @@ export class WorkerManager extends EventEmitter {
         await Promise.race(executing);
         executing.splice(
           executing.findIndex((p) => p === promise),
-          1,
+          1
         );
       }
     }
@@ -244,18 +242,13 @@ export class WorkerManager extends EventEmitter {
     const now = Date.now();
     const uptime = now - this.stats.startTime;
     const throughput = this.stats.completedTasks / (uptime / 1000);
-    const errorRate =
-      this.stats.failedTasks / Math.max(this.stats.totalTasks, 1);
-    const averageTaskTime =
-      this.stats.totalExecutionTime / Math.max(this.stats.completedTasks, 1);
+    const errorRate = this.stats.failedTasks / Math.max(this.stats.totalTasks, 1);
+    const averageTaskTime = this.stats.totalExecutionTime / Math.max(this.stats.completedTasks, 1);
 
     return {
       totalWorkers: this.workers.size,
-      activeWorkers: Array.from(this.workers.values()).filter(
-        (w) => w.worker.threadId > 0,
-      ).length,
-      busyWorkers: Array.from(this.workers.values()).filter((w) => w.busy)
-        .length,
+      activeWorkers: Array.from(this.workers.values()).filter((w) => w.worker.threadId > 0).length,
+      busyWorkers: Array.from(this.workers.values()).filter((w) => w.busy).length,
       queuedTasks: this.taskQueue.length,
       completedTasks: this.stats.completedTasks,
       failedTasks: this.stats.failedTasks,
@@ -271,7 +264,7 @@ export class WorkerManager extends EventEmitter {
   async shutdown(): Promise<void> {
     this.isShuttingDown = true;
 
-    logger.info("Shutting down worker pool", {
+    logger.info('Shutting down worker pool', {
       activeWorkers: this.workers.size,
       queuedTasks: this.taskQueue.length,
     });
@@ -284,7 +277,7 @@ export class WorkerManager extends EventEmitter {
     // Wait for running tasks to complete (with timeout)
     const runningTasks = Array.from(this.runningTasks.values());
     if (runningTasks.length > 0) {
-      logger.info("Waiting for running tasks to complete", {
+      logger.info('Waiting for running tasks to complete', {
         runningTasks: runningTasks.length,
       });
 
@@ -303,32 +296,30 @@ export class WorkerManager extends EventEmitter {
                   originalReject(error);
                   resolve(error);
                 };
-              }),
-          ),
+              })
+          )
         ),
         new Promise((resolve) => setTimeout(resolve, 5000)), // 5 second timeout
       ]);
     }
 
     // Terminate all workers
-    const terminationPromises = Array.from(this.workers.values()).map(
-      async (workerState) => {
-        try {
-          await workerState.worker.terminate();
-          logger.debug("Worker terminated", { workerId: workerState.id });
-        } catch (error) {
-          logger.error("Error terminating worker", {
-            workerId: workerState.id,
-            error: error instanceof Error ? error.message : String(error),
-          });
-        }
-      },
-    );
+    const terminationPromises = Array.from(this.workers.values()).map(async (workerState) => {
+      try {
+        await workerState.worker.terminate();
+        logger.debug('Worker terminated', { workerId: workerState.id });
+      } catch (error) {
+        logger.error('Error terminating worker', {
+          workerId: workerState.id,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    });
 
     await Promise.all(terminationPromises);
     this.workers.clear();
 
-    logger.info("Worker pool shutdown complete");
+    logger.info('Worker pool shutdown complete');
   }
 
   /**
@@ -338,8 +329,7 @@ export class WorkerManager extends EventEmitter {
     try {
       // Default worker script (can be overridden per task type)
       const workerScript =
-        this.config.workerScript ||
-        resolve(__dirname, "../workers/batchWorker.js");
+        this.config.workerScript || resolve(__dirname, '../workers/batchWorker.js');
 
       const worker = new Worker(workerScript, {
         env: this.config.envVars,
@@ -358,27 +348,27 @@ export class WorkerManager extends EventEmitter {
       };
 
       // Set up worker event handlers
-      worker.on("message", (result) => {
+      worker.on('message', (result) => {
         this.handleWorkerMessage(workerState, result);
       });
 
-      worker.on("error", (_error) => {
+      worker.on('error', (_error) => {
         this.handleWorkerError(workerState, _error);
       });
 
-      worker.on("exit", (code) => {
+      worker.on('exit', (code) => {
         this.handleWorkerExit(workerState, code);
       });
 
       this.workers.set(workerId, workerState);
-      this.emit("workerStarted", workerId);
+      this.emit('workerStarted', workerId);
 
-      logger.debug("Worker created", {
+      logger.debug('Worker created', {
         workerId,
         threadId: worker.threadId,
       });
     } catch (error) {
-      logger.error("Failed to create worker", {
+      logger.error('Failed to create worker', {
         workerId,
         error: error instanceof Error ? error.message : String(error),
       });
@@ -395,9 +385,7 @@ export class WorkerManager extends EventEmitter {
     }
 
     // Find available worker
-    const availableWorker = Array.from(this.workers.values()).find(
-      (worker) => !worker.busy,
-    );
+    const availableWorker = Array.from(this.workers.values()).find((worker) => !worker.busy);
 
     if (!availableWorker) {
       return; // No workers available
@@ -417,7 +405,7 @@ export class WorkerManager extends EventEmitter {
    */
   private assignTaskToWorker(
     workerState: WorkerState,
-    taskContext: TaskContext<unknown, unknown>,
+    taskContext: TaskContext<unknown, unknown>
   ): void {
     workerState.busy = true;
     workerState.lastActivity = Date.now();
@@ -427,11 +415,11 @@ export class WorkerManager extends EventEmitter {
 
     // Send task to worker
     workerState.worker.postMessage({
-      type: "task",
+      type: 'task',
       task: taskContext.task,
     });
 
-    logger.debug("Task assigned to worker", {
+    logger.debug('Task assigned to worker', {
       workerId: workerState.id,
       taskId: taskContext.task.id,
       taskType: taskContext.task.type,
@@ -444,9 +432,9 @@ export class WorkerManager extends EventEmitter {
   private handleWorkerMessage(workerState: WorkerState, message: any): void {
     const { type, id, result, _error } = message;
 
-    if (type === "taskComplete") {
+    if (type === 'taskComplete') {
       this.handleTaskComplete(workerState, id, result, _error);
-    } else if (type === "metrics") {
+    } else if (type === 'metrics') {
       workerState.memoryUsage = message.memoryUsage || 0;
     }
   }
@@ -458,11 +446,11 @@ export class WorkerManager extends EventEmitter {
     workerState: WorkerState,
     taskId: string,
     result: any,
-    error: any,
+    error: any
   ): void {
     const taskContext = this.runningTasks.get(taskId);
     if (!taskContext) {
-      logger.warn("Received result for unknown task", { taskId });
+      logger.warn('Received result for unknown task', { taskId });
       return;
     }
 
@@ -484,9 +472,9 @@ export class WorkerManager extends EventEmitter {
     if (error) {
       workerState.errors++;
       this.stats.failedTasks++;
-      taskContext.reject(new Error(error.message || "Worker task failed"));
+      taskContext.reject(new Error(error.message || 'Worker task failed'));
 
-      logger.error("Task failed", {
+      logger.error('Task failed', {
         taskId,
         workerId: workerState.id,
         error: error.message,
@@ -496,7 +484,7 @@ export class WorkerManager extends EventEmitter {
       this.stats.completedTasks++;
       taskContext.resolve(result);
 
-      logger.debug("Task completed", {
+      logger.debug('Task completed', {
         taskId,
         workerId: workerState.id,
         executionTime,
@@ -511,13 +499,13 @@ export class WorkerManager extends EventEmitter {
    * Handle worker errors
    */
   private handleWorkerError(workerState: WorkerState, error: Error): void {
-    logger.error("Worker error", {
+    logger.error('Worker error', {
       workerId: workerState.id,
       error: error.message,
     });
 
     workerState.errors++;
-    this.emit("error", error);
+    this.emit('error', error);
 
     // If worker has too many errors, restart it
     if (workerState.errors > 5) {
@@ -529,18 +517,18 @@ export class WorkerManager extends EventEmitter {
    * Handle worker exit
    */
   private handleWorkerExit(workerState: WorkerState, code: number): void {
-    logger.warn("Worker exited", {
+    logger.warn('Worker exited', {
       workerId: workerState.id,
       exitCode: code,
     });
 
     this.workers.delete(workerState.id);
-    this.emit("workerStopped", workerState.id);
+    this.emit('workerStopped', workerState.id);
 
     // Restart worker if not shutting down
     if (!this.isShuttingDown) {
       this.createWorker(workerState.id).catch((error) => {
-        logger.error("Failed to restart worker", {
+        logger.error('Failed to restart worker', {
           workerId: workerState.id,
           error: error instanceof Error ? error.message : String(error),
         });
@@ -554,7 +542,7 @@ export class WorkerManager extends EventEmitter {
   private handleTaskTimeout(taskContext: TaskContext<unknown, unknown>): void {
     const task = taskContext.task;
 
-    logger.warn("Task timeout", {
+    logger.warn('Task timeout', {
       taskId: task.id,
       taskType: task.type,
       timeout: this.config.taskTimeout,
@@ -564,9 +552,7 @@ export class WorkerManager extends EventEmitter {
     this.runningTasks.delete(task.id);
 
     // Reject the promise
-    taskContext.reject(
-      new Error(`Task timeout after ${this.config.taskTimeout}ms`),
-    );
+    taskContext.reject(new Error(`Task timeout after ${this.config.taskTimeout}ms`));
 
     // Update stats
     this.stats.failedTasks++;
@@ -575,7 +561,7 @@ export class WorkerManager extends EventEmitter {
     const workerState = Array.from(this.workers.values()).find((w) => w.busy);
     if (workerState) {
       this.restartWorker(workerState.id).catch((error) => {
-        logger.error("Failed to restart worker after timeout", {
+        logger.error('Failed to restart worker after timeout', {
           workerId: workerState.id,
           error: error instanceof Error ? error.message : String(error),
         });
@@ -592,7 +578,7 @@ export class WorkerManager extends EventEmitter {
       try {
         await workerState.worker.terminate();
       } catch (error) {
-        logger.error("Error terminating worker during restart", {
+        logger.error('Error terminating worker during restart', {
           workerId,
           error: error instanceof Error ? error.message : String(error),
         });
@@ -609,7 +595,7 @@ export class WorkerManager extends EventEmitter {
   private startMetricsCollection(): void {
     this.metricsInterval = setInterval(() => {
       const stats = this.getStats();
-      this.emit("metrics", stats);
+      this.emit('metrics', stats);
     }, 10000); // Every 10 seconds
   }
 }

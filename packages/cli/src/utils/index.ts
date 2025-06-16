@@ -1,6 +1,6 @@
 /**
  * CLI Utilities Index
- * 
+ *
  * Exports all CLI utility functions and classes for use across commands.
  */
 
@@ -11,4 +11,4 @@ export * from './logger-config';
 export * from './cli-helpers';
 
 // Error handling utilities
-export * from './error-handling'; 
+export * from './error-handling';

@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { logger, type ErrorContext } from "./logger";
+import { logger, type ErrorContext } from './logger';
 
 /**
  * Base error class for all Tailwind Enigma Core errors
@@ -18,12 +18,7 @@ export abstract class EnigmaError extends Error {
   public readonly context?: ErrorContext;
   public readonly cause?: Error;
 
-  constructor(
-    message: string,
-    code: string,
-    context?: ErrorContext,
-    cause?: Error,
-  ) {
+  constructor(message: string, code: string, context?: ErrorContext, cause?: Error) {
     super(message);
     this.name = this.constructor.name;
     this.code = code;
@@ -93,21 +88,16 @@ export abstract class EnigmaError extends Error {
 export class ConfigError extends EnigmaError {
   public readonly filepath?: string;
 
-  constructor(
-    message: string,
-    filepath?: string,
-    cause?: Error,
-    context?: ErrorContext,
-  ) {
+  constructor(message: string, filepath?: string, cause?: Error, context?: ErrorContext) {
     super(
       message,
-      "CONFIG_ERROR",
+      'CONFIG_ERROR',
       {
         ...context,
-        component: "Config",
+        component: 'Config',
         filePath: filepath,
       },
-      cause,
+      cause
     );
     this.filepath = filepath;
   }
@@ -119,21 +109,16 @@ export class ConfigError extends EnigmaError {
 export class FileReadError extends EnigmaError {
   public readonly filePath?: string;
 
-  constructor(
-    message: string,
-    filePath?: string,
-    cause?: Error,
-    context?: ErrorContext,
-  ) {
+  constructor(message: string, filePath?: string, cause?: Error, context?: ErrorContext) {
     super(
       message,
-      "FILE_READ_ERROR",
+      'FILE_READ_ERROR',
       {
         ...context,
-        component: "FileSystem",
+        component: 'FileSystem',
         filePath,
       },
-      cause,
+      cause
     );
     this.filePath = filePath;
   }
@@ -149,17 +134,17 @@ export class FileDiscoveryError extends EnigmaError {
     message: string,
     patterns?: string | string[],
     cause?: Error,
-    context?: ErrorContext,
+    context?: ErrorContext
   ) {
     super(
       message,
-      "FILE_DISCOVERY_ERROR",
+      'FILE_DISCOVERY_ERROR',
       {
         ...context,
-        component: "FileDiscovery",
-        patterns: Array.isArray(patterns) ? patterns.join(", ") : patterns,
+        component: 'FileDiscovery',
+        patterns: Array.isArray(patterns) ? patterns.join(', ') : patterns,
       },
-      cause,
+      cause
     );
     this.patterns = patterns;
   }
@@ -171,21 +156,16 @@ export class FileDiscoveryError extends EnigmaError {
 export class HtmlParsingError extends EnigmaError {
   public readonly source?: string;
 
-  constructor(
-    message: string,
-    source?: string,
-    cause?: Error,
-    context?: ErrorContext,
-  ) {
+  constructor(message: string, source?: string, cause?: Error, context?: ErrorContext) {
     super(
       message,
-      "HTML_PARSING_ERROR",
+      'HTML_PARSING_ERROR',
       {
         ...context,
-        component: "HtmlExtractor",
+        component: 'HtmlExtractor',
         filePath: source,
       },
-      cause,
+      cause
     );
     this.source = source;
   }
@@ -203,18 +183,18 @@ export class JsParsingError extends EnigmaError {
     source?: string,
     framework?: string,
     cause?: Error,
-    context?: ErrorContext,
+    context?: ErrorContext
   ) {
     super(
       message,
-      "JS_PARSING_ERROR",
+      'JS_PARSING_ERROR',
       {
         ...context,
-        component: "JsExtractor",
+        component: 'JsExtractor',
         filePath: source,
         framework,
       },
-      cause,
+      cause
     );
     this.source = source;
     this.framework = framework;
@@ -233,18 +213,18 @@ export class CssProcessingError extends EnigmaError {
     source?: string,
     operation?: string,
     cause?: Error,
-    context?: ErrorContext,
+    context?: ErrorContext
   ) {
     super(
       message,
-      "CSS_PROCESSING_ERROR",
+      'CSS_PROCESSING_ERROR',
       {
         ...context,
-        component: "CssProcessor",
+        component: 'CssProcessor',
         filePath: source,
         operation,
       },
-      cause,
+      cause
     );
     this.source = source;
     this.operation = operation;
@@ -263,18 +243,18 @@ export class CliError extends EnigmaError {
     command?: string,
     suggestions?: string[],
     cause?: Error,
-    context?: ErrorContext,
+    context?: ErrorContext
   ) {
     super(
       message,
-      "CLI_ERROR",
+      'CLI_ERROR',
       {
         ...context,
-        component: "CLI",
+        component: 'CLI',
         operation: command,
-        suggestions: suggestions?.join("; "),
+        suggestions: suggestions?.join('; '),
       },
-      cause,
+      cause
     );
     this.command = command;
     this.suggestions = suggestions;
@@ -287,7 +267,7 @@ export class CliError extends EnigmaError {
     console.error(`❌ ${this.message}`);
 
     if (this.suggestions && this.suggestions.length > 0) {
-      console.error("\n💡 Suggestions:");
+      console.error('\n💡 Suggestions:');
       this.suggestions.forEach((suggestion) => {
         console.error(`   • ${suggestion}`);
       });
@@ -311,19 +291,18 @@ export class ValidationError extends EnigmaError {
     field?: string,
     value?: unknown,
     cause?: Error,
-    context?: ErrorContext,
+    context?: ErrorContext
   ) {
     super(
       message,
-      "VALIDATION_ERROR",
+      'VALIDATION_ERROR',
       {
         ...context,
-        component: "Validation",
+        component: 'Validation',
         field,
-        value:
-          typeof value === "object" ? JSON.stringify(value) : String(value),
+        value: typeof value === 'object' ? JSON.stringify(value) : String(value),
       },
-      cause,
+      cause
     );
     this.field = field;
     this.value = value;
@@ -342,18 +321,18 @@ export class TimeoutError extends EnigmaError {
     operation?: string,
     timeoutMs?: number,
     cause?: Error,
-    context?: ErrorContext,
+    context?: ErrorContext
   ) {
     super(
       message,
-      "TIMEOUT_ERROR",
+      'TIMEOUT_ERROR',
       {
         ...context,
-        component: "Performance",
+        component: 'Performance',
         operation,
         timeoutMs,
       },
-      cause,
+      cause
     );
     this.operation = operation;
     this.timeoutMs = timeoutMs;
@@ -372,18 +351,18 @@ export class DependencyError extends EnigmaError {
     dependency?: string,
     version?: string,
     cause?: Error,
-    context?: ErrorContext,
+    context?: ErrorContext
   ) {
     super(
       message,
-      "DEPENDENCY_ERROR",
+      'DEPENDENCY_ERROR',
       {
         ...context,
-        component: "Dependencies",
+        component: 'Dependencies',
         dependency,
         version,
       },
-      cause,
+      cause
     );
     this.dependency = dependency;
     this.version = version;
@@ -399,7 +378,7 @@ export const ErrorUtils = {
    */
   isErrorType<T extends EnigmaError>(
     error: unknown,
-    errorClass: new (...args: any[]) => T,
+    errorClass: new (...args: any[]) => T
   ): error is T {
     return error instanceof errorClass;
   },
@@ -427,10 +406,7 @@ export const ErrorUtils = {
   /**
    * Create error context from operation details
    */
-  createContext(
-    operation: string,
-    additionalContext?: Partial<ErrorContext>,
-  ): ErrorContext {
+  createContext(operation: string, additionalContext?: Partial<ErrorContext>): ErrorContext {
     return {
       operation,
       ...additionalContext,
@@ -440,11 +416,7 @@ export const ErrorUtils = {
   /**
    * Wrap unknown errors in EnigmaError
    */
-  wrapUnknownError(
-    error: unknown,
-    operation: string,
-    context?: ErrorContext,
-  ): EnigmaError {
+  wrapUnknownError(error: unknown, operation: string, context?: ErrorContext): EnigmaError {
     if (error instanceof EnigmaError) {
       return error;
     }
@@ -452,16 +424,16 @@ export const ErrorUtils = {
     if (error instanceof Error) {
       return new (class UnknownError extends EnigmaError {})(
         `Unknown error in ${operation}: ${error.message}`,
-        "UNKNOWN_ERROR",
+        'UNKNOWN_ERROR',
         { ...context, operation },
-        error,
+        error
       );
     }
 
     return new (class UnknownError extends EnigmaError {})(
       `Unknown error in ${operation}: ${String(error)}`,
-      "UNKNOWN_ERROR",
-      { ...context, operation },
+      'UNKNOWN_ERROR',
+      { ...context, operation }
     );
   },
 };
@@ -485,18 +457,18 @@ export const ErrorExitCodes = {
  */
 export function getExitCode(errorCode: string): number {
   switch (errorCode) {
-    case "CONFIG_ERROR":
+    case 'CONFIG_ERROR':
       return ErrorExitCodes.CONFIG_ERROR;
-    case "FILE_READ_ERROR":
-    case "FILE_DISCOVERY_ERROR":
+    case 'FILE_READ_ERROR':
+    case 'FILE_DISCOVERY_ERROR':
       return ErrorExitCodes.FILE_ERROR;
-    case "VALIDATION_ERROR":
+    case 'VALIDATION_ERROR':
       return ErrorExitCodes.VALIDATION_ERROR;
-    case "TIMEOUT_ERROR":
+    case 'TIMEOUT_ERROR':
       return ErrorExitCodes.TIMEOUT_ERROR;
-    case "DEPENDENCY_ERROR":
+    case 'DEPENDENCY_ERROR':
       return ErrorExitCodes.DEPENDENCY_ERROR;
-    case "CLI_ERROR":
+    case 'CLI_ERROR':
       return ErrorExitCodes.CLI_ERROR;
     default:
       return ErrorExitCodes.GENERIC_ERROR;

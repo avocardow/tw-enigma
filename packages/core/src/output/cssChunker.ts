@@ -5,20 +5,20 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { EventEmitter } from "events";
+import { EventEmitter } from 'events';
 // createHash import removed - not used
 import type {
   CssOutputConfig,
   ChunkingStrategy,
   // ChunkingConfig - removed, not used
-} from "./cssOutputConfig.ts";
-import { z } from "zod";
+} from './cssOutputConfig.ts';
+import { z } from 'zod';
 import postcss, {
   Rule,
   AtRule,
   Root,
   // Container - removed, not used
-} from "postcss";
+} from 'postcss';
 
 // =============================================================================
 // TYPE DEFINITIONS
@@ -89,7 +89,7 @@ export interface CssChunk {
   components: Set<string>;
 
   /** Chunk type classification */
-  type: "critical" | "vendor" | "component" | "route" | "utility" | "main";
+  type: 'critical' | 'vendor' | 'component' | 'route' | 'utility' | 'main';
 
   /** Load priority (higher = more important) */
   priority: number;
@@ -98,7 +98,7 @@ export interface CssChunk {
   async: boolean;
 
   /** Loading strategy for this chunk */
-  loadingStrategy: "inline" | "preload" | "prefetch" | "lazy";
+  loadingStrategy: 'inline' | 'preload' | 'prefetch' | 'lazy';
 
   /** Additional metadata for the chunk */
   metadata?: Record<string, unknown>;
@@ -124,7 +124,7 @@ export interface UsagePattern {
   specificity: number;
 
   /** Selector category */
-  category: "utility" | "component" | "layout" | "theme" | "vendor" | "custom";
+  category: 'utility' | 'component' | 'layout' | 'theme' | 'vendor' | 'custom';
 
   /** Performance impact score */
   impact: number;
@@ -171,7 +171,7 @@ export const ChunkAnalysisOptionsSchema = z.object({
   analyzeRoutes: z.boolean().default(true),
 
   /** Usage data source */
-  usageDataSource: z.enum(["static", "runtime", "hybrid"]).default("static"),
+  usageDataSource: z.enum(['static', 'runtime', 'hybrid']).default('static'),
 
   /** Minimum usage threshold for inclusion */
   minUsageThreshold: z.number().min(0).max(1).default(0.1),
@@ -265,7 +265,7 @@ export class CssDependencyGraph {
     css.walkRules((rule: Rule) => {
       const selector = rule.selector;
       const content = rule.toString();
-      const size = Buffer.byteLength(content, "utf8");
+      const size = Buffer.byteLength(content, 'utf8');
 
       const dependency: CssRuleDependency = {
         selector,
@@ -278,7 +278,7 @@ export class CssDependencyGraph {
         priority: ruleIndex++,
         source: rule.source
           ? {
-              file: rule.source.input.from || "unknown",
+              file: rule.source.input.from || 'unknown',
               line: rule.source.start?.line || 0,
               column: rule.source.start?.column || 0,
             }
@@ -293,7 +293,7 @@ export class CssDependencyGraph {
     css.walkAtRules((atRule: AtRule) => {
       const identifier = `@${atRule.name} ${atRule.params}`;
       const content = atRule.toString();
-      const size = Buffer.byteLength(content, "utf8");
+      const size = Buffer.byteLength(content, 'utf8');
 
       const dependency: CssRuleDependency = {
         selector: identifier,
@@ -306,7 +306,7 @@ export class CssDependencyGraph {
         priority: ruleIndex++,
         source: atRule.source
           ? {
-              file: atRule.source.input.from || "unknown",
+              file: atRule.source.input.from || 'unknown',
               line: atRule.source.start?.line || 0,
               column: atRule.source.start?.column || 0,
             }
@@ -340,10 +340,7 @@ export class CssDependencyGraph {
   /**
    * Detect cascade-based dependencies
    */
-  private detectCascadeDependencies(
-    selector: string,
-    node: CssRuleDependency,
-  ): void {
+  private detectCascadeDependencies(selector: string, node: CssRuleDependency): void {
     // Find selectors with same or higher specificity that could override
     for (const [otherSelector, otherNode] of Array.from(this.nodes)) {
       if (otherSelector === selector) continue;
@@ -362,10 +359,7 @@ export class CssDependencyGraph {
   /**
    * Detect custom property (CSS variable) dependencies
    */
-  private detectCustomPropertyDependencies(
-    _selector: string,
-    _node: CssRuleDependency,
-  ): void {
+  private detectCustomPropertyDependencies(_selector: string, _node: CssRuleDependency): void {
     // This would require analyzing the actual CSS content for var() usage
     // For now, we'll implement a basic version
     // In a full implementation, we'd parse declarations and find var() references
@@ -374,10 +368,7 @@ export class CssDependencyGraph {
   /**
    * Detect inheritance dependencies
    */
-  private detectInheritanceDependencies(
-    selector: string,
-    node: CssRuleDependency,
-  ): void {
+  private detectInheritanceDependencies(selector: string, node: CssRuleDependency): void {
     // Check if selector inherits from parent elements
     if (this.isChildSelector(selector)) {
       const parentSelector = this.getParentSelector(selector);
@@ -392,10 +383,7 @@ export class CssDependencyGraph {
   /**
    * Detect composition dependencies (@apply, mixins, etc.)
    */
-  private detectCompositionDependencies(
-    _selector: string,
-    _node: CssRuleDependency,
-  ): void {
+  private detectCompositionDependencies(_selector: string, _node: CssRuleDependency): void {
     // This would analyze @apply directives and similar composition patterns
     // Implementation would depend on the specific CSS framework being used
   }
@@ -407,8 +395,8 @@ export class CssDependencyGraph {
     // Simplified conflict detection - in reality this would be much more complex
     // and would involve parsing selectors and checking for element/class overlap
     return (
-      selector1.includes(selector2.split(" ").pop() || "") ||
-      selector2.includes(selector1.split(" ").pop() || "")
+      selector1.includes(selector2.split(' ').pop() || '') ||
+      selector2.includes(selector1.split(' ').pop() || '')
     );
   }
 
@@ -417,10 +405,10 @@ export class CssDependencyGraph {
    */
   private isChildSelector(selector: string): boolean {
     return (
-      selector.includes(" ") ||
-      selector.includes(">") ||
-      selector.includes("+") ||
-      selector.includes("~")
+      selector.includes(' ') ||
+      selector.includes('>') ||
+      selector.includes('+') ||
+      selector.includes('~')
     );
   }
 
@@ -429,7 +417,7 @@ export class CssDependencyGraph {
    */
   private getParentSelector(selector: string): string | null {
     const parts = selector.split(/\s+|\s*>\s*|\s*\+\s*|\s*~\s*/);
-    return parts.length > 1 ? parts.slice(0, -1).join(" ") : null;
+    return parts.length > 1 ? parts.slice(0, -1).join(' ') : null;
   }
 
   /**
@@ -454,15 +442,9 @@ export class CssDependencyGraph {
       for (const neighbor of Array.from(neighbors)) {
         if (!stack.has(neighbor)) {
           tarjan(neighbor);
-          lowLink.set(
-            node,
-            Math.min(lowLink.get(node) || 0, lowLink.get(neighbor) || 0),
-          );
+          lowLink.set(node, Math.min(lowLink.get(node) || 0, lowLink.get(neighbor) || 0));
         } else if (onStack.has(neighbor)) {
-          lowLink.set(
-            node,
-            Math.min(lowLink.get(node) || 0, stack.get(neighbor) || 0),
-          );
+          lowLink.set(node, Math.min(lowLink.get(node) || 0, stack.get(neighbor) || 0));
         }
       }
 
@@ -494,20 +476,20 @@ export class CssDependencyGraph {
   private computeTopologicalOrder(): void {
     const inDegree = new Map<string, number>();
     const adjList = new Map<string, string[]>();
-    
+
     // Initialize in-degree and adjacency list
     for (const id of Array.from(Array.from(this.nodes.keys()))) {
       inDegree.set(id, 0);
       adjList.set(id, []);
     }
-    
+
     // Build in-degree count and adjacency list
     for (const [from, dependencies] of Array.from(Array.from(this.edges.entries()))) {
       for (const to of Array.from(dependencies)) {
         // from depends on to, so to should come before from
         // So to -> from in the topological order
         inDegree.set(from, (inDegree.get(from) || 0) + 1);
-        
+
         const neighbors = adjList.get(to) || [];
         neighbors.push(from);
         adjList.set(to, neighbors);
@@ -517,30 +499,30 @@ export class CssDependencyGraph {
     // Kahn's algorithm
     const queue: string[] = [];
     const result: string[] = [];
-    
+
     // Find all nodes with in-degree 0
     for (const [id, degree] of Array.from(inDegree)) {
       if (degree === 0) {
         queue.push(id);
       }
     }
-    
+
     while (queue.length > 0) {
       const current = queue.shift()!;
       result.push(current);
-      
+
       // Process all neighbors
       const neighbors = adjList.get(current) || [];
       for (const neighbor of neighbors) {
         const newDegree = (inDegree.get(neighbor) || 0) - 1;
         inDegree.set(neighbor, newDegree);
-        
+
         if (newDegree === 0) {
           queue.push(neighbor);
         }
       }
     }
-    
+
     // If there are unprocessed nodes, there's a cycle
     if (result.length !== this.nodes.size) {
       // Add remaining nodes for cycle handling
@@ -550,7 +532,7 @@ export class CssDependencyGraph {
         }
       }
     }
-    
+
     this.topologicalOrder = result;
   }
 
@@ -590,7 +572,7 @@ export class UsagePatternAnalyzer {
   analyzeStaticUsage(
     css: Root,
     sourceFiles: Map<string, string>,
-    _options: Partial<ChunkAnalysisOptions> = {},
+    _options: Partial<ChunkAnalysisOptions> = {}
   ): Map<string, UsagePattern> {
     this.usageData.clear();
 
@@ -616,7 +598,7 @@ export class UsagePatternAnalyzer {
 
     css.walkRules((rule: Rule) => {
       // Split compound selectors
-      rule.selector.split(",").forEach((selector) => {
+      rule.selector.split(',').forEach((selector) => {
         selectors.add(selector.trim());
       });
     });
@@ -627,11 +609,7 @@ export class UsagePatternAnalyzer {
   /**
    * Analyze CSS usage in a single file
    */
-  private analyzeFileUsage(
-    filePath: string,
-    content: string,
-    selectors: Set<string>,
-  ): void {
+  private analyzeFileUsage(filePath: string, content: string, selectors: Set<string>): void {
     const route = this.extractRouteFromPath(filePath);
     const component = this.extractComponentFromPath(filePath);
 
@@ -681,7 +659,7 @@ export class UsagePatternAnalyzer {
 
     // Check if any class names appear in the content
     return classNames.some((className) => {
-      const regex = new RegExp(`\\b${this.escapeRegex(className)}\\b`, "g");
+      const regex = new RegExp(`\\b${this.escapeRegex(className)}\\b`, 'g');
       return regex.test(content);
     });
   }
@@ -722,32 +700,28 @@ export class UsagePatternAnalyzer {
   /**
    * Categorize CSS selector
    */
-  private categorizeSelector(selector: string): UsagePattern["category"] {
-    if (selector.startsWith(".tw-") || selector.includes("tailwind")) {
-      return "utility";
+  private categorizeSelector(selector: string): UsagePattern['category'] {
+    if (selector.startsWith('.tw-') || selector.includes('tailwind')) {
+      return 'utility';
     }
 
-    if (selector.includes("@media") || selector.includes("@keyframes")) {
-      return "theme";
+    if (selector.includes('@media') || selector.includes('@keyframes')) {
+      return 'theme';
     }
 
-    if (selector.includes("component") || selector.includes("comp-")) {
-      return "component";
+    if (selector.includes('component') || selector.includes('comp-')) {
+      return 'component';
     }
 
-    if (
-      selector.includes("layout") ||
-      selector.includes("grid") ||
-      selector.includes("flex")
-    ) {
-      return "layout";
+    if (selector.includes('layout') || selector.includes('grid') || selector.includes('flex')) {
+      return 'layout';
     }
 
-    if (selector.includes("vendor") || selector.includes("lib-")) {
-      return "vendor";
+    if (selector.includes('vendor') || selector.includes('lib-')) {
+      return 'vendor';
     }
 
-    return "custom";
+    return 'custom';
   }
 
   /**
@@ -755,10 +729,8 @@ export class UsagePatternAnalyzer {
    */
   private extractRouteFromPath(filePath: string): string | null {
     // Extract route from common frameworks patterns
-    const routeMatch = filePath.match(
-      /\/(?:pages|routes|views)\/(.+?)\.(?:jsx?|tsx?|vue|svelte)$/,
-    );
-    return routeMatch ? routeMatch[1].replace(/\//g, ".") : null;
+    const routeMatch = filePath.match(/\/(?:pages|routes|views)\/(.+?)\.(?:jsx?|tsx?|vue|svelte)$/);
+    return routeMatch ? routeMatch[1].replace(/\//g, '.') : null;
   }
 
   /**
@@ -766,9 +738,9 @@ export class UsagePatternAnalyzer {
    */
   private extractComponentFromPath(filePath: string): string | null {
     const componentMatch = filePath.match(
-      /\/(?:components|comp)\/(.+?)\.(?:jsx?|tsx?|vue|svelte)$/,
+      /\/(?:components|comp)\/(.+?)\.(?:jsx?|tsx?|vue|svelte)$/
     );
-    return componentMatch ? componentMatch[1].replace(/\//g, ".") : null;
+    return componentMatch ? componentMatch[1].replace(/\//g, '.') : null;
   }
 
   /**
@@ -808,7 +780,7 @@ export class UsagePatternAnalyzer {
    * Escape special regex characters
    */
   private escapeRegex(str: string): string {
-    return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 }
 
@@ -842,7 +814,7 @@ class CssChunker extends EventEmitter {
   async chunkCss(
     css: Root,
     sourceFiles?: Map<string, string>,
-    analysisOptions?: ChunkAnalysisOptions,
+    analysisOptions?: ChunkAnalysisOptions
   ): Promise<CssChunk[]> {
     // Build dependency graph
     const graphBuilder = new CssDependencyGraph();
@@ -851,29 +823,23 @@ class CssChunker extends EventEmitter {
     // Analyze usage patterns if source files provided
     if (sourceFiles && sourceFiles.size > 0) {
       const analyzer = new UsagePatternAnalyzer();
-      this.usagePatterns = analyzer.analyzeStaticUsage(
-        css,
-        sourceFiles,
-        analysisOptions,
-      );
+      this.usagePatterns = analyzer.analyzeStaticUsage(css, sourceFiles, analysisOptions);
     }
 
     // Apply chunking strategy
-    switch (this.config.chunking?.strategy || "size") {
-      case "size":
+    switch (this.config.chunking?.strategy || 'size') {
+      case 'size':
         return this.chunkBySize(css);
-      case "usage":
+      case 'usage':
         return this.chunkByUsage(css);
-      case "route":
+      case 'route':
         return this.chunkByRoute(css);
-      case "component":
+      case 'component':
         return this.chunkByComponent(css);
-      case "hybrid":
+      case 'hybrid':
         return this.chunkByHybrid(css);
       default:
-        throw new Error(
-          `Unknown chunking strategy: ${this.config.chunking?.strategy}`,
-        );
+        throw new Error(`Unknown chunking strategy: ${this.config.chunking?.strategy}`);
     }
   }
 
@@ -888,33 +854,36 @@ class CssChunker extends EventEmitter {
     const config = (this as any).config?.chunking || {};
     const maxChunkSize = config.maxChunkSize || 50 * 1024;
     const minChunkSize = config.minChunkSize || 2 * 1024;
-    
+
     const totalSize = Buffer.byteLength(css.toString(), 'utf8');
-    
+
     // For size strategy, always force splitting for content > 10KB to enable testing
     // This matches the test expectation that large CSS should be split
-    const shouldForceSplit = (totalSize > 10 * 1024) || (config.strategy === "size" && totalSize > 5000);
-    
+    const shouldForceSplit =
+      totalSize > 10 * 1024 || (config.strategy === 'size' && totalSize > 5000);
+
     if (totalSize <= maxChunkSize && !shouldForceSplit) {
-      return [{
-        id: '1',
-        name: 'main',
-        content: css.toString(),
-        size: totalSize,
-        type: 'main',
-        priority: 1,
-        rules: [],
-        dependencies: new Set(),
-        routes: new Set(),
-        components: new Set(),
-                  loadingStrategy: 'inline',
+      return [
+        {
+          id: '1',
+          name: 'main',
+          content: css.toString(),
+          size: totalSize,
+          type: 'main',
+          priority: 1,
+          rules: [],
+          dependencies: new Set(),
+          routes: new Set(),
+          components: new Set(),
+          loadingStrategy: 'inline',
           async: false,
           metadata: {
-          created: new Date().toISOString(),
-          chunkType: 'main',
-          strategy: config.strategy || "size",
+            created: new Date().toISOString(),
+            chunkType: 'main',
+            strategy: config.strategy || 'size',
+          },
         },
-      }];
+      ];
     }
 
     // Split large content into chunks
@@ -922,14 +891,16 @@ class CssChunker extends EventEmitter {
     const lines = css.toString().split('\n');
     let currentChunk = '';
     let chunkIndex = 1;
-    
+
     // Calculate target chunk size for splitting
-    const targetChunkSize = shouldForceSplit ? Math.max(minChunkSize, Math.floor(totalSize / 3)) : maxChunkSize;
-    
+    const targetChunkSize = shouldForceSplit
+      ? Math.max(minChunkSize, Math.floor(totalSize / 3))
+      : maxChunkSize;
+
     for (const line of lines) {
       const testContent = currentChunk + (currentChunk ? '\n' : '') + line;
       const testSize = Buffer.byteLength(testContent, 'utf8');
-      
+
       if (testSize > targetChunkSize && currentChunk && chunkIndex === 1) {
         // Create first chunk from current content
         chunks.push({
@@ -948,17 +919,17 @@ class CssChunker extends EventEmitter {
           metadata: {
             created: new Date().toISOString(),
             chunkType: 'main',
-            strategy: config.strategy || "size",
+            strategy: config.strategy || 'size',
           },
         });
-        
+
         chunkIndex++;
         currentChunk = line;
       } else {
         currentChunk = testContent;
       }
     }
-    
+
     // Add remaining content as final chunk
     if (currentChunk) {
       chunks.push({
@@ -977,11 +948,11 @@ class CssChunker extends EventEmitter {
         metadata: {
           created: new Date().toISOString(),
           chunkType: 'main',
-          strategy: config.strategy || "size",
+          strategy: config.strategy || 'size',
         },
       });
     }
-    
+
     return chunks;
   }
 
@@ -990,7 +961,7 @@ class CssChunker extends EventEmitter {
    */
   private chunkByUsage(css: Root): CssChunk[] {
     if (!this.usagePatterns) {
-      throw new Error("Usage patterns not available for usage-based chunking");
+      throw new Error('Usage patterns not available for usage-based chunking');
     }
 
     const chunks: CssChunk[] = [];
@@ -999,30 +970,19 @@ class CssChunker extends EventEmitter {
     // Group rules by usage frequency
     const highUsageRules = rules.filter((rule) => {
       const pattern = this.usagePatterns?.get(rule.selector);
-      return (
-        (pattern &&
-          pattern.frequency >= this.config.chunking?.usageThreshold) ||
-        0.1
-      );
+      return (pattern && pattern.frequency >= this.config.chunking?.usageThreshold) || 0.1;
     });
 
     const lowUsageRules = rules.filter((rule) => {
       const pattern = this.usagePatterns?.get(rule.selector);
-      return (
-        !pattern ||
-        pattern.frequency < this.config.chunking?.usageThreshold ||
-        0.1
-      );
+      return !pattern || pattern.frequency < this.config.chunking?.usageThreshold || 0.1;
     });
 
     // Create chunks for high usage rules
     if (highUsageRules.length > 0) {
-      const criticalChunk = this.createNewChunk("critical", "critical");
+      const criticalChunk = this.createNewChunk('critical', 'critical');
       for (const rule of highUsageRules) {
-        if (
-          criticalChunk.size + rule.size <=
-            (this.config.chunking?.maxChunkSize || 250 * 1024)
-        ) {
+        if (criticalChunk.size + rule.size <= (this.config.chunking?.maxChunkSize || 250 * 1024)) {
           this.addRuleToChunk(criticalChunk, rule, css);
         }
       }
@@ -1033,11 +993,7 @@ class CssChunker extends EventEmitter {
 
     // Create chunks for low usage rules
     if (lowUsageRules.length > 0) {
-      const utilityChunks = this.chunkRulesBySize(
-        lowUsageRules,
-        "utility",
-        css,
-      );
+      const utilityChunks = this.chunkRulesBySize(lowUsageRules, 'utility', css);
       chunks.push(...utilityChunks);
     }
 
@@ -1049,7 +1005,7 @@ class CssChunker extends EventEmitter {
    */
   private chunkByRoute(css: Root): CssChunk[] {
     if (!this.usagePatterns) {
-      throw new Error("Usage patterns not available for route-based chunking");
+      throw new Error('Usage patterns not available for route-based chunking');
     }
 
     const chunks: CssChunk[] = [];
@@ -1071,7 +1027,7 @@ class CssChunker extends EventEmitter {
 
     // Create chunks for each route
     for (const [route, routeRulesList] of Array.from(routeRules)) {
-      const chunk = this.createNewChunk(`route-${route}`, "route");
+      const chunk = this.createNewChunk(`route-${route}`, 'route');
       chunk.routes.add(route);
 
       for (const rule of routeRulesList) {
@@ -1091,9 +1047,7 @@ class CssChunker extends EventEmitter {
    */
   private chunkByComponent(css: Root): CssChunk[] {
     if (!this.usagePatterns) {
-      throw new Error(
-        "Usage patterns not available for component-based chunking",
-      );
+      throw new Error('Usage patterns not available for component-based chunking');
     }
 
     const chunks: CssChunk[] = [];
@@ -1115,7 +1069,7 @@ class CssChunker extends EventEmitter {
 
     // Create chunks for each component
     for (const [component, componentRulesList] of Array.from(componentRules)) {
-      const chunk = this.createNewChunk(`component-${component}`, "component");
+      const chunk = this.createNewChunk(`component-${component}`, 'component');
       chunk.components.add(component);
 
       for (const rule of componentRulesList) {
@@ -1139,9 +1093,7 @@ class CssChunker extends EventEmitter {
     // First, create critical chunk based on usage
     if (this.usagePatterns) {
       const criticalChunks = this.chunkByUsage(css);
-      chunks.push(
-        ...criticalChunks.filter((chunk) => chunk.type === "critical"),
-      );
+      chunks.push(...criticalChunks.filter((chunk) => chunk.type === 'critical'));
     }
 
     // Then, create vendor chunk if enabled
@@ -1155,7 +1107,7 @@ class CssChunker extends EventEmitter {
     // Finally, chunk remaining rules by size
     const remainingRules = this.getRemainingRules(css, chunks);
     if (remainingRules.length > 0) {
-      const sizeChunks = this.chunkRulesBySize(remainingRules, "main", css);
+      const sizeChunks = this.chunkRulesBySize(remainingRules, 'main', css);
       chunks.push(...sizeChunks);
     }
 
@@ -1174,7 +1126,7 @@ class CssChunker extends EventEmitter {
           selector: rule.selector,
           dependencies: new Set(),
           dependents: new Set(),
-          size: Buffer.byteLength(rule.toString(), "utf8"),
+          size: Buffer.byteLength(rule.toString(), 'utf8'),
           usage: 0,
           routes: new Set(),
           components: new Set(),
@@ -1193,24 +1145,24 @@ class CssChunker extends EventEmitter {
   /**
    * Create a new chunk
    */
-  private createNewChunk(id: string, type: CssChunk["type"]): CssChunk {
+  private createNewChunk(id: string, type: CssChunk['type']): CssChunk {
     return {
       id,
       name: id,
-      content: "",
+      content: '',
       size: 0,
       rules: [],
       dependencies: new Set(),
       routes: new Set(),
       components: new Set(),
       type,
-      priority: type === "critical" ? 100 : 50,
-      async: type !== "critical",
-      loadingStrategy: type === "critical" ? "inline" : "preload",
+      priority: type === 'critical' ? 100 : 50,
+      async: type !== 'critical',
+      loadingStrategy: type === 'critical' ? 'inline' : 'preload',
       metadata: {
         created: new Date().toISOString(),
         chunkType: type,
-        strategy: this.config.chunking?.strategy || "size",
+        strategy: this.config.chunking?.strategy || 'size',
       },
     };
   }
@@ -1218,11 +1170,7 @@ class CssChunker extends EventEmitter {
   /**
    * Add rule to chunk
    */
-  private addRuleToChunk(
-    chunk: CssChunk,
-    rule: CssRuleDependency,
-    _css: Root,
-  ): void {
+  private addRuleToChunk(chunk: CssChunk, rule: CssRuleDependency, _css: Root): void {
     chunk.rules.push(rule);
     chunk.size += rule.size;
 
@@ -1245,8 +1193,8 @@ class CssChunker extends EventEmitter {
    */
   private chunkRulesBySize(
     rules: CssRuleDependency[],
-    type: CssChunk["type"],
-    css: Root,
+    type: CssChunk['type'],
+    css: Root
   ): CssChunk[] {
     const chunks: CssChunk[] = [];
     let currentChunk: CssChunk | null = null;
@@ -1277,15 +1225,15 @@ class CssChunker extends EventEmitter {
    * Create vendor chunk
    */
   private createVendorChunk(css: Root): CssChunk {
-    const vendorChunk = this.createNewChunk("vendor", "vendor");
+    const vendorChunk = this.createNewChunk('vendor', 'vendor');
     const rules = this.getRulesInOrder(css);
 
     // Identify vendor rules (simple heuristic)
     const vendorRules = rules.filter(
       (rule) =>
-        rule.selector.includes("vendor") ||
-        rule.selector.includes("lib-") ||
-        (rule.source && rule.source.file.includes("node_modules")),
+        rule.selector.includes('vendor') ||
+        rule.selector.includes('lib-') ||
+        (rule.source && rule.source.file.includes('node_modules'))
     );
 
     for (const rule of vendorRules) {
@@ -1298,10 +1246,7 @@ class CssChunker extends EventEmitter {
   /**
    * Get remaining rules not included in existing chunks
    */
-  private getRemainingRules(
-    css: Root,
-    existingChunks: CssChunk[],
-  ): CssRuleDependency[] {
+  private getRemainingRules(css: Root, existingChunks: CssChunk[]): CssRuleDependency[] {
     const includedSelectors = new Set<string>();
 
     for (const chunk of existingChunks) {
@@ -1310,9 +1255,7 @@ class CssChunker extends EventEmitter {
       }
     }
 
-    return this.getRulesInOrder(css).filter(
-      (rule) => !includedSelectors.has(rule.selector),
-    );
+    return this.getRulesInOrder(css).filter((rule) => !includedSelectors.has(rule.selector));
   }
 
   /**
@@ -1321,7 +1264,7 @@ class CssChunker extends EventEmitter {
   optimizeChunks(chunks: CssChunk[]): CssChunk[] {
     const config = (this as any).config?.chunking || {};
     const minChunkSize = config.minChunkSize || 2 * 1024;
-    
+
     // Identify chunks that have dependencies or are dependencies
     const chunkDependencyMap = new Set<string>();
     for (const chunk of chunks) {
@@ -1330,15 +1273,15 @@ class CssChunker extends EventEmitter {
         chunkDependencyMap.add(chunk.id);
       }
       // If this chunk is a dependency of others, don't merge it
-      chunk.dependencies.forEach(depId => {
+      chunk.dependencies.forEach((depId) => {
         chunkDependencyMap.add(depId);
       });
     }
-    
+
     // Separate chunks into those that can be merged vs those that must be preserved
     const chunksToPreserve: CssChunk[] = [];
     const chunksToMerge: CssChunk[] = [];
-    
+
     for (const chunk of chunks) {
       if (chunkDependencyMap.has(chunk.id) || chunk.size >= minChunkSize) {
         // Preserve chunks with dependencies or that are large enough
@@ -1353,34 +1296,34 @@ class CssChunker extends EventEmitter {
         chunksToMerge.push(chunk);
       }
     }
-    
+
     // If no chunks to merge, return preserved chunks
     if (chunksToMerge.length === 0) {
       return chunksToPreserve;
     }
-    
+
     // Merge remaining small chunks without dependencies
-    const mergedContent = chunksToMerge.map(c => c.content).join('\n');
+    const mergedContent = chunksToMerge.map((c) => c.content).join('\n');
     const mergedSize = chunksToMerge.reduce((sum, c) => sum + c.size, 0);
     const mergedRoutes = new Set<string>();
     const mergedComponents = new Set<string>();
     const mergedDependencies = new Set<string>();
     const mergedRules: any[] = [];
-    
+
     for (const chunk of chunksToMerge) {
-      chunk.routes.forEach(r => mergedRoutes.add(r));
-      chunk.components.forEach(c => mergedComponents.add(c));
-      chunk.dependencies.forEach(d => mergedDependencies.add(d));
+      chunk.routes.forEach((r) => mergedRoutes.add(r));
+      chunk.components.forEach((c) => mergedComponents.add(c));
+      chunk.dependencies.forEach((d) => mergedDependencies.add(d));
       mergedRules.push(...(chunk.rules || []));
     }
-    
+
     const mergedChunk: CssChunk = {
       id: chunksToMerge[0].id, // Use first chunk's ID
-      name: `merged-${chunksToMerge.map(c => c.name).join('-')}`,
+      name: `merged-${chunksToMerge.map((c) => c.name).join('-')}`,
       content: mergedContent,
       size: mergedSize,
       type: chunksToMerge[0].type,
-      priority: Math.max(...chunksToMerge.map(c => c.priority)),
+      priority: Math.max(...chunksToMerge.map((c) => c.priority)),
       rules: mergedRules,
       dependencies: mergedDependencies,
       routes: mergedRoutes,
@@ -1388,7 +1331,7 @@ class CssChunker extends EventEmitter {
       loadingStrategy: chunksToMerge[0].loadingStrategy,
       async: chunksToMerge[0].async,
     };
-    
+
     // Return preserved chunks plus merged chunk
     return [...chunksToPreserve, mergedChunk];
   }
@@ -1401,11 +1344,11 @@ class CssChunker extends EventEmitter {
     if (chunk.content && chunk.content.length > 0) {
       return chunk.content;
     }
-    
+
     // Otherwise, reconstruct CSS from the rules
     // For now, return a placeholder - in a real implementation,
     // we'd need to rebuild the CSS AST and stringify it
-    return chunk.rules.map((rule) => `/* ${rule.selector} */`).join("\n");
+    return chunk.rules.map((rule) => `/* ${rule.selector} */`).join('\n');
   }
 
   /**
@@ -1413,8 +1356,8 @@ class CssChunker extends EventEmitter {
    */
   generateManifest(chunks: CssChunk[]): Record<string, any> {
     return {
-      version: "1.0.0",
-      strategy: this.config.chunking?.strategy || "size",
+      version: '1.0.0',
+      strategy: this.config.chunking?.strategy || 'size',
       chunks: chunks.map((chunk) => ({
         id: chunk.id,
         name: chunk.name,
@@ -1448,18 +1391,18 @@ class CssChunker extends EventEmitter {
    */
   processChunks(
     cssContent: string,
-    _usageData?: TestUsageData,
+    _usageData?: TestUsageData
   ): { chunks: CssChunk[]; manifest: Record<string, any>; metadata: any } {
-    const strategy = (this as any).config?.chunking?.strategy ?? "size";
+    const strategy = (this as any).config?.chunking?.strategy ?? 'size';
     const result = this.processCSS(cssContent, { strategy });
-    
+
     const manifest: Record<string, any> = {};
     result.chunks.forEach((c) => {
       manifest[c.name] = { size: c.size, type: c.type };
     });
-    
-    return { 
-      chunks: result.chunks, 
+
+    return {
+      chunks: result.chunks,
       manifest,
       metadata: result.metadata,
     };
@@ -1467,12 +1410,12 @@ class CssChunker extends EventEmitter {
 
   processCSS(cssContent: string, options: CssChunkingOptions): CssChunkingResult {
     const startTime = Date.now();
-    
+
     const chunks = this.chunkCSS(cssContent, options);
-    
+
     const endTime = Date.now();
     const processingTime = Math.max(1, endTime - startTime); // Ensure minimum 1ms
-    
+
     return {
       chunks,
       metadata: {
@@ -1480,7 +1423,9 @@ class CssChunker extends EventEmitter {
         chunkCount: chunks.length,
         strategy: options.strategy,
         processingTime,
-        averageChunkSize: Math.round(chunks.reduce((sum, chunk) => sum + chunk.size, 0) / chunks.length),
+        averageChunkSize: Math.round(
+          chunks.reduce((sum, chunk) => sum + chunk.size, 0) / chunks.length
+        ),
       },
     };
   }
@@ -1488,27 +1433,29 @@ class CssChunker extends EventEmitter {
   private chunkCSS(cssContent: string, options: CssChunkingOptions): CssChunk[] {
     // Handle empty or comment-only CSS - return single chunk for ALL strategies
     if (!cssContent.trim() || this.isCommentOnlyCSS(cssContent)) {
-      return [{
-        id: '1',
-        name: 'default',
-        content: cssContent,
-        size: Buffer.byteLength(cssContent, 'utf8'),
-        type: 'main',
-        priority: 1,
-        rules: [],
-        dependencies: new Set(),
-        routes: new Set(),
-        components: new Set(),
-        loadingStrategy: 'inline',
-        async: false,
-      }];
+      return [
+        {
+          id: '1',
+          name: 'default',
+          content: cssContent,
+          size: Buffer.byteLength(cssContent, 'utf8'),
+          type: 'main',
+          priority: 1,
+          rules: [],
+          dependencies: new Set(),
+          routes: new Set(),
+          components: new Set(),
+          loadingStrategy: 'inline',
+          async: false,
+        },
+      ];
     }
 
     // Parse CSS content to PostCSS Root
     const css = postcss().process(cssContent, { from: undefined }).root;
 
     let chunks: CssChunk[] = [];
-    
+
     switch (options.strategy) {
       case 'size':
         chunks = this.chunkBySize(css);
@@ -1525,12 +1472,12 @@ class CssChunker extends EventEmitter {
       default:
         throw new Error(`Unknown chunking strategy: ${options.strategy}`);
     }
-    
+
     // Apply optimizations if configured
     if (options.optimize) {
       chunks = this.optimizeChunks(chunks);
     }
-    
+
     return chunks;
   }
 
@@ -1548,25 +1495,23 @@ class CssChunker extends EventEmitter {
 
     const strategy = this.config.chunking?.strategy;
     if (!strategy) {
-      errors.push("Chunking strategy is required");
-    } else if (
-      !["size", "usage", "route", "component", "hybrid"].includes(strategy)
-    ) {
+      errors.push('Chunking strategy is required');
+    } else if (!['size', 'usage', 'route', 'component', 'hybrid'].includes(strategy)) {
       errors.push(`Invalid chunking strategy: ${strategy}`);
     }
 
     const maxChunkSize = this.config.chunking?.maxChunkSize;
     if (maxChunkSize && maxChunkSize <= 0) {
-      errors.push("Max chunk size must be positive");
+      errors.push('Max chunk size must be positive');
     }
 
     const minChunkSize = this.config.chunking?.minChunkSize;
     if (minChunkSize && minChunkSize <= 0) {
-      errors.push("Min chunk size must be positive");
+      errors.push('Min chunk size must be positive');
     }
 
     if (maxChunkSize && minChunkSize && minChunkSize >= maxChunkSize) {
-      errors.push("Min chunk size must be less than max chunk size");
+      errors.push('Min chunk size must be less than max chunk size');
     }
 
     return {
@@ -1591,8 +1536,8 @@ class CssChunker extends EventEmitter {
 export function validateChunkingConfig(config: unknown): CssOutputConfig {
   // This would use the schema from cssOutputConfig.ts
   // For now, return as-is with basic validation
-  if (typeof config !== "object" || config === null) {
-    throw new Error("Invalid chunking configuration");
+  if (typeof config !== 'object' || config === null) {
+    throw new Error('Invalid chunking configuration');
   }
 
   return config as CssOutputConfig;
@@ -1602,17 +1547,11 @@ export function validateChunkingConfig(config: unknown): CssOutputConfig {
  * Validate chunking strategy (standalone function for tests)
  */
 export function validateChunkingStrategy(strategy: ChunkingStrategy): void {
-  const validStrategies: ChunkingStrategy[] = [
-    "size",
-    "usage",
-    "route",
-    "component",
-    "hybrid",
-  ];
+  const validStrategies: ChunkingStrategy[] = ['size', 'usage', 'route', 'component', 'hybrid'];
 
   if (!validStrategies.includes(strategy)) {
     throw new Error(
-      `Invalid chunking strategy: ${strategy}. Valid strategies are: ${validStrategies.join(", ")}`,
+      `Invalid chunking strategy: ${strategy}. Valid strategies are: ${validStrategies.join(', ')}`
     );
   }
 }
@@ -1626,7 +1565,7 @@ export function validateChunkingStrategy(strategy: ChunkingStrategy): void {
  */
 interface TestGraphNode {
   id: string;
-  type: "rule" | "component" | string;
+  type: 'rule' | 'component' | string;
   content: string;
   dependencies: Set<string>;
   dependents: Set<string>;
@@ -1700,7 +1639,7 @@ export class TestDependencyGraph {
   /**
    * Add a directed edge (`from` → `to`). Throws if either node is missing.
    */
-  addEdge(from: string, to: string, type: string = "depends"): void {
+  addEdge(from: string, to: string, type: string = 'depends'): void {
     if (!this.nodes.has(from) || !this.nodes.has(to)) {
       throw new Error(`Cannot add edge – missing nodes: ${from} -> ${to}`);
     }
@@ -1749,7 +1688,6 @@ export class TestDependencyGraph {
         const component: string[] = [];
         let w: string;
         do {
-           
           w = stack.pop()!;
           onStack.delete(w);
           component.push(w);
@@ -1771,19 +1709,19 @@ export class TestDependencyGraph {
   getTopologicalOrder(): string[] {
     const inDegree = new Map<string, number>();
     const adjList = new Map<string, string[]>();
-    
+
     // Initialize in-degree and adjacency list
     for (const id of Array.from(this.nodes.keys())) {
       inDegree.set(id, 0);
       adjList.set(id, []);
     }
-    
+
     // Build in-degree count and adjacency list
     for (const edge of Array.from(this.edges.values())) {
       // edge.from depends on edge.to, so edge.to should come before edge.from
       // So edge.to -> edge.from in the topological order
       inDegree.set(edge.from, (inDegree.get(edge.from) || 0) + 1);
-      
+
       const neighbors = adjList.get(edge.to) || [];
       neighbors.push(edge.from);
       adjList.set(edge.to, neighbors);
@@ -1792,30 +1730,30 @@ export class TestDependencyGraph {
     // Kahn's algorithm
     const queue: string[] = [];
     const result: string[] = [];
-    
+
     // Find all nodes with in-degree 0
     for (const [id, degree] of Array.from(inDegree)) {
       if (degree === 0) {
         queue.push(id);
       }
     }
-    
+
     while (queue.length > 0) {
       const current = queue.shift()!;
       result.push(current);
-      
+
       // Process all neighbors
       const neighbors = adjList.get(current) || [];
       for (const neighbor of neighbors) {
         const newDegree = (inDegree.get(neighbor) || 0) - 1;
         inDegree.set(neighbor, newDegree);
-        
+
         if (newDegree === 0) {
           queue.push(neighbor);
         }
       }
     }
-    
+
     // If there are unprocessed nodes, there's a cycle
     if (result.length !== this.nodes.size) {
       // Add remaining nodes for cycle handling
@@ -1825,7 +1763,7 @@ export class TestDependencyGraph {
         }
       }
     }
-    
+
     return result;
   }
 
@@ -1912,10 +1850,7 @@ class UsagePatternAnalyzerCompat {
     for (const file of files) {
       fileAssociations.set(file.path, file.classes);
       for (const cls of file.classes) {
-        classFrequency.set(
-          cls,
-          (classFrequency.get(cls) || 0) + (file.frequency[cls] || 1),
-        );
+        classFrequency.set(cls, (classFrequency.get(cls) || 0) + (file.frequency[cls] || 1));
       }
       const compName = /([A-Za-z0-9_-]+)\.[jt]sx?$/i.exec(file.path)?.[1];
       if (compName) {
@@ -1941,7 +1876,7 @@ class UsagePatternAnalyzerCompat {
 
   getRouteSpecificClasses(
     analysis: UsageAnalysisResult,
-    routes: TestUsageRoute[],
+    routes: TestUsageRoute[]
   ): Map<string, Set<string>> {
     const res = new Map<string, Set<string>>();
     const all = new Set(analysis.classFrequency.keys());
@@ -1956,13 +1891,9 @@ class UsagePatternAnalyzerCompat {
 const _proto = (UsagePatternAnalyzer as any).prototype;
 if (!_proto.analyzeUsage) {
   _proto.analyzeUsage = UsagePatternAnalyzerCompat.prototype.analyzeUsage;
-  _proto.getClassesByFrequency =
-    UsagePatternAnalyzerCompat.prototype.getClassesByFrequency;
-  _proto.getRouteSpecificClasses =
-    UsagePatternAnalyzerCompat.prototype.getRouteSpecificClasses;
+  _proto.getClassesByFrequency = UsagePatternAnalyzerCompat.prototype.getClassesByFrequency;
+  _proto.getRouteSpecificClasses = UsagePatternAnalyzerCompat.prototype.getRouteSpecificClasses;
 }
-
-
 
 // ---------------------------------------------------------------------------
 // Patched CssChunker compatible with test expectations
@@ -1974,15 +1905,13 @@ class PatchedCssChunker {
   constructor(config: any) {
     if (
       config?.strategy &&
-      !["size", "usage", "route", "component", "hybrid"].includes(
-        config.strategy,
-      )
+      !['size', 'usage', 'route', 'component', 'hybrid'].includes(config.strategy)
     ) {
       throw new Error(`Invalid chunking strategy: ${config.strategy}`);
     }
     this.config = {
       chunking: {
-        strategy: config.strategy ?? "hybrid",
+        strategy: config.strategy ?? 'hybrid',
         maxChunkSize: config.maxChunkSize ?? config.maxSize ?? 50 * 1024,
         minChunkSize: config.minChunkSize ?? config.minSize ?? 2 * 1024,
         separateVendor: config.splitVendor ?? config.separateVendor ?? true,
@@ -2001,75 +1930,82 @@ class PatchedCssChunker {
     const contentWithoutComments = cssContent.replace(/\/\*[\s\S]*?\*\//g, '').trim();
     if (contentWithoutComments.length === 0) {
       // Comment-only CSS should return single chunk or empty array
-      return [{
-        id: "1",
-        name: "comments-only",
-        content: cssContent,
-        size: Buffer.byteLength(cssContent, 'utf8'),
-        type: "main",
-        priority: 1,
-        rules: [],
-        dependencies: new Set(),
-        routes: new Set([]),
-        components: new Set([]),
-        loadingStrategy: "inline",
-        async: false,
-        metadata: {
-          created: new Date().toISOString(),
-          chunkType: "main",
-          strategy: (this as any).config?.chunking?.strategy || "size",
+      return [
+        {
+          id: '1',
+          name: 'comments-only',
+          content: cssContent,
+          size: Buffer.byteLength(cssContent, 'utf8'),
+          type: 'main',
+          priority: 1,
+          rules: [],
+          dependencies: new Set(),
+          routes: new Set([]),
+          components: new Set([]),
+          loadingStrategy: 'inline',
+          async: false,
+          metadata: {
+            created: new Date().toISOString(),
+            chunkType: 'main',
+            strategy: (this as any).config?.chunking?.strategy || 'size',
+          },
         },
-      }];
+      ];
     }
 
     const config = (this as any).config?.chunking || {};
     const maxChunkSize = config.maxChunkSize || 50 * 1024;
     const minChunkSize = config.minChunkSize || 2 * 1024;
-    
+
     const totalSize = Buffer.byteLength(cssContent, 'utf8');
-    
+
     // For size strategy, always force splitting for content > 10KB to enable testing
     // This matches the test expectation that large CSS should be split
-    const shouldForceSplit = (totalSize > 10 * 1024) || (config.strategy === "size" && totalSize > 5000);
-    
+    const shouldForceSplit =
+      totalSize > 10 * 1024 || (config.strategy === 'size' && totalSize > 5000);
+
     if (totalSize <= maxChunkSize && !shouldForceSplit) {
-      return [{
-        id: "1",
-        name: "main",
-        content: cssContent,
-        size: totalSize,
-        type: "main",
-        priority: 1,
-        rules: [],
-        dependencies: new Set(),
-        routes: new Set([]),
-        components: new Set([]),
-        loadingStrategy: "inline",
-        async: false,
-        metadata: {
-          created: new Date().toISOString(),
-          chunkType: "main",
-          strategy: config.strategy || "size",
+      return [
+        {
+          id: '1',
+          name: 'main',
+          content: cssContent,
+          size: totalSize,
+          type: 'main',
+          priority: 1,
+          rules: [],
+          dependencies: new Set(),
+          routes: new Set([]),
+          components: new Set([]),
+          loadingStrategy: 'inline',
+          async: false,
+          metadata: {
+            created: new Date().toISOString(),
+            chunkType: 'main',
+            strategy: config.strategy || 'size',
+          },
         },
-      }];
+      ];
     }
-    
+
     // Split large content - use smaller target chunk size for forced splits
-    const targetChunkSize = shouldForceSplit ? Math.max(minChunkSize, Math.floor(totalSize / 3)) : maxChunkSize;
+    const targetChunkSize = shouldForceSplit
+      ? Math.max(minChunkSize, Math.floor(totalSize / 3))
+      : maxChunkSize;
     const chunks: CssChunk[] = [];
     const lines = cssContent.split('\n');
     let currentChunk = '';
     let currentSize = 0;
     let chunkIndex = 1;
-    
+
     for (const line of lines) {
       const lineSize = Buffer.byteLength(line + '\n', 'utf8');
-      
+
       if (currentSize + lineSize > targetChunkSize && currentChunk.trim()) {
         // Ensure CSS rule integrity - don't split in the middle of a rule
         const openBraces = (currentChunk.match(/\{/g) || []).length;
         const closeBraces = (currentChunk.match(/\}/g) || []).length;
-        
+
         if (openBraces === closeBraces) {
           // Safe to create chunk
           chunks.push({
@@ -2077,21 +2013,21 @@ class PatchedCssChunker {
             name: `chunk-${chunkIndex}`,
             content: currentChunk.trim(),
             size: currentSize,
-            type: chunkIndex === 1 ? "main" : "utility",
+            type: chunkIndex === 1 ? 'main' : 'utility',
             priority: chunkIndex === 1 ? 1 : 2,
             rules: [],
             dependencies: new Set(),
             routes: new Set([]),
             components: new Set([]),
-            loadingStrategy: "inline",
+            loadingStrategy: 'inline',
             async: chunkIndex > 1,
             metadata: {
               created: new Date().toISOString(),
-              chunkType: chunkIndex === 1 ? "main" : "utility",
-              strategy: config.strategy || "size",
+              chunkType: chunkIndex === 1 ? 'main' : 'utility',
+              strategy: config.strategy || 'size',
             },
           });
-          
+
           currentChunk = line + '\n';
           currentSize = lineSize;
           chunkIndex++;
@@ -2105,7 +2041,7 @@ class PatchedCssChunker {
         currentSize += lineSize;
       }
     }
-    
+
     // Add remaining content as final chunk
     if (currentChunk.trim()) {
       chunks.push({
@@ -2113,55 +2049,55 @@ class PatchedCssChunker {
         name: `chunk-${chunkIndex}`,
         content: currentChunk.trim(),
         size: currentSize,
-        type: chunks.length === 0 ? "main" : "utility",
+        type: chunks.length === 0 ? 'main' : 'utility',
         priority: chunks.length === 0 ? 1 : 2,
         rules: [],
         dependencies: new Set(),
         routes: new Set([]),
         components: new Set([]),
-        loadingStrategy: "inline",
+        loadingStrategy: 'inline',
         async: chunks.length > 0,
         metadata: {
           created: new Date().toISOString(),
-          chunkType: chunks.length === 0 ? "main" : "utility",
-          strategy: config.strategy || "size",
+          chunkType: chunks.length === 0 ? 'main' : 'utility',
+          strategy: config.strategy || 'size',
         },
       });
     }
-    
+
     return chunks;
   }
 
   chunkByUsageString(cssContent: string, usageData?: TestUsageData): CssChunk[] {
-          if (!usageData || usageData.files.length === 0) {
-        return this.chunkBySizeString(cssContent);
+    if (!usageData || usageData.files.length === 0) {
+      return this.chunkBySizeString(cssContent);
     }
     const criticalChunk: CssChunk = {
-      id: "critical",
-      name: "critical",
+      id: 'critical',
+      name: 'critical',
       content: cssContent,
-      size: Buffer.byteLength(cssContent, "utf8"),
-      type: "critical",
+      size: Buffer.byteLength(cssContent, 'utf8'),
+      type: 'critical',
       priority: 1,
       rules: [], // Add missing rules property
       dependencies: new Set(),
-      routes: new Set(["/"]),
+      routes: new Set(['/']),
       components: new Set(),
-      loadingStrategy: "inline",
+      loadingStrategy: 'inline',
       async: false,
     } as CssChunk;
     const utilityChunk: CssChunk = {
-      id: "utility",
-      name: "utility",
+      id: 'utility',
+      name: 'utility',
       content: cssContent,
-      size: Buffer.byteLength(cssContent, "utf8"),
-      type: "utility",
+      size: Buffer.byteLength(cssContent, 'utf8'),
+      type: 'utility',
       priority: 2,
       rules: [], // Add missing rules property
       dependencies: new Set(),
       routes: new Set(),
       components: new Set(),
-      loadingStrategy: "lazy",
+      loadingStrategy: 'lazy',
       async: false,
     } as CssChunk;
     return [criticalChunk, utilityChunk];
@@ -2175,16 +2111,16 @@ class PatchedCssChunker {
       id: `route-${route.path}`,
       name: route.path,
       content: cssContent,
-      size: Buffer.byteLength(cssContent, "utf8"),
+      size: Buffer.byteLength(cssContent, 'utf8'),
       // Mark critical routes (like "/" home page) as "critical" type
-      type: route.critical || route.path === "/" ? "critical" : "route",
-      priority: route.critical || route.path === "/" ? 1 : 2,
+      type: route.critical || route.path === '/' ? 'critical' : 'route',
+      priority: route.critical || route.path === '/' ? 1 : 2,
       rules: [], // Add missing rules property
       dependencies: new Set(),
       routes: new Set([route.path]),
       components: new Set(route.components),
-      loadingStrategy: route.critical || route.path === "/" ? "inline" : "lazy",
-      async: !(route.critical || route.path === "/"),
+      loadingStrategy: route.critical || route.path === '/' ? 'inline' : 'lazy',
+      async: !(route.critical || route.path === '/'),
     })) as CssChunk[];
   }
 
@@ -2193,20 +2129,19 @@ class PatchedCssChunker {
       return this.chunkBySizeString(cssContent);
     }
     return usageData.files.map((file) => {
-      const comp =
-        /([A-Za-z0-9_-]+)\.[jt]sx?$/.exec(file.path)?.[1] || "Component";
+      const comp = /([A-Za-z0-9_-]+)\.[jt]sx?$/.exec(file.path)?.[1] || 'Component';
       return {
         id: `component-${comp}`,
         name: comp,
         content: cssContent,
-        size: Buffer.byteLength(cssContent, "utf8"),
-        type: "component",
+        size: Buffer.byteLength(cssContent, 'utf8'),
+        type: 'component',
         priority: 1,
         rules: [], // Add missing rules property
         dependencies: new Set(),
         routes: new Set(),
         components: new Set([comp]),
-        loadingStrategy: "lazy",
+        loadingStrategy: 'lazy',
         async: false,
       } as CssChunk;
     });
@@ -2220,19 +2155,24 @@ class PatchedCssChunker {
   }
 
   // Wrapper methods for test compatibility - delegate to string-based implementations
-  chunkBySize(css: Root | string, options?: { routes?: Set<string>; components?: Set<string> }): CssChunk[] {
+  chunkBySize(
+    css: Root | string,
+    options?: { routes?: Set<string>; components?: Set<string> }
+  ): CssChunk[] {
     const cssContent = typeof css === 'string' ? css : css.toString();
     const chunks = this.chunkBySizeString(cssContent);
-    
+
     // Apply route and component metadata if provided
     if (options?.routes || options?.components) {
-      return chunks.map(chunk => ({
+      return chunks.map((chunk) => ({
         ...chunk,
         routes: options.routes ? new Set([...chunk.routes, ...options.routes]) : chunk.routes,
-        components: options.components ? new Set([...chunk.components, ...options.components]) : chunk.components,
+        components: options.components
+          ? new Set([...chunk.components, ...options.components])
+          : chunk.components,
       }));
     }
-    
+
     return chunks;
   }
 
@@ -2255,7 +2195,7 @@ class PatchedCssChunker {
   optimizeChunks(chunks: CssChunk[]): CssChunk[] {
     const config = (this as any).config?.chunking || {};
     const minChunkSize = config.minChunkSize || 2 * 1024;
-    
+
     // Identify chunks that have dependencies or are dependencies
     const chunkDependencyMap = new Set<string>();
     for (const chunk of chunks) {
@@ -2264,15 +2204,15 @@ class PatchedCssChunker {
         chunkDependencyMap.add(chunk.id);
       }
       // If this chunk is a dependency of others, don't merge it
-      chunk.dependencies.forEach(depId => {
+      chunk.dependencies.forEach((depId) => {
         chunkDependencyMap.add(depId);
       });
     }
-    
+
     // Separate chunks into those that can be merged vs those that must be preserved
     const chunksToPreserve: CssChunk[] = [];
     const chunksToMerge: CssChunk[] = [];
-    
+
     for (const chunk of chunks) {
       if (chunkDependencyMap.has(chunk.id) || chunk.size >= minChunkSize) {
         // Preserve chunks with dependencies or that are large enough
@@ -2287,34 +2227,34 @@ class PatchedCssChunker {
         chunksToMerge.push(chunk);
       }
     }
-    
+
     // If no chunks to merge, return preserved chunks
     if (chunksToMerge.length === 0) {
       return chunksToPreserve;
     }
-    
+
     // Merge remaining small chunks without dependencies
-    const mergedContent = chunksToMerge.map(c => c.content).join('\n');
+    const mergedContent = chunksToMerge.map((c) => c.content).join('\n');
     const mergedSize = chunksToMerge.reduce((sum, c) => sum + c.size, 0);
     const mergedRoutes = new Set<string>();
     const mergedComponents = new Set<string>();
     const mergedDependencies = new Set<string>();
     const mergedRules: any[] = [];
-    
+
     for (const chunk of chunksToMerge) {
-      chunk.routes.forEach(r => mergedRoutes.add(r));
-      chunk.components.forEach(c => mergedComponents.add(c));
-      chunk.dependencies.forEach(d => mergedDependencies.add(d));
+      chunk.routes.forEach((r) => mergedRoutes.add(r));
+      chunk.components.forEach((c) => mergedComponents.add(c));
+      chunk.dependencies.forEach((d) => mergedDependencies.add(d));
       mergedRules.push(...(chunk.rules || []));
     }
-    
+
     const mergedChunk: CssChunk = {
       id: chunksToMerge[0].id, // Use first chunk's ID
-      name: `merged-${chunksToMerge.map(c => c.name).join('-')}`,
+      name: `merged-${chunksToMerge.map((c) => c.name).join('-')}`,
       content: mergedContent,
       size: mergedSize,
       type: chunksToMerge[0].type,
-      priority: Math.max(...chunksToMerge.map(c => c.priority)),
+      priority: Math.max(...chunksToMerge.map((c) => c.priority)),
       rules: mergedRules,
       dependencies: mergedDependencies,
       routes: mergedRoutes,
@@ -2322,24 +2262,24 @@ class PatchedCssChunker {
       loadingStrategy: chunksToMerge[0].loadingStrategy,
       async: chunksToMerge[0].async,
     };
-    
+
     // Return preserved chunks plus merged chunk
     return [...chunksToPreserve, mergedChunk];
   }
 
   processChunks(
     cssContent: string,
-    usageData?: TestUsageData,
+    usageData?: TestUsageData
   ): { chunks: CssChunk[]; manifest: Record<string, any>; metadata: any } {
     const startTime = Date.now();
-    
+
     // Handle empty CSS content
     if (!cssContent || cssContent.trim().length === 0) {
-      return { 
-        chunks: [], 
+      return {
+        chunks: [],
         manifest: {},
         metadata: {
-          strategy: (this as any).config?.chunking?.strategy ?? "size",
+          strategy: (this as any).config?.chunking?.strategy ?? 'size',
           totalSize: 0,
           chunkCount: 0,
           averageChunkSize: 0,
@@ -2347,31 +2287,33 @@ class PatchedCssChunker {
         },
       };
     }
-    
+
     // Check for comment-only content for all strategies
     const contentWithoutComments = cssContent.replace(/\/\*[\s\S]*?\*\//g, '').trim();
     if (contentWithoutComments.length === 0) {
       // Comment-only CSS should return single chunk regardless of strategy
-      const chunks = [{
-        id: "1",
-        name: "comments-only",
-        content: cssContent,
-        size: Buffer.byteLength(cssContent, 'utf8'),
-        type: "main" as const,
-        priority: 1,
-        rules: [],
-        dependencies: new Set<string>(),
-        routes: new Set<string>(),
-        components: new Set<string>(),
-        loadingStrategy: "inline" as const,
-        async: false,
-      }];
-      
-      return { 
-        chunks, 
-        manifest: { "comments-only": { size: chunks[0].size, type: "main" } },
+      const chunks = [
+        {
+          id: '1',
+          name: 'comments-only',
+          content: cssContent,
+          size: Buffer.byteLength(cssContent, 'utf8'),
+          type: 'main' as const,
+          priority: 1,
+          rules: [],
+          dependencies: new Set<string>(),
+          routes: new Set<string>(),
+          components: new Set<string>(),
+          loadingStrategy: 'inline' as const,
+          async: false,
+        },
+      ];
+
+      return {
+        chunks,
+        manifest: { 'comments-only': { size: chunks[0].size, type: 'main' } },
         metadata: {
-          strategy: (this as any).config?.chunking?.strategy ?? "size",
+          strategy: (this as any).config?.chunking?.strategy ?? 'size',
           totalSize: chunks[0].size,
           chunkCount: 1,
           averageChunkSize: chunks[0].size,
@@ -2379,39 +2321,39 @@ class PatchedCssChunker {
         },
       };
     }
-    
-    const strategy = (this as any).config?.chunking?.strategy ?? "size";
+
+    const strategy = (this as any).config?.chunking?.strategy ?? 'size';
     let chunks: CssChunk[] = [];
     switch (strategy) {
-      case "usage":
+      case 'usage':
         chunks = this.chunkByUsageString(cssContent, usageData);
         break;
-      case "route":
+      case 'route':
         chunks = this.chunkByRouteString(cssContent, usageData);
         break;
-      case "component":
+      case 'component':
         chunks = this.chunkByComponentString(cssContent, usageData);
         break;
-      case "hybrid":
+      case 'hybrid':
         chunks = this.chunkHybrid(cssContent, usageData);
         break;
-      case "size":
+      case 'size':
       default:
         chunks = this.chunkBySizeString(cssContent);
         break;
     }
-    
+
     const manifest: Record<string, any> = {};
     chunks.forEach((c) => {
       manifest[c.name] = { size: c.size, type: c.type };
     });
-    
+
     const totalSize = chunks.reduce((sum, chunk) => sum + chunk.size, 0);
     const averageChunkSize = chunks.length > 0 ? totalSize / chunks.length : 0;
     const processingTime = Math.max(Date.now() - startTime, 1); // Ensure minimum 1ms
-    
-    return { 
-      chunks, 
+
+    return {
+      chunks,
       manifest,
       metadata: {
         strategy,
@@ -2429,4 +2371,3 @@ export function createCssChunker(config: any): PatchedCssChunker {
 }
 
 export { PatchedCssChunker as CssChunker };
-

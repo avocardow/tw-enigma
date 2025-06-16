@@ -5,17 +5,10 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import chalk from "chalk";
-import {
-  createWriteStream,
-  WriteStream,
-  existsSync,
-  mkdirSync,
-  statSync,
-  unlinkSync,
-} from "fs";
-import { dirname } from "path";
-import { gzipSync } from "zlib";
+import chalk from 'chalk';
+import { createWriteStream, WriteStream, existsSync, mkdirSync, statSync, unlinkSync } from 'fs';
+import { dirname } from 'path';
+import { gzipSync } from 'zlib';
 
 /**
  * Log levels following Log4j standard
@@ -29,18 +22,18 @@ export const LogLevel = {
   FATAL: 5,
 } as const;
 
-export type LogLevel = typeof LogLevel[keyof typeof LogLevel];
+export type LogLevel = (typeof LogLevel)[keyof typeof LogLevel];
 
 /**
  * Log level names for easy reference
  */
 export const LogLevelNames: Record<LogLevel, string> = {
-  [LogLevel.TRACE]: "TRACE",
-  [LogLevel.DEBUG]: "DEBUG",
-  [LogLevel.INFO]: "INFO",
-  [LogLevel.WARN]: "WARN",
-  [LogLevel.ERROR]: "ERROR",
-  [LogLevel.FATAL]: "FATAL",
+  [LogLevel.TRACE]: 'TRACE',
+  [LogLevel.DEBUG]: 'DEBUG',
+  [LogLevel.INFO]: 'INFO',
+  [LogLevel.WARN]: 'WARN',
+  [LogLevel.ERROR]: 'ERROR',
+  [LogLevel.FATAL]: 'FATAL',
 };
 
 /**
@@ -60,7 +53,7 @@ const LogLevelColors = {
  */
 export interface FileOutputOptions {
   filePath: string;
-  format?: "human" | "json" | "csv";
+  format?: 'human' | 'json' | 'csv';
   maxSize?: number; // in bytes, default 10MB
   maxFiles?: number; // default 5
   compress?: boolean; // compress rotated files
@@ -86,7 +79,7 @@ export interface LoggerOptions {
   veryVerbose?: boolean;
   quiet?: boolean;
   silent?: boolean;
-  outputFormat?: "human" | "json";
+  outputFormat?: 'human' | 'json';
   colorize?: boolean;
   timestamp?: boolean;
   component?: string;
@@ -147,15 +140,14 @@ export class Logger {
   private veryVerbose: boolean;
   private quiet: boolean;
   private silent: boolean;
-  private outputFormat: "human" | "json";
+  private outputFormat: 'human' | 'json';
   private colorize: boolean;
   private timestamp: boolean;
   private component?: string;
   private fileOutput?: FileOutputOptions;
   private fileStream?: WriteStream;
   private enableProgressTracking: boolean;
-  private progressStates: Map<string, ProgressOptions & { startTime: number }> =
-    new Map();
+  private progressStates: Map<string, ProgressOptions & { startTime: number }> = new Map();
 
   constructor(options: LoggerOptions = {}) {
     this.level = options.level ?? LogLevel.INFO;
@@ -163,7 +155,7 @@ export class Logger {
     this.veryVerbose = options.veryVerbose ?? false;
     this.quiet = options.quiet ?? false;
     this.silent = options.silent ?? false;
-    this.outputFormat = options.outputFormat ?? "human";
+    this.outputFormat = options.outputFormat ?? 'human';
     this.colorize = options.colorize ?? true;
     this.timestamp = options.timestamp ?? true;
     this.component = options.component;
@@ -213,17 +205,17 @@ export class Logger {
 
       // Create file stream
       this.fileStream = createWriteStream(this.fileOutput.filePath, {
-        flags: "a",
+        flags: 'a',
       });
 
       // Handle stream errors
-      this.fileStream.on("error", (error) => {
+      this.fileStream.on('error', (error) => {
         console.error(`Logger file stream error: ${error.message}`);
         this.fileStream = undefined;
       });
     } catch (error) {
       console.error(
-        `Failed to initialize file output: ${error instanceof Error ? error.message : String(error)}`,
+        `Failed to initialize file output: ${error instanceof Error ? error.message : String(error)}`
       );
       this.fileStream = undefined;
     }
@@ -261,8 +253,8 @@ export class Logger {
 
     // Rotate existing files
     for (let i = maxFiles - 1; i >= 1; i--) {
-      const oldPath = `${basePath}.${i}${compress ? ".gz" : ""}`;
-      const newPath = `${basePath}.${i + 1}${compress ? ".gz" : ""}`;
+      const oldPath = `${basePath}.${i}${compress ? '.gz' : ''}`;
+      const newPath = `${basePath}.${i + 1}${compress ? '.gz' : ''}`;
 
       if (existsSync(oldPath)) {
         if (i === maxFiles - 1) {
@@ -272,7 +264,7 @@ export class Logger {
           // Rename to next number
           unlinkSync(newPath); // Remove if exists
           // eslint-disable-next-line @typescript-eslint/no-require-imports
-          require("fs").renameSync(oldPath, newPath);
+          require('fs').renameSync(oldPath, newPath);
         }
       }
     }
@@ -283,14 +275,14 @@ export class Logger {
       if (compress) {
         // Compress and save
         // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const content = require("fs").readFileSync(basePath);
+        const content = require('fs').readFileSync(basePath);
         const compressed = gzipSync(content);
         // eslint-disable-next-line @typescript-eslint/no-require-imports
-        require("fs").writeFileSync(`${rotatedPath}.gz`, compressed);
+        require('fs').writeFileSync(`${rotatedPath}.gz`, compressed);
         unlinkSync(basePath);
       } else {
         // eslint-disable-next-line @typescript-eslint/no-require-imports
-        require("fs").renameSync(basePath, rotatedPath);
+        require('fs').renameSync(basePath, rotatedPath);
       }
     }
   }
@@ -349,7 +341,7 @@ export class Logger {
   /**
    * Set output format
    */
-  setOutputFormat(format: "human" | "json"): void {
+  setOutputFormat(format: 'human' | 'json'): void {
     this.outputFormat = format;
   }
 
@@ -456,11 +448,7 @@ export class Logger {
   /**
    * Log performance metrics
    */
-  performanceMetrics(
-    operation: string,
-    metrics: PerformanceMetrics,
-    context?: ErrorContext,
-  ): void {
+  performanceMetrics(operation: string, metrics: PerformanceMetrics, context?: ErrorContext): void {
     const extendedContext = {
       ...context,
       operation,
@@ -479,8 +467,7 @@ export class Logger {
     }
 
     if (metrics.totalFileSize) {
-      const sizeMB =
-        Math.round((metrics.totalFileSize / 1024 / 1024) * 100) / 100;
+      const sizeMB = Math.round((metrics.totalFileSize / 1024 / 1024) * 100) / 100;
       message += `, total size: ${sizeMB}MB`;
     }
 
@@ -502,7 +489,7 @@ export class Logger {
   fileOperation(
     operation: string,
     filePath: string,
-    details?: { size?: number; processingTime?: number; result?: string },
+    details?: { size?: number; processingTime?: number; result?: string }
   ): void {
     if (!this.veryVerbose) return;
 
@@ -583,7 +570,7 @@ export class Logger {
     level: LogLevel,
     message: string,
     context?: ErrorContext,
-    error?: Error,
+    error?: Error
   ): LogEntry {
     const entry: LogEntry = {
       level: LogLevelNames[level],
@@ -616,10 +603,9 @@ export class Logger {
    */
   private formatHuman(entry: LogEntry): string {
     const levelName = entry.level.padEnd(5);
-    const colorFn =
-      LogLevelColors[LogLevel[entry.level as keyof typeof LogLevel]];
+    const colorFn = LogLevelColors[LogLevel[entry.level as keyof typeof LogLevel]];
 
-    let output = "";
+    let output = '';
 
     if (this.timestamp) {
       output += chalk.gray(`[${entry.timestamp}] `);
@@ -642,9 +628,7 @@ export class Logger {
     }
 
     if (entry.error) {
-      output +=
-        "\n" +
-        (entry.error.stack || `${entry.error.name}: ${entry.error.message}`);
+      output += '\n' + (entry.error.stack || `${entry.error.name}: ${entry.error.message}`);
     }
 
     return output;
@@ -656,14 +640,12 @@ export class Logger {
   private formatCSV(entry: LogEntry): string {
     const timestamp = entry.timestamp;
     const level = entry.level;
-    const component = entry.component || "";
+    const component = entry.component || '';
     const message = entry.message.replace(/"/g, '""'); // Escape quotes
-    const context = entry.context
-      ? JSON.stringify(entry.context).replace(/"/g, '""')
-      : "";
+    const context = entry.context ? JSON.stringify(entry.context).replace(/"/g, '""') : '';
     const errorMessage = entry.error
       ? `${entry.error.name}: ${entry.error.message}`.replace(/"/g, '""')
-      : "";
+      : '';
 
     return `"${timestamp}","${level}","${component}","${message}","${context}","${errorMessage}"`;
   }
@@ -673,15 +655,15 @@ export class Logger {
    */
   private output(entry: LogEntry): void {
     // Console output - send errors to stderr, others to stdout
-    if (this.outputFormat === "json") {
-      if (entry.level === "ERROR" || entry.level === "FATAL") {
+    if (this.outputFormat === 'json') {
+      if (entry.level === 'ERROR' || entry.level === 'FATAL') {
         console.error(JSON.stringify(entry));
       } else {
         console.log(JSON.stringify(entry));
       }
     } else {
       const formattedMessage = this.formatHuman(entry);
-      if (entry.level === "ERROR" || entry.level === "FATAL") {
+      if (entry.level === 'ERROR' || entry.level === 'FATAL') {
         console.error(formattedMessage);
       } else {
         console.log(formattedMessage);
@@ -692,17 +674,17 @@ export class Logger {
     if (this.fileStream && !this.fileStream.destroyed) {
       try {
         let fileContent: string;
-        const fileFormat = this.fileOutput?.format || "human";
+        const fileFormat = this.fileOutput?.format || 'human';
 
         switch (fileFormat) {
-          case "json":
-            fileContent = JSON.stringify(entry) + "\n";
+          case 'json':
+            fileContent = JSON.stringify(entry) + '\n';
             break;
-          case "csv":
-            fileContent = this.formatCSV(entry) + "\n";
+          case 'csv':
+            fileContent = this.formatCSV(entry) + '\n';
             break;
           default:
-            fileContent = this.formatHuman(entry) + "\n";
+            fileContent = this.formatHuman(entry) + '\n';
         }
 
         this.fileStream.write(fileContent);
@@ -711,7 +693,7 @@ export class Logger {
         this.rotateLogsIfNeeded();
       } catch (error) {
         console.error(
-          `Failed to write to log file: ${error instanceof Error ? error.message : String(error)}`,
+          `Failed to write to log file: ${error instanceof Error ? error.message : String(error)}`
         );
       }
     }
@@ -720,12 +702,7 @@ export class Logger {
   /**
    * Core logging method
    */
-  private log(
-    level: LogLevel,
-    message: string,
-    context?: ErrorContext,
-    _error?: Error,
-  ): void {
+  private log(level: LogLevel, message: string, context?: ErrorContext, _error?: Error): void {
     if (!this.shouldLog(level)) return;
 
     const entry = this.createLogEntry(level, message, context, _error);
@@ -791,10 +768,7 @@ export class Logger {
       operation,
       processingTime: duration,
     };
-    this.debug(
-      `Operation "${operation}" completed in ${duration}ms`,
-      extendedContext,
-    );
+    this.debug(`Operation "${operation}" completed in ${duration}ms`, extendedContext);
   }
 
   /**
@@ -842,17 +816,17 @@ function parseLogLevel(level?: string): LogLevel {
 
   const upperLevel = level.toUpperCase();
   switch (upperLevel) {
-    case "TRACE":
+    case 'TRACE':
       return LogLevel.TRACE;
-    case "DEBUG":
+    case 'DEBUG':
       return LogLevel.DEBUG;
-    case "INFO":
+    case 'INFO':
       return LogLevel.INFO;
-    case "WARN":
+    case 'WARN':
       return LogLevel.WARN;
-    case "ERROR":
+    case 'ERROR':
       return LogLevel.ERROR;
-    case "FATAL":
+    case 'FATAL':
       return LogLevel.FATAL;
     default:
       return LogLevel.INFO;
@@ -868,15 +842,14 @@ function createFileOutputFromEnv(): FileOutputOptions | undefined {
 
   return {
     filePath,
-    format:
-      (process.env.ENIGMA_LOG_FORMAT as "human" | "json" | "csv") || "human",
+    format: (process.env.ENIGMA_LOG_FORMAT as 'human' | 'json' | 'csv') || 'human',
     maxSize: process.env.ENIGMA_LOG_MAX_SIZE
       ? parseInt(process.env.ENIGMA_LOG_MAX_SIZE)
       : undefined,
     maxFiles: process.env.ENIGMA_LOG_MAX_FILES
       ? parseInt(process.env.ENIGMA_LOG_MAX_FILES)
       : undefined,
-    compress: process.env.ENIGMA_LOG_COMPRESS === "true",
+    compress: process.env.ENIGMA_LOG_COMPRESS === 'true',
   };
 }
 
@@ -886,24 +859,21 @@ function createFileOutputFromEnv(): FileOutputOptions | undefined {
 export const logger = new Logger({
   level: process.env.ENIGMA_LOG_LEVEL
     ? parseLogLevel(process.env.ENIGMA_LOG_LEVEL)
-    : process.env.NODE_ENV === "development"
+    : process.env.NODE_ENV === 'development'
       ? LogLevel.DEBUG
       : LogLevel.INFO,
-  verbose: process.env.ENIGMA_VERBOSE === "true",
-  veryVerbose: process.env.ENIGMA_VERY_VERBOSE === "true",
-  quiet: process.env.ENIGMA_QUIET === "true",
+  verbose: process.env.ENIGMA_VERBOSE === 'true',
+  veryVerbose: process.env.ENIGMA_VERY_VERBOSE === 'true',
+  quiet: process.env.ENIGMA_QUIET === 'true',
   colorize: process.stdout.isTTY,
   timestamp: true,
   fileOutput: createFileOutputFromEnv(),
-  enableProgressTracking: process.env.ENIGMA_PROGRESS_TRACKING !== "false",
+  enableProgressTracking: process.env.ENIGMA_PROGRESS_TRACKING !== 'false',
 });
 
 /**
  * Create a logger with specific component context
  */
-export function createLogger(
-  component: string,
-  _options?: Partial<LoggerOptions>,
-): Logger {
+export function createLogger(component: string, _options?: Partial<LoggerOptions>): Logger {
   return logger.child(component, _options);
 }

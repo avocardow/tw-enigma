@@ -10,10 +10,10 @@
  * Manages plugin lifecycle, auto-detection, and coordination between different build tools
  */
 
-import { EventEmitter } from "events";
-import { createLogger } from "../../utils/logger";
-import { ConfigDetector } from "./configDetector";
-import { createHMRHandler } from "./hmrHandler";
+import { EventEmitter } from 'events';
+import { createLogger } from '../../utils/logger';
+import { ConfigDetector } from './configDetector';
+import { createHMRHandler } from './hmrHandler';
 import type {
   BuildToolPlugin,
   BuildToolPluginConfig,
@@ -22,14 +22,12 @@ import type {
   BuildToolResult,
   BuildPhase,
   HMRUpdate,
-} from "./buildToolPlugin.ts";
-import type {
-  AutoConfigResult,
-} from "./configDetector.ts";
-import type { HMRHandler } from "./hmrHandler";
-import fs from "fs/promises";
+} from './buildToolPlugin.ts';
+import type { AutoConfigResult } from './configDetector.ts';
+import type { HMRHandler } from './hmrHandler';
+import fs from 'fs/promises';
 
-const logger = createLogger("integration-manager");
+const logger = createLogger('integration-manager');
 
 /**
  * Integration manager configuration
@@ -74,12 +72,12 @@ export interface IntegrationStatus {
  */
 export interface IntegrationEvents {
   initialized: { tools: BuildToolType[] };
-  "plugin-loaded": { name: string; buildTool: BuildToolType };
-  "plugin-error": { name: string; error: Error };
-  "build-started": { context: BuildToolContext };
-  "build-completed": { result: BuildToolResult };
-  "hmr-update": { filePath: string; buildTool: BuildToolType };
-  "config-detected": { result: AutoConfigResult };
+  'plugin-loaded': { name: string; buildTool: BuildToolType };
+  'plugin-error': { name: string; error: Error };
+  'build-started': { context: BuildToolContext };
+  'build-completed': { result: BuildToolResult };
+  'hmr-update': { filePath: string; buildTool: BuildToolType };
+  'config-detected': { result: AutoConfigResult };
 }
 
 /**
@@ -109,7 +107,7 @@ export class IntegrationManager extends EventEmitter {
         parcel: 6,
         custom: 10,
       },
-      enabledTools: ["webpack", "vite", "nextjs", "esbuild", "rollup"],
+      enabledTools: ['webpack', 'vite', 'nextjs', 'esbuild', 'rollup'],
       pluginConfigs: {},
       ...config,
     };
@@ -128,7 +126,7 @@ export class IntegrationManager extends EventEmitter {
       warnings: 0,
     };
 
-    logger.debug("Integration manager initialized", {
+    logger.debug('Integration manager initialized', {
       projectRoot: this.config.projectRoot,
       autoDetect: this.config.autoDetect,
     });
@@ -139,7 +137,7 @@ export class IntegrationManager extends EventEmitter {
    */
   async initialize(): Promise<void> {
     try {
-      logger.info("Initializing build tool integrations");
+      logger.info('Initializing build tool integrations');
 
       // Validate project root exists (skip validation for test paths)
       if (!this.config.projectRoot.startsWith('/test-') && !process.env.VITEST) {
@@ -172,15 +170,15 @@ export class IntegrationManager extends EventEmitter {
       this.status.active = true;
       this.status.lastUpdate = Date.now();
 
-      this.emit("initialized", { tools: this.status.detectedTools });
+      this.emit('initialized', { tools: this.status.detectedTools });
 
-      logger.info("Integration manager initialized successfully", {
+      logger.info('Integration manager initialized successfully', {
         detectedTools: this.status.detectedTools,
         activePlugins: this.status.activePlugins.length,
       });
     } catch (error) {
       this.status.errors++;
-      logger.error("Failed to initialize integration manager", { error });
+      logger.error('Failed to initialize integration manager', { error });
       throw error;
     }
   }
@@ -190,15 +188,11 @@ export class IntegrationManager extends EventEmitter {
    */
   async detectAndConfigure(): Promise<void> {
     try {
-      logger.debug("Auto-detecting build tool configurations");
+      logger.debug('Auto-detecting build tool configurations');
 
-      const result = await this.configDetector.detectConfiguration(
-        this.config.projectRoot,
-      );
+      const result = await this.configDetector.detectConfiguration(this.config.projectRoot);
 
-      this.status.detectedTools = result.detected.map(
-        (config) => config.buildTool,
-      );
+      this.status.detectedTools = result.detected.map((config) => config.buildTool);
       this.status.warnings += result.warnings.length;
       this.status.errors += result.errors.length;
 
@@ -207,9 +201,9 @@ export class IntegrationManager extends EventEmitter {
         this.config.pluginConfigs[pluginConfig.name] = pluginConfig;
       }
 
-      this.emit("config-detected", { result });
+      this.emit('config-detected', { result });
 
-      logger.info("Build tool detection completed", {
+      logger.info('Build tool detection completed', {
         detected: this.status.detectedTools,
         recommended: result.recommended?.buildTool,
         warnings: result.warnings.length,
@@ -218,13 +212,13 @@ export class IntegrationManager extends EventEmitter {
 
       // Log any warnings or errors
       for (const warning of result.warnings) {
-        logger.warn("Detection warning", { warning });
+        logger.warn('Detection warning', { warning });
       }
       for (const error of result.errors) {
-        logger.error("Detection error", { error });
+        logger.error('Detection error', { error });
       }
     } catch (error) {
-      logger.error("Build tool detection failed", { error });
+      logger.error('Build tool detection failed', { error });
       throw error;
     }
   }
@@ -236,10 +230,7 @@ export class IntegrationManager extends EventEmitter {
     const loadPromises: Promise<void>[] = [];
 
     for (const [name, config] of Object.entries(this.config.pluginConfigs)) {
-      if (
-        !config.enabled ||
-        !this.config.enabledTools.includes(config.buildTool.type)
-      ) {
+      if (!config.enabled || !this.config.enabledTools.includes(config.buildTool.type)) {
         continue;
       }
 
@@ -248,7 +239,7 @@ export class IntegrationManager extends EventEmitter {
 
     await Promise.allSettled(loadPromises);
 
-    logger.info("Plugin loading completed", {
+    logger.info('Plugin loading completed', {
       total: Object.keys(this.config.pluginConfigs).length,
       loaded: this.plugins.size,
       active: this.status.activePlugins.length,
@@ -275,13 +266,13 @@ export class IntegrationManager extends EventEmitter {
       this.plugins.set(name, plugin);
       this.status.activePlugins.push(name);
 
-      this.emit("plugin-loaded", { name, buildTool: config.buildTool.type });
+      this.emit('plugin-loaded', { name, buildTool: config.buildTool.type });
 
       logger.debug(`Plugin loaded successfully: ${name}`);
     } catch (error) {
       this.status.errors++;
       logger.error(`Failed to load plugin: ${name}`, { error });
-      this.emit("plugin-error", { name, error: error as Error });
+      this.emit('plugin-error', { name, error: error as Error });
       throw error;
     }
   }
@@ -291,45 +282,43 @@ export class IntegrationManager extends EventEmitter {
    */
   private async createPlugin(
     buildTool: BuildToolType,
-    config: BuildToolPluginConfig,
+    config: BuildToolPluginConfig
   ): Promise<BuildToolPlugin | null> {
     try {
       switch (buildTool) {
-        case "webpack": {
-          const { EnigmaWebpackPlugin } = await import(
-            "../webpack/webpackPlugin.js"
-          );
+        case 'webpack': {
+          const { EnigmaWebpackPlugin } = await import('../webpack/webpackPlugin.js');
           const webpackConfig = {
             ...config,
-            buildTool: { ...config.buildTool, type: "webpack" as const },
+            buildTool: { ...config.buildTool, type: 'webpack' as const },
           };
           return new EnigmaWebpackPlugin(webpackConfig as any);
         }
 
-        case "vite": {
-          const { EnigmaVitePlugin } = await import("../vite/vitePlugin.js");
+        case 'vite': {
+          const { EnigmaVitePlugin } = await import('../vite/vitePlugin.js');
           const viteConfig = {
             ...config,
-            buildTool: { ...config.buildTool, type: "vite" as const },
+            buildTool: { ...config.buildTool, type: 'vite' as const },
           };
           return new EnigmaVitePlugin(viteConfig as any);
         }
 
-        case "nextjs": {
+        case 'nextjs': {
           // Next.js plugin would be implemented similarly
-          logger.warn("Next.js plugin not yet implemented");
+          logger.warn('Next.js plugin not yet implemented');
           return null;
         }
 
-        case "esbuild": {
+        case 'esbuild': {
           // ESBuild plugin would be implemented similarly
-          logger.warn("ESBuild plugin not yet implemented");
+          logger.warn('ESBuild plugin not yet implemented');
           return null;
         }
 
-        case "rollup": {
+        case 'rollup': {
           // Rollup plugin would be implemented similarly
-          logger.warn("Rollup plugin not yet implemented");
+          logger.warn('Rollup plugin not yet implemented');
           return null;
         }
 
@@ -348,7 +337,7 @@ export class IntegrationManager extends EventEmitter {
    */
   async startBuild(
     buildTool: BuildToolType,
-    options: Partial<BuildToolContext> = {},
+    options: Partial<BuildToolContext> = {}
   ): Promise<BuildToolResult> {
     try {
       logger.info(`Starting build with ${buildTool}`);
@@ -356,9 +345,9 @@ export class IntegrationManager extends EventEmitter {
       // Create build context
       const context: BuildToolContext = {
         buildTool,
-        phase: "beforeBuild",
-        isDevelopment: process.env.NODE_ENV === "development",
-        isProduction: process.env.NODE_ENV === "production",
+        phase: 'beforeBuild',
+        isDevelopment: process.env.NODE_ENV === 'development',
+        isProduction: process.env.NODE_ENV === 'production',
         projectRoot: this.config.projectRoot,
         sourceFiles: [],
         assets: new Map(),
@@ -377,7 +366,7 @@ export class IntegrationManager extends EventEmitter {
       };
 
       this.activeContexts.set(buildTool, context);
-      this.emit("build-started", { context });
+      this.emit('build-started', { context });
 
       // Execute build with relevant plugins
       const relevantPlugins = Array.from(this.plugins.values())
@@ -395,7 +384,7 @@ export class IntegrationManager extends EventEmitter {
         try {
           await plugin.initializeBuildTool(
             context,
-            this.config.pluginConfigs[plugin.name || "unknown"] || ({} as any),
+            this.config.pluginConfigs[plugin.name || 'unknown'] || ({} as any)
           );
           const pluginResult = await plugin.processBuild(context);
 
@@ -414,10 +403,7 @@ export class IntegrationManager extends EventEmitter {
           }
         } catch (error) {
           this.status.errors++;
-          logger.error(
-            `Plugin error during build: ${plugin.constructor.name}`,
-            { error },
-          );
+          logger.error(`Plugin error during build: ${plugin.constructor.name}`, { error });
           result.success = false;
           result.error = error instanceof Error ? error.message : String(error);
           break;
@@ -428,7 +414,7 @@ export class IntegrationManager extends EventEmitter {
       context.metrics.endTime = Date.now();
       result.metrics = context.metrics;
 
-      this.emit("build-completed", { result });
+      this.emit('build-completed', { result });
 
       logger.info(`Build completed for ${buildTool}`, {
         success: result.success,
@@ -469,15 +455,15 @@ export class IntegrationManager extends EventEmitter {
     try {
       // Determine which build tools should handle this change
       const relevantTools = this.status.detectedTools.filter((tool) =>
-        this.activeContexts.has(tool),
+        this.activeContexts.has(tool)
       );
 
       for (const buildTool of relevantTools) {
         const context = this.activeContexts.get(buildTool);
         if (context) {
           // Notify relevant plugins about the file change
-          const relevantPlugins = Array.from(this.plugins.values()).filter(
-            (plugin) => plugin.supportedBuildTools.includes(buildTool),
+          const relevantPlugins = Array.from(this.plugins.values()).filter((plugin) =>
+            plugin.supportedBuildTools.includes(buildTool)
           );
 
           for (const plugin of relevantPlugins) {
@@ -487,7 +473,11 @@ export class IntegrationManager extends EventEmitter {
             } else if (plugin.hooks.onHMRUpdate) {
               const hmrUpdate: HMRUpdate = {
                 filePath,
-                type: filePath.endsWith('.css') ? 'css' : filePath.endsWith('.js') || filePath.endsWith('.ts') ? 'js' : 'asset',
+                type: filePath.endsWith('.css')
+                  ? 'css'
+                  : filePath.endsWith('.js') || filePath.endsWith('.ts')
+                    ? 'js'
+                    : 'asset',
                 content: '', // Content would be read from file in real implementation
                 timestamp: Date.now(),
               };
@@ -495,11 +485,11 @@ export class IntegrationManager extends EventEmitter {
             }
           }
 
-          this.emit("hmr-update", { filePath, buildTool });
+          this.emit('hmr-update', { filePath, buildTool });
         }
       }
     } catch (error) {
-      logger.error("Error handling file change", { filePath, error });
+      logger.error('Error handling file change', { filePath, error });
     }
   }
 
@@ -508,28 +498,22 @@ export class IntegrationManager extends EventEmitter {
    */
   private getPluginPriority(plugin: BuildToolPlugin): number {
     // Get priority from plugin's supported build tools
-    const priorities = plugin.supportedBuildTools.map(
-      (tool) => this.config.priorities[tool] || 10,
-    );
+    const priorities = plugin.supportedBuildTools.map((tool) => this.config.priorities[tool] || 10);
     return Math.min(...priorities);
   }
 
   /**
    * Register a custom plugin
    */
-  registerPlugin(
-    name: string,
-    plugin: BuildToolPlugin,
-    config: BuildToolPluginConfig,
-  ): void {
+  registerPlugin(name: string, plugin: BuildToolPlugin, config: BuildToolPluginConfig): void {
     try {
       // Validate plugin
       if (!plugin) {
-        throw new Error("Plugin cannot be null or undefined");
+        throw new Error('Plugin cannot be null or undefined');
       }
 
       if (!plugin.supportedBuildTools || !Array.isArray(plugin.supportedBuildTools)) {
-        throw new Error("Plugin must have supportedBuildTools array");
+        throw new Error('Plugin must have supportedBuildTools array');
       }
 
       this.plugins.set(name, plugin);
@@ -540,14 +524,14 @@ export class IntegrationManager extends EventEmitter {
         supportedTools: plugin.supportedBuildTools,
       });
 
-      this.emit("plugin-loaded", {
+      this.emit('plugin-loaded', {
         name,
-        buildTool: plugin.supportedBuildTools[0] || "custom",
+        buildTool: plugin.supportedBuildTools[0] || 'custom',
       });
     } catch (error) {
       this.status.errors++;
       logger.error(`Failed to register plugin: ${name}`, { error });
-      this.emit("plugin-error", { name, error: error as Error });
+      this.emit('plugin-error', { name, error: error as Error });
       throw error;
     }
   }
@@ -590,7 +574,7 @@ export class IntegrationManager extends EventEmitter {
     this.config = { ...this.config, ...newConfig };
     this.status.lastUpdate = Date.now();
 
-    logger.debug("Configuration updated", { config: this.config });
+    logger.debug('Configuration updated', { config: this.config });
   }
 
   /**
@@ -598,7 +582,7 @@ export class IntegrationManager extends EventEmitter {
    */
   async shutdown(): Promise<void> {
     try {
-      logger.info("Shutting down integration manager");
+      logger.info('Shutting down integration manager');
 
       // Stop HMR
       await this.hmrHandler.shutdown();
@@ -612,9 +596,9 @@ export class IntegrationManager extends EventEmitter {
       this.status.active = false;
       this.status.lastUpdate = Date.now();
 
-      logger.info("Integration manager shutdown completed");
+      logger.info('Integration manager shutdown completed');
     } catch (error) {
-      logger.error("Error during shutdown", { error });
+      logger.error('Error during shutdown', { error });
       throw error;
     }
   }
@@ -624,7 +608,7 @@ export class IntegrationManager extends EventEmitter {
  * Create integration manager instance
  */
 export function createIntegrationManager(
-  config?: Partial<IntegrationManagerConfig>,
+  config?: Partial<IntegrationManagerConfig>
 ): IntegrationManager {
   return new IntegrationManager(config);
 }
@@ -645,6 +629,6 @@ export const defaultIntegrationConfig: IntegrationManagerConfig = {
     parcel: 6,
     custom: 10,
   },
-  enabledTools: ["webpack", "vite", "nextjs", "esbuild", "rollup"],
+  enabledTools: ['webpack', 'vite', 'nextjs', 'esbuild', 'rollup'],
   pluginConfigs: {},
 };

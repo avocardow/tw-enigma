@@ -1,11 +1,11 @@
-import { createLogger } from "../utils/logger";
-import { EnigmaPlugin, PluginConfig } from "../types/plugins";
-import { PluginRegistry } from "../registry/pluginRegistry";
-import * as fs from "fs/promises";
-import * as path from "path";
-import * as https from "https";
-import * as http from "http";
-import { URL } from "url";
+import { createLogger } from '../utils/logger';
+import { EnigmaPlugin, PluginConfig } from '../types/plugins';
+import { PluginRegistry } from '../registry/pluginRegistry';
+import * as fs from 'fs/promises';
+import * as path from 'path';
+import * as https from 'https';
+import * as http from 'http';
+import { URL } from 'url';
 
 interface MarketplacePlugin {
   name: string;
@@ -31,8 +31,8 @@ interface MarketplaceSearchOptions {
   author?: string;
   verified?: boolean;
   minRating?: number;
-  sortBy?: "downloads" | "rating" | "updated" | "name";
-  sortOrder?: "asc" | "desc";
+  sortBy?: 'downloads' | 'rating' | 'updated' | 'name';
+  sortOrder?: 'asc' | 'desc';
   limit?: number;
   offset?: number;
   [key: string]: unknown; // Add index signature for compatibility with ErrorContext
@@ -60,20 +60,17 @@ interface PluginInstallOptions {
  * Plugin Marketplace for discovering and installing plugins
  */
 export class PluginMarketplace {
-  private logger = createLogger("plugin-marketplace");
+  private logger = createLogger('plugin-marketplace');
   private config: Required<MarketplaceConfig>;
-  private cache = new Map<
-    string,
-    { data: MarketplacePlugin[]; timestamp: number }
-  >();
+  private cache = new Map<string, { data: MarketplacePlugin[]; timestamp: number }>();
 
   constructor(
     private registry: PluginRegistry,
-    config: Partial<MarketplaceConfig> = {},
+    config: Partial<MarketplaceConfig> = {}
   ) {
     this.config = {
-      registryUrl: "https://registry.enigma-plugins.dev",
-      cacheDir: "./cache/marketplace",
+      registryUrl: 'https://registry.enigma-plugins.dev',
+      cacheDir: './cache/marketplace',
       cacheTtl: 3600000, // 1 hour
       enableCache: true,
       verifySignatures: true,
@@ -83,7 +80,7 @@ export class PluginMarketplace {
       ...config,
     };
 
-    this.logger.info("Plugin marketplace initialized", {
+    this.logger.info('Plugin marketplace initialized', {
       registryUrl: this.config.registryUrl,
       cacheEnabled: this.config.enableCache,
     });
@@ -94,19 +91,17 @@ export class PluginMarketplace {
   /**
    * Search for plugins in the marketplace
    */
-  async searchPlugins(
-    options: MarketplaceSearchOptions = {},
-  ): Promise<MarketplacePlugin[]> {
-    this.logger.info("Searching marketplace plugins", options);
+  async searchPlugins(options: MarketplaceSearchOptions = {}): Promise<MarketplacePlugin[]> {
+    this.logger.info('Searching marketplace plugins', options);
 
     try {
-      const cacheKey = this.getCacheKey("search", options);
+      const cacheKey = this.getCacheKey('search', options);
 
       // Check cache first
       if (this.config.enableCache) {
         const cached = this.getCachedData(cacheKey);
         if (cached) {
-          this.logger.debug("Returning cached search results");
+          this.logger.debug('Returning cached search results');
           return cached;
         }
       }
@@ -122,10 +117,10 @@ export class PluginMarketplace {
         this.setCachedData(cacheKey, plugins);
       }
 
-      this.logger.info("Found marketplace plugins", { count: plugins.length });
+      this.logger.info('Found marketplace plugins', { count: plugins.length });
       return plugins;
     } catch (error) {
-      this.logger.error("Failed to search marketplace", {
+      this.logger.error('Failed to search marketplace', {
         error: error instanceof Error ? error.message : String(error),
       });
       throw error;
@@ -135,14 +130,11 @@ export class PluginMarketplace {
   /**
    * Get detailed information about a specific plugin
    */
-  async getPluginInfo(
-    name: string,
-    version?: string,
-  ): Promise<MarketplacePlugin | null> {
-    this.logger.info("Getting plugin info", { name, version });
+  async getPluginInfo(name: string, version?: string): Promise<MarketplacePlugin | null> {
+    this.logger.info('Getting plugin info', { name, version });
 
     try {
-      const cacheKey = this.getCacheKey("info", { name, version });
+      const cacheKey = this.getCacheKey('info', { name, version });
 
       // Check cache first
       if (this.config.enableCache) {
@@ -153,7 +145,7 @@ export class PluginMarketplace {
       }
 
       // Fetch from marketplace
-      const url = `${this.config.registryUrl}/plugins/${name}${version ? `/${version}` : ""}`;
+      const url = `${this.config.registryUrl}/plugins/${name}${version ? `/${version}` : ''}`;
       const plugins = await this.fetchPlugins(url);
 
       const plugin = plugins.length > 0 ? plugins[0] : null;
@@ -165,7 +157,7 @@ export class PluginMarketplace {
 
       return plugin;
     } catch (error) {
-      this.logger.error("Failed to get plugin info", {
+      this.logger.error('Failed to get plugin info', {
         name,
         version,
         error: error instanceof Error ? error.message : String(error),
@@ -177,11 +169,8 @@ export class PluginMarketplace {
   /**
    * Install a plugin from the marketplace
    */
-  async installPlugin(
-    name: string,
-    options: PluginInstallOptions = {},
-  ): Promise<EnigmaPlugin> {
-    this.logger.info("Installing plugin from marketplace", { name, options });
+  async installPlugin(name: string, options: PluginInstallOptions = {}): Promise<EnigmaPlugin> {
+    this.logger.info('Installing plugin from marketplace', { name, options });
 
     try {
       // Get plugin info
@@ -191,20 +180,14 @@ export class PluginMarketplace {
       }
 
       // Verify plugin if required
-      if (
-        this.config.verifySignatures &&
-        !pluginInfo.verified &&
-        !this.config.allowUnverified
-      ) {
-        throw new Error(
-          `Plugin ${name} is not verified and unverified plugins are not allowed`,
-        );
+      if (this.config.verifySignatures && !pluginInfo.verified && !this.config.allowUnverified) {
+        throw new Error(`Plugin ${name} is not verified and unverified plugins are not allowed`);
       }
 
       // Check if already installed
       const existingPlugin = this.registry.getPlugin(name, pluginInfo.version);
       if (existingPlugin && !options.force) {
-        this.logger.info("Plugin already installed", {
+        this.logger.info('Plugin already installed', {
           name,
           version: pluginInfo.version,
         });
@@ -217,10 +200,7 @@ export class PluginMarketplace {
       }
 
       // Download plugin
-      const pluginPath = await this.downloadPlugin(
-        pluginInfo,
-        options.installPath,
-      );
+      const pluginPath = await this.downloadPlugin(pluginInfo, options.installPath);
 
       // Load and validate plugin
       const plugin = await this.loadPluginFromFile(pluginPath);
@@ -236,7 +216,7 @@ export class PluginMarketplace {
       // Register with registry
       await this.registry.registerPlugin(plugin, config, pluginPath);
 
-      this.logger.info("Plugin installed successfully", {
+      this.logger.info('Plugin installed successfully', {
         name: plugin.meta.name,
         version: plugin.meta.version,
         path: pluginPath,
@@ -244,7 +224,7 @@ export class PluginMarketplace {
 
       return plugin;
     } catch (error) {
-      this.logger.error("Failed to install plugin", {
+      this.logger.error('Failed to install plugin', {
         name,
         error: error instanceof Error ? error.message : String(error),
       });
@@ -256,15 +236,13 @@ export class PluginMarketplace {
    * Uninstall a plugin
    */
   async uninstallPlugin(name: string, version?: string): Promise<void> {
-    this.logger.info("Uninstalling plugin", { name, version });
+    this.logger.info('Uninstalling plugin', { name, version });
 
     try {
       // Check dependencies
       const dependents = this.registry.getDependents(name);
       if (dependents.length > 0) {
-        throw new Error(
-          `Cannot uninstall ${name}: required by ${dependents.join(", ")}`,
-        );
+        throw new Error(`Cannot uninstall ${name}: required by ${dependents.join(', ')}`);
       }
 
       // Unregister from registry
@@ -273,9 +251,9 @@ export class PluginMarketplace {
       // Remove plugin files
       await this.removePluginFiles(name, version);
 
-      this.logger.info("Plugin uninstalled successfully", { name, version });
+      this.logger.info('Plugin uninstalled successfully', { name, version });
     } catch (error) {
-      this.logger.error("Failed to uninstall plugin", {
+      this.logger.error('Failed to uninstall plugin', {
         name,
         version,
         error: error instanceof Error ? error.message : String(error),
@@ -288,7 +266,7 @@ export class PluginMarketplace {
    * Update a plugin to the latest version
    */
   async updatePlugin(name: string): Promise<EnigmaPlugin | null> {
-    this.logger.info("Updating plugin", { name });
+    this.logger.info('Updating plugin', { name });
 
     try {
       // Get current plugin
@@ -305,7 +283,7 @@ export class PluginMarketplace {
 
       // Check if update is needed
       if (currentPlugin.meta.version === latestInfo.version) {
-        this.logger.info("Plugin is already up to date", {
+        this.logger.info('Plugin is already up to date', {
           name,
           version: latestInfo.version,
         });
@@ -318,7 +296,7 @@ export class PluginMarketplace {
         force: true,
       });
 
-      this.logger.info("Plugin updated successfully", {
+      this.logger.info('Plugin updated successfully', {
         name,
         from: currentPlugin.meta.version,
         to: updatedPlugin.meta.version,
@@ -326,7 +304,7 @@ export class PluginMarketplace {
 
       return updatedPlugin;
     } catch (error) {
-      this.logger.error("Failed to update plugin", {
+      this.logger.error('Failed to update plugin', {
         name,
         error: error instanceof Error ? error.message : String(error),
       });
@@ -344,7 +322,7 @@ export class PluginMarketplace {
       updateAvailable: boolean;
     }>
   > {
-    this.logger.info("Listing installed plugins with marketplace info");
+    this.logger.info('Listing installed plugins with marketplace info');
 
     const results: Array<{
       plugin: EnigmaPlugin;
@@ -353,7 +331,7 @@ export class PluginMarketplace {
     }> = [];
 
     // Get all installed plugins from registry
-    const installedPlugins = this.registry.searchPlugins({ status: "active" });
+    const installedPlugins = this.registry.searchPlugins({ status: 'active' });
 
     for (const entry of installedPlugins) {
       const plugin = entry.plugin;
@@ -380,7 +358,7 @@ export class PluginMarketplace {
    * Clear marketplace cache
    */
   async clearCache(): Promise<void> {
-    this.logger.info("Clearing marketplace cache");
+    this.logger.info('Clearing marketplace cache');
 
     this.cache.clear();
 
@@ -388,7 +366,7 @@ export class PluginMarketplace {
       await fs.rm(this.config.cacheDir, { recursive: true, force: true });
       await this.ensureCacheDir();
     } catch (error) {
-      this.logger.warn("Failed to clear cache directory", { error });
+      this.logger.warn('Failed to clear cache directory', { error });
     }
   }
 
@@ -411,17 +389,15 @@ export class PluginMarketplace {
   private buildSearchUrl(options: MarketplaceSearchOptions): string {
     const url = new URL(`${this.config.registryUrl}/search`);
 
-    if (options.query) url.searchParams.set("q", options.query);
-    if (options.tags) url.searchParams.set("tags", options.tags.join(","));
-    if (options.author) url.searchParams.set("author", options.author);
-    if (options.verified !== undefined)
-      url.searchParams.set("verified", String(options.verified));
-    if (options.minRating)
-      url.searchParams.set("minRating", String(options.minRating));
-    if (options.sortBy) url.searchParams.set("sortBy", options.sortBy);
-    if (options.sortOrder) url.searchParams.set("sortOrder", options.sortOrder);
-    if (options.limit) url.searchParams.set("limit", String(options.limit));
-    if (options.offset) url.searchParams.set("offset", String(options.offset));
+    if (options.query) url.searchParams.set('q', options.query);
+    if (options.tags) url.searchParams.set('tags', options.tags.join(','));
+    if (options.author) url.searchParams.set('author', options.author);
+    if (options.verified !== undefined) url.searchParams.set('verified', String(options.verified));
+    if (options.minRating) url.searchParams.set('minRating', String(options.minRating));
+    if (options.sortBy) url.searchParams.set('sortBy', options.sortBy);
+    if (options.sortOrder) url.searchParams.set('sortOrder', options.sortOrder);
+    if (options.limit) url.searchParams.set('limit', String(options.limit));
+    if (options.offset) url.searchParams.set('offset', String(options.offset));
 
     return url.toString();
   }
@@ -432,41 +408,33 @@ export class PluginMarketplace {
   private async fetchPlugins(url: string): Promise<MarketplacePlugin[]> {
     return new Promise((resolve, reject) => {
       const urlObj = new URL(url);
-      const client = urlObj.protocol === "https:" ? https : http;
+      const client = urlObj.protocol === 'https:' ? https : http;
 
-      const request = client.get(
-        url,
-        { timeout: this.config.downloadTimeout },
-        (response) => {
-          if (response.statusCode !== 200) {
-            reject(
-              new Error(
-                `HTTP ${response.statusCode}: ${response.statusMessage}`,
-              ),
-            );
-            return;
+      const request = client.get(url, { timeout: this.config.downloadTimeout }, (response) => {
+        if (response.statusCode !== 200) {
+          reject(new Error(`HTTP ${response.statusCode}: ${response.statusMessage}`));
+          return;
+        }
+
+        let data = '';
+        response.on('data', (chunk) => {
+          data += chunk;
+        });
+
+        response.on('end', () => {
+          try {
+            const plugins = JSON.parse(data);
+            resolve(Array.isArray(plugins) ? plugins : [plugins]);
+          } catch (error) {
+            reject(new Error(`Invalid JSON response: ${error}`));
           }
+        });
+      });
 
-          let data = "";
-          response.on("data", (chunk) => {
-            data += chunk;
-          });
-
-          response.on("end", () => {
-            try {
-              const plugins = JSON.parse(data);
-              resolve(Array.isArray(plugins) ? plugins : [plugins]);
-            } catch (error) {
-              reject(new Error(`Invalid JSON response: ${error}`));
-            }
-          });
-        },
-      );
-
-      request.on("error", reject);
-      request.on("timeout", () => {
+      request.on('error', reject);
+      request.on('timeout', () => {
         request.destroy();
-        reject(new Error("Request timeout"));
+        reject(new Error('Request timeout'));
       });
     });
   }
@@ -476,39 +444,32 @@ export class PluginMarketplace {
    */
   private async downloadPlugin(
     pluginInfo: MarketplacePlugin,
-    installPath?: string,
+    installPath?: string
   ): Promise<string> {
-    const targetDir = installPath || path.join(this.config.cacheDir, "plugins");
-    const targetPath = path.join(
-      targetDir,
-      `${pluginInfo.name}-${pluginInfo.version}.js`,
-    );
+    const targetDir = installPath || path.join(this.config.cacheDir, 'plugins');
+    const targetPath = path.join(targetDir, `${pluginInfo.name}-${pluginInfo.version}.js`);
 
     // Ensure target directory exists
     await fs.mkdir(targetDir, { recursive: true });
 
     return new Promise((resolve, reject) => {
       const urlObj = new URL(pluginInfo.downloadUrl);
-      const client = urlObj.protocol === "https:" ? https : http;
+      const client = urlObj.protocol === 'https:' ? https : http;
 
       const request = client.get(
         pluginInfo.downloadUrl,
         { timeout: this.config.downloadTimeout },
         (response) => {
           if (response.statusCode !== 200) {
-            reject(
-              new Error(
-                `HTTP ${response.statusCode}: ${response.statusMessage}`,
-              ),
-            );
+            reject(new Error(`HTTP ${response.statusCode}: ${response.statusMessage}`));
             return;
           }
 
           // eslint-disable-next-line @typescript-eslint/no-require-imports
-          const fileStream = require("fs").createWriteStream(targetPath);
+          const fileStream = require('fs').createWriteStream(targetPath);
           let downloadedSize = 0;
 
-          response.on("data", (chunk) => {
+          response.on('data', (chunk) => {
             downloadedSize += chunk.length;
             if (downloadedSize > this.config.maxFileSize) {
               fileStream.destroy();
@@ -519,19 +480,19 @@ export class PluginMarketplace {
 
           response.pipe(fileStream);
 
-          fileStream.on("finish", () => {
+          fileStream.on('finish', () => {
             fileStream.close();
             resolve(targetPath);
           });
 
-          fileStream.on("error", reject);
-        },
+          fileStream.on('error', reject);
+        }
       );
 
-      request.on("error", reject);
-      request.on("timeout", () => {
+      request.on('error', reject);
+      request.on('timeout', () => {
         request.destroy();
-        reject(new Error("Download timeout"));
+        reject(new Error('Download timeout'));
       });
     });
   }
@@ -540,7 +501,7 @@ export class PluginMarketplace {
    * Install plugin dependencies
    */
   private async installDependencies(dependencies: string[]): Promise<void> {
-    this.logger.info("Installing plugin dependencies", { dependencies });
+    this.logger.info('Installing plugin dependencies', { dependencies });
 
     for (const dep of dependencies) {
       try {
@@ -549,7 +510,7 @@ export class PluginMarketplace {
           await this.installPlugin(dep);
         }
       } catch (error) {
-        this.logger.warn("Failed to install dependency", {
+        this.logger.warn('Failed to install dependency', {
           dependency: dep,
           error,
         });
@@ -570,7 +531,7 @@ export class PluginMarketplace {
       const pluginModule = require(filePath);
       const plugin = pluginModule.default || pluginModule;
 
-      if (!plugin || typeof plugin !== "object") {
+      if (!plugin || typeof plugin !== 'object') {
         throw new Error(`Invalid plugin export from ${filePath}`);
       }
 
@@ -583,11 +544,8 @@ export class PluginMarketplace {
   /**
    * Remove plugin files
    */
-  private async removePluginFiles(
-    name: string,
-    version?: string,
-  ): Promise<void> {
-    const pluginDir = path.join(this.config.cacheDir, "plugins");
+  private async removePluginFiles(name: string, version?: string): Promise<void> {
+    const pluginDir = path.join(this.config.cacheDir, 'plugins');
 
     try {
       const files = await fs.readdir(pluginDir);
@@ -596,11 +554,11 @@ export class PluginMarketplace {
       for (const file of files) {
         if (file.startsWith(pattern)) {
           await fs.unlink(path.join(pluginDir, file));
-          this.logger.debug("Removed plugin file", { file });
+          this.logger.debug('Removed plugin file', { file });
         }
       }
     } catch (error) {
-      this.logger.warn("Failed to remove plugin files", {
+      this.logger.warn('Failed to remove plugin files', {
         name,
         version,
         error,
@@ -611,13 +569,10 @@ export class PluginMarketplace {
   /**
    * Check if update is available
    */
-  private isUpdateAvailable(
-    currentVersion: string,
-    latestVersion: string,
-  ): boolean {
+  private isUpdateAvailable(currentVersion: string, latestVersion: string): boolean {
     // Simple version comparison (assumes semantic versioning)
-    const current = currentVersion.split(".").map(Number);
-    const latest = latestVersion.split(".").map(Number);
+    const current = currentVersion.split('.').map(Number);
+    const latest = latestVersion.split('.').map(Number);
 
     for (let i = 0; i < Math.max(current.length, latest.length); i++) {
       const currentPart = current[i] || 0;
@@ -670,7 +625,7 @@ export class PluginMarketplace {
     try {
       await fs.mkdir(this.config.cacheDir, { recursive: true });
     } catch (error) {
-      this.logger.warn("Failed to create cache directory", {
+      this.logger.warn('Failed to create cache directory', {
         dir: this.config.cacheDir,
         error,
       });
@@ -683,7 +638,7 @@ export class PluginMarketplace {
  */
 export function createPluginMarketplace(
   registry: PluginRegistry,
-  config?: Partial<MarketplaceConfig>,
+  config?: Partial<MarketplaceConfig>
 ): PluginMarketplace {
   return new PluginMarketplace(registry, config);
 }

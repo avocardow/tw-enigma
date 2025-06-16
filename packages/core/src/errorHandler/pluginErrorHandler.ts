@@ -10,41 +10,39 @@
  * Provides circuit breaker pattern, fallback mechanisms, and graceful degradation
  */
 
-import { z } from "zod";
-import { EventEmitter } from "events";
-import { createLogger } from "../utils/logger";
-import { CircuitBreakerState } from "./types";
-import type {
-  PluginResult,
-} from "../types/plugins";
+import { z } from 'zod';
+import { EventEmitter } from 'events';
+import { createLogger } from '../utils/logger';
+import { CircuitBreakerState } from './types';
+import type { PluginResult } from '../types/plugins';
 
 /**
  * Error categories for classification
  */
 export const PluginErrorCategory = {
-  INITIALIZATION: "initialization",
-  EXECUTION: "execution",
-  TIMEOUT: "timeout",
-  RESOURCE: "resource",
-  CONFIGURATION: "configuration",
-  DEPENDENCY: "dependency",
-  SECURITY: "security",
-  UNKNOWN: "unknown",
+  INITIALIZATION: 'initialization',
+  EXECUTION: 'execution',
+  TIMEOUT: 'timeout',
+  RESOURCE: 'resource',
+  CONFIGURATION: 'configuration',
+  DEPENDENCY: 'dependency',
+  SECURITY: 'security',
+  UNKNOWN: 'unknown',
 } as const;
 
-export type PluginErrorCategory = typeof PluginErrorCategory[keyof typeof PluginErrorCategory];
+export type PluginErrorCategory = (typeof PluginErrorCategory)[keyof typeof PluginErrorCategory];
 
 /**
  * Error severity levels
  */
 export const ErrorSeverity = {
-  LOW: "low",
-  MEDIUM: "medium",
-  HIGH: "high",
-  CRITICAL: "critical",
+  LOW: 'low',
+  MEDIUM: 'medium',
+  HIGH: 'high',
+  CRITICAL: 'critical',
 } as const;
 
-export type ErrorSeverity = typeof ErrorSeverity[keyof typeof ErrorSeverity];
+export type ErrorSeverity = (typeof ErrorSeverity)[keyof typeof ErrorSeverity];
 
 /**
  * Circuit breaker states - using shared type from types.ts
@@ -140,7 +138,7 @@ class PluginCircuitBreaker {
   constructor(
     private pluginName: string,
     private config: CircuitBreakerConfig,
-    private logger = createLogger(`circuit-breaker-${pluginName}`),
+    private logger = createLogger(`circuit-breaker-${pluginName}`)
   ) {}
 
   async execute<T>(operation: () => Promise<T>): Promise<T> {
@@ -148,13 +146,9 @@ class PluginCircuitBreaker {
       if (Date.now() - this.lastFailureTime > this.config.resetTimeout) {
         this.state = CircuitState.HALF_OPEN;
         this.halfOpenCalls = 0;
-        this.logger.info(
-          `Circuit breaker half-opened for plugin ${this.pluginName}`,
-        );
+        this.logger.info(`Circuit breaker half-opened for plugin ${this.pluginName}`);
       } else {
-        throw new Error(
-          `Circuit breaker is OPEN for plugin ${this.pluginName}`,
-        );
+        throw new Error(`Circuit breaker is OPEN for plugin ${this.pluginName}`);
       }
     }
 
@@ -162,9 +156,7 @@ class PluginCircuitBreaker {
       this.state === CircuitState.HALF_OPEN &&
       this.halfOpenCalls >= this.config.halfOpenMaxCalls
     ) {
-      throw new Error(
-        `Circuit breaker half-open limit exceeded for plugin ${this.pluginName}`,
-      );
+      throw new Error(`Circuit breaker half-open limit exceeded for plugin ${this.pluginName}`);
     }
 
     this.callCount++;
@@ -207,18 +199,13 @@ class PluginCircuitBreaker {
     if (this.state === CircuitState.HALF_OPEN) {
       // Failed during half-open, go back to open
       this.state = CircuitState.OPEN;
-      this.logger.warn(
-        `Circuit breaker reopened for plugin ${this.pluginName}`,
-      );
+      this.logger.warn(`Circuit breaker reopened for plugin ${this.pluginName}`);
     } else if (this.shouldOpenCircuit()) {
       this.state = CircuitState.OPEN;
-      this.logger.error(
-        `Circuit breaker opened for plugin ${this.pluginName}`,
-        {
-          failureCount: this.failureCount,
-          threshold: this.config.failureThreshold,
-        },
-      );
+      this.logger.error(`Circuit breaker opened for plugin ${this.pluginName}`, {
+        failureCount: this.failureCount,
+        threshold: this.config.failureThreshold,
+      });
     }
   }
 
@@ -245,8 +232,7 @@ class PluginCircuitBreaker {
       failureCount: this.failureCount,
       callCount: this.callCount,
       successRate: this.callCount > 0 ? this.successCount / this.callCount : 1,
-      averageResponseTime:
-        this.successCount > 0 ? this.totalResponseTime / this.successCount : 0,
+      averageResponseTime: this.successCount > 0 ? this.totalResponseTime / this.successCount : 0,
     };
   }
 
@@ -271,13 +257,13 @@ export class PluginErrorHandler extends EventEmitter {
   private fallbackStrategies = new Map<string, FallbackStrategy>();
   private disabledPlugins = new Set<string>();
   private pluginStats = new Map<string, PluginHealth>();
-  private readonly logger = createLogger("plugin-error-handler");
+  private readonly logger = createLogger('plugin-error-handler');
 
   constructor(config: Partial<ErrorHandlerConfig> = {}) {
     super();
     this.config = ErrorHandlerConfigSchema.parse(config);
 
-    this.logger.info("Plugin error handler initialized", {
+    this.logger.info('Plugin error handler initialized', {
       enabled: this.config.enabled,
       maxRetries: this.config.maxRetries,
       gracefulDegradation: this.config.gracefulDegradation,
@@ -295,7 +281,7 @@ export class PluginErrorHandler extends EventEmitter {
   async executeWithErrorHandling<T>(
     pluginName: string,
     operation: () => Promise<T>,
-    retryCount = 0,
+    retryCount = 0
   ): Promise<T | null> {
     if (!this.config.enabled) {
       return await operation();
@@ -307,7 +293,7 @@ export class PluginErrorHandler extends EventEmitter {
         pluginName,
         category: PluginErrorCategory.EXECUTION,
         severity: ErrorSeverity.MEDIUM,
-        message: "Plugin is disabled",
+        message: 'Plugin is disabled',
         timestamp: Date.now(),
         retryCount: 0,
         recoverable: false,
@@ -326,20 +312,13 @@ export class PluginErrorHandler extends EventEmitter {
 
       // Check if we should retry
       if (this.shouldRetry(pluginError)) {
-        this.logger.info(
-          `Retrying plugin ${pluginName} (attempt ${retryCount + 1})`,
-          {
-            error: pluginError.message,
-            delay: this.calculateRetryDelay(retryCount),
-          },
-        );
+        this.logger.info(`Retrying plugin ${pluginName} (attempt ${retryCount + 1})`, {
+          error: pluginError.message,
+          delay: this.calculateRetryDelay(retryCount),
+        });
 
         await this.delay(this.calculateRetryDelay(retryCount));
-        return await this.executeWithErrorHandling(
-          pluginName,
-          operation,
-          retryCount + 1,
-        );
+        return await this.executeWithErrorHandling(pluginName, operation, retryCount + 1);
       }
 
       // Try fallback strategy
@@ -351,34 +330,25 @@ export class PluginErrorHandler extends EventEmitter {
 
         try {
           const fallbackResult = await fallback.execute();
-          this.recordFallbackExecution(pluginName, "success");
+          this.recordFallbackExecution(pluginName, 'success');
           return fallbackResult as T;
         } catch (fallbackError) {
-          this.recordFallbackExecution(pluginName, "failure");
-          this.logger.error(
-            `Fallback execution failed for plugin ${pluginName}`,
-            {
-              error:
-                fallbackError instanceof Error
-                  ? fallbackError.message
-                  : String(fallbackError),
-            },
-          );
+          this.recordFallbackExecution(pluginName, 'failure');
+          this.logger.error(`Fallback execution failed for plugin ${pluginName}`, {
+            error: fallbackError instanceof Error ? fallbackError.message : String(fallbackError),
+          });
         }
       }
 
       // Check if plugin should be disabled
       if (this.shouldDisablePlugin(pluginName)) {
-        this.disablePlugin(pluginName, "Too many failures");
+        this.disablePlugin(pluginName, 'Too many failures');
       }
 
       if (this.config.gracefulDegradation) {
-        this.logger.warn(
-          `Plugin ${pluginName} failed, continuing with graceful degradation`,
-          {
-            error: pluginError,
-          },
-        );
+        this.logger.warn(`Plugin ${pluginName} failed, continuing with graceful degradation`, {
+          error: pluginError,
+        });
         return null;
       }
 
@@ -418,10 +388,7 @@ export class PluginErrorHandler extends EventEmitter {
 
     // Calculate health based on error count, circuit breaker state, and disabled status
     const circuitState = circuitBreaker?.getState() || CircuitState.CLOSED;
-    const isHealthy =
-      stats.errorCount === 0 &&
-      !isDisabled &&
-      circuitState === CircuitState.CLOSED;
+    const isHealthy = stats.errorCount === 0 && !isDisabled && circuitState === CircuitState.CLOSED;
 
     return {
       ...stats,
@@ -435,14 +402,9 @@ export class PluginErrorHandler extends EventEmitter {
    * Get all plugin health stats
    */
   getAllPluginHealth(): PluginHealth[] {
-    const allPlugins = new Set([
-      ...this.pluginStats.keys(),
-      ...this.circuitBreakers.keys(),
-    ]);
+    const allPlugins = new Set([...this.pluginStats.keys(), ...this.circuitBreakers.keys()]);
 
-    return Array.from(allPlugins).map((pluginName) =>
-      this.getPluginHealth(pluginName),
-    );
+    return Array.from(allPlugins).map((pluginName) => this.getPluginHealth(pluginName));
   }
 
   /**
@@ -457,7 +419,7 @@ export class PluginErrorHandler extends EventEmitter {
     this.pluginStats.set(pluginName, health);
 
     this.logger.warn(`Plugin ${pluginName} disabled`, { reason });
-    this.emit("pluginDisabled", { pluginName, reason });
+    this.emit('pluginDisabled', { pluginName, reason });
   }
 
   /**
@@ -481,7 +443,7 @@ export class PluginErrorHandler extends EventEmitter {
     this.pluginStats.set(pluginName, health);
 
     this.logger.info(`Plugin ${pluginName} re-enabled`);
-    this.emit("pluginEnabled", { pluginName });
+    this.emit('pluginEnabled', { pluginName });
   }
 
   /**
@@ -503,7 +465,7 @@ export class PluginErrorHandler extends EventEmitter {
     this.disabledPlugins.clear();
     this.pluginStats.clear();
 
-    this.logger.info("Plugin error handler cleanup completed");
+    this.logger.info('Plugin error handler cleanup completed');
   }
 
   /**
@@ -513,7 +475,7 @@ export class PluginErrorHandler extends EventEmitter {
     if (!this.circuitBreakers.has(pluginName)) {
       this.circuitBreakers.set(
         pluginName,
-        new PluginCircuitBreaker(pluginName, this.config.circuitBreaker),
+        new PluginCircuitBreaker(pluginName, this.config.circuitBreaker)
       );
     }
     return this.circuitBreakers.get(pluginName)!;
@@ -522,11 +484,7 @@ export class PluginErrorHandler extends EventEmitter {
   /**
    * Private: Create plugin error from exception
    */
-  private createPluginError(
-    pluginName: string,
-    error: unknown,
-    retryCount: number,
-  ): PluginError {
+  private createPluginError(pluginName: string, error: unknown, retryCount: number): PluginError {
     const errorMessage = error instanceof Error ? error.message : String(error);
     const errorStack = error instanceof Error ? error.stack : undefined;
 
@@ -550,16 +508,16 @@ export class PluginErrorHandler extends EventEmitter {
     if (error instanceof Error) {
       const message = error.message.toLowerCase();
 
-      if (message.includes("timeout")) return PluginErrorCategory.TIMEOUT;
-      if (message.includes("memory") || message.includes("resource"))
+      if (message.includes('timeout')) return PluginErrorCategory.TIMEOUT;
+      if (message.includes('memory') || message.includes('resource'))
         return PluginErrorCategory.RESOURCE;
-      if (message.includes("config") || message.includes("option"))
+      if (message.includes('config') || message.includes('option'))
         return PluginErrorCategory.CONFIGURATION;
-      if (message.includes("dependency") || message.includes("require"))
+      if (message.includes('dependency') || message.includes('require'))
         return PluginErrorCategory.DEPENDENCY;
-      if (message.includes("security") || message.includes("permission"))
+      if (message.includes('security') || message.includes('permission'))
         return PluginErrorCategory.SECURITY;
-      if (message.includes("init")) return PluginErrorCategory.INITIALIZATION;
+      if (message.includes('init')) return PluginErrorCategory.INITIALIZATION;
     }
 
     return PluginErrorCategory.EXECUTION;
@@ -568,21 +526,15 @@ export class PluginErrorHandler extends EventEmitter {
   /**
    * Private: Assess error severity
    */
-  private assessErrorSeverity(
-    error: unknown,
-    retryCount: number,
-  ): ErrorSeverity {
+  private assessErrorSeverity(error: unknown, retryCount: number): ErrorSeverity {
     if (retryCount >= this.config.maxRetries) return ErrorSeverity.HIGH;
 
     if (error instanceof Error) {
       const message = error.message.toLowerCase();
 
-      if (message.includes("fatal") || message.includes("critical"))
-        return ErrorSeverity.CRITICAL;
-      if (message.includes("security") || message.includes("memory"))
-        return ErrorSeverity.HIGH;
-      if (message.includes("timeout") || message.includes("network"))
-        return ErrorSeverity.MEDIUM;
+      if (message.includes('fatal') || message.includes('critical')) return ErrorSeverity.CRITICAL;
+      if (message.includes('security') || message.includes('memory')) return ErrorSeverity.HIGH;
+      if (message.includes('timeout') || message.includes('network')) return ErrorSeverity.MEDIUM;
     }
 
     return ErrorSeverity.LOW;
@@ -596,17 +548,13 @@ export class PluginErrorHandler extends EventEmitter {
       const message = error.message.toLowerCase();
 
       // Non-recoverable errors
-      if (message.includes("security") || message.includes("malicious"))
-        return false;
-      if (message.includes("invalid syntax") || message.includes("parse error"))
-        return false;
-      if (message.includes("out of memory")) return false;
+      if (message.includes('security') || message.includes('malicious')) return false;
+      if (message.includes('invalid syntax') || message.includes('parse error')) return false;
+      if (message.includes('out of memory')) return false;
 
       // Recoverable errors
-      if (message.includes("timeout") || message.includes("network"))
-        return true;
-      if (message.includes("temporary") || message.includes("retry"))
-        return true;
+      if (message.includes('timeout') || message.includes('network')) return true;
+      if (message.includes('temporary') || message.includes('retry')) return true;
     }
 
     return true; // Default to recoverable
@@ -656,8 +604,7 @@ export class PluginErrorHandler extends EventEmitter {
     health.errorCount++;
     health.consecutiveFailures++;
     health.lastError = error;
-    health.isHealthy =
-      health.consecutiveFailures < this.config.autoDisableThreshold;
+    health.isHealthy = health.consecutiveFailures < this.config.autoDisableThreshold;
 
     // Update circuit breaker state
     const circuitBreaker = this.circuitBreakers.get(pluginName);
@@ -668,7 +615,7 @@ export class PluginErrorHandler extends EventEmitter {
     this.pluginStats.set(pluginName, health);
 
     // Emit error event
-    this.emit("pluginError", error);
+    this.emit('pluginError', error);
 
     if (this.config.errorReporting) {
       this.logger.error(`Plugin ${pluginName} error`, {
@@ -695,19 +642,13 @@ export class PluginErrorHandler extends EventEmitter {
    * Private: Calculate retry delay with exponential backoff
    */
   private calculateRetryDelay(retryCount: number): number {
-    return (
-      this.config.retryDelay *
-      Math.pow(this.config.retryBackoffMultiplier, retryCount)
-    );
+    return this.config.retryDelay * Math.pow(this.config.retryBackoffMultiplier, retryCount);
   }
 
   /**
    * Private: Try fallback strategy
    */
-  private async tryFallback<T>(
-    pluginName: string,
-    error: PluginError,
-  ): Promise<T | null> {
+  private async tryFallback<T>(pluginName: string, error: PluginError): Promise<T | null> {
     if (!this.config.enableFallbacks) {
       return null;
     }
@@ -720,7 +661,7 @@ export class PluginErrorHandler extends EventEmitter {
     try {
       this.logger.info(`Executing fallback for plugin ${pluginName}`);
       const result = await fallback.execute();
-      this.emit("fallbackExecuted", { pluginName, error });
+      this.emit('fallbackExecuted', { pluginName, error });
       return result as T;
     } catch (fallbackError) {
       this.logger.error(`Fallback failed for plugin ${pluginName}`, {
@@ -759,10 +700,7 @@ export class PluginErrorHandler extends EventEmitter {
   /**
    * Private: Record fallback execution for metrics
    */
-  private recordFallbackExecution(
-    pluginName: string,
-    _result: "success" | "failure",
-  ): void {
+  private recordFallbackExecution(pluginName: string, _result: 'success' | 'failure'): void {
     const health = this.getPluginHealth(pluginName);
     // Update fallback metrics if needed
     this.pluginStats.set(pluginName, health);
@@ -786,8 +724,6 @@ export function createDefaultErrorHandlerConfig(): ErrorHandlerConfig {
 /**
  * Create plugin error handler instance
  */
-export function createPluginErrorHandler(
-  config?: Partial<ErrorHandlerConfig>,
-): PluginErrorHandler {
+export function createPluginErrorHandler(config?: Partial<ErrorHandlerConfig>): PluginErrorHandler {
   return new PluginErrorHandler(config);
 }

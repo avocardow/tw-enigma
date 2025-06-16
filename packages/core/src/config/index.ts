@@ -1,6 +1,6 @@
 /**
  * Config Module - Configuration Management
- * 
+ *
  * This module contains configuration management functionality including
  * validation, migration, backup, and watching capabilities.
  */
@@ -17,4 +17,4 @@ export * from './configSafeUpdater';
 export * from './configWatcher';
 
 // Version export for config module
-export const configVersion = '0.1.0'; 
+export const configVersion = '0.1.0';

@@ -1,6 +1,6 @@
 /**
  * Engine Module - Core CSS Optimization Engines
- * 
+ *
  * This module contains the core optimization engines that power
  * the Tailwind Enigma CSS optimization system.
  */
@@ -20,4 +20,4 @@ export * from './core/pluginManager';
 export * from './core/postcssPlugin';
 
 // Version export for engine module
-export const engineVersion = '0.1.0'; 
+export const engineVersion = '0.1.0';

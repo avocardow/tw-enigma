@@ -1,4 +1,3 @@
-
 import { join, resolve } from 'path';
 import { homedir, tmpdir, cpus } from 'os';
 import { existsSync } from 'fs';
@@ -19,14 +18,14 @@ export type Environment = 'development' | 'production' | 'test' | 'ci';
  * Fallback priority levels
  */
 export const FallbackPriority = {
-  USER: 1,           // User-provided configuration
-  PROJECT: 2,        // Project-specific configuration
-  ENVIRONMENT: 3,    // Environment-specific defaults
-  GLOBAL: 4,         // Global system defaults
-  SYSTEM: 5          // System fallback defaults
+  USER: 1, // User-provided configuration
+  PROJECT: 2, // Project-specific configuration
+  ENVIRONMENT: 3, // Environment-specific defaults
+  GLOBAL: 4, // Global system defaults
+  SYSTEM: 5, // System fallback defaults
 } as const;
 
-export type FallbackPriority = typeof FallbackPriority[keyof typeof FallbackPriority];
+export type FallbackPriority = (typeof FallbackPriority)[keyof typeof FallbackPriority];
 
 /**
  * Configuration source metadata
@@ -88,9 +87,9 @@ export const ENVIRONMENT_DEFAULTS: Record<Environment, Partial<Config>> = {
         showLogs: true,
         maxLogEntries: 100,
       },
-    }
+    },
   },
-  
+
   production: {
     verbose: false,
     output: './dist',
@@ -136,9 +135,9 @@ export const ENVIRONMENT_DEFAULTS: Record<Environment, Partial<Config>> = {
         showLogs: true,
         maxLogEntries: 100,
       },
-    }
+    },
   },
-  
+
   test: {
     verbose: false,
     output: './test-output',
@@ -183,9 +182,9 @@ export const ENVIRONMENT_DEFAULTS: Record<Environment, Partial<Config>> = {
         showLogs: true,
         maxLogEntries: 100,
       },
-    }
+    },
   },
-  
+
   ci: {
     verbose: true,
     output: './dist',
@@ -230,8 +229,8 @@ export const ENVIRONMENT_DEFAULTS: Record<Environment, Partial<Config>> = {
         showLogs: true,
         maxLogEntries: 100,
       },
-    }
-  }
+    },
+  },
 };
 
 /**
@@ -327,8 +326,8 @@ export const SYSTEM_DEFAULTS: Config = {
     validateOnChange: true,
     backupOnChange: true,
     maxBackups: 10,
-    watchPatterns: ["**/.enigmarc*", "**/enigma.config.*", "**/package.json"],
-    ignorePatterns: ["**/node_modules/**", "**/.git/**", "**/dist/**"],
+    watchPatterns: ['**/.enigmarc*', '**/enigma.config.*', '**/package.json'],
+    ignorePatterns: ['**/node_modules/**', '**/.git/**', '**/dist/**'],
   },
   safeUpdates: {
     enabled: true,
@@ -350,7 +349,7 @@ export const GLOBAL_CONFIG_PATHS = [
   join(homedir(), '.tw-enigma', 'config.json'),
   join(homedir(), '.config', 'tw-enigma', 'config.json'),
   '/etc/tw-enigma/config.json',
-  '/usr/local/etc/tw-enigma/config.json'
+  '/usr/local/etc/tw-enigma/config.json',
 ];
 
 /**
@@ -362,7 +361,7 @@ export const PROJECT_CONFIG_PATHS = [
   './tw-enigma.config.ts',
   './.tw-enigma/config.json',
   './config/tw-enigma.js',
-  './config/tw-enigma.json'
+  './config/tw-enigma.json',
 ];
 
 /**
@@ -371,25 +370,25 @@ export const PROJECT_CONFIG_PATHS = [
 export class ConfigDefaults {
   private environment: Environment;
   private fallbackChain: ConfigSource[] = [];
-  
+
   constructor(environment?: Environment) {
     this.environment = environment || this.detectEnvironment();
     logger.debug(`Initialized ConfigDefaults for environment: ${this.environment}`);
   }
-  
+
   /**
    * Detect current environment
    */
   private detectEnvironment(): Environment {
     const nodeEnv = process.env.NODE_ENV?.toLowerCase();
     const ciEnv = process.env.CI;
-    
+
     if (ciEnv) return 'ci';
     if (nodeEnv === 'test') return 'test';
     if (nodeEnv === 'production') return 'production';
     return 'development';
   }
-  
+
   /**
    * Get comprehensive defaults with progressive fallback
    */
@@ -398,41 +397,41 @@ export class ConfigDefaults {
     this.logFallbackChain();
     return defaults;
   }
-  
+
   /**
    * Build configuration using progressive fallback strategy
    */
   private buildFallbackChain(): Config {
     this.fallbackChain = [];
-    
+
     // Start with system defaults (highest priority fallback)
     let config = { ...SYSTEM_DEFAULTS };
     this.addToChain(FallbackPriority.SYSTEM, 'system-defaults', config);
-    
+
     // Apply global defaults
     const globalDefaults = this.getGlobalDefaults();
     if (globalDefaults) {
       config = this.mergeConfigs(config, globalDefaults);
       this.addToChain(FallbackPriority.GLOBAL, 'global-config', globalDefaults);
     }
-    
+
     // Apply environment-specific defaults
     const envDefaults = ENVIRONMENT_DEFAULTS[this.environment];
     if (envDefaults) {
       config = this.mergeConfigs(config, envDefaults);
       this.addToChain(FallbackPriority.ENVIRONMENT, `environment-${this.environment}`, envDefaults);
     }
-    
+
     // Apply project defaults
     const projectDefaults = this.getProjectDefaults();
     if (projectDefaults) {
       config = this.mergeConfigs(config, projectDefaults);
       this.addToChain(FallbackPriority.PROJECT, 'project-config', projectDefaults);
     }
-    
+
     return this.validateDefaults(config);
   }
-  
+
   /**
    * Get global configuration defaults
    */
@@ -440,19 +439,21 @@ export class ConfigDefaults {
     for (const configPath of GLOBAL_CONFIG_PATHS) {
       if (existsSync(configPath)) {
         try {
-          // Use dynamic require for config files  
+          // Use dynamic require for config files
           // eslint-disable-next-line @typescript-eslint/no-require-imports
           const globalConfig = require(configPath);
           logger.debug(`Loaded global defaults from: ${configPath}`);
           return globalConfig;
         } catch (error) {
-          logger.warn(`Failed to load global config from ${configPath}`, { error: error instanceof Error ? error.message : String(error) });
+          logger.warn(`Failed to load global config from ${configPath}`, {
+            error: error instanceof Error ? error.message : String(error),
+          });
         }
       }
     }
     return null;
   }
-  
+
   /**
    * Get project-level configuration defaults
    */
@@ -465,26 +466,32 @@ export class ConfigDefaults {
           logger.debug(`Loaded project defaults from: ${configPath}`);
           return projectConfig;
         } catch (error) {
-          logger.warn(`Failed to load project config from ${configPath}`, { error: error instanceof Error ? error.message : String(error) });
+          logger.warn(`Failed to load project config from ${configPath}`, {
+            error: error instanceof Error ? error.message : String(error),
+          });
         }
       }
     }
     return null;
   }
-  
+
   /**
    * Merge configurations with deep merge strategy
    */
   private mergeConfigs(base: Partial<Config>, override: Partial<Config>): Config {
     const merged = { ...base };
-    
+
     for (const [key, value] of Object.entries(override)) {
       if (value !== undefined && value !== null) {
-        if (typeof value === 'object' && !Array.isArray(value) && typeof merged[key as keyof Config] === 'object') {
+        if (
+          typeof value === 'object' &&
+          !Array.isArray(value) &&
+          typeof merged[key as keyof Config] === 'object'
+        ) {
           // Deep merge for nested objects
           merged[key as keyof Config] = {
-            ...merged[key as keyof Config] as object,
-            ...value
+            ...(merged[key as keyof Config] as object),
+            ...value,
           } as any;
         } else {
           // Direct assignment for primitives and arrays
@@ -492,10 +499,10 @@ export class ConfigDefaults {
         }
       }
     }
-    
+
     return merged as Config;
   }
-  
+
   /**
    * Add configuration source to fallback chain
    */
@@ -505,10 +512,10 @@ export class ConfigDefaults {
       source,
       environment: this.environment,
       timestamp: new Date(),
-      validated: this.isValidConfig(config)
+      validated: this.isValidConfig(config),
     });
   }
-  
+
   /**
    * Validate configuration defaults
    */
@@ -516,14 +523,16 @@ export class ConfigDefaults {
     try {
       return EnigmaConfigSchema.parse(config);
     } catch (error) {
-      logger.error('Default configuration validation failed', { error: error instanceof Error ? error.message : String(error) });
-      
+      logger.error('Default configuration validation failed', {
+        error: error instanceof Error ? error.message : String(error),
+      });
+
       // Return system defaults as ultimate fallback
       logger.warn('Falling back to system defaults due to validation failure');
       return SYSTEM_DEFAULTS;
     }
   }
-  
+
   /**
    * Check if configuration is valid
    */
@@ -535,7 +544,7 @@ export class ConfigDefaults {
       return false;
     }
   }
-  
+
   /**
    * Log fallback chain for debugging
    */
@@ -543,18 +552,20 @@ export class ConfigDefaults {
     if (process.env.LOG_LEVEL === 'debug' || process.env.DEBUG === 'true') {
       logger.debug('Configuration fallback chain:');
       this.fallbackChain.forEach((source, index) => {
-        logger.debug(`  ${index + 1}. ${source.source} (priority: ${source.priority}, valid: ${source.validated})`);
+        logger.debug(
+          `  ${index + 1}. ${source.source} (priority: ${source.priority}, valid: ${source.validated})`
+        );
       });
     }
   }
-  
+
   /**
    * Get fallback chain information
    */
   public getFallbackChain(): ConfigSource[] {
     return [...this.fallbackChain];
   }
-  
+
   /**
    * Get environment-specific defaults
    */
@@ -572,12 +583,16 @@ export class ConfigDefaults {
     try {
       return EnigmaConfigSchema.parse(merged);
     } catch (error) {
-      logger.error('Config validation failed in createConfigWithDefaults', { error: error instanceof Error ? error.message : String(error) });
-      logger.warn('Falling back to system defaults due to validation failure in createConfigWithDefaults');
+      logger.error('Config validation failed in createConfigWithDefaults', {
+        error: error instanceof Error ? error.message : String(error),
+      });
+      logger.warn(
+        'Falling back to system defaults due to validation failure in createConfigWithDefaults'
+      );
       return SYSTEM_DEFAULTS;
     }
   }
-  
+
   /**
    * Check if path is safe for configuration
    */
@@ -585,11 +600,11 @@ export class ConfigDefaults {
     const normalizedPath = resolve(path);
     const cwd = process.cwd();
     const home = homedir();
-    
+
     // Allow paths within current working directory or user home
     return normalizedPath.startsWith(cwd) || normalizedPath.startsWith(home);
   }
-  
+
   /**
    * Get safe default paths for different purposes
    */
@@ -601,33 +616,36 @@ export class ConfigDefaults {
   } {
     const cwd = process.cwd();
     const userCache = join(homedir(), '.cache', 'tw-enigma');
-    
+
     return {
       outputDir: join(cwd, 'dist'),
       cacheDir: existsSync(userCache) ? userCache : join(cwd, '.cache'),
       tempDir: join(tmpdir(), 'tw-enigma'),
-      logDir: join(userCache, 'logs')
+      logDir: join(userCache, 'logs'),
     };
   }
-  
+
   /**
    * Create environment-specific configuration
    */
   public createEnvironmentConfig(env: Environment, overrides?: Partial<Config>): Config {
     const envDefaults = ENVIRONMENT_DEFAULTS[env];
     const baseConfig = this.mergeConfigs(SYSTEM_DEFAULTS, envDefaults);
-    
+
     if (overrides) {
       return this.mergeConfigs(baseConfig, overrides);
     }
-    
+
     return baseConfig;
   }
-  
+
   /**
    * Validate configuration against environment constraints
    */
-  public validateEnvironmentConfig(config: Config, env?: Environment): {
+  public validateEnvironmentConfig(
+    config: Config,
+    env?: Environment
+  ): {
     valid: boolean;
     warnings: string[];
     errors: string[];
@@ -635,7 +653,7 @@ export class ConfigDefaults {
     const targetEnv = env || this.environment;
     const warnings: string[] = [];
     const errors: string[] = [];
-    
+
     // Environment-specific validation rules
     switch (targetEnv) {
       case 'production':
@@ -647,7 +665,7 @@ export class ConfigDefaults {
           warnings.push('Minification disabled in production environment');
         }
         break;
-        
+
       case 'development':
         if (!config.sourceMaps) {
           warnings.push('Source maps disabled in development environment');
@@ -656,14 +674,14 @@ export class ConfigDefaults {
           warnings.push('Minification enabled in development environment');
         }
         break;
-        
+
       case 'test':
         // Note: dryRun is a CLI-only option, not part of main config
         if (config.maxConcurrency > 1) {
           warnings.push('High concurrency in test environment may cause race conditions');
         }
         break;
-        
+
       case 'ci':
         if (config.dev?.watch) {
           errors.push('Watch mode should not be enabled in CI environment');
@@ -671,11 +689,11 @@ export class ConfigDefaults {
         // Note: dryRun is a CLI-only option, not part of main config
         break;
     }
-    
+
     return {
       valid: errors.length === 0,
       warnings,
-      errors
+      errors,
     };
   }
 }
@@ -716,5 +734,5 @@ export {
   SYSTEM_DEFAULTS as systemDefaults,
   ENVIRONMENT_DEFAULTS as environmentDefaults,
   GLOBAL_CONFIG_PATHS as globalConfigPaths,
-  PROJECT_CONFIG_PATHS as projectConfigPaths
-}; 
+  PROJECT_CONFIG_PATHS as projectConfigPaths,
+};

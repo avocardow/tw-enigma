@@ -5,11 +5,11 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { SourceMapGenerator as SMGenerator, SourceMapConsumer, RawSourceMap } from "source-map";
-import { createLogger, Logger } from "./utils/logger";
-import { EnigmaConfig } from "./config";
-import { writeFile, readFile } from "fs/promises";
-import { join, dirname, basename } from "path";
+import { SourceMapGenerator as SMGenerator, SourceMapConsumer, RawSourceMap } from 'source-map';
+import { createLogger, Logger } from './utils/logger';
+import { EnigmaConfig } from './config';
+import { writeFile, readFile } from 'fs/promises';
+import { join, dirname, basename } from 'path';
 
 /**
  * Source mapping information for a CSS transformation
@@ -94,13 +94,13 @@ export class SourceMapGenerator {
       ...options,
     };
 
-    this.logger = createLogger("SourceMapGenerator");
+    this.logger = createLogger('SourceMapGenerator');
     this.generator = new SMGenerator({
-      file: "optimized.css",
+      file: 'optimized.css',
       sourceRoot: this.options.sourceRoot,
     });
 
-    this.logger.debug("Source map generator initialized", {
+    this.logger.debug('Source map generator initialized', {
       options: this.options,
     });
   }
@@ -132,7 +132,7 @@ export class SourceMapGenerator {
       this.generator.setSourceContent(mapping.originalFile, mapping.content);
     }
 
-    this.logger.trace("Source mapping added", mapping as any);
+    this.logger.trace('Source mapping added', mapping as any);
   }
 
   /**
@@ -155,7 +155,7 @@ export class SourceMapGenerator {
       name: mapping.originalClass,
     });
 
-    this.logger.debug("Optimization mapping added", {
+    this.logger.debug('Optimization mapping added', {
       originalClass: mapping.originalClass,
       optimizedClass: mapping.optimizedClass,
       transformationType: mapping.transformationType,
@@ -166,8 +166,8 @@ export class SourceMapGenerator {
    * Add multiple mappings from a CSS transformation
    */
   addMappings(mappings: SourceMapping[]): void {
-    mappings.forEach(mapping => this.addMapping(mapping));
-    this.logger.debug("Multiple source mappings added", {
+    mappings.forEach((mapping) => this.addMapping(mapping));
+    this.logger.debug('Multiple source mappings added', {
       count: mappings.length,
     });
   }
@@ -176,8 +176,8 @@ export class SourceMapGenerator {
    * Add multiple optimization mappings
    */
   addOptimizationMappings(mappings: CssOptimizationMapping[]): void {
-    mappings.forEach(mapping => this.addOptimizationMapping(mapping));
-    this.logger.debug("Multiple optimization mappings added", {
+    mappings.forEach((mapping) => this.addOptimizationMapping(mapping));
+    this.logger.debug('Multiple optimization mappings added', {
       count: mappings.length,
     });
   }
@@ -217,10 +217,10 @@ export class SourceMapGenerator {
    */
   async generate(outputFile?: string): Promise<SourceMapResult> {
     if (!this.options.enabled) {
-      throw new Error("Source map generation is disabled");
+      throw new Error('Source map generation is disabled');
     }
 
-    this.logger.info("Generating source map", {
+    this.logger.info('Generating source map', {
       outputFile,
       mappingCount: this.transformationMappings.length,
     });
@@ -232,8 +232,8 @@ export class SourceMapGenerator {
       sourceMap,
       sourceMapContent,
       mappingCount: this.transformationMappings.length,
-      transformationMappings: this.options.transformationMappings 
-        ? this.transformationMappings 
+      transformationMappings: this.options.transformationMappings
+        ? this.transformationMappings
         : undefined,
     };
 
@@ -250,7 +250,7 @@ export class SourceMapGenerator {
       result.outputPath = sourceMapPath;
     }
 
-    this.logger.info("Source map generated successfully", {
+    this.logger.info('Source map generated successfully', {
       mappingCount: result.mappingCount,
       outputPath: result.outputPath,
       hasInlineMap: !!result.inlineMap,
@@ -291,10 +291,10 @@ export class SourceMapGenerator {
     };
 
     // Analyze transformation mappings
-    this.transformationMappings.forEach(mapping => {
-      transformationTypes[mapping.transformationType] = 
+    this.transformationMappings.forEach((mapping) => {
+      transformationTypes[mapping.transformationType] =
         (transformationTypes[mapping.transformationType] || 0) + 1;
-      
+
       filesProcessed.add(mapping.originalFile);
 
       switch (mapping.transformationType) {
@@ -314,9 +314,9 @@ export class SourceMapGenerator {
     });
 
     // Analyze source files
-    const sourceFiles = Array.from(filesProcessed).map(file => ({
+    const sourceFiles = Array.from(filesProcessed).map((file) => ({
       file,
-      mappings: this.transformationMappings.filter(m => m.originalFile === file).length,
+      mappings: this.transformationMappings.filter((m) => m.originalFile === file).length,
       hasContent: this.sourceContents.has(file),
     }));
 
@@ -344,13 +344,13 @@ export class SourceMapGenerator {
       const content = await readFile(filePath, 'utf-8');
       this.sourceContents.set(filePath, content);
       this.generator.setSourceContent(filePath, content);
-      
-      this.logger.debug("Source content loaded", {
+
+      this.logger.debug('Source content loaded', {
         filePath,
         contentLength: content.length,
       });
     } catch (error) {
-      this.logger.warn("Failed to load source content", {
+      this.logger.warn('Failed to load source content', {
         filePath,
         error: error instanceof Error ? error.message : String(error),
       });
@@ -361,8 +361,8 @@ export class SourceMapGenerator {
    * Load multiple source files
    */
   async loadSourceContents(filePaths: string[]): Promise<void> {
-    await Promise.all(filePaths.map(path => this.loadSourceContent(path)));
-    this.logger.debug("Multiple source contents loaded", {
+    await Promise.all(filePaths.map((path) => this.loadSourceContent(path)));
+    this.logger.debug('Multiple source contents loaded', {
       count: filePaths.length,
     });
   }
@@ -372,13 +372,13 @@ export class SourceMapGenerator {
    */
   reset(): void {
     this.generator = new SMGenerator({
-      file: "optimized.css",
+      file: 'optimized.css',
       sourceRoot: this.options.sourceRoot,
     });
     this.transformationMappings = [];
     this.sourceContents.clear();
-    
-    this.logger.debug("Source map generator reset");
+
+    this.logger.debug('Source map generator reset');
   }
 
   /**
@@ -386,7 +386,7 @@ export class SourceMapGenerator {
    */
   updateOptions(newOptions: Partial<SourceMapOptions>): void {
     this.options = { ...this.options, ...newOptions };
-    this.logger.debug("Source map options updated", {
+    this.logger.debug('Source map options updated', {
       newOptions,
       fullOptions: this.options,
     });
@@ -399,7 +399,7 @@ export class SourceMapGenerator {
     if (this.options.outputPath) {
       return this.options.outputPath;
     }
-    
+
     const dir = dirname(outputFile);
     const name = basename(outputFile, '.css');
     return join(dir, `${name}.css.map`);
@@ -411,12 +411,12 @@ export class SourceMapGenerator {
   private async writeSourceMapFile(filePath: string, content: string): Promise<void> {
     try {
       await writeFile(filePath, content, 'utf-8');
-      this.logger.debug("Source map file written", {
+      this.logger.debug('Source map file written', {
         filePath,
         contentLength: content.length,
       });
     } catch (error) {
-      this.logger.error("Failed to write source map file", {
+      this.logger.error('Failed to write source map file', {
         filePath,
         error: error instanceof Error ? error.message : String(error),
       });
@@ -428,22 +428,22 @@ export class SourceMapGenerator {
    * Parse existing source map for chaining
    */
   static async parseSourceMap(sourceMapPath: string): Promise<SourceMapConsumer> {
-    const logger = createLogger("SourceMapParser");
-    
+    const logger = createLogger('SourceMapParser');
+
     try {
       const content = await readFile(sourceMapPath, 'utf-8');
       const sourceMap = JSON.parse(content);
       const consumer = await new SourceMapConsumer(sourceMap);
-      
-      logger.debug("Source map parsed successfully", {
+
+      logger.debug('Source map parsed successfully', {
         sourceMapPath,
         sources: sourceMap.sources?.length || 0,
         mappings: sourceMap.mappings?.length || 0,
       });
-      
+
       return consumer;
     } catch (error) {
-      logger.error("Failed to parse source map", {
+      logger.error('Failed to parse source map', {
         sourceMapPath,
         error: error instanceof Error ? error.message : String(error),
       });
@@ -457,18 +457,18 @@ export class SourceMapGenerator {
   static async chainSourceMaps(
     originalMap: SourceMapConsumer,
     newMappings: SourceMapping[],
-    outputFile: string,
+    outputFile: string
   ): Promise<SourceMapResult> {
-    const logger = createLogger("SourceMapChainer");
+    const logger = createLogger('SourceMapChainer');
     const generator = new SMGenerator({ file: outputFile });
 
-    logger.debug("Chaining source maps", {
+    logger.debug('Chaining source maps', {
       originalSources: (originalMap as any).sources?.length || 0,
       newMappings: newMappings.length,
     });
 
     // Add mappings from the new transformation, mapping back to original sources
-    newMappings.forEach(mapping => {
+    newMappings.forEach((mapping) => {
       const originalPosition = originalMap.originalPositionFor({
         line: mapping.originalLine,
         column: mapping.originalColumn,
@@ -493,7 +493,7 @@ export class SourceMapGenerator {
     const sourceMap = generator.toJSON();
     const sourceMapContent = JSON.stringify(sourceMap, null, 2);
 
-    logger.debug("Source maps chained successfully", {
+    logger.debug('Source maps chained successfully', {
       finalMappings: newMappings.length,
     });
 
@@ -510,11 +510,11 @@ export class SourceMapGenerator {
  */
 export function createSourceMapGenerator(
   config: EnigmaConfig,
-  outputFile?: string,
+  outputFile?: string
 ): SourceMapGenerator | null {
   // Check if source maps are enabled via dev mode or explicit sourceMaps config
   const sourceMapsEnabled = config.sourceMaps || config.dev?.enabled;
-  
+
   if (!sourceMapsEnabled) {
     return null;
   }
@@ -543,7 +543,7 @@ export function createOptimizationMapping(
   originalPosition: { line: number; column: number },
   generatedPosition: { line: number; column: number },
   transformationType: CssOptimizationMapping['transformationType'],
-  context?: CssOptimizationMapping['context'],
+  context?: CssOptimizationMapping['context']
 ): CssOptimizationMapping {
   return {
     originalClass,
@@ -556,4 +556,4 @@ export function createOptimizationMapping(
     transformationType,
     context,
   };
-} 
+}

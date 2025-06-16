@@ -3,4 +3,4 @@
  * Provides debugging utilities for plugins
  */
 
-export * from './pluginDebugger'; 
+export * from './pluginDebugger';

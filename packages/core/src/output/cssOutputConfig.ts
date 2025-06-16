@@ -5,26 +5,26 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { z } from "zod";
-import { cosmiconfig } from "cosmiconfig";
-import * as path from "path";
-import { CliArguments } from "../config";
+import { z } from 'zod';
+import { cosmiconfig } from 'cosmiconfig';
+import * as path from 'path';
+import { CliArguments } from '../config';
 
 // Extended CLI arguments interface for CSS output configuration
 interface CssOutputCliArguments extends CliArguments {
-  preset?: "cdn" | "serverless" | "spa" | "ssr";
-  environment?: "development" | "production" | "test";
+  preset?: 'cdn' | 'serverless' | 'spa' | 'ssr';
+  environment?: 'development' | 'production' | 'test';
   strategy?: OutputStrategy;
   compress?: boolean | CompressionType;
-  "critical-css"?: boolean;
-  "asset-hash"?: boolean;
-  "hash-length"?: number;
-  "performance-budget"?: string | number;
-  "max-critical-css"?: string | number;
-  "max-chunk-size"?: string | number;
-  "max-chunks"?: string | number;
-  "max-total-size"?: string | number;
-  "max-load-time"?: string | number;
+  'critical-css'?: boolean;
+  'asset-hash'?: boolean;
+  'hash-length'?: number;
+  'performance-budget'?: string | number;
+  'max-critical-css'?: string | number;
+  'max-chunk-size'?: string | number;
+  'max-chunks'?: string | number;
+  'max-total-size'?: string | number;
+  'max-load-time'?: string | number;
 }
 
 // =============================================================================
@@ -34,32 +34,27 @@ interface CssOutputCliArguments extends CliArguments {
 /**
  * CSS output strategies for different production needs
  */
-export type OutputStrategy = "single" | "chunked" | "modular";
+export type OutputStrategy = 'single' | 'chunked' | 'modular';
 
 /**
  * Compression types available for CSS assets
  */
-export type CompressionType = "none" | "gzip" | "brotli" | "auto";
+export type CompressionType = 'none' | 'gzip' | 'brotli' | 'auto';
 
 /**
  * Chunking strategies for splitting CSS into multiple files
  */
-export type ChunkingStrategy =
-  | "size"
-  | "usage"
-  | "route"
-  | "component"
-  | "hybrid";
+export type ChunkingStrategy = 'size' | 'usage' | 'route' | 'component' | 'hybrid';
 
 /**
  * Critical CSS extraction strategies
  */
-export type CriticalCssStrategy = "none" | "inline" | "preload" | "async";
+export type CriticalCssStrategy = 'none' | 'inline' | 'preload' | 'async';
 
 /**
  * Asset hash algorithms for fingerprinting
  */
-export type HashAlgorithm = "md5" | "sha1" | "sha256" | "xxhash";
+export type HashAlgorithm = 'md5' | 'sha1' | 'sha256' | 'xxhash';
 
 // =============================================================================
 // ZOD SCHEMAS
@@ -70,9 +65,7 @@ export type HashAlgorithm = "md5" | "sha1" | "sha256" | "xxhash";
  */
 export const ChunkingConfigSchema = z.object({
   /** Chunking strategy to use */
-  strategy: z
-    .enum(["size", "usage", "route", "component", "hybrid"])
-    .default("hybrid"),
+  strategy: z.enum(['size', 'usage', 'route', 'component', 'hybrid']).default('hybrid'),
 
   /** Maximum size per chunk in bytes */
   maxSize: z
@@ -87,16 +80,10 @@ export const ChunkingConfigSchema = z.object({
     .default(2 * 1024), // 2KB default
 
   /** Minimum chunk size in bytes (alias for minSize) */
-  minChunkSize: z
-    .number()
-    .min(512)
-    .optional(),
+  minChunkSize: z.number().min(512).optional(),
 
   /** Maximum chunk size in bytes (alias for maxSize) */
-  maxChunkSize: z
-    .number()
-    .min(1024)
-    .optional(),
+  maxChunkSize: z.number().min(1024).optional(),
 
   /** Maximum number of chunks to create */
   maxChunks: z.number().min(1).default(10),
@@ -163,7 +150,7 @@ export const OptimizationConfigSchema = z.object({
  */
 export const CompressionConfigSchema = z.object({
   /** Compression type to use */
-  type: z.enum(["none", "gzip", "brotli", "auto"]).default("auto"),
+  type: z.enum(['none', 'gzip', 'brotli', 'auto']).default('auto'),
 
   /** Compression level (1-9 for gzip, 1-11 for brotli) */
   level: z.number().min(1).max(11).default(6),
@@ -183,7 +170,7 @@ export const CompressionConfigSchema = z.object({
  */
 export const CriticalCssConfigSchema = z.object({
   /** Critical CSS extraction strategy */
-  strategy: z.enum(["none", "inline", "preload", "async"]).default("preload"),
+  strategy: z.enum(['none', 'inline', 'preload', 'async']).default('preload'),
 
   /** Enable critical CSS extraction */
   enabled: z.boolean().default(true),
@@ -224,7 +211,7 @@ export const CriticalCssConfigSchema = z.object({
   inlineThreshold: z.number().min(0).default(4096),
 
   /** Critical CSS extraction method */
-  extractionMethod: z.enum(["automatic", "manual"]).default("automatic"),
+  extractionMethod: z.enum(['automatic', 'manual']).default('automatic'),
 
   /** Viewport dimensions for critical CSS analysis */
   viewports: z
@@ -232,7 +219,7 @@ export const CriticalCssConfigSchema = z.object({
       z.object({
         width: z.number().min(320),
         height: z.number().min(240),
-      }),
+      })
     )
     .default([{ width: 1280, height: 720 }]),
 
@@ -248,7 +235,7 @@ export const CriticalCssConfigSchema = z.object({
  */
 export const HashingConfigSchema = z.object({
   /** Hash algorithm to use */
-  algorithm: z.enum(["md5", "sha1", "sha256", "xxhash"]).default("xxhash"),
+  algorithm: z.enum(['md5', 'sha1', 'sha256', 'xxhash']).default('xxhash'),
 
   /** Hash length for filenames */
   length: z.number().min(4).max(32).default(8),
@@ -263,7 +250,7 @@ export const HashingConfigSchema = z.object({
   generateIntegrity: z.boolean().default(true),
 
   /** Algorithm for integrity hashes */
-  integrityAlgorithm: z.enum(["sha256", "sha384", "sha512"]).default("sha384"),
+  integrityAlgorithm: z.enum(['sha256', 'sha384', 'sha512']).default('sha384'),
 });
 
 /**
@@ -271,15 +258,13 @@ export const HashingConfigSchema = z.object({
  */
 export const DeliveryConfigSchema = z.object({
   /** Delivery method for CSS assets */
-  method: z
-    .enum(["standard", "preload", "prefetch", "async", "defer"])
-    .default("standard"),
+  method: z.enum(['standard', 'preload', 'prefetch', 'async', 'defer']).default('standard'),
 
   /** Priority for resource loading */
-  priority: z.enum(["low", "medium", "high"]).default("medium"),
+  priority: z.enum(['low', 'medium', 'high']).default('medium'),
 
   /** Cross-origin resource sharing settings */
-  crossorigin: z.enum(["anonymous", "use-credentials"]).default("anonymous"),
+  crossorigin: z.enum(['anonymous', 'use-credentials']).default('anonymous'),
 
   /** Enable integrity checks for resources */
   integrity: z.boolean().default(false),
@@ -287,13 +272,11 @@ export const DeliveryConfigSchema = z.object({
   /** Cache configuration */
   cache: z
     .object({
-      strategy: z
-        .enum(["no-cache", "immutable", "revalidate"])
-        .default("revalidate"),
+      strategy: z.enum(['no-cache', 'immutable', 'revalidate']).default('revalidate'),
       maxAge: z.number().min(0).default(3600),
       staleWhileRevalidate: z.number().min(0).default(86400),
     })
-    .default({ strategy: "revalidate", maxAge: 3600, staleWhileRevalidate: 86400 }),
+    .default({ strategy: 'revalidate', maxAge: 3600, staleWhileRevalidate: 86400 }),
 
   /** Resource hints configuration */
   resourceHints: z
@@ -310,31 +293,31 @@ export const DeliveryConfigSchema = z.object({
  */
 export const OutputPathsSchema = z.object({
   /** Base directory for CSS output */
-  base: z.string().default("dist/css"),
+  base: z.string().default('dist/css'),
 
   /** CSS output directory (alias for base) */
   css: z.string().optional(),
 
   /** Directory for chunked CSS files */
-  chunks: z.string().default("chunks"),
+  chunks: z.string().default('chunks'),
 
   /** Directory for critical CSS files */
-  critical: z.string().default("critical"),
+  critical: z.string().default('critical'),
 
   /** Directory for compressed assets */
-  compressed: z.string().default("compressed"),
+  compressed: z.string().default('compressed'),
 
   /** Asset manifest filename */
-  manifest: z.string().default("css-manifest.json"),
+  manifest: z.string().default('css-manifest.json'),
 
   /** Reports directory */
-  reports: z.string().default("reports"),
+  reports: z.string().default('reports'),
 
   /** Source maps directory */
-  sourceMaps: z.string().default("maps"),
+  sourceMaps: z.string().default('maps'),
 
   /** Public URL base path */
-  publicPath: z.string().default("/css/"),
+  publicPath: z.string().default('/css/'),
 
   /** Enable hash-based filenames */
   useHashes: z.boolean().default(true),
@@ -343,7 +326,7 @@ export const OutputPathsSchema = z.object({
   hashLength: z.number().min(4).max(32).default(8),
 
   /** Hash algorithm to use */
-  hashAlgorithm: z.enum(["md5", "sha1", "sha256", "xxhash"]).default("xxhash"),
+  hashAlgorithm: z.enum(['md5', 'sha1', 'sha256', 'xxhash']).default('xxhash'),
 });
 
 /**
@@ -369,7 +352,7 @@ export const ReportingConfigSchema = z.object({
   dependencyGraphs: z.boolean().default(false),
 
   /** Output format for reports */
-  format: z.enum(["json", "html", "markdown", "all"]).default("json"),
+  format: z.enum(['json', 'html', 'markdown', 'all']).default('json'),
 
   /** Include detailed per-chunk analysis */
   perChunkAnalysis: z.boolean().default(true),
@@ -397,15 +380,13 @@ export const ReportingConfigSchema = z.object({
  */
 export const CssOutputConfigSchema = z.object({
   /** Output strategy to use */
-  strategy: z.enum(["single", "chunked", "modular"]),
+  strategy: z.enum(['single', 'chunked', 'modular']),
 
   /** Enable output optimization */
   enabled: z.boolean().default(true),
 
   /** Environment-specific settings */
-  environment: z
-    .enum(["development", "production", "test"])
-    .default("production"),
+  environment: z.enum(['development', 'production', 'test']).default('production'),
 
   /** Chunking configuration */
   chunking: ChunkingConfigSchema,
@@ -444,20 +425,22 @@ export const CssOutputConfigSchema = z.object({
   plugins: z.array(z.string()).default([]),
 
   /** Performance budget configuration */
-  performanceBudget: z.object({
-    /** Maximum bundle size in bytes */
-    maxBundleSize: z.number().positive(),
-    /** Maximum critical CSS size in bytes */
-    maxCriticalCssSize: z.number().positive(),
-    /** Maximum chunk size in bytes */
-    maxChunkSize: z.number().positive(),
-    /** Maximum total CSS size in bytes */
-    maxTotalSize: z.number().positive(),
-    /** Maximum number of chunks */
-    maxChunks: z.number().positive(),
-    /** Estimated load time in milliseconds */
-    estimatedLoadTime: z.number().positive(),
-  }).optional(),
+  performanceBudget: z
+    .object({
+      /** Maximum bundle size in bytes */
+      maxBundleSize: z.number().positive(),
+      /** Maximum critical CSS size in bytes */
+      maxCriticalCssSize: z.number().positive(),
+      /** Maximum chunk size in bytes */
+      maxChunkSize: z.number().positive(),
+      /** Maximum total CSS size in bytes */
+      maxTotalSize: z.number().positive(),
+      /** Maximum number of chunks */
+      maxChunks: z.number().positive(),
+      /** Estimated load time in milliseconds */
+      estimatedLoadTime: z.number().positive(),
+    })
+    .optional(),
 });
 
 // =============================================================================
@@ -500,10 +483,10 @@ export type PerformanceBudget = {
  * Production preset with optimal settings for deployment
  */
 export const PRODUCTION_PRESET: Partial<CssOutputConfig> = {
-  strategy: "chunked",
-  environment: "production",
+  strategy: 'chunked',
+  environment: 'production',
   chunking: {
-    strategy: "hybrid",
+    strategy: 'hybrid',
     maxSize: 50000,
     minSize: 10000,
     maxChunks: 10,
@@ -527,23 +510,23 @@ export const PRODUCTION_PRESET: Partial<CssOutputConfig> = {
     sourceMap: false,
   },
   compression: {
-    type: "auto",
+    type: 'auto',
     level: 9,
     threshold: 1024,
     includeOriginal: false,
     generateReports: true,
   },
   hashing: {
-    algorithm: "xxhash",
+    algorithm: 'xxhash',
     length: 8,
     includeContent: true,
     includeMetadata: false,
     generateIntegrity: true,
-    integrityAlgorithm: "sha384",
+    integrityAlgorithm: 'sha384',
   },
   critical: {
     timeout: 30000,
-    strategy: "preload",
+    strategy: 'preload',
     enabled: true,
     fallback: false,
     ignore: [],
@@ -556,15 +539,15 @@ export const PRODUCTION_PRESET: Partial<CssOutputConfig> = {
     viewports: [],
     forceInclude: [],
     inlineThreshold: 4096,
-    extractionMethod: "automatic"
+    extractionMethod: 'automatic',
   },
   delivery: {
-    method: "preload",
-    priority: "high",
-    crossorigin: "anonymous",
+    method: 'preload',
+    priority: 'high',
+    crossorigin: 'anonymous',
     integrity: true,
     cache: {
-      strategy: "immutable",
+      strategy: 'immutable',
       maxAge: 31536000,
       staleWhileRevalidate: 86400,
     },
@@ -575,17 +558,17 @@ export const PRODUCTION_PRESET: Partial<CssOutputConfig> = {
     },
   },
   paths: {
-    compressed: "dist/css/compressed",
-    sourceMaps: "dist/css/maps",
-    critical: "dist/css/critical",
-    base: "dist/css",
-    manifest: "dist/css/manifest.json",
-    chunks: "dist/css/chunks",
-    reports: "dist/css/reports",
-    publicPath: "/css/",
+    compressed: 'dist/css/compressed',
+    sourceMaps: 'dist/css/maps',
+    critical: 'dist/css/critical',
+    base: 'dist/css',
+    manifest: 'dist/css/manifest.json',
+    chunks: 'dist/css/chunks',
+    reports: 'dist/css/reports',
+    publicPath: '/css/',
     useHashes: true,
     hashLength: 8,
-    hashAlgorithm: "xxhash",
+    hashAlgorithm: 'xxhash',
   },
   reporting: {
     enabled: true,
@@ -594,7 +577,7 @@ export const PRODUCTION_PRESET: Partial<CssOutputConfig> = {
     compression: true,
     criticalAnalysis: true,
     dependencyGraphs: false,
-    format: "json",
+    format: 'json',
     perChunkAnalysis: true,
     budgets: {},
   },
@@ -606,10 +589,10 @@ export const PRODUCTION_PRESET: Partial<CssOutputConfig> = {
  * Development preset with faster builds and debugging features
  */
 export const DEVELOPMENT_PRESET: Partial<CssOutputConfig> = {
-  strategy: "single",
-  environment: "development",
+  strategy: 'single',
+  environment: 'development',
   chunking: {
-    strategy: "size",
+    strategy: 'size',
     maxSize: 100000,
     minSize: 5000,
     maxChunks: 1,
@@ -633,7 +616,7 @@ export const DEVELOPMENT_PRESET: Partial<CssOutputConfig> = {
     sourceMap: true,
   },
   compression: {
-    type: "none",
+    type: 'none',
     level: 1,
     threshold: 1024,
     includeOriginal: false,
@@ -641,15 +624,15 @@ export const DEVELOPMENT_PRESET: Partial<CssOutputConfig> = {
   },
   hashing: {
     length: 4,
-    algorithm: "md5",
+    algorithm: 'md5',
     includeMetadata: false,
     includeContent: false,
     generateIntegrity: false,
-    integrityAlgorithm: "sha256",
+    integrityAlgorithm: 'sha256',
   },
   critical: {
     timeout: 30000,
-    strategy: "inline",
+    strategy: 'inline',
     enabled: false,
     fallback: false,
     ignore: [],
@@ -662,15 +645,15 @@ export const DEVELOPMENT_PRESET: Partial<CssOutputConfig> = {
     viewports: [],
     forceInclude: [],
     inlineThreshold: 4096,
-    extractionMethod: "automatic"
+    extractionMethod: 'automatic',
   },
   delivery: {
-    method: "standard",
-    priority: "low",
-    crossorigin: "use-credentials",
+    method: 'standard',
+    priority: 'low',
+    crossorigin: 'use-credentials',
     integrity: false,
     cache: {
-      strategy: "no-cache",
+      strategy: 'no-cache',
       maxAge: 0,
       staleWhileRevalidate: 0,
     },
@@ -681,17 +664,17 @@ export const DEVELOPMENT_PRESET: Partial<CssOutputConfig> = {
     },
   },
   paths: {
-    compressed: "dev/css/compressed",
-    sourceMaps: "dev/css/maps",
-    critical: "dev/css/critical",
-    base: "dev/css",
-    manifest: "dev/css/manifest.json",
-    chunks: "dev/css/chunks",
-    reports: "dev/css/reports",
-    publicPath: "/css/",
+    compressed: 'dev/css/compressed',
+    sourceMaps: 'dev/css/maps',
+    critical: 'dev/css/critical',
+    base: 'dev/css',
+    manifest: 'dev/css/manifest.json',
+    chunks: 'dev/css/chunks',
+    reports: 'dev/css/reports',
+    publicPath: '/css/',
     useHashes: false,
     hashLength: 4, // Changed from 0 to 4 to meet schema minimum requirement
-    hashAlgorithm: "md5",
+    hashAlgorithm: 'md5',
   },
   reporting: {
     enabled: false,
@@ -700,7 +683,7 @@ export const DEVELOPMENT_PRESET: Partial<CssOutputConfig> = {
     compression: false,
     criticalAnalysis: false,
     dependencyGraphs: false,
-    format: "json",
+    format: 'json',
     perChunkAnalysis: false,
     budgets: {},
   },
@@ -725,11 +708,11 @@ export class CssOutputConfigManager {
 
   constructor(initialConfig?: Partial<CssOutputConfig>, explorerInstance?: any) {
     // Allow injection of explorer for testing
-    this.explorer = explorerInstance || cosmiconfig("cssoutput");
-    
+    this.explorer = explorerInstance || cosmiconfig('cssoutput');
+
     // Set default configuration if none provided
     const defaultConfig: Partial<CssOutputConfig> = {
-      strategy: "chunked",
+      strategy: 'chunked',
       ...initialConfig,
     };
 
@@ -752,7 +735,7 @@ export class CssOutputConfigManager {
       return this.config;
     } catch (error) {
       throw new Error(
-        `Failed to load CSS output configuration: ${error instanceof Error ? error.message : "Unknown error"}`,
+        `Failed to load CSS output configuration: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
     }
   }
@@ -772,7 +755,7 @@ export class CssOutputConfigManager {
       throw new Error(`No configuration found in ${filePath}`);
     } catch (error) {
       throw new Error(
-        `Failed to load CSS output configuration from ${filePath}: ${error instanceof Error ? error.message : "Unknown error"}`,
+        `Failed to load CSS output configuration from ${filePath}: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
     }
   }
@@ -796,16 +779,15 @@ export class CssOutputConfigManager {
    * Apply a preset to the configuration
    */
   applyPreset(
-    preset: "production" | "development",
-    overrides?: Partial<CssOutputConfig>,
+    preset: 'production' | 'development',
+    overrides?: Partial<CssOutputConfig>
   ): CssOutputConfig {
     // Validate preset at runtime
-    if (preset !== "production" && preset !== "development") {
+    if (preset !== 'production' && preset !== 'development') {
       throw new Error(`Invalid preset: ${preset}. Must be 'production' or 'development'`);
     }
-    
-    const presetConfig =
-      preset === "production" ? PRODUCTION_PRESET : DEVELOPMENT_PRESET;
+
+    const presetConfig = preset === 'production' ? PRODUCTION_PRESET : DEVELOPMENT_PRESET;
     // Deep merge: preset values take precedence, then overrides
     const merged = _deepMerge(this.config, presetConfig);
     // Use deep merge for overrides too to properly handle nested objects like chunking
@@ -824,9 +806,7 @@ export class CssOutputConfigManager {
   /**
    * Load configuration (alias for loadFromFile for test compatibility)
    */
-  async loadConfig(
-    searchFrom?: string,
-  ): Promise<{ config: CssOutputConfig; filepath?: string }> {
+  async loadConfig(searchFrom?: string): Promise<{ config: CssOutputConfig; filepath?: string }> {
     // Return cached result if available
     if (this.configCache) {
       return this.configCache;
@@ -843,7 +823,7 @@ export class CssOutputConfigManager {
       }
 
       // Return default configuration with single strategy if no file found
-      const defaultConfig = this.validateAndMergeConfig({ strategy: "single" });
+      const defaultConfig = this.validateAndMergeConfig({ strategy: 'single' });
       this.configCache = { config: defaultConfig };
       return this.configCache;
     } catch (error) {
@@ -863,7 +843,7 @@ export class CssOutputConfigManager {
    * Load configuration from specific path (alias for loadFromSpecificFile for test compatibility)
    */
   async loadConfigFromPath(
-    filePath: string,
+    filePath: string
   ): Promise<{ config: CssOutputConfig; filepath: string }> {
     try {
       const result = await this.explorer.load(filePath);
@@ -873,17 +853,17 @@ export class CssOutputConfigManager {
         return { config: this.config, filepath: filePath };
       }
 
-      throw new Error("Configuration file not found");
+      throw new Error('Configuration file not found');
     } catch (error) {
-      if (error instanceof Error && error.message === "Configuration file not found") {
+      if (error instanceof Error && error.message === 'Configuration file not found') {
         throw error;
       }
       // For ENOENT errors, throw the expected message
       if (error instanceof Error && error.message.includes('ENOENT')) {
-        throw new Error("Configuration file not found");
+        throw new Error('Configuration file not found');
       }
       throw new Error(
-        `Failed to load CSS output configuration from ${filePath}: ${error instanceof Error ? error.message : "Unknown error"}`,
+        `Failed to load CSS output configuration from ${filePath}: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
     }
   }
@@ -901,17 +881,15 @@ export class CssOutputConfigManager {
   /**
    * Get configuration for specific environment
    */
-  getEnvironmentConfig(
-    environment: "development" | "production" | "test",
-  ): CssOutputConfig {
+  getEnvironmentConfig(environment: 'development' | 'production' | 'test'): CssOutputConfig {
     const envConfig = { ...this.config, environment };
 
     // Apply environment-specific optimizations
-    if (environment === "development") {
+    if (environment === 'development') {
       envConfig.optimization.minify = false;
       envConfig.sourceMaps = true;
       envConfig.watch = true;
-    } else if (environment === "production") {
+    } else if (environment === 'production') {
       envConfig.optimization.minify = true;
       envConfig.sourceMaps = false;
       envConfig.watch = false;
@@ -928,42 +906,34 @@ export class CssOutputConfigManager {
 
     try {
       // Check for conflicting settings
-      if (
-        this.config.strategy === "single" &&
-        this.config.chunking.maxChunks > 1
-      ) {
-        errors.push(
-          "Single output strategy conflicts with multiple chunks configuration",
-        );
+      if (this.config.strategy === 'single' && this.config.chunking.maxChunks > 1) {
+        errors.push('Single output strategy conflicts with multiple chunks configuration');
       }
 
       if (this.config.chunking.minSize >= this.config.chunking.maxSize) {
-        errors.push("Minimum chunk size must be less than maximum chunk size");
+        errors.push('Minimum chunk size must be less than maximum chunk size');
       }
 
       if (
         this.config.critical.enabled &&
         this.config.critical.maxSize > this.config.chunking.maxSize
       ) {
-        errors.push("Critical CSS max size cannot exceed chunk max size");
+        errors.push('Critical CSS max size cannot exceed chunk max size');
       }
 
-      if (
-        this.config.compression.level > 9 &&
-        this.config.compression.type === "gzip"
-      ) {
-        errors.push("Gzip compression level cannot exceed 9");
+      if (this.config.compression.level > 9 && this.config.compression.type === 'gzip') {
+        errors.push('Gzip compression level cannot exceed 9');
       }
 
       // Check path configurations
       if (this.config.paths.hashLength === 0 && this.config.paths.useHashes) {
-        errors.push("Hash length must be greater than 0 when using hashes");
+        errors.push('Hash length must be greater than 0 when using hashes');
       }
 
       return { valid: errors.length === 0, errors };
     } catch (error) {
       errors.push(
-        `Configuration validation error: ${error instanceof Error ? error.message : "Unknown error"}`,
+        `Configuration validation error: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
       return { valid: false, errors };
     }
@@ -989,22 +959,20 @@ export class CssOutputConfigManager {
   /**
    * Validate and merge configuration with defaults
    */
-  private validateAndMergeConfig(
-    config: Partial<CssOutputConfig>,
-  ): CssOutputConfig {
+  private validateAndMergeConfig(config: Partial<CssOutputConfig>): CssOutputConfig {
     try {
       // Start with a complete preset based on strategy to ensure all required fields are present
       let baseConfig: Partial<CssOutputConfig>;
-      
-      if (config.strategy === "single" || config.environment === "development") {
+
+      if (config.strategy === 'single' || config.environment === 'development') {
         baseConfig = { ...DEVELOPMENT_PRESET };
       } else {
         baseConfig = { ...PRODUCTION_PRESET };
       }
-      
+
       // Merge the provided config over the base preset
       const mergedConfig = deepMerge(baseConfig, config);
-      
+
       // Parse and validate with Zod schema - this will apply defaults
       const validatedConfig = CssOutputConfigSchema.parse(mergedConfig);
 
@@ -1020,13 +988,13 @@ export class CssOutputConfigManager {
     } catch (error) {
       if (error instanceof z.ZodError) {
         const issues = error.issues
-          .map((issue) => `${issue.path.join(".")}: ${issue.message}`)
-          .join(", ");
+          .map((issue) => `${issue.path.join('.')}: ${issue.message}`)
+          .join(', ');
         throw new Error(`Invalid CSS output configuration: ${issues}`);
       }
 
       throw new Error(
-        `Configuration validation failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+        `Configuration validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
     }
   }
@@ -1037,7 +1005,7 @@ export class CssOutputConfigManager {
   fromCliArgs(args: CssOutputCliArguments): CssOutputConfig {
     // Start with base config for the environment
     let baseConfig = this.getConfig();
-    
+
     // Apply preset configuration first (lowest precedence)
     if (args.preset) {
       if (!['cdn', 'serverless', 'spa', 'ssr'].includes(args.preset)) {
@@ -1045,7 +1013,7 @@ export class CssOutputConfigManager {
       }
       baseConfig = applyDeploymentPreset(baseConfig, args.preset);
     }
-    
+
     // Apply environment-specific defaults second (medium precedence)
     if (args.environment) {
       if (args.environment === 'development') {
@@ -1058,19 +1026,32 @@ export class CssOutputConfigManager {
       } else if (args.environment === 'production') {
         baseConfig = deepMerge(baseConfig, {
           optimization: { minify: true, sourceMap: false },
-          compression: { type: 'auto', level: 6, threshold: 1024, includeOriginal: false, generateReports: true },
-          hashing: { includeContent: true, length: 8, algorithm: 'xxhash', includeMetadata: false, generateIntegrity: true, integrityAlgorithm: 'sha384' },
+          compression: {
+            type: 'auto',
+            level: 6,
+            threshold: 1024,
+            includeOriginal: false,
+            generateReports: true,
+          },
+          hashing: {
+            includeContent: true,
+            length: 8,
+            algorithm: 'xxhash',
+            includeMetadata: false,
+            generateIntegrity: true,
+            integrityAlgorithm: 'sha384',
+          },
           sourceMaps: false,
         });
       }
     }
-    
+
     // Apply CLI overrides last (highest precedence)
     const overrides: Partial<CssOutputConfig> = {};
-    
+
     // Map CLI args to configuration structure with proper overrides
     if (args.strategy) overrides.strategy = args.strategy;
-    
+
     // Handle optimization settings
     if (args.minify !== undefined || args.sourceMaps !== undefined) {
       overrides.optimization = {
@@ -1079,25 +1060,25 @@ export class CssOutputConfigManager {
         ...(args.sourceMaps !== undefined && { sourceMap: Boolean(args.sourceMaps) }),
       };
     }
-    
+
     // Handle critical CSS - ensure proper structure
-    if (args["critical-css"] !== undefined) {
+    if (args['critical-css'] !== undefined) {
       overrides.critical = {
         ...baseConfig.critical,
-        enabled: Boolean(args["critical-css"]),
+        enabled: Boolean(args['critical-css']),
       };
       // Critical CSS configuration is stored in the 'critical' property
     }
-    
+
     // Handle hashing settings
-    if (args["asset-hash"] !== undefined || args["hash-length"] !== undefined) {
+    if (args['asset-hash'] !== undefined || args['hash-length'] !== undefined) {
       overrides.hashing = {
         ...baseConfig.hashing,
-        ...(args["asset-hash"] !== undefined && { includeContent: Boolean(args["asset-hash"]) }),
-        ...(args["hash-length"] !== undefined && { length: Number(args["hash-length"]) }),
+        ...(args['asset-hash'] !== undefined && { includeContent: Boolean(args['asset-hash']) }),
+        ...(args['hash-length'] !== undefined && { length: Number(args['hash-length']) }),
       };
     }
-    
+
     // Handle compression
     if (args.compress !== undefined) {
       let compressType: CompressionType;
@@ -1111,61 +1092,49 @@ export class CssOutputConfigManager {
         type: compressType,
       };
     }
-    
+
     // Apply CLI overrides to the base config (CLI args have highest precedence)
     const mergedConfig = deepMerge(baseConfig, overrides);
 
     // Handle performance budget CLI args
     const budget: Partial<PerformanceBudget> = {};
     if (
-      args["performance-budget"] ||
-      args["max-critical-css"] ||
-      args["max-chunk-size"] ||
-      args["max-chunks"]
+      args['performance-budget'] ||
+      args['max-critical-css'] ||
+      args['max-chunk-size'] ||
+      args['max-chunks']
     ) {
-      if (args["performance-budget"]) {
-        const match = String(args["performance-budget"]).match(/^([0-9]+)(KB|MB|B)?$/i);
+      if (args['performance-budget']) {
+        const match = String(args['performance-budget']).match(/^([0-9]+)(KB|MB|B)?$/i);
         if (match) {
           const size = parseInt(match[1]);
-          const unit = (match[2] || "B").toUpperCase();
+          const unit = (match[2] || 'B').toUpperCase();
           budget.maxBundleSize =
-            unit === "KB"
-              ? size * 1024
-              : unit === "MB"
-              ? size * 1024 * 1024
-              : size;
+            unit === 'KB' ? size * 1024 : unit === 'MB' ? size * 1024 * 1024 : size;
         }
       }
-      if (args["max-critical-css"]) {
-        const match = String(args["max-critical-css"]).match(/^([0-9]+)(KB|MB|B)?$/i);
+      if (args['max-critical-css']) {
+        const match = String(args['max-critical-css']).match(/^([0-9]+)(KB|MB|B)?$/i);
         if (match) {
           const size = parseInt(match[1]);
-          const unit = (match[2] || "B").toUpperCase();
+          const unit = (match[2] || 'B').toUpperCase();
           budget.maxCriticalCssSize =
-            unit === "KB"
-              ? size * 1024
-              : unit === "MB"
-              ? size * 1024 * 1024
-              : size;
+            unit === 'KB' ? size * 1024 : unit === 'MB' ? size * 1024 * 1024 : size;
         }
       }
-      if (args["max-chunk-size"]) {
-        const match = String(args["max-chunk-size"]).match(/^([0-9]+)(KB|MB|B)?$/i);
+      if (args['max-chunk-size']) {
+        const match = String(args['max-chunk-size']).match(/^([0-9]+)(KB|MB|B)?$/i);
         if (match) {
           const size = parseInt(match[1]);
-          const unit = (match[2] || "B").toUpperCase();
+          const unit = (match[2] || 'B').toUpperCase();
           budget.maxChunkSize =
-            unit === "KB"
-              ? size * 1024
-              : unit === "MB"
-              ? size * 1024 * 1024
-              : size;
+            unit === 'KB' ? size * 1024 : unit === 'MB' ? size * 1024 * 1024 : size;
         }
       }
-      if (args["max-chunks"]) {
-        budget.maxChunks = parseInt(String(args["max-chunks"]), 10);
+      if (args['max-chunks']) {
+        budget.maxChunks = parseInt(String(args['max-chunks']), 10);
       }
-      
+
       if (Object.keys(budget).length > 0) {
         mergedConfig.performanceBudget = {
           maxBundleSize: 100 * 1024,
@@ -1178,10 +1147,10 @@ export class CssOutputConfigManager {
         } as PerformanceBudget;
       }
     }
-    
+
     // Ensure proper structure and defaults
     // The schema uses 'critical' as the main property
-    
+
     // Apply validation and normalization
     try {
       const result = validateCssOutputConfig(mergedConfig);
@@ -1200,9 +1169,7 @@ export class CssOutputConfigManager {
 /**
  * Create a new CSS output configuration manager with defaults
  */
-export function createCssOutputConfig(
-  config?: Partial<CssOutputConfig>,
-): CssOutputConfigManager {
+export function createCssOutputConfig(config?: Partial<CssOutputConfig>): CssOutputConfigManager {
   return new CssOutputConfigManager(config);
 }
 
@@ -1213,66 +1180,66 @@ export function validateCssOutputConfig(config: unknown): CssOutputConfig {
   // First, check for required fields before applying defaults
   if (typeof config === 'object' && config !== null) {
     const configObj = config as any;
-    
+
     // Check if strategy is missing or invalid before applying defaults
     if (configObj.strategy === undefined || configObj.strategy === null) {
       throw new Error('strategy is required');
     }
-    
+
     // Check for invalid targetChunks before schema processing
     if (configObj.chunking && typeof configObj.chunking.targetChunks === 'number') {
       if (configObj.chunking.targetChunks <= 0) {
         throw new Error('targetChunks must be greater than 0');
       }
     }
-    
+
     // Check for invalid chunk size ranges before schema processing
     if (configObj.chunking) {
       const maxChunk = configObj.chunking.maxChunkSize || configObj.chunking.maxSize;
       const minChunk = configObj.chunking.minChunkSize || configObj.chunking.minSize;
-      
+
       if (maxChunk && minChunk && minChunk >= maxChunk) {
         throw new Error('minChunkSize must be less than maxChunkSize');
       }
     }
   }
-  
+
   try {
     // Start with a complete preset based on strategy to ensure all required fields are present
     let baseConfig: Partial<CssOutputConfig>;
     const configObj = config as any;
-    
-    if (configObj?.strategy === "single" || configObj?.environment === "development") {
+
+    if (configObj?.strategy === 'single' || configObj?.environment === 'development') {
       baseConfig = { ...DEVELOPMENT_PRESET };
     } else {
       baseConfig = { ...PRODUCTION_PRESET };
     }
-    
+
     // Merge the provided config over the base preset
     const mergedConfig = deepMerge(baseConfig, config);
-    
+
     const validated = CssOutputConfigSchema.parse(mergedConfig);
-    
+
     // Additional manual checks for logical constraints after parsing
     if (validated.chunking.minSize >= validated.chunking.maxSize) {
       throw new Error('Minimum chunk size must be less than maximum chunk size');
     }
-    
-    // Check maxChunkSize vs minChunkSize if both are provided  
+
+    // Check maxChunkSize vs minChunkSize if both are provided
     const maxChunk = validated.chunking.maxChunkSize || validated.chunking.maxSize;
     const minChunk = validated.chunking.minChunkSize || validated.chunking.minSize;
-    
+
     if (maxChunk && minChunk && minChunk >= maxChunk) {
       throw new Error('minChunkSize must be less than maxChunkSize');
     }
-    
+
     // Apply normalization after validation to ensure aliases are set
     return normalizeConfig(validated) as CssOutputConfig;
   } catch (error) {
     if (error instanceof z.ZodError) {
       const issues = error.issues
-        .map((issue) => `${issue.path.join(".")}: ${issue.message}`)
-        .join(", ");
+        .map((issue) => `${issue.path.join('.')}: ${issue.message}`)
+        .join(', ');
       throw new Error(`Invalid CSS output configuration: ${issues}`);
     }
     throw new Error('Config error: ' + (error instanceof Error ? error.message : String(error)));
@@ -1282,48 +1249,69 @@ export function validateCssOutputConfig(config: unknown): CssOutputConfig {
 /**
  * Create production-optimized configuration
  */
-export function createProductionConfig(
-  overrides?: Partial<CssOutputConfig>,
-): CssOutputConfig {
+export function createProductionConfig(overrides?: Partial<CssOutputConfig>): CssOutputConfig {
   const manager = new CssOutputConfigManager();
-  
+
   // For test compatibility, be more lenient during creation
   // Don't validate strictly - let validateProductionConfig handle validation
   try {
-    return manager.applyPreset("production", overrides);
+    return manager.applyPreset('production', overrides);
   } catch {
     // If validation fails, create a basic config with the overrides applied
     // This allows invalid configs to be created for testing validation
     const baseConfig = {
-      strategy: "chunked" as const,
+      strategy: 'chunked' as const,
       optimization: { minify: true, sourceMap: false },
-      compression: { type: "auto" as const },
-      hashing: { includeContent: true, length: 8, algorithm: 'xxhash', includeMetadata: false, generateIntegrity: true, integrityAlgorithm: 'sha384' },
-      critical: { enabled: true, strategy: 'preload', maxSize: 14336, viewport: { width: 1280, height: 720 }, includeFonts: true, includeMedia: true, ignore: [], forceInclude: [], routes: [], components: [], inlineThreshold: 4096, extractionMethod: 'automatic', viewports: [{ width: 1280, height: 720 }], timeout: 30000, fallback: true },
+      compression: { type: 'auto' as const },
+      hashing: {
+        includeContent: true,
+        length: 8,
+        algorithm: 'xxhash',
+        includeMetadata: false,
+        generateIntegrity: true,
+        integrityAlgorithm: 'sha384',
+      },
+      critical: {
+        enabled: true,
+        strategy: 'preload',
+        maxSize: 14336,
+        viewport: { width: 1280, height: 720 },
+        includeFonts: true,
+        includeMedia: true,
+        ignore: [],
+        forceInclude: [],
+        routes: [],
+        components: [],
+        inlineThreshold: 4096,
+        extractionMethod: 'automatic',
+        viewports: [{ width: 1280, height: 720 }],
+        timeout: 30000,
+        fallback: true,
+      },
       chunking: {
-        strategy: "size" as const,
+        strategy: 'size' as const,
         maxSize: 50 * 1024,
         minSize: 1024,
         maxChunks: 10,
       },
       paths: {
-        base: "dist",
-        chunks: "chunks",
-        critical: "critical",
-        compressed: "compressed",
-        manifest: "manifest.json",
-        reports: "reports",
-        sourceMaps: "maps",
+        base: 'dist',
+        chunks: 'chunks',
+        critical: 'critical',
+        compressed: 'compressed',
+        manifest: 'manifest.json',
+        reports: 'reports',
+        sourceMaps: 'maps',
         useHashes: true,
         hashLength: 8,
       },
       delivery: {
-        method: "preload" as const,
-        priority: "high" as const,
+        method: 'preload' as const,
+        priority: 'high' as const,
       },
       reporting: {
         enabled: true,
-        format: "json" as const,
+        format: 'json' as const,
         includeMetrics: true,
       },
       performanceBudget: {
@@ -1337,7 +1325,7 @@ export function createProductionConfig(
       sourceMaps: false,
       watch: false,
     };
-    
+
     // Apply overrides using deep merge
     const merged = overrides ? _deepMerge(baseConfig, overrides) : baseConfig;
     return merged as CssOutputConfig;
@@ -1347,11 +1335,9 @@ export function createProductionConfig(
 /**
  * Create development-optimized configuration
  */
-export function createDevelopmentConfig(
-  overrides?: Partial<CssOutputConfig>,
-): CssOutputConfig {
+export function createDevelopmentConfig(overrides?: Partial<CssOutputConfig>): CssOutputConfig {
   const manager = new CssOutputConfigManager();
-  return manager.applyPreset("development", overrides);
+  return manager.applyPreset('development', overrides);
 }
 
 // Deep clone utility for config objects (unused - can be removed)
@@ -1407,19 +1393,19 @@ function normalizeConfig(config: any): any {
   if (config.paths && config.paths.css && !config.paths.base) {
     config.paths.base = config.paths.css;
   }
-  
+
   // Handle chunking aliases
   if (config.chunking) {
     // maxChunkSize is an alias for maxSize
     if (config.chunking.maxChunkSize && !config.chunking.maxSize) {
       config.chunking.maxSize = config.chunking.maxChunkSize;
     }
-    // minChunkSize is an alias for minSize  
+    // minChunkSize is an alias for minSize
     if (config.chunking.minChunkSize && !config.chunking.minSize) {
       config.chunking.minSize = config.chunking.minChunkSize;
     }
   }
-  
+
   if (config.optimization && config.optimization.minify !== undefined)
     config.optimization.minify = toBoolStrict(config.optimization.minify);
   if (config.optimization && config.optimization.sourceMap !== undefined)
@@ -1495,7 +1481,7 @@ export class ProductionCssConfigManager {
   /**
    * Apply preset configuration
    */
-  applyPreset(preset: "production" | "development"): CssOutputConfig {
+  applyPreset(preset: 'production' | 'development'): CssOutputConfig {
     return this.manager.applyPreset(preset);
   }
 
@@ -1532,48 +1518,54 @@ export class ProductionCssConfigManager {
       case 'cdn':
         return {
           ...PRODUCTION_PRESET,
-          compression: { 
-            type: 'gzip', 
+          compression: {
+            type: 'gzip',
             level: 9,
             threshold: 1024,
             includeOriginal: false,
-            generateReports: true
+            generateReports: true,
           },
-                      paths: { 
-              compressed: "dist/css/compressed",
-              sourceMaps: "dist/css/maps",
-              critical: "dist/css/critical",
-              base: "dist/css",
-              manifest: "dist/css/manifest.json",
-              chunks: "dist/css/chunks",
-              reports: "dist/css/reports",
-              publicPath: "/css/",
-              useHashes: true, 
-              hashLength: 8,
-              hashAlgorithm: "xxhash"
+          paths: {
+            compressed: 'dist/css/compressed',
+            sourceMaps: 'dist/css/maps',
+            critical: 'dist/css/critical',
+            base: 'dist/css',
+            manifest: 'dist/css/manifest.json',
+            chunks: 'dist/css/chunks',
+            reports: 'dist/css/reports',
+            publicPath: '/css/',
+            useHashes: true,
+            hashLength: 8,
+            hashAlgorithm: 'xxhash',
+          },
+          delivery: {
+            method: 'preload',
+            priority: 'high',
+            cache: {
+              strategy: 'immutable',
+              maxAge: 31536000,
+              staleWhileRevalidate: 86400,
             },
-                      delivery: { 
-              method: 'preload', 
-              priority: 'high',
-              cache: {
-                strategy: "immutable",
-                maxAge: 31536000,
-                staleWhileRevalidate: 86400,
-              },
-              crossorigin: "anonymous",
-              integrity: true,
-              resourceHints: {
-                preload: true,
-                prefetch: false,
-                preconnect: true,
-              }
-            }
+            crossorigin: 'anonymous',
+            integrity: true,
+            resourceHints: {
+              preload: true,
+              prefetch: false,
+              preconnect: true,
+            },
+          },
         };
       case 'serverless':
         return {
           ...PRODUCTION_PRESET,
           strategy: 'single',
-          compression: { type: 'brotli', level: 11, threshold: 1024, includeOriginal: false, generateReports: true }
+          compression: {
+            type: 'brotli',
+            level: 11,
+            threshold: 1024,
+            includeOriginal: false,
+            generateReports: true,
+          },
         };
       default:
         return PRODUCTION_PRESET;
@@ -1590,7 +1582,11 @@ export class ProductionCssConfigManager {
   /**
    * Validate results against performance budgets
    */
-  validateAgainstBudgets(budgetResults?: any): { passed: boolean; errors: string[]; warnings: string[] } {
+  validateAgainstBudgets(budgetResults?: any): {
+    passed: boolean;
+    errors: string[];
+    warnings: string[];
+  } {
     if (!budgetResults) {
       return { passed: true, errors: [], warnings: [] };
     }
@@ -1600,17 +1596,22 @@ export class ProductionCssConfigManager {
 
     // Example budget validation logic
     if (budgetResults.totalSize > 500 * 1024) {
-      errors.push(`Total size ${Math.round(budgetResults.totalSize / 1024)}KB exceeds budget of 500KB`);
+      errors.push(
+        `Total size ${Math.round(budgetResults.totalSize / 1024)}KB exceeds budget of 500KB`
+      );
     }
 
-    if (budgetResults.chunkSizes && budgetResults.chunkSizes.some((size: number) => size > 100 * 1024)) {
+    if (
+      budgetResults.chunkSizes &&
+      budgetResults.chunkSizes.some((size: number) => size > 100 * 1024)
+    ) {
       warnings.push('Some chunks exceed recommended 100KB size');
     }
 
     return {
       passed: errors.length === 0,
       errors,
-      warnings
+      warnings,
     };
   }
 
@@ -1631,25 +1632,32 @@ export class ProductionCssConfigManager {
           if (m) {
             const n = parseFloat(m[1]);
             switch ((m[2] || '').toUpperCase()) {
-              case 'GB': return n * 1024 * 1024 * 1024;
-              case 'MB': return n * 1024 * 1024;
-              case 'KB': return n * 1024;
-              case 'B': return n;
-              case 'S': return n * 1000;
-              case 'MS': return n;
-              default: return n;
+              case 'GB':
+                return n * 1024 * 1024 * 1024;
+              case 'MB':
+                return n * 1024 * 1024;
+              case 'KB':
+                return n * 1024;
+              case 'B':
+                return n;
+              case 'S':
+                return n * 1000;
+              case 'MS':
+                return n;
+              default:
+                return n;
             }
           }
         }
         return def;
       };
       return {
-        maxBundleSize: parseSize(args["performance-budget"], 100 * 1024),
-        maxCriticalCssSize: parseSize(args["max-critical-css"], 14 * 1024),
-        maxChunkSize: parseSize(args["max-chunk-size"], 50 * 1024),
-        maxTotalSize: parseSize(args["max-total-size"], 500 * 1024),
-        maxChunks: parseInt(args["max-chunks"] ?? 10, 10) || 10,
-        estimatedLoadTime: parseSize(args["max-load-time"], 2000),
+        maxBundleSize: parseSize(args['performance-budget'], 100 * 1024),
+        maxCriticalCssSize: parseSize(args['max-critical-css'], 14 * 1024),
+        maxChunkSize: parseSize(args['max-chunk-size'], 50 * 1024),
+        maxTotalSize: parseSize(args['max-total-size'], 500 * 1024),
+        maxChunks: parseInt(args['max-chunks'] ?? 10, 10) || 10,
+        estimatedLoadTime: parseSize(args['max-load-time'], 2000),
       };
     }
     // Fallback: return defaults
@@ -1669,19 +1677,19 @@ export class ProductionCssConfigManager {
   generateConfigDocumentation(): string {
     // Provide a static doc string for test compatibility
     return [
-      "CSS Output Configuration",
-      "CLI Arguments",
-      "Performance Budget",
-      "Deployment Presets",
-      "--environment=production",
-      "--preset=cdn",
-      "--performance-budget=100KB",
-      "example",
-      "cdn",
-      "serverless",
-      "spa",
-      "ssr",
-    ].join("\n");
+      'CSS Output Configuration',
+      'CLI Arguments',
+      'Performance Budget',
+      'Deployment Presets',
+      '--environment=production',
+      '--preset=cdn',
+      '--performance-budget=100KB',
+      'example',
+      'cdn',
+      'serverless',
+      'spa',
+      'ssr',
+    ].join('\n');
   }
 
   /**
@@ -1689,11 +1697,11 @@ export class ProductionCssConfigManager {
    */
   detectCIEnvironment(): { isCI: boolean; provider?: string } {
     const env = process.env;
-    if (env.GITHUB_ACTIONS) return { isCI: true, provider: "github-actions" };
-    if (env.GITLAB_CI) return { isCI: true, provider: "gitlab" };
-    if (env.CIRCLECI) return { isCI: true, provider: "circleci" };
-    if (env.TRAVIS) return { isCI: true, provider: "travis" };
-    if (env.CI) return { isCI: true, provider: "generic" };
+    if (env.GITHUB_ACTIONS) return { isCI: true, provider: 'github-actions' };
+    if (env.GITLAB_CI) return { isCI: true, provider: 'gitlab' };
+    if (env.CIRCLECI) return { isCI: true, provider: 'circleci' };
+    if (env.TRAVIS) return { isCI: true, provider: 'travis' };
+    if (env.CI) return { isCI: true, provider: 'generic' };
     return { isCI: false };
   }
 
@@ -1702,7 +1710,7 @@ export class ProductionCssConfigManager {
    */
   createCIConfiguration(args: Partial<CssOutputCliArguments>): CssOutputConfig {
     // Always use production environment and CDN preset for CI
-    const mergedArgs = { ...args, environment: "production", preset: "cdn" };
+    const mergedArgs = { ...args, environment: 'production', preset: 'cdn' };
     return this.manager.fromCliArgs(mergedArgs as CssOutputCliArguments);
   }
 
@@ -1747,9 +1755,7 @@ function _deepMerge(target: any, ...sources: any[]): any {
 
 // Utility: Coerce booleans and numbers
 function _normalizeCliTypes(obj: Record<string, any>): Record<string, any> {
-  const boolKeys = [
-    'minify', 'critical-css', 'asset-hash', 'source-map', 'verbose', 'watch',
-  ];
+  const boolKeys = ['minify', 'critical-css', 'asset-hash', 'source-map', 'verbose', 'watch'];
   for (const key of boolKeys) {
     if (key in obj) {
       if (typeof obj[key] === 'string') {
@@ -1786,10 +1792,16 @@ export function parseCliArgs(args: string[]): Record<string, any> {
         result[key] = true;
       } else {
         // For performance budget fields, keep as string (e.g., "250KB")
-        if ([
-          'performance-budget', 'max-critical-css', 'max-chunk-size',
-          'max-total-size', 'max-chunks', 'max-load-time',
-        ].includes(key)) {
+        if (
+          [
+            'performance-budget',
+            'max-critical-css',
+            'max-chunk-size',
+            'max-total-size',
+            'max-chunks',
+            'max-load-time',
+          ].includes(key)
+        ) {
           result[key] = value; // Keep strings for budget fields
         } else {
           // Try to coerce other values
@@ -1802,23 +1814,38 @@ export function parseCliArgs(args: string[]): Record<string, any> {
       }
     }
   }
-  
+
   // Handle specific key mappings for test compatibility
   if ('source-map' in result) {
     result.sourceMap = result['source-map'];
   }
-  
+
   // Always include all expected keys
   const expectedKeys = [
-    'environment', 'preset', 'minify', 'compress', 'output', 'chunks',
-    'critical-css', 'performance-budget', 'max-critical-css', 'max-chunk-size',
-    'max-total-size', 'max-chunks', 'max-load-time', 'asset-hash', 'hash-length',
-    'source-map', 'sourceMap', 'verbose', 'watch',
+    'environment',
+    'preset',
+    'minify',
+    'compress',
+    'output',
+    'chunks',
+    'critical-css',
+    'performance-budget',
+    'max-critical-css',
+    'max-chunk-size',
+    'max-total-size',
+    'max-chunks',
+    'max-load-time',
+    'asset-hash',
+    'hash-length',
+    'source-map',
+    'sourceMap',
+    'verbose',
+    'watch',
   ];
   for (const key of expectedKeys) {
     if (!(key in result)) result[key] = undefined;
   }
-  
+
   // Provide some defaults for test compatibility
   if (result.environment === undefined) result.environment = 'production';
   if (result.minify === undefined) result.minify = true;
@@ -1826,7 +1853,7 @@ export function parseCliArgs(args: string[]): Record<string, any> {
   if (result.chunks === undefined) result.chunks = 'auto';
   if (result['critical-css'] === undefined) result['critical-css'] = true;
   if (result['asset-hash'] === undefined) result['asset-hash'] = true;
-  
+
   // Normalize types
   return _normalizeCliTypes(result);
 }
@@ -1841,33 +1868,131 @@ export function applyDeploymentPreset(config: any, preset: string): any {
   switch (preset) {
     case 'cdn':
       presetConfig = {
-        hashing: { includeContent: true, length: 8, algorithm: 'xxhash', includeMetadata: false, generateIntegrity: true, integrityAlgorithm: 'sha384' },
-        compression: { type: 'auto', level: 6, threshold: 1024, includeOriginal: false, generateReports: true },
-        critical: { enabled: true, strategy: 'preload', maxSize: 14336, viewport: { width: 1280, height: 720 }, includeFonts: true, includeMedia: true, ignore: [], forceInclude: [], routes: [], components: [], inlineThreshold: 4096, extractionMethod: 'automatic', viewports: [{ width: 1280, height: 720 }], timeout: 30000, fallback: true },
-        optimization: { minify: true, purge: true, autoprefix: true, mergeDuplicates: true, removeComments: true, optimizeCalc: true, mergeMedia: true, normalizeColors: true, removeEmpty: true, optimizeFonts: false, sourceMap: false },
+        hashing: {
+          includeContent: true,
+          length: 8,
+          algorithm: 'xxhash',
+          includeMetadata: false,
+          generateIntegrity: true,
+          integrityAlgorithm: 'sha384',
+        },
+        compression: {
+          type: 'auto',
+          level: 6,
+          threshold: 1024,
+          includeOriginal: false,
+          generateReports: true,
+        },
+        critical: {
+          enabled: true,
+          strategy: 'preload',
+          maxSize: 14336,
+          viewport: { width: 1280, height: 720 },
+          includeFonts: true,
+          includeMedia: true,
+          ignore: [],
+          forceInclude: [],
+          routes: [],
+          components: [],
+          inlineThreshold: 4096,
+          extractionMethod: 'automatic',
+          viewports: [{ width: 1280, height: 720 }],
+          timeout: 30000,
+          fallback: true,
+        },
+        optimization: {
+          minify: true,
+          purge: true,
+          autoprefix: true,
+          mergeDuplicates: true,
+          removeComments: true,
+          optimizeCalc: true,
+          mergeMedia: true,
+          normalizeColors: true,
+          removeEmpty: true,
+          optimizeFonts: false,
+          sourceMap: false,
+        },
       };
       break;
     case 'serverless':
       presetConfig = {
         strategy: 'single',
-        compression: { type: 'auto', level: 6, threshold: 1024, includeOriginal: false, generateReports: true },
-        optimization: { minify: true, purge: true, autoprefix: true, mergeDuplicates: true, removeComments: true, optimizeCalc: true, mergeMedia: true, normalizeColors: true, removeEmpty: true, optimizeFonts: false, sourceMap: false },
-        critical: { enabled: true, strategy: 'preload', maxSize: 14336, viewport: { width: 1280, height: 720 }, includeFonts: true, includeMedia: true, ignore: [], forceInclude: [], routes: [], components: [], inlineThreshold: 4096, extractionMethod: 'automatic', viewports: [{ width: 1280, height: 720 }], timeout: 30000, fallback: true },
+        compression: {
+          type: 'auto',
+          level: 6,
+          threshold: 1024,
+          includeOriginal: false,
+          generateReports: true,
+        },
+        optimization: {
+          minify: true,
+          purge: true,
+          autoprefix: true,
+          mergeDuplicates: true,
+          removeComments: true,
+          optimizeCalc: true,
+          mergeMedia: true,
+          normalizeColors: true,
+          removeEmpty: true,
+          optimizeFonts: false,
+          sourceMap: false,
+        },
+        critical: {
+          enabled: true,
+          strategy: 'preload',
+          maxSize: 14336,
+          viewport: { width: 1280, height: 720 },
+          includeFonts: true,
+          includeMedia: true,
+          ignore: [],
+          forceInclude: [],
+          routes: [],
+          components: [],
+          inlineThreshold: 4096,
+          extractionMethod: 'automatic',
+          viewports: [{ width: 1280, height: 720 }],
+          timeout: 30000,
+          fallback: true,
+        },
       };
       break;
     case 'spa':
       presetConfig = {
         strategy: 'chunked',
-        critical: { enabled: true, strategy: 'inline', maxSize: 14336, viewport: { width: 1280, height: 720 }, includeFonts: true, includeMedia: true, ignore: [], forceInclude: [], routes: [], components: [], inlineThreshold: 4096, extractionMethod: 'automatic', viewports: [{ width: 1280, height: 720 }], timeout: 30000, fallback: true },
-        hashing: { includeContent: true, length: 8, algorithm: 'xxhash', includeMetadata: false, generateIntegrity: true, integrityAlgorithm: 'sha384' },
+        critical: {
+          enabled: true,
+          strategy: 'inline',
+          maxSize: 14336,
+          viewport: { width: 1280, height: 720 },
+          includeFonts: true,
+          includeMedia: true,
+          ignore: [],
+          forceInclude: [],
+          routes: [],
+          components: [],
+          inlineThreshold: 4096,
+          extractionMethod: 'automatic',
+          viewports: [{ width: 1280, height: 720 }],
+          timeout: 30000,
+          fallback: true,
+        },
+        hashing: {
+          includeContent: true,
+          length: 8,
+          algorithm: 'xxhash',
+          includeMetadata: false,
+          generateIntegrity: true,
+          integrityAlgorithm: 'sha384',
+        },
       };
       break;
     case 'ssr':
       presetConfig = {
         strategy: 'modular',
-        critical: { 
+        critical: {
           timeout: 30000,
-          enabled: true, 
+          enabled: true,
           strategy: 'async',
           fallback: false,
           ignore: [],
@@ -1880,39 +2005,67 @@ export function applyDeploymentPreset(config: any, preset: string): any {
           viewports: [],
           forceInclude: [],
           inlineThreshold: 4096,
-          extractionMethod: 'automatic'
+          extractionMethod: 'automatic',
         },
-        optimization: { minify: true, purge: true, autoprefix: true, mergeDuplicates: true, removeComments: true, optimizeCalc: true, mergeMedia: true, normalizeColors: true, removeEmpty: true, optimizeFonts: false, sourceMap: false },
+        optimization: {
+          minify: true,
+          purge: true,
+          autoprefix: true,
+          mergeDuplicates: true,
+          removeComments: true,
+          optimizeCalc: true,
+          mergeMedia: true,
+          normalizeColors: true,
+          removeEmpty: true,
+          optimizeFonts: false,
+          sourceMap: false,
+        },
       };
       break;
     default:
       return config;
   }
-  
+
   // Smart merge: detect if config was customized from defaults
   // If a value differs from the production preset defaults, preserve it
   const PRODUCTION_DEFAULTS = {
     strategy: 'chunked',
-    optimization: { minify: true, purge: true, autoprefix: true, mergeDuplicates: true, removeComments: true, optimizeCalc: true, mergeMedia: true, normalizeColors: true, removeEmpty: true, optimizeFonts: false, sourceMap: false },
+    optimization: {
+      minify: true,
+      purge: true,
+      autoprefix: true,
+      mergeDuplicates: true,
+      removeComments: true,
+      optimizeCalc: true,
+      mergeMedia: true,
+      normalizeColors: true,
+      removeEmpty: true,
+      optimizeFonts: false,
+      sourceMap: false,
+    },
     hashing: { length: 8 },
   };
-  
+
   // Start with base config
   const merged = _deepMerge({}, config);
-  
+
   // Apply preset values only if the current value matches the default
   // This preserves user customizations while applying preset changes to defaults
-  if (presetConfig.strategy && 
-      (!config.strategy || config.strategy === PRODUCTION_DEFAULTS.strategy)) {
+  if (
+    presetConfig.strategy &&
+    (!config.strategy || config.strategy === PRODUCTION_DEFAULTS.strategy)
+  ) {
     merged.strategy = presetConfig.strategy;
   }
-  
+
   if (presetConfig.optimization) {
     if (!merged.optimization) merged.optimization = {};
     // Only override minify if it wasn't explicitly customized
-    if (presetConfig.optimization.minify !== undefined &&
-        (config.optimization?.minify === undefined || 
-         config.optimization?.minify === PRODUCTION_DEFAULTS.optimization.minify)) {
+    if (
+      presetConfig.optimization.minify !== undefined &&
+      (config.optimization?.minify === undefined ||
+        config.optimization?.minify === PRODUCTION_DEFAULTS.optimization.minify)
+    ) {
       merged.optimization.minify = presetConfig.optimization.minify;
     }
     // Apply other optimization settings
@@ -1922,12 +2075,14 @@ export function applyDeploymentPreset(config: any, preset: string): any {
       merged.optimization.minify = false;
     }
   }
-  
+
   if (presetConfig.hashing) {
     if (!merged.hashing) merged.hashing = {};
-    // Only override length if it wasn't explicitly customized  
-    if (presetConfig.hashing.length !== undefined &&
-        (!config.hashing?.length || config.hashing.length === PRODUCTION_DEFAULTS.hashing.length)) {
+    // Only override length if it wasn't explicitly customized
+    if (
+      presetConfig.hashing.length !== undefined &&
+      (!config.hashing?.length || config.hashing.length === PRODUCTION_DEFAULTS.hashing.length)
+    ) {
       merged.hashing.length = presetConfig.hashing.length;
     }
     // Apply other hashing settings
@@ -1937,17 +2092,17 @@ export function applyDeploymentPreset(config: any, preset: string): any {
       merged.hashing.length = config.hashing.length;
     }
   }
-  
+
   if (presetConfig.compression) {
     if (!merged.compression) merged.compression = {};
     Object.assign(merged.compression, presetConfig.compression);
   }
-  
+
   if (presetConfig.critical) {
     if (!merged.critical) merged.critical = {};
     Object.assign(merged.critical, presetConfig.critical);
   }
-  
+
   // Always ensure performanceBudget and critical are present
   if (!merged.performanceBudget) {
     merged.performanceBudget = {
@@ -1969,45 +2124,63 @@ export function applyDeploymentPreset(config: any, preset: string): any {
  * Validate a performance budget object
  * For test compatibility
  */
-export function validatePerformanceBudget(budget: any): { isValid: boolean; warnings: string[]; errors: string[] } {
+export function validatePerformanceBudget(budget: any): {
+  isValid: boolean;
+  warnings: string[];
+  errors: string[];
+} {
   const errors: string[] = [];
   const warnings: string[] = [];
-  
+
   // Check for excessively large values (more realistic thresholds)
-  if (budget.maxBundleSize !== undefined && budget.maxBundleSize > 1 * 1024 * 1024) { // 1MB+
+  if (budget.maxBundleSize !== undefined && budget.maxBundleSize > 1 * 1024 * 1024) {
+    // 1MB+
     warnings.push('maxBundleSize is very large (>1MB)');
     errors.push('Bundle size exceeds reasonable limits');
   }
-  if (budget.maxTotalSize !== undefined && budget.maxTotalSize > 5 * 1024 * 1024) { // 5MB+
+  if (budget.maxTotalSize !== undefined && budget.maxTotalSize > 5 * 1024 * 1024) {
+    // 5MB+
     warnings.push('maxTotalSize is very large (>5MB)');
     errors.push('Total size exceeds reasonable limits');
   }
-  if (budget.maxCriticalCssSize !== undefined && budget.maxCriticalCssSize > 20 * 1024) { // 20KB+
+  if (budget.maxCriticalCssSize !== undefined && budget.maxCriticalCssSize > 20 * 1024) {
+    // 20KB+
     warnings.push('maxCriticalCssSize is very large (>20KB)');
     errors.push('Critical CSS size exceeds reasonable limits');
   }
-  if (budget.maxChunkSize !== undefined && budget.maxChunkSize > 500 * 1024) { // 500KB+
+  if (budget.maxChunkSize !== undefined && budget.maxChunkSize > 500 * 1024) {
+    // 500KB+
     warnings.push('maxChunkSize is very large (>500KB)');
     errors.push('Chunk size exceeds reasonable limits');
   }
-  if (budget.maxChunks !== undefined && budget.maxChunks > 20) { // 20+
+  if (budget.maxChunks !== undefined && budget.maxChunks > 20) {
+    // 20+
     warnings.push('maxChunks is very high (>20)');
     errors.push('Too many chunks requested');
   }
-  if (budget.estimatedLoadTime !== undefined && budget.estimatedLoadTime > 5000) { // 5s+
+  if (budget.estimatedLoadTime !== undefined && budget.estimatedLoadTime > 5000) {
+    // 5s+
     warnings.push('estimatedLoadTime is very high (>5s)');
     errors.push('Load time exceeds reasonable limits');
   }
-  
-  if (budget.maxBundleSize !== undefined && budget.maxBundleSize <= 0) errors.push('maxBundleSize must be positive');
-  if (budget.maxCriticalCssSize !== undefined && budget.maxCriticalCssSize <= 0) errors.push('maxCriticalCssSize must be positive');
-  if (budget.maxChunkSize !== undefined && budget.maxChunkSize <= 0) errors.push('maxChunkSize must be positive');
-  if (budget.maxTotalSize !== undefined && budget.maxTotalSize <= 0) errors.push('maxTotalSize must be positive');
-  if (budget.maxChunks !== undefined && budget.maxChunks <= 0) errors.push('maxChunks must be positive');
-  if (budget.estimatedLoadTime !== undefined && budget.estimatedLoadTime < 0) errors.push('estimatedLoadTime must be non-negative');
+
+  if (budget.maxBundleSize !== undefined && budget.maxBundleSize <= 0)
+    errors.push('maxBundleSize must be positive');
+  if (budget.maxCriticalCssSize !== undefined && budget.maxCriticalCssSize <= 0)
+    errors.push('maxCriticalCssSize must be positive');
+  if (budget.maxChunkSize !== undefined && budget.maxChunkSize <= 0)
+    errors.push('maxChunkSize must be positive');
+  if (budget.maxTotalSize !== undefined && budget.maxTotalSize <= 0)
+    errors.push('maxTotalSize must be positive');
+  if (budget.maxChunks !== undefined && budget.maxChunks <= 0)
+    errors.push('maxChunks must be positive');
+  if (budget.estimatedLoadTime !== undefined && budget.estimatedLoadTime < 0)
+    errors.push('estimatedLoadTime must be non-negative');
   // Relationship checks
-  if (budget.maxChunkSize && budget.maxBundleSize && budget.maxChunkSize > budget.maxBundleSize) errors.push('chunk size cannot exceed bundle size');
-  if (budget.maxTotalSize && budget.maxBundleSize && budget.maxTotalSize < budget.maxBundleSize) errors.push('total size cannot be less than bundle size');
+  if (budget.maxChunkSize && budget.maxBundleSize && budget.maxChunkSize > budget.maxBundleSize)
+    errors.push('chunk size cannot exceed bundle size');
+  if (budget.maxTotalSize && budget.maxBundleSize && budget.maxTotalSize < budget.maxBundleSize)
+    errors.push('total size cannot be less than bundle size');
   return { isValid: errors.length === 0, warnings, errors };
 }
 
@@ -2044,16 +2217,16 @@ export function createProductionConfigManager(
   return new ProductionCssConfigManager(initialConfig);
 }
 
-export function validateProductionConfig(config: any): { 
-  isValid: boolean; 
-  errors: string[]; 
-  warnings: string[]; 
+export function validateProductionConfig(config: any): {
+  isValid: boolean;
+  errors: string[];
+  warnings: string[];
   suggestions: string[];
 } {
   const errors: string[] = [];
   const warnings: string[] = [];
   const suggestions: string[] = [];
-  
+
   try {
     // Validate using Zod schema to catch type errors
     CssOutputConfigSchema.parse(config);
@@ -2064,7 +2237,7 @@ export function validateProductionConfig(config: any): {
         const path = issue.path.join('.');
         const message = issue.message;
         errors.push(`${path}: ${message}`);
-        
+
         // Add specific error messages for common validation failures
         if (path.includes('strategy') && message.includes('Invalid enum value')) {
           errors.push('strategy must be one of: single, chunked, modular');
@@ -2080,22 +2253,22 @@ export function validateProductionConfig(config: any): {
       errors.push(error.message || 'Configuration validation failed');
     }
   }
-  
+
   // Check required fields
   if (!config.strategy) errors.push('strategy is required');
   if (!config.optimization) errors.push('optimization is required');
-  
+
   // Check for conflicting configuration
   if (config.strategy === 'single' && config.chunking && config.chunking.strategy) {
     warnings.push('Single strategy with chunking configuration may cause conflicts');
   }
-  
+
   // Validate performance budget if present
   if (config.performanceBudget) {
     const budgetValidation = validatePerformanceBudget(config.performanceBudget);
     errors.push(...budgetValidation.errors);
     warnings.push(...budgetValidation.warnings);
-    
+
     // Check budget consistency
     const budget = config.performanceBudget;
     if (budget.maxChunkSize && budget.maxBundleSize && budget.maxChunkSize > budget.maxBundleSize) {
@@ -2106,7 +2279,7 @@ export function validateProductionConfig(config: any): {
       warnings.push('Total size budget is smaller than bundle size budget');
     }
   }
-  
+
   // Provide suggestions for common mistakes
   if (config.minification) {
     suggestions.push('Use "minify" instead of "minification"');
@@ -2115,7 +2288,7 @@ export function validateProductionConfig(config: any): {
     suggestions.push('Use "compression.type" instead of "compress"');
   }
   if (config.strategys) {
-    suggestions.push('Use "strategy" instead of "strategys"');  
+    suggestions.push('Use "strategy" instead of "strategys"');
   }
   if (config.stratagy) {
     suggestions.push('Use "strategy" instead of "stratagy" (chunked is a valid option)');
@@ -2123,7 +2296,7 @@ export function validateProductionConfig(config: any): {
   if (config.minfy) {
     suggestions.push('Use "minify" instead of "minfy"');
   }
-  
+
   // Check for typos in the test case
   if (config.strategy === 'chunk') {
     suggestions.push('Use "chunked" instead of "chunk"');
@@ -2134,12 +2307,12 @@ export function validateProductionConfig(config: any): {
   if (config.compression && config.compression.typ !== undefined) {
     suggestions.push('Use "type" instead of "typ"');
   }
-  
-  return { 
-    isValid: errors.length === 0, 
-    errors, 
-    warnings, 
-    suggestions 
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+    warnings,
+    suggestions,
   };
 }
 
@@ -2151,4 +2324,3 @@ export function generateConfigDocs(): string {
   const manager = new ProductionCssConfigManager();
   return manager.generateConfigDocumentation();
 }
-

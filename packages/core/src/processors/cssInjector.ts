@@ -5,24 +5,20 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import * as cheerio from "cheerio";
-import { z } from "zod";
-import { createLogger } from "../utils/logger";
-import {
-  PathUtils,
-  type RelativePathResult,
-  PathUtilsError,
-} from "../utils/pathUtils";
-import type { AnyNode } from "domhandler";
+import * as cheerio from 'cheerio';
+import { z } from 'zod';
+import { createLogger } from '../utils/logger';
+import { PathUtils, type RelativePathResult, PathUtilsError } from '../utils/pathUtils';
+import type { AnyNode } from 'domhandler';
 
 /**
  * Configuration options for CSS injection operations
  */
 export const CssInjectionOptionsSchema = z.object({
   /** CSS file path to inject */
-  cssPath: z.string().min(1, "CSS path is required"),
+  cssPath: z.string().min(1, 'CSS path is required'),
   /** Target HTML file path */
-  htmlPath: z.string().min(1, "HTML file path is required"),
+  htmlPath: z.string().min(1, 'HTML file path is required'),
   /** Base path for relative path calculation */
   basePath: z.string().optional(),
   /** Whether to use relative paths (default: true) */
@@ -30,21 +26,19 @@ export const CssInjectionOptionsSchema = z.object({
   /** Link tag attributes */
   linkAttributes: z
     .object({
-      rel: z.string().default("stylesheet"),
-      type: z.string().default("text/css"),
+      rel: z.string().default('stylesheet'),
+      type: z.string().default('text/css'),
       media: z.string().optional(),
     })
     .default({}),
   /** Insertion position in head */
-  insertPosition: z
-    .enum(["first", "last", "before-existing", "after-meta"])
-    .default("after-meta"),
+  insertPosition: z.enum(['first', 'last', 'before-existing', 'after-meta']).default('after-meta'),
   /** Whether to preserve original formatting */
   preserveFormatting: z.boolean().default(true),
   /** Whether to prevent duplicate injections */
   preventDuplicates: z.boolean().default(true),
   /** Duplicate resolution strategy */
-  duplicateStrategy: z.enum(["skip", "replace", "error"]).default("skip"),
+  duplicateStrategy: z.enum(['skip', 'replace', 'error']).default('skip'),
   /** Whether to create head section if missing */
   createHeadIfMissing: z.boolean().default(true),
   /** Whether to backup original file */
@@ -96,7 +90,7 @@ export interface DocumentStructure {
   }>;
   /** Original indentation pattern detected */
   indentationPattern: {
-    type: "spaces" | "tabs" | "mixed";
+    type: 'spaces' | 'tabs' | 'mixed';
     size: number;
     consistent: boolean;
   };
@@ -119,7 +113,7 @@ export interface CssInjectionResult {
   /** Whether a duplicate was detected */
   duplicateDetected: boolean;
   /** Action taken for duplicate (if any) */
-  duplicateAction: "skipped" | "replaced" | "error" | null;
+  duplicateAction: 'skipped' | 'replaced' | 'error' | null;
   /** Document structure analysis */
   documentStructure: DocumentStructure;
   /** Processing metadata */
@@ -142,14 +136,9 @@ export class CssInjectionError extends Error {
   public cause?: Error;
   public code?: string;
 
-  constructor(
-    message: string,
-    source?: string,
-    cause?: Error,
-    code?: string,
-  ) {
+  constructor(message: string, source?: string, cause?: Error, code?: string) {
     super(message);
-    this.name = "CssInjectionError";
+    this.name = 'CssInjectionError';
     this.source = source;
     this.cause = cause;
     this.code = code;
@@ -160,14 +149,9 @@ export class DuplicateInjectionError extends CssInjectionError {
   public existingHref: string;
   public newHref: string;
 
-  constructor(
-    message: string,
-    existingHref: string,
-    newHref: string,
-    source?: string,
-  ) {
-    super(message, source, undefined, "DUPLICATE_INJECTION");
-    this.name = "DuplicateInjectionError";
+  constructor(message: string, existingHref: string, newHref: string, source?: string) {
+    super(message, source, undefined, 'DUPLICATE_INJECTION');
+    this.name = 'DuplicateInjectionError';
     this.existingHref = existingHref;
     this.newHref = newHref;
   }
@@ -177,14 +161,9 @@ export class PathCalculationError extends CssInjectionError {
   public fromPath: string;
   public toPath: string;
 
-  constructor(
-    message: string,
-    fromPath: string,
-    toPath: string,
-    cause?: Error,
-  ) {
-    super(message, undefined, cause, "PATH_CALCULATION_ERROR");
-    this.name = "PathCalculationError";
+  constructor(message: string, fromPath: string, toPath: string, cause?: Error) {
+    super(message, undefined, cause, 'PATH_CALCULATION_ERROR');
+    this.name = 'PathCalculationError';
     this.fromPath = fromPath;
     this.toPath = toPath;
   }
@@ -193,13 +172,9 @@ export class PathCalculationError extends CssInjectionError {
 export class HtmlStructureError extends CssInjectionError {
   public htmlContent?: string;
 
-  constructor(
-    message: string,
-    htmlContent?: string,
-    cause?: Error,
-  ) {
-    super(message, undefined, cause, "HTML_STRUCTURE_ERROR");
-    this.name = "HtmlStructureError";
+  constructor(message: string, htmlContent?: string, cause?: Error) {
+    super(message, undefined, cause, 'HTML_STRUCTURE_ERROR');
+    this.name = 'HtmlStructureError';
     this.htmlContent = htmlContent;
   }
 }
@@ -208,7 +183,7 @@ export class HtmlStructureError extends CssInjectionError {
  * Main CSS injection class
  */
 export class CssInjector {
-  private readonly logger = createLogger("CssInjector");
+  private readonly logger = createLogger('CssInjector');
   private readonly options: CssInjectionOptions;
   private readonly pathUtils: PathUtils;
 
@@ -224,14 +199,14 @@ export class CssInjector {
         useRelativePaths: this.options.useRelativePaths,
       });
 
-      this.logger.debug("CssInjector initialized", {
+      this.logger.debug('CssInjector initialized', {
         cssPath: this.options.cssPath,
         htmlPath: this.options.htmlPath,
         useRelativePaths: this.options.useRelativePaths,
         preventDuplicates: this.options.preventDuplicates,
       });
     } catch (error) {
-      this.logger.error("Invalid CSS injection options", {
+      this.logger.error('Invalid CSS injection options', {
         error: error instanceof Error ? error.message : String(error),
         providedOptions: options,
       });
@@ -239,7 +214,7 @@ export class CssInjector {
         `Invalid CSS injection options: ${error instanceof Error ? error.message : String(error)}`,
         undefined,
         error instanceof Error ? error : undefined,
-        "INVALID_OPTIONS",
+        'INVALID_OPTIONS'
       );
     }
   }
@@ -247,10 +222,7 @@ export class CssInjector {
   /**
    * Inject CSS link tag into HTML string
    */
-  async injectIntoString(
-    html: string,
-    source = "string",
-  ): Promise<CssInjectionResult> {
+  async injectIntoString(html: string, source = 'string'): Promise<CssInjectionResult> {
     const startTime = Date.now();
     const metadata = {
       source,
@@ -262,7 +234,7 @@ export class CssInjector {
     };
 
     try {
-      this.logger.debug("Starting CSS injection", {
+      this.logger.debug('Starting CSS injection', {
         source,
         htmlLength: html.length,
       });
@@ -273,7 +245,7 @@ export class CssInjector {
           `HTML content too large: ${html.length} bytes (max: ${this.options.maxFileSize})`,
           source,
           undefined,
-          "FILE_TOO_LARGE",
+          'FILE_TOO_LARGE'
         );
       }
 
@@ -289,7 +261,7 @@ export class CssInjector {
 
       // Analyze document structure
       const documentStructure = this.analyzeDocumentStructure($);
-      this.logger.debug("Document structure analyzed", {
+      this.logger.debug('Document structure analyzed', {
         hasHead: documentStructure.hasHead,
         hasBody: documentStructure.hasBody,
         existingLinksCount: documentStructure.existingLinks.length,
@@ -298,26 +270,20 @@ export class CssInjector {
 
       // Calculate relative path
       const relativePath = this.calculateRelativePath();
-      this.logger.debug("Relative path calculated", { relativePath });
+      this.logger.debug('Relative path calculated', { relativePath });
 
       // Check for duplicates
       let duplicateDetected = false;
-      let duplicateAction: "skipped" | "replaced" | "error" | null = null;
+      let duplicateAction: 'skipped' | 'replaced' | 'error' | null = null;
 
       if (this.options.preventDuplicates) {
         const duplicate = this.detectDuplicate(documentStructure, relativePath);
         if (duplicate) {
           duplicateDetected = true;
-          duplicateAction = this.handleDuplicate(
-            duplicate,
-            $,
-            documentStructure,
-          );
+          duplicateAction = this.handleDuplicate(duplicate, $, documentStructure);
 
-          if (duplicateAction === "skipped") {
-            metadata.warnings.push(
-              `Duplicate CSS link detected and skipped: ${relativePath}`,
-            );
+          if (duplicateAction === 'skipped') {
+            metadata.warnings.push(`Duplicate CSS link detected and skipped: ${relativePath}`);
             metadata.processingTime = Math.max(1, Date.now() - startTime); // Ensure minimum 1ms
 
             return {
@@ -336,13 +302,13 @@ export class CssInjector {
 
       // Inject CSS link tag
       this.injectLinkTag($, documentStructure, relativePath);
-      this.logger.debug("CSS link tag injected successfully");
+      this.logger.debug('CSS link tag injected successfully');
 
       // Get final HTML
       const finalHtml = $.html();
       metadata.processingTime = Math.max(1, Date.now() - startTime); // Ensure minimum 1ms
 
-      this.logger.info("CSS injection completed successfully", {
+      this.logger.info('CSS injection completed successfully', {
         source,
         relativePath,
         duplicateDetected,
@@ -361,12 +327,10 @@ export class CssInjector {
         metadata,
       };
     } catch (error) {
-      metadata.errors.push(
-        error instanceof Error ? error.message : String(error),
-      );
+      metadata.errors.push(error instanceof Error ? error.message : String(error));
       metadata.processingTime = Math.max(1, Date.now() - startTime); // Ensure minimum 1ms
 
-      this.logger.error("CSS injection failed", {
+      this.logger.error('CSS injection failed', {
         source,
         error: error instanceof Error ? error.message : String(error),
         processingTime: metadata.processingTime,
@@ -377,7 +341,7 @@ export class CssInjector {
         : new CssInjectionError(
             `Failed to inject CSS: ${error instanceof Error ? error.message : String(error)}`,
             source,
-            error instanceof Error ? error : undefined,
+            error instanceof Error ? error : undefined
           );
     }
   }
@@ -386,12 +350,12 @@ export class CssInjector {
    * Analyze HTML document structure
    */
   private analyzeDocumentStructure($: cheerio.CheerioAPI): DocumentStructure {
-    this.logger.debug("Analyzing document structure");
+    this.logger.debug('Analyzing document structure');
 
     // Check for head and body elements
-    const head = $("head");
-    const body = $("body");
-    const html = $("html");
+    const head = $('head');
+    const body = $('body');
+    const html = $('html');
 
     // Extract doctype if present
     let doctype: string | null = null;
@@ -408,13 +372,13 @@ export class CssInjector {
     }
 
     // Analyze existing link tags in head
-    const existingLinks: DocumentStructure["existingLinks"] = [];
-    head.find("link").each((_, element) => {
+    const existingLinks: DocumentStructure['existingLinks'] = [];
+    head.find('link').each((_, element) => {
       const $link = $(element);
-      const href = $link.attr("href");
-      const rel = $link.attr("rel");
-      const type = $link.attr("type");
-      const media = $link.attr("media");
+      const href = $link.attr('href');
+      const rel = $link.attr('rel');
+      const type = $link.attr('type');
+      const media = $link.attr('media');
 
       if (href && rel) {
         existingLinks.push({
@@ -428,12 +392,12 @@ export class CssInjector {
     });
 
     // Analyze existing style tags in head
-    const existingStyles: DocumentStructure["existingStyles"] = [];
-    head.find("style").each((_, element) => {
+    const existingStyles: DocumentStructure['existingStyles'] = [];
+    head.find('style').each((_, element) => {
       const $style = $(element);
       const content = $style.text();
-      const type = $style.attr("type");
-      const media = $style.attr("media");
+      const type = $style.attr('type');
+      const media = $style.attr('media');
 
       existingStyles.push({
         content,
@@ -444,12 +408,12 @@ export class CssInjector {
     });
 
     // Analyze meta tags in head
-    const metaTags: DocumentStructure["metaTags"] = [];
-    head.find("meta").each((_, element) => {
+    const metaTags: DocumentStructure['metaTags'] = [];
+    head.find('meta').each((_, element) => {
       const $meta = $(element);
-      const name = $meta.attr("name");
-      const property = $meta.attr("property");
-      const content = $meta.attr("content") || $meta.attr("charset"); // Handle charset attribute
+      const name = $meta.attr('name');
+      const property = $meta.attr('property');
+      const content = $meta.attr('content') || $meta.attr('charset'); // Handle charset attribute
 
       metaTags.push({
         name,
@@ -467,15 +431,15 @@ export class CssInjector {
 
     if (head.length > 0) {
       switch (this.options.insertPosition) {
-        case "first":
+        case 'first':
           headInsertionPoint = head.children().first();
           break;
-        case "last":
+        case 'last':
           headInsertionPoint = null; // Will append to end
           break;
-        case "after-meta": {
+        case 'after-meta': {
           // Find the last meta tag
-          const lastMeta = head.find("meta").last();
+          const lastMeta = head.find('meta').last();
           if (lastMeta.length > 0) {
             headInsertionPoint = lastMeta;
           } else {
@@ -484,7 +448,7 @@ export class CssInjector {
           }
           break;
         }
-        case "before-existing": {
+        case 'before-existing': {
           // Find the first existing stylesheet link
           const firstStylesheet = head.find('link[rel="stylesheet"]').first();
           if (firstStylesheet.length > 0) {
@@ -511,7 +475,7 @@ export class CssInjector {
       headInsertionPoint,
     };
 
-    this.logger.debug("Document structure analysis complete", {
+    this.logger.debug('Document structure analysis complete', {
       hasHead: structure.hasHead,
       hasBody: structure.hasBody,
       existingLinksCount: existingLinks.length,
@@ -528,37 +492,35 @@ export class CssInjector {
   /**
    * Detect indentation pattern from HTML content
    */
-  private detectIndentationPattern(
-    html: string,
-  ): DocumentStructure["indentationPattern"] {
-    const lines = html.split("\n");
-    const indentations: Array<{ type: "spaces" | "tabs"; size: number }> = [];
+  private detectIndentationPattern(html: string): DocumentStructure['indentationPattern'] {
+    const lines = html.split('\n');
+    const indentations: Array<{ type: 'spaces' | 'tabs'; size: number }> = [];
 
     for (const line of lines) {
       if (line.trim().length === 0) continue; // Skip empty lines
 
-      const leadingWhitespace = line.match(/^(\s*)/)?.[1] || "";
+      const leadingWhitespace = line.match(/^(\s*)/)?.[1] || '';
       if (leadingWhitespace.length === 0) continue; // Skip lines with no indentation
 
       const tabCount = (leadingWhitespace.match(/\t/g) || []).length;
       const spaceCount = (leadingWhitespace.match(/ /g) || []).length;
 
       if (tabCount > 0 && spaceCount === 0) {
-        indentations.push({ type: "tabs", size: tabCount });
+        indentations.push({ type: 'tabs', size: tabCount });
       } else if (spaceCount > 0 && tabCount === 0) {
-        indentations.push({ type: "spaces", size: spaceCount });
+        indentations.push({ type: 'spaces', size: spaceCount });
       }
       // Mixed indentation is ignored for pattern detection
     }
 
     if (indentations.length === 0) {
-      return { type: "spaces", size: 2, consistent: true }; // Default
+      return { type: 'spaces', size: 2, consistent: true }; // Default
     }
 
     // Determine most common type
-    const tabCount = indentations.filter((i) => i.type === "tabs").length;
-    const spaceCount = indentations.filter((i) => i.type === "spaces").length;
-    const primaryType = tabCount > spaceCount ? "tabs" : "spaces";
+    const tabCount = indentations.filter((i) => i.type === 'tabs').length;
+    const spaceCount = indentations.filter((i) => i.type === 'spaces').length;
+    const primaryType = tabCount > spaceCount ? 'tabs' : 'spaces';
 
     // Calculate most common size for the primary type
     const sizesOfPrimaryType = indentations
@@ -584,8 +546,7 @@ export class CssInjector {
     const mostCommonSizeCount = sizeFreq[mostCommonSize] || 0;
     const consistent =
       totalMixed === 0 &&
-      (indentations.length <= 3 ||
-        mostCommonSizeCount / indentations.length > 0.6);
+      (indentations.length <= 3 || mostCommonSizeCount / indentations.length > 0.6);
 
     return {
       type: primaryType,
@@ -598,7 +559,7 @@ export class CssInjector {
    * Calculate relative path from HTML file to CSS file
    */
   private calculateRelativePath(): string {
-    this.logger.debug("Calculating relative path", {
+    this.logger.debug('Calculating relative path', {
       cssPath: this.options.cssPath,
       htmlPath: this.options.htmlPath,
       basePath: this.options.basePath,
@@ -607,28 +568,28 @@ export class CssInjector {
 
     // If not using relative paths, normalize and return CSS path as absolute
     if (!this.options.useRelativePaths) {
-      this.logger.debug("Using absolute path as configured");
+      this.logger.debug('Using absolute path as configured');
       try {
         // For absolute paths, we want to preserve leading slashes and just normalize separators
-        const normalizedPath = this.options.cssPath.replace(/\\/g, "/");
+        const normalizedPath = this.options.cssPath.replace(/\\/g, '/');
 
         // Use PathUtils validation to ensure it's safe, but don't use its normalization
         // which might remove leading slashes that are important for absolute web paths
         const validationResult = this.pathUtils.validatePath(normalizedPath);
         if (!validationResult.isValid) {
-          this.logger.warn("CSS path validation failed, using as-is", {
+          this.logger.warn('CSS path validation failed, using as-is', {
             cssPath: this.options.cssPath,
-            validationDetails: validationResult.errors.join(", "),
+            validationDetails: validationResult.errors.join(', '),
           });
         }
 
         return normalizedPath;
       } catch (error) {
-        this.logger.warn("Failed to process absolute CSS path, using as-is", {
+        this.logger.warn('Failed to process absolute CSS path, using as-is', {
           cssPath: this.options.cssPath,
           error: error instanceof Error ? error.message : String(error),
         });
-        return this.options.cssPath.replace(/\\/g, "/");
+        return this.options.cssPath.replace(/\\/g, '/');
       }
     }
 
@@ -636,10 +597,10 @@ export class CssInjector {
       // Use PathUtils for enhanced relative path calculation
       const result: RelativePathResult = this.pathUtils.calculateRelativePath(
         this.options.htmlPath,
-        this.options.cssPath,
+        this.options.cssPath
       );
 
-      this.logger.debug("Relative path calculated using PathUtils", {
+      this.logger.debug('Relative path calculated using PathUtils', {
         fromPath: result.metadata.fromPath,
         toPath: result.metadata.toPath,
         relativePath: result.relativePath,
@@ -651,13 +612,13 @@ export class CssInjector {
         throw new PathCalculationError(
           `Invalid path calculation result: Unknown validation error`,
           this.options.htmlPath,
-          this.options.cssPath,
+          this.options.cssPath
         );
       }
 
       return result.relativePath;
     } catch (error) {
-      this.logger.error("Failed to calculate relative path using PathUtils", {
+      this.logger.error('Failed to calculate relative path using PathUtils', {
         cssPath: this.options.cssPath,
         htmlPath: this.options.htmlPath,
         basePath: this.options.basePath,
@@ -670,7 +631,7 @@ export class CssInjector {
           `PathUtils calculation failed: ${error.message}`,
           this.options.htmlPath,
           this.options.cssPath,
-          error,
+          error
         );
       }
 
@@ -678,7 +639,7 @@ export class CssInjector {
         `Failed to calculate relative path from HTML to CSS: ${error instanceof Error ? error.message : String(error)}`,
         this.options.htmlPath,
         this.options.cssPath,
-        error instanceof Error ? error : undefined,
+        error instanceof Error ? error : undefined
       );
     }
   }
@@ -688,13 +649,13 @@ export class CssInjector {
    */
   private detectDuplicate(
     structure: DocumentStructure,
-    targetPath: string,
+    targetPath: string
   ): {
     element: cheerio.Cheerio<AnyNode>;
     href: string;
     index: number;
   } | null {
-    this.logger.debug("Checking for duplicate CSS links", {
+    this.logger.debug('Checking for duplicate CSS links', {
       targetPath,
       existingLinksCount: structure.existingLinks.length,
     });
@@ -704,7 +665,7 @@ export class CssInjector {
       const existingLink = structure.existingLinks[i];
 
       // Only check stylesheet links
-      if (existingLink.rel !== "stylesheet") {
+      if (existingLink.rel !== 'stylesheet') {
         continue;
       }
 
@@ -714,7 +675,7 @@ export class CssInjector {
 
       // Check for exact match or path equivalence
       if (normalizedExisting === normalizedTarget) {
-        this.logger.debug("Duplicate CSS link detected", {
+        this.logger.debug('Duplicate CSS link detected', {
           existingHref: existingLink.href,
           targetPath,
           normalizedExisting,
@@ -730,7 +691,7 @@ export class CssInjector {
       }
     }
 
-    this.logger.debug("No duplicate CSS links found");
+    this.logger.debug('No duplicate CSS links found');
     return null;
   }
 
@@ -744,24 +705,24 @@ export class CssInjector {
       index: number;
     },
     $: cheerio.CheerioAPI,
-    structure: DocumentStructure,
-  ): "skipped" | "replaced" | "error" {
-    this.logger.debug("Handling duplicate CSS link", {
+    structure: DocumentStructure
+  ): 'skipped' | 'replaced' | 'error' {
+    this.logger.debug('Handling duplicate CSS link', {
       strategy: this.options.duplicateStrategy,
       existingHref: duplicate.href,
       targetPath: this.calculateRelativePath(),
     });
 
     switch (this.options.duplicateStrategy) {
-      case "skip": {
-        this.logger.info("Skipping CSS injection due to duplicate", {
+      case 'skip': {
+        this.logger.info('Skipping CSS injection due to duplicate', {
           existingHref: duplicate.href,
         });
-        return "skipped";
+        return 'skipped';
       }
 
-      case "replace": {
-        this.logger.info("Replacing existing CSS link with new one", {
+      case 'replace': {
+        this.logger.info('Replacing existing CSS link with new one', {
           existingHref: duplicate.href,
           newHref: this.calculateRelativePath(),
         });
@@ -772,25 +733,25 @@ export class CssInjector {
         // Update the structure to reflect the removal
         structure.existingLinks.splice(duplicate.index, 1);
 
-        return "replaced";
+        return 'replaced';
       }
 
-      case "error": {
+      case 'error': {
         const relativePath = this.calculateRelativePath();
         throw new DuplicateInjectionError(
           `Duplicate CSS link detected and configured to error`,
           duplicate.href,
           relativePath,
-          "duplicate-detection",
+          'duplicate-detection'
         );
       }
 
       default: {
         // Should never reach here due to Zod validation, but handle gracefully
-        this.logger.warn("Unknown duplicate strategy, defaulting to skip", {
+        this.logger.warn('Unknown duplicate strategy, defaulting to skip', {
           strategy: this.options.duplicateStrategy,
         });
-        return "skipped";
+        return 'skipped';
       }
     }
   }
@@ -803,17 +764,17 @@ export class CssInjector {
       // Use PathUtils for consistent normalization
       return this.pathUtils.normalizePath(inputPath);
     } catch (error) {
-      this.logger.warn("PathUtils normalization failed, using fallback", {
+      this.logger.warn('PathUtils normalization failed, using fallback', {
         inputPath,
         error: error instanceof Error ? error.message : String(error),
       });
 
       // Fallback to basic normalization if PathUtils fails
       let normalized = inputPath.toLowerCase();
-      normalized = normalized.replace(/\\/g, "/");
-      normalized = normalized.replace(/^\.\//, "");
-      normalized = normalized.replace(/\/+/g, "/");
-      normalized = normalized.replace(/\/$/, "");
+      normalized = normalized.replace(/\\/g, '/');
+      normalized = normalized.replace(/^\.\//, '');
+      normalized = normalized.replace(/\/+/g, '/');
+      normalized = normalized.replace(/\/$/, '');
       return normalized;
     }
   }
@@ -824,38 +785,38 @@ export class CssInjector {
   private injectLinkTag(
     $: cheerio.CheerioAPI,
     structure: DocumentStructure,
-    relativePath: string,
+    relativePath: string
   ): void {
-    this.logger.debug("Injecting CSS link tag", {
+    this.logger.debug('Injecting CSS link tag', {
       relativePath,
       insertPosition: this.options.insertPosition,
       hasHead: structure.hasHead,
     });
 
     // Ensure head element exists
-    let head = $("head");
+    let head = $('head');
     if (!structure.hasHead && this.options.createHeadIfMissing) {
-      this.logger.debug("Creating missing head element");
+      this.logger.debug('Creating missing head element');
 
       // Find html element or create if missing
-      let html = $("html");
+      let html = $('html');
       if (html.length === 0) {
         // Wrap existing content in html if no html tag exists
         const bodyContent = $.root().html();
-        $.root().empty().append("<html></html>");
-        html = $("html");
+        $.root().empty().append('<html></html>');
+        html = $('html');
         if (bodyContent && bodyContent.trim()) {
           html.append(`<body>${bodyContent}</body>`);
         }
       }
 
       // Insert head as first child of html
-      html.prepend("<head></head>");
-      head = $("head");
+      html.prepend('<head></head>');
+      head = $('head');
     } else if (!structure.hasHead) {
       throw new HtmlStructureError(
-        "HTML document has no head section and createHeadIfMissing is false",
-        $.html(),
+        'HTML document has no head section and createHeadIfMissing is false',
+        $.html()
       );
     }
 
@@ -872,7 +833,7 @@ export class CssInjector {
     // Build link tag string
     const linkTagAttributes = Object.entries(linkAttributes)
       .map(([key, value]) => `${key}="${value}"`)
-      .join(" ");
+      .join(' ');
     const linkTag = `<link ${linkTagAttributes}>`;
 
     // Apply indentation for proper formatting
@@ -881,7 +842,7 @@ export class CssInjector {
 
     // Insert the link tag based on position strategy
     switch (this.options.insertPosition) {
-      case "first": {
+      case 'first': {
         // Insert as first child of head
         if (head.children().length > 0) {
           head.children().first().before(indentedLinkTag);
@@ -890,14 +851,14 @@ export class CssInjector {
         }
         break;
       }
-      case "last": {
+      case 'last': {
         // Append to end of head
         head.append(indentedLinkTag);
         break;
       }
-      case "after-meta": {
+      case 'after-meta': {
         // Insert after the last meta tag or as first child
-        const lastMeta = head.find("meta").last();
+        const lastMeta = head.find('meta').last();
         if (lastMeta.length > 0) {
           lastMeta.after(indentedLinkTag);
         } else {
@@ -909,7 +870,7 @@ export class CssInjector {
         }
         break;
       }
-      case "before-existing": {
+      case 'before-existing': {
         // Insert before the first existing stylesheet
         const firstStylesheet = head.find('link[rel="stylesheet"]').first();
         if (firstStylesheet.length > 0) {
@@ -927,7 +888,7 @@ export class CssInjector {
       }
     }
 
-    this.logger.debug("CSS link tag injected successfully", {
+    this.logger.debug('CSS link tag injected successfully', {
       relativePath,
       position: this.options.insertPosition,
       linkAttributes,
@@ -937,17 +898,15 @@ export class CssInjector {
   /**
    * Generate proper indentation string based on detected pattern
    */
-  private generateIndentation(
-    pattern: DocumentStructure["indentationPattern"],
-  ): string {
+  private generateIndentation(pattern: DocumentStructure['indentationPattern']): string {
     const { type, size } = pattern;
 
-    if (type === "tabs") {
-      return "\t".repeat(Math.max(1, size));
+    if (type === 'tabs') {
+      return '\t'.repeat(Math.max(1, size));
     } else {
       // Use spaces, default to 2 if size is 0 or inconsistent
       const spaceCount = size > 0 ? size : 2;
-      return " ".repeat(spaceCount);
+      return ' '.repeat(spaceCount);
     }
   }
 }
@@ -965,9 +924,7 @@ export interface CssInjectionRequest {
 /**
  * Factory function to create CSS injector
  */
-export function createCssInjector(
-  options: Partial<CssInjectionOptions> = {},
-): CssInjector {
+export function createCssInjector(options: Partial<CssInjectionOptions> = {}): CssInjector {
   return new CssInjector(options);
 }
 
@@ -981,20 +938,18 @@ export function validateInjectionRequest(request: CssInjectionRequest): {
   const errors: string[] = [];
 
   if (!request.cssFilePath) {
-    errors.push("CSS file path is required");
+    errors.push('CSS file path is required');
   }
 
   if (!request.htmlFilePath) {
-    errors.push("HTML file path is required");
+    errors.push('HTML file path is required');
   }
 
   if (
     request.position &&
-    !["before-existing", "after-existing", "first", "last"].includes(
-      request.position,
-    )
+    !['before-existing', 'after-existing', 'first', 'last'].includes(request.position)
   ) {
-    errors.push("Invalid injection position");
+    errors.push('Invalid injection position');
   }
 
   return {

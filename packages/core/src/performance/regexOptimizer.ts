@@ -22,10 +22,10 @@
  * - Memory-efficient pattern caching
  */
 
-import { performance } from "perf_hooks";
-import { EventEmitter } from "events";
-import type { CacheManager } from "./cacheManager";
-import { createCacheManager } from "./cacheManager";
+import { performance } from 'perf_hooks';
+import { EventEmitter } from 'events';
+import type { CacheManager } from './cacheManager';
+import { createCacheManager } from './cacheManager';
 
 /**
  * Regex compilation cache entry
@@ -63,12 +63,12 @@ interface RegexPerformanceMetrics {
 interface RegexOptimizationSuggestion {
   pattern: string;
   issue:
-    | "catastrophic_backtracking"
-    | "inefficient_quantifier"
-    | "unnecessary_capture"
-    | "anchor_optimization"
-    | "character_class_optimization";
-  severity: "low" | "medium" | "high" | "critical";
+    | 'catastrophic_backtracking'
+    | 'inefficient_quantifier'
+    | 'unnecessary_capture'
+    | 'anchor_optimization'
+    | 'character_class_optimization';
+  severity: 'low' | 'medium' | 'high' | 'critical';
   description: string;
   suggestion: string;
   optimizedPattern?: string;
@@ -80,8 +80,8 @@ interface RegexOptimizationSuggestion {
  */
 interface RegexAnalysis {
   isValid: boolean;
-  complexity: "low" | "medium" | "high" | "dangerous";
-  estimatedPerformance: "excellent" | "good" | "fair" | "poor" | "terrible";
+  complexity: 'low' | 'medium' | 'high' | 'dangerous';
+  estimatedPerformance: 'excellent' | 'good' | 'fair' | 'poor' | 'terrible';
   potentialIssues: RegexOptimizationSuggestion[];
   recommendations: string[];
   safetyScore: number; // 0-100, higher is safer
@@ -115,8 +115,7 @@ const COMMON_CSS_PATTERNS = {
   WHITESPACE_NORMALIZE: /\s+/g,
   CSS_COMMENT: /\/\*[\s\S]*?\*\//g,
   CSS_IMPORT: /@import\s+(?:url\()?['"]?([^'"()]+)['"]?(?:\))?[^;]*;/gi,
-  CSS_SELECTOR:
-    /([.#]?[a-zA-Z_-][a-zA-Z0-9_-]*(?:\[[^\]]*\])?(?:::?[a-zA-Z-]+)?)/g,
+  CSS_SELECTOR: /([.#]?[a-zA-Z_-][a-zA-Z0-9_-]*(?:\[[^\]]*\])?(?:::?[a-zA-Z-]+)?)/g,
 } as const;
 
 /**
@@ -135,10 +134,7 @@ const DANGEROUS_PATTERNS = [
 export class RegexOptimizer extends EventEmitter {
   private readonly config: RegexOptimizerConfig;
   private readonly cache: CacheManager<RegexCacheEntry>;
-  private readonly performanceMetrics = new Map<
-    string,
-    RegexPerformanceMetrics
-  >();
+  private readonly performanceMetrics = new Map<string, RegexPerformanceMetrics>();
   private readonly lazyPatterns = new Map<string, () => RegExp>();
   private hotPaths = new Set<string>();
   private compilationCount = 0;
@@ -163,7 +159,7 @@ export class RegexOptimizer extends EventEmitter {
     this.cache = createCacheManager<RegexCacheEntry>({
       enabled: this.config.enabled,
       maxSize: this.config.cacheSize * 1024, // Rough estimate
-      strategy: "lru",
+      strategy: 'lru',
       ttl: this.config.maxCacheAge,
     });
 
@@ -179,11 +175,7 @@ export class RegexOptimizer extends EventEmitter {
   /**
    * Get or compile regex pattern with caching and optimization
    */
-  async compile(
-    pattern: string,
-    flags = "",
-    source = "unknown",
-  ): Promise<RegExp> {
+  async compile(pattern: string, flags = '', source = 'unknown'): Promise<RegExp> {
     if (!this.config.enabled) {
       return new RegExp(pattern, flags);
     }
@@ -213,8 +205,8 @@ export class RegexOptimizer extends EventEmitter {
       if (this.config.optimizationSuggestions) {
         const analysis = this.analyzePattern(pattern, flags);
         if (analysis.safetyScore < 50) {
-          this.emit("warning", {
-            type: "unsafe_pattern",
+          this.emit('warning', {
+            type: 'unsafe_pattern',
             pattern,
             analysis,
             source,
@@ -232,8 +224,8 @@ export class RegexOptimizer extends EventEmitter {
 
       return regex;
     } catch (error) {
-      this.emit("error", {
-        type: "compilation_error",
+      this.emit('error', {
+        type: 'compilation_error',
         pattern,
         flags,
         source,
@@ -241,7 +233,7 @@ export class RegexOptimizer extends EventEmitter {
       });
 
       // Return a safe fallback regex
-      return new RegExp("", flags);
+      return new RegExp('', flags);
     }
   }
 
@@ -251,7 +243,7 @@ export class RegexOptimizer extends EventEmitter {
   async exec(
     pattern: string | RegExp,
     input: string,
-    flags?: string,
+    flags?: string
   ): Promise<RegExpExecArray | null> {
     const startTime = performance.now();
 
@@ -263,7 +255,7 @@ export class RegexOptimizer extends EventEmitter {
         regex = pattern;
         patternKey = `${pattern.source}::${pattern.flags}`;
       } else {
-        patternKey = `${pattern}::${flags || ""}`;
+        patternKey = `${pattern}::${flags || ''}`;
         regex = await this.compile(pattern, flags);
       }
 
@@ -276,8 +268,8 @@ export class RegexOptimizer extends EventEmitter {
 
       return result;
     } catch (error) {
-      this.emit("error", {
-        type: "execution_error",
+      this.emit('error', {
+        type: 'execution_error',
         pattern: pattern instanceof RegExp ? pattern.source : pattern,
         input: input.substring(0, 100), // Limit logged input
         error: error instanceof Error ? error.message : String(error),
@@ -289,11 +281,7 @@ export class RegexOptimizer extends EventEmitter {
   /**
    * Test regex with performance monitoring
    */
-  async test(
-    pattern: string | RegExp,
-    input: string,
-    flags?: string,
-  ): Promise<boolean> {
+  async test(pattern: string | RegExp, input: string, flags?: string): Promise<boolean> {
     const result = await this.exec(pattern, input, flags);
     return result !== null;
   }
@@ -304,7 +292,7 @@ export class RegexOptimizer extends EventEmitter {
   async match(
     input: string,
     pattern: string | RegExp,
-    flags?: string,
+    flags?: string
   ): Promise<RegExpMatchArray | null> {
     const startTime = performance.now();
 
@@ -316,7 +304,7 @@ export class RegexOptimizer extends EventEmitter {
         regex = pattern;
         patternKey = `${pattern.source}::${pattern.flags}`;
       } else {
-        patternKey = `${pattern}::${flags || ""}`;
+        patternKey = `${pattern}::${flags || ''}`;
         regex = await this.compile(pattern, flags);
       }
 
@@ -329,8 +317,8 @@ export class RegexOptimizer extends EventEmitter {
 
       return result;
     } catch (error) {
-      this.emit("error", {
-        type: "match_error",
+      this.emit('error', {
+        type: 'match_error',
         pattern: pattern instanceof RegExp ? pattern.source : pattern,
         input: input.substring(0, 100),
         error: error instanceof Error ? error.message : String(error),
@@ -346,7 +334,7 @@ export class RegexOptimizer extends EventEmitter {
     input: string,
     pattern: string | RegExp,
     replacement: string | ((match: string, ...args: any[]) => string),
-    flags?: string,
+    flags?: string
   ): Promise<string> {
     const startTime = performance.now();
 
@@ -358,7 +346,7 @@ export class RegexOptimizer extends EventEmitter {
         regex = pattern;
         patternKey = `${pattern.source}::${pattern.flags}`;
       } else {
-        patternKey = `${pattern}::${flags || ""}`;
+        patternKey = `${pattern}::${flags || ''}`;
         regex = await this.compile(pattern, flags);
       }
 
@@ -371,8 +359,8 @@ export class RegexOptimizer extends EventEmitter {
 
       return result;
     } catch (error) {
-      this.emit("error", {
-        type: "replace_error",
+      this.emit('error', {
+        type: 'replace_error',
         pattern: pattern instanceof RegExp ? pattern.source : pattern,
         input: input.substring(0, 100),
         error: error instanceof Error ? error.message : String(error),
@@ -384,11 +372,11 @@ export class RegexOptimizer extends EventEmitter {
   /**
    * Analyze regex pattern for potential issues
    */
-  analyzePattern(pattern: string, flags = ""): RegexAnalysis {
+  analyzePattern(pattern: string, flags = ''): RegexAnalysis {
     const analysis: RegexAnalysis = {
       isValid: true,
-      complexity: "low",
-      estimatedPerformance: "excellent",
+      complexity: 'low',
+      estimatedPerformance: 'excellent',
       potentialIssues: [],
       recommendations: [],
       safetyScore: 100,
@@ -408,11 +396,11 @@ export class RegexOptimizer extends EventEmitter {
       if (dangerousPattern.test(pattern)) {
         analysis.potentialIssues.push({
           pattern,
-          issue: "catastrophic_backtracking",
-          severity: "critical",
-          description: "Pattern may cause catastrophic backtracking",
-          suggestion: "Use atomic groups or possessive quantifiers",
-          estimatedImprovement: "90%+ performance improvement",
+          issue: 'catastrophic_backtracking',
+          severity: 'critical',
+          description: 'Pattern may cause catastrophic backtracking',
+          suggestion: 'Use atomic groups or possessive quantifiers',
+          estimatedImprovement: '90%+ performance improvement',
         });
         analysis.safetyScore -= 40;
       }
@@ -420,39 +408,37 @@ export class RegexOptimizer extends EventEmitter {
 
     // Check complexity indicators
     const complexityIndicators = [
-      { pattern: /\.\*.*\.\*/, weight: 15, issue: "Multiple .* patterns" },
+      { pattern: /\.\*.*\.\*/, weight: 15, issue: 'Multiple .* patterns' },
       {
         pattern: /\(\?=|\(\?!/,
         weight: 10,
-        issue: "Lookahead/lookbehind assertions",
+        issue: 'Lookahead/lookbehind assertions',
       },
-      { pattern: /\+.*\+|\*.*\*/, weight: 12, issue: "Nested quantifiers" },
-      { pattern: /\[[^\]]{20,}/, weight: 8, issue: "Large character class" },
-      { pattern: /\|.*\|.*\|/, weight: 6, issue: "Multiple alternations" },
+      { pattern: /\+.*\+|\*.*\*/, weight: 12, issue: 'Nested quantifiers' },
+      { pattern: /\[[^\]]{20,}/, weight: 8, issue: 'Large character class' },
+      { pattern: /\|.*\|.*\|/, weight: 6, issue: 'Multiple alternations' },
     ];
 
     let complexityScore = 0;
     for (const indicator of complexityIndicators) {
       if (indicator.pattern.test(pattern)) {
         complexityScore += indicator.weight;
-        analysis.recommendations.push(
-          `Consider optimizing: ${indicator.issue}`,
-        );
+        analysis.recommendations.push(`Consider optimizing: ${indicator.issue}`);
       }
     }
 
     // Determine complexity level
     if (complexityScore > 30) {
-      analysis.complexity = "dangerous";
-      analysis.estimatedPerformance = "terrible";
+      analysis.complexity = 'dangerous';
+      analysis.estimatedPerformance = 'terrible';
       analysis.safetyScore -= 30;
     } else if (complexityScore > 20) {
-      analysis.complexity = "high";
-      analysis.estimatedPerformance = "poor";
+      analysis.complexity = 'high';
+      analysis.estimatedPerformance = 'poor';
       analysis.safetyScore -= 20;
     } else if (complexityScore > 10) {
-      analysis.complexity = "medium";
-      analysis.estimatedPerformance = "fair";
+      analysis.complexity = 'medium';
+      analysis.estimatedPerformance = 'fair';
       analysis.safetyScore -= 10;
     }
 
@@ -476,7 +462,7 @@ export class RegexOptimizer extends EventEmitter {
   } {
     const metrics = Array.from(this.performanceMetrics.values());
     const sortedByPerformance = [...metrics].sort(
-      (a, b) => a.averageExecutionTime - b.averageExecutionTime,
+      (a, b) => a.averageExecutionTime - b.averageExecutionTime
     );
 
     return {
@@ -485,9 +471,7 @@ export class RegexOptimizer extends EventEmitter {
       topPerformers: sortedByPerformance.slice(0, 10),
       bottomPerformers: sortedByPerformance.slice(-10).reverse(),
       averageCompilationTime:
-        this.compilationCount > 0
-          ? this.totalCompilationTime / this.compilationCount
-          : 0,
+        this.compilationCount > 0 ? this.totalCompilationTime / this.compilationCount : 0,
       cacheHitRate: this.cache.getStats().hitRate,
       totalCompilations: this.compilationCount,
     };
@@ -524,7 +508,7 @@ export class RegexOptimizer extends EventEmitter {
       this.precompileCommonPatterns();
     }
 
-    this.emit("reset");
+    this.emit('reset');
   }
 
   /**
@@ -535,7 +519,7 @@ export class RegexOptimizer extends EventEmitter {
     flags: string,
     regex: RegExp,
     compilationTime: number,
-    source: string,
+    source: string
   ): void {
     const cacheKey = `${pattern}::${flags}`;
     const entry: RegexCacheEntry = {
@@ -555,10 +539,7 @@ export class RegexOptimizer extends EventEmitter {
   /**
    * Update execution performance metrics
    */
-  private updateExecutionMetrics(
-    patternKey: string,
-    executionTime: number,
-  ): void {
+  private updateExecutionMetrics(patternKey: string, executionTime: number): void {
     let metrics = this.performanceMetrics.get(patternKey);
 
     if (!metrics) {
@@ -579,16 +560,9 @@ export class RegexOptimizer extends EventEmitter {
 
     metrics.totalExecutions++;
     metrics.totalExecutionTime += executionTime;
-    metrics.averageExecutionTime =
-      metrics.totalExecutionTime / metrics.totalExecutions;
-    metrics.minExecutionTime = Math.min(
-      metrics.minExecutionTime,
-      executionTime,
-    );
-    metrics.maxExecutionTime = Math.max(
-      metrics.maxExecutionTime,
-      executionTime,
-    );
+    metrics.averageExecutionTime = metrics.totalExecutionTime / metrics.totalExecutions;
+    metrics.minExecutionTime = Math.min(metrics.minExecutionTime, executionTime);
+    metrics.maxExecutionTime = Math.max(metrics.maxExecutionTime, executionTime);
     metrics.lastUsed = Date.now();
 
     // Update hot path tracking
@@ -596,13 +570,12 @@ export class RegexOptimizer extends EventEmitter {
       if (!metrics.isHotPath) {
         metrics.isHotPath = true;
         this.hotPaths.add(patternKey);
-        this.emit("hotPath", patternKey, metrics);
+        this.emit('hotPath', patternKey, metrics);
       }
     }
 
     // Update frequency
-    metrics.usageFrequency =
-      metrics.totalExecutions / ((Date.now() - metrics.lastUsed) / 1000);
+    metrics.usageFrequency = metrics.totalExecutions / ((Date.now() - metrics.lastUsed) / 1000);
   }
 
   /**
@@ -619,7 +592,7 @@ export class RegexOptimizer extends EventEmitter {
   private updatePerformanceMetrics(
     pattern: string,
     compilationTime: number,
-    cacheHit: boolean,
+    cacheHit: boolean
   ): void {
     if (!this.config.performanceMonitoring) return;
 
@@ -650,28 +623,24 @@ export class RegexOptimizer extends EventEmitter {
   /**
    * Check for optimization opportunities
    */
-  private checkOptimizationOpportunities(
-    pattern: string,
-    analysis: RegexAnalysis,
-  ): void {
+  private checkOptimizationOpportunities(pattern: string, analysis: RegexAnalysis): void {
     // Check for unnecessary capturing groups
     if (/\([^?]/.test(pattern)) {
       analysis.potentialIssues.push({
         pattern,
-        issue: "unnecessary_capture",
-        severity: "medium",
-        description: "Pattern contains capturing groups that may not be needed",
-        suggestion:
-          "Use non-capturing groups (?:...) if captures are not needed",
-        optimizedPattern: pattern.replace(/\(([^?])/g, "(?:$1"),
-        estimatedImprovement: "10-20% performance improvement",
+        issue: 'unnecessary_capture',
+        severity: 'medium',
+        description: 'Pattern contains capturing groups that may not be needed',
+        suggestion: 'Use non-capturing groups (?:...) if captures are not needed',
+        optimizedPattern: pattern.replace(/\(([^?])/g, '(?:$1'),
+        estimatedImprovement: '10-20% performance improvement',
       });
     }
 
     // Check for anchor optimization
     if (!/^[\^]/.test(pattern) && !/[$]$/.test(pattern)) {
       analysis.recommendations.push(
-        "Consider using anchors (^ or $) if pattern should match at specific positions",
+        'Consider using anchors (^ or $) if pattern should match at specific positions'
       );
     }
 
@@ -679,12 +648,12 @@ export class RegexOptimizer extends EventEmitter {
     if (/\[a-zA-Z\]/.test(pattern)) {
       analysis.potentialIssues.push({
         pattern,
-        issue: "character_class_optimization",
-        severity: "low",
-        description: "Character class [a-zA-Z] can be optimized",
-        suggestion: "Use \\w or more specific character classes",
-        optimizedPattern: pattern.replace(/\[a-zA-Z\]/g, "\\w"),
-        estimatedImprovement: "5-10% performance improvement",
+        issue: 'character_class_optimization',
+        severity: 'low',
+        description: 'Character class [a-zA-Z] can be optimized',
+        suggestion: 'Use \\w or more specific character classes',
+        optimizedPattern: pattern.replace(/\[a-zA-Z\]/g, '\\w'),
+        estimatedImprovement: '5-10% performance improvement',
       });
     }
   }
@@ -715,12 +684,12 @@ export class RegexOptimizer extends EventEmitter {
    * Set up cache event handlers
    */
   private setupCacheEventHandlers(): void {
-    this.cache.on("evict", (key) => {
-      this.emit("cacheEviction", key);
+    this.cache.on('evict', (key) => {
+      this.emit('cacheEviction', key);
     });
 
-    this.cache.on("error", (error) => {
-      this.emit("error", { type: "cache_error", error });
+    this.cache.on('error', (error) => {
+      this.emit('error', { type: 'cache_error', error });
     });
   }
 
@@ -744,9 +713,7 @@ let globalRegexOptimizer: RegexOptimizer | null = null;
 /**
  * Get or create global regex optimizer
  */
-export function getGlobalRegexOptimizer(
-  config?: Partial<RegexOptimizerConfig>,
-): RegexOptimizer {
+export function getGlobalRegexOptimizer(config?: Partial<RegexOptimizerConfig>): RegexOptimizer {
   if (!globalRegexOptimizer) {
     globalRegexOptimizer = new RegexOptimizer(config);
   }
@@ -762,7 +729,7 @@ export { COMMON_CSS_PATTERNS };
  * Quick compile function for common use cases
  */
 export function compileRegex(pattern: string, flags?: string): Promise<RegExp> {
-  return getGlobalRegexOptimizer().compile(pattern, flags || "");
+  return getGlobalRegexOptimizer().compile(pattern, flags || '');
 }
 
 /**
@@ -771,7 +738,7 @@ export function compileRegex(pattern: string, flags?: string): Promise<RegExp> {
 export function matchOptimized(
   input: string,
   pattern: string | RegExp,
-  flags?: string,
+  flags?: string
 ): Promise<RegExpMatchArray | null> {
   return getGlobalRegexOptimizer().match(input, pattern, flags);
 }
@@ -783,7 +750,7 @@ export function replaceOptimized(
   input: string,
   pattern: string | RegExp,
   replacement: string,
-  flags?: string,
+  flags?: string
 ): Promise<string> {
   return getGlobalRegexOptimizer().replace(input, pattern, replacement, flags);
 }

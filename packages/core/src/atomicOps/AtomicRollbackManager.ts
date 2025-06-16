@@ -10,22 +10,22 @@
  * @module atomicOps/AtomicRollbackManager
  */
 
-import * as fs from "fs/promises";
-import { v4 as uuidv4 } from "uuid";
+import * as fs from 'fs/promises';
+import { v4 as uuidv4 } from 'uuid';
 
 import {
   AtomicFileOptions,
   RollbackOperation,
   AtomicOperationMetrics,
   AtomicOperationResult,
-} from "../types/legacy/atomicOps";
+} from '../types/legacy/atomicOps';
 
 /** Transaction state for tracking operations */
 interface Transaction {
   id: string;
   operations: RollbackOperation[];
   startTime: number;
-  status: "active" | "committed" | "rolled_back" | "failed";
+  status: 'active' | 'committed' | 'rolled_back' | 'failed';
   metadata: {
     createdBy: string;
     description?: string;
@@ -47,9 +47,9 @@ export class AtomicRollbackManager {
 
   constructor(options: AtomicFileOptions = {}) {
     this.options = {
-      tempDirectory: "",
-      tempPrefix: ".rollback-",
-      tempSuffix: ".bak",
+      tempDirectory: '',
+      tempPrefix: '.rollback-',
+      tempSuffix: '.bak',
       operationTimeout: 30000,
       enableFsync: true,
       preservePermissions: true,
@@ -57,7 +57,7 @@ export class AtomicRollbackManager {
       bufferSize: 64 * 1024,
       maxRetryAttempts: 3,
       enableWAL: false,
-      walDirectory: ".wal",
+      walDirectory: '.wal',
       maxRetries: 3,
       retryDelay: 100,
       ...options,
@@ -81,16 +81,16 @@ export class AtomicRollbackManager {
       id: transactionId,
       operations: [],
       startTime: Date.now(),
-      status: "active",
+      status: 'active',
       metadata: {
-        createdBy: "AtomicRollbackManager",
+        createdBy: 'AtomicRollbackManager',
         description,
         checkpoints: [],
       },
     };
 
     this.activeTransactions.set(transactionId, transaction);
-    this.updateMetrics("create", true, 0, 0);
+    this.updateMetrics('create', true, 0, 0);
 
     return transactionId;
   }
@@ -100,12 +100,9 @@ export class AtomicRollbackManager {
    * @param transactionId - Transaction to add the operation to
    * @param operation - Rollback operation to track
    */
-  addRollbackOperation(
-    transactionId: string,
-    operation: RollbackOperation,
-  ): void {
+  addRollbackOperation(transactionId: string, operation: RollbackOperation): void {
     const transaction = this.activeTransactions.get(transactionId);
-    
+
     // If not in active transactions, check committed transactions for better error message
     if (!transaction) {
       const committedTransaction = this.committedTransactions.get(transactionId);
@@ -115,10 +112,8 @@ export class AtomicRollbackManager {
       throw new Error(`Transaction ${transactionId} not found`);
     }
 
-    if (transaction.status !== "active") {
-      throw new Error(
-        `Cannot add operations to ${transaction.status} transaction`,
-      );
+    if (transaction.status !== 'active') {
+      throw new Error(`Cannot add operations to ${transaction.status} transaction`);
     }
 
     // Add unique operation ID if not present
@@ -159,13 +154,13 @@ export class AtomicRollbackManager {
       throw new Error(`Transaction ${transactionId} not found`);
     }
 
-    if (transaction.status !== "active") {
+    if (transaction.status !== 'active') {
       throw new Error(`Cannot commit ${transaction.status} transaction`);
     }
 
     try {
       // Mark as committed
-      transaction.status = "committed";
+      transaction.status = 'committed';
 
       // Move operations to history
       this.rollbackHistory.push(...transaction.operations);
@@ -175,25 +170,19 @@ export class AtomicRollbackManager {
 
       // Move to committed transactions temporarily for better error messages
       this.committedTransactions.set(transactionId, transaction);
-      
+
       // Remove from active transactions
       this.activeTransactions.delete(transactionId);
-      
+
       // Clean up committed transaction after a short delay (for testing purposes)
       setTimeout(() => {
         this.committedTransactions.delete(transactionId);
       }, 1000);
 
-      this.updateMetrics("write", true, Date.now() - transaction.startTime, 0);
+      this.updateMetrics('write', true, Date.now() - transaction.startTime, 0);
     } catch (error) {
-      transaction.status = "failed";
-      this.updateMetrics(
-        "write",
-        false,
-        Date.now() - transaction.startTime,
-        0,
-        "COMMIT_FAILED",
-      );
+      transaction.status = 'failed';
+      this.updateMetrics('write', false, Date.now() - transaction.startTime, 0, 'COMMIT_FAILED');
       throw error;
     }
   }
@@ -206,18 +195,18 @@ export class AtomicRollbackManager {
    */
   async rollbackTransaction(
     transactionId: string,
-    toCheckpoint?: string,
+    toCheckpoint?: string
   ): Promise<AtomicOperationResult> {
     const transaction = this.activeTransactions.get(transactionId);
     if (!transaction) {
       return {
         success: false,
-        operation: "delete",
-        filePath: "",
+        operation: 'delete',
+        filePath: '',
         bytesProcessed: 0,
         duration: 0,
         error: {
-          code: "TRANSACTION_NOT_FOUND",
+          code: 'TRANSACTION_NOT_FOUND',
           message: `Transaction ${transactionId} not found`,
         },
         metadata: {
@@ -235,8 +224,8 @@ export class AtomicRollbackManager {
     const startTime = Date.now();
     const result: AtomicOperationResult = {
       success: false,
-      operation: "delete", // Use valid operation type
-      filePath: "",
+      operation: 'delete', // Use valid operation type
+      filePath: '',
       // rollbackOperation property doesn't exist in AtomicOperationResult
       bytesProcessed: 0,
       duration: 0,
@@ -258,15 +247,13 @@ export class AtomicRollbackManager {
       if (toCheckpoint) {
         // Find checkpoint with operation index
         const checkpointInfo = transaction.metadata.checkpoints.find((cp) =>
-          cp.startsWith(`${toCheckpoint}:`),
+          cp.startsWith(`${toCheckpoint}:`)
         );
         if (!checkpointInfo) {
-          throw new Error(
-            `Checkpoint ${toCheckpoint} not found in transaction`,
-          );
+          throw new Error(`Checkpoint ${toCheckpoint} not found in transaction`);
         }
 
-        const checkpointIndex = parseInt(checkpointInfo.split(":")[1]);
+        const checkpointIndex = parseInt(checkpointInfo.split(':')[1]);
         // Only rollback operations after the checkpoint
         operationsToRollback = operationsToRollback.slice(checkpointIndex);
       }
@@ -283,15 +270,12 @@ export class AtomicRollbackManager {
           totalBytesProcessed += operation.fileSize || 0;
         } catch (error) {
           errors.push(error as Error);
-          console.warn(
-            `Failed to rollback operation ${operation.operationId}:`,
-            error,
-          );
+          console.warn(`Failed to rollback operation ${operation.operationId}:`, error);
         }
       }
 
       // Update transaction status
-      transaction.status = errors.length === 0 ? "rolled_back" : "failed";
+      transaction.status = errors.length === 0 ? 'rolled_back' : 'failed';
 
       // Update result
       result.success = errors.length === 0;
@@ -301,8 +285,8 @@ export class AtomicRollbackManager {
 
       if (errors.length > 0) {
         result.error = {
-          code: "ROLLBACK_PARTIAL_FAILURE",
-          message: `Rollback completed with ${errors.length} errors: ${errors.map((e) => e.message).join(", ")}`,
+          code: 'ROLLBACK_PARTIAL_FAILURE',
+          message: `Rollback completed with ${errors.length} errors: ${errors.map((e) => e.message).join(', ')}`,
           stack: undefined,
         };
       }
@@ -311,25 +295,25 @@ export class AtomicRollbackManager {
       this.activeTransactions.delete(transactionId);
 
       this.updateMetrics(
-        "delete",
+        'delete',
         result.success,
         result.duration,
         totalBytesProcessed,
-        result.success ? undefined : "ROLLBACK_FAILED",
+        result.success ? undefined : 'ROLLBACK_FAILED'
       );
 
       return result;
     } catch (error) {
-      transaction.status = "failed";
+      transaction.status = 'failed';
       result.error = {
-        code: "ROLLBACK_ERROR",
-        message: error instanceof Error ? error.message : "Unknown rollback error",
+        code: 'ROLLBACK_ERROR',
+        message: error instanceof Error ? error.message : 'Unknown rollback error',
         stack: error instanceof Error ? error.stack : undefined,
       };
       result.duration = Date.now() - startTime;
       result.metadata.endTime = Date.now();
 
-      this.updateMetrics("delete", false, result.duration, 0, "ROLLBACK_ERROR");
+      this.updateMetrics('delete', false, result.duration, 0, 'ROLLBACK_ERROR');
 
       return result;
     }
@@ -339,22 +323,20 @@ export class AtomicRollbackManager {
    * Executes a single rollback operation
    * @param operation - The rollback operation to execute
    */
-  private async executeRollbackOperation(
-    operation: RollbackOperation,
-  ): Promise<void> {
+  private async executeRollbackOperation(operation: RollbackOperation): Promise<void> {
     switch (operation.type) {
-      case "file_create":
+      case 'file_create':
         // Delete the created file
         try {
           await fs.unlink(operation.filePath);
         } catch (error) {
-          if (!(error && typeof error === 'object' && 'code' in error && error.code === "ENOENT")) {
+          if (!(error && typeof error === 'object' && 'code' in error && error.code === 'ENOENT')) {
             throw error;
           }
         }
         break;
 
-      case "file_overwrite":
+      case 'file_overwrite':
         // Restore from backup
         if (operation.backupPath) {
           await fs.copyFile(operation.backupPath, operation.filePath);
@@ -368,12 +350,12 @@ export class AtomicRollbackManager {
           await fs.unlink(operation.backupPath).catch(() => {});
         } else {
           throw new Error(
-            `No backup path available for file overwrite rollback: ${operation.filePath}`,
+            `No backup path available for file overwrite rollback: ${operation.filePath}`
           );
         }
         break;
 
-      case "file_delete":
+      case 'file_delete':
         // Restore from backup
         if (operation.backupPath) {
           await fs.copyFile(operation.backupPath, operation.filePath);
@@ -384,23 +366,23 @@ export class AtomicRollbackManager {
           }
         } else {
           throw new Error(
-            `No backup path available for file delete rollback: ${operation.filePath}`,
+            `No backup path available for file delete rollback: ${operation.filePath}`
           );
         }
         break;
 
-      case "directory_create":
+      case 'directory_create':
         // Remove the created directory
         try {
           await fs.rmdir(operation.filePath);
         } catch (error) {
-          if (!(error && typeof error === 'object' && 'code' in error && error.code === "ENOENT")) {
+          if (!(error && typeof error === 'object' && 'code' in error && error.code === 'ENOENT')) {
             throw error;
           }
         }
         break;
 
-      case "permission_change":
+      case 'permission_change':
         // Restore original permissions
         if (operation.originalPermissions) {
           await fs.chmod(operation.filePath, operation.originalPermissions);
@@ -409,7 +391,7 @@ export class AtomicRollbackManager {
 
       default:
         throw new Error(
-          `Unknown rollback operation type: ${operation && typeof operation === 'object' && 'type' in operation ? operation.type : 'unknown'}`,
+          `Unknown rollback operation type: ${operation && typeof operation === 'object' && 'type' in operation ? operation.type : 'unknown'}`
         );
     }
   }
@@ -461,10 +443,7 @@ export class AtomicRollbackManager {
       try {
         await this.rollbackTransaction(transactionId);
       } catch (error) {
-        console.warn(
-          `Failed to rollback transaction ${transactionId} during shutdown:`,
-          error,
-        );
+        console.warn(`Failed to rollback transaction ${transactionId} during shutdown:`, error);
       }
     }
 
@@ -473,7 +452,7 @@ export class AtomicRollbackManager {
     this.rollbackHistory.length = 0;
 
     console.log(
-      `AtomicRollbackManager shutdown complete. Rolled back ${activeTransactionIds.length} active transactions.`,
+      `AtomicRollbackManager shutdown complete. Rolled back ${activeTransactionIds.length} active transactions.`
     );
   }
 
@@ -498,11 +477,11 @@ export class AtomicRollbackManager {
   }
 
   private updateMetrics(
-    operation: "read" | "write" | "delete" | "create",
+    operation: 'read' | 'write' | 'delete' | 'create',
     success: boolean,
     duration: number,
     bytesProcessed: number,
-    errorCode?: string,
+    errorCode?: string
   ): void {
     this.metrics.totalOperations++;
     this.metrics.operationTypes[operation]++;
@@ -513,15 +492,13 @@ export class AtomicRollbackManager {
     } else {
       this.metrics.failedOperations++;
       if (errorCode) {
-        this.metrics.errorStats[errorCode] =
-          (this.metrics.errorStats[errorCode] || 0) + 1;
+        this.metrics.errorStats[errorCode] = (this.metrics.errorStats[errorCode] || 0) + 1;
       }
     }
 
     // Update average duration
     const totalDuration =
-      this.metrics.averageDuration * (this.metrics.totalOperations - 1) +
-      duration;
+      this.metrics.averageDuration * (this.metrics.totalOperations - 1) + duration;
     this.metrics.averageDuration = totalDuration / this.metrics.totalOperations;
 
     // Update operations per second

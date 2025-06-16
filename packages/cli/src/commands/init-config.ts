@@ -1,6 +1,6 @@
 /**
  * Init Config Command
- * 
+ *
  * Creates a sample configuration file for tw-enigma.
  * Migrated from the main CLI file to support modular command structure.
  */
@@ -17,12 +17,12 @@ export function createInitConfigCommand(): Command {
     .description('Create a sample configuration file')
     .action(async (options, cmd) => {
       const logger = createLoggerFromArgv(cmd.optsWithGlobals());
-      
+
       try {
         const sampleConfig = createSampleConfig();
-        logger.info("Sample configuration file content:");
+        logger.info('Sample configuration file content:');
         console.log(sampleConfig); // Keep raw output for config content
-        logger.info("Save this as enigma.config.js in your project root.");
+        logger.info('Save this as enigma.config.js in your project root.');
       } catch (error) {
         handleCLIError(error, logger);
       }
@@ -30,4 +30,4 @@ export function createInitConfigCommand(): Command {
 
   // Add common CLI options
   return addCommonOptions(command);
-} 
+}

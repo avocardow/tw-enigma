@@ -10,9 +10,9 @@
  * External Tailwind CSS plugin for integrating optimized classes into development workflows
  */
 
-import plugin from "tailwindcss/plugin";
-import fs from "fs";
-import path from "path";
+import plugin from 'tailwindcss/plugin';
+import fs from 'fs';
+import path from 'path';
 
 /**
  * Default configuration for the Tailwind Enigma plugin
@@ -29,7 +29,7 @@ const defaultConfig = {
   // Utility class generation
   utilities: {
     enabled: true,
-    prefix: "tw-opt-",
+    prefix: 'tw-opt-',
     generateResponsive: true,
     generateHover: true,
     generateFocus: true,
@@ -52,9 +52,9 @@ const defaultConfig = {
 
   // File paths
   paths: {
-    patternsFile: "./.enigma/patterns.json",
-    frequencyFile: "./.enigma/frequency.json",
-    autocompleteFile: "./.enigma/autocomplete.json",
+    patternsFile: './.enigma/patterns.json',
+    frequencyFile: './.enigma/frequency.json',
+    autocompleteFile: './.enigma/autocomplete.json',
   },
 };
 
@@ -68,13 +68,13 @@ function loadPatternData(patternsPath, frequencyPath) {
 
     // Load patterns if file exists
     if (fs.existsSync(patternsPath)) {
-      const patternsData = JSON.parse(fs.readFileSync(patternsPath, "utf8"));
+      const patternsData = JSON.parse(fs.readFileSync(patternsPath, 'utf8'));
       patterns = patternsData.patterns || [];
     }
 
     // Load frequencies if file exists
     if (fs.existsSync(frequencyPath)) {
-      const frequencyData = JSON.parse(fs.readFileSync(frequencyPath, "utf8"));
+      const frequencyData = JSON.parse(fs.readFileSync(frequencyPath, 'utf8'));
       if (frequencyData.frequencyMap) {
         frequencies = new Map(Object.entries(frequencyData.frequencyMap));
       }
@@ -82,10 +82,7 @@ function loadPatternData(patternsPath, frequencyPath) {
 
     return { patterns, frequencies };
   } catch (error) {
-    console.warn(
-      "Tailwind Enigma: Could not load pattern data:",
-      error.message,
-    );
+    console.warn('Tailwind Enigma: Could not load pattern data:', error.message);
     return { patterns: [], frequencies: new Map() };
   }
 }
@@ -100,16 +97,14 @@ function generateUtilitiesFromPatterns(patterns, frequencies, config) {
 
   // Generate utilities from frequent patterns
   for (const pattern of patterns) {
-    if (
-      pattern.frequency >= config.patterns.minFrequency
-    ) {
+    if (pattern.frequency >= config.patterns.minFrequency) {
       const utilityName = `${config.utilities.prefix}${patternUtilityCount++}`;
 
       // Convert pattern properties to CSS declarations
       const declarations = {};
       if (pattern.properties && pattern.properties.length > 0) {
         for (const prop of pattern.properties) {
-          declarations[prop.property] = prop.value || "initial";
+          declarations[prop.property] = prop.value || 'initial';
         }
       } else if (pattern.classes && pattern.classes.length > 0) {
         // Fallback: generate declarations from class names
@@ -122,8 +117,8 @@ function generateUtilitiesFromPatterns(patterns, frequencies, config) {
 
         // Add comment for debugging
         if (config.integration.preserveComments) {
-          utilities[`.${utilityName}`]["/* Generated from pattern */"] =
-            `${pattern.classes.join(" ")} (frequency: ${pattern.frequency})`;
+          utilities[`.${utilityName}`]['/* Generated from pattern */'] =
+            `${pattern.classes.join(' ')} (frequency: ${pattern.frequency})`;
         }
       }
     }
@@ -131,7 +126,7 @@ function generateUtilitiesFromPatterns(patterns, frequencies, config) {
 
   // Generate utilities from high-frequency individual classes
   for (const [className, frequency] of frequencies) {
-    if (frequency >= config.patterns.minFrequency && !className.includes(" ")) {
+    if (frequency >= config.patterns.minFrequency && !className.includes(' ')) {
       const utilityName = `${config.utilities.prefix}freq-${frequencyUtilityCount++}`;
       const cssDeclarations = generateCssFromClasses([className]);
 
@@ -139,7 +134,7 @@ function generateUtilitiesFromPatterns(patterns, frequencies, config) {
         utilities[`.${utilityName}`] = cssDeclarations;
 
         if (config.integration.preserveComments) {
-          utilities[`.${utilityName}`]["/* Optimized frequent class */"] =
+          utilities[`.${utilityName}`]['/* Optimized frequent class */'] =
             `${className} (frequency: ${frequency})`;
         }
       }
@@ -158,45 +153,40 @@ function generateCssFromClasses(classes) {
 
   for (const className of classes) {
     // Remove variants for core class processing
-    const coreClass = className.replace(
-      /^(hover|focus|active|sm|md|lg|xl|2xl|dark):/,
-      "",
-    );
+    const coreClass = className.replace(/^(hover|focus|active|sm|md|lg|xl|2xl|dark):/, '');
 
     // Basic mapping of common Tailwind classes to CSS
     const mappings = {
-      flex: { display: "flex" },
-      grid: { display: "grid" },
-      block: { display: "block" },
-      inline: { display: "inline" },
-      hidden: { display: "none" },
-      relative: { position: "relative" },
-      absolute: { position: "absolute" },
-      fixed: { position: "fixed" },
-      sticky: { position: "sticky" },
-      "justify-center": { "justify-content": "center" },
-      "justify-start": { "justify-content": "flex-start" },
-      "justify-end": { "justify-content": "flex-end" },
-      "justify-between": { "justify-content": "space-between" },
-      "items-center": { "align-items": "center" },
-      "items-start": { "align-items": "flex-start" },
-      "items-end": { "align-items": "flex-end" },
-      "text-center": { "text-align": "center" },
-      "text-left": { "text-align": "left" },
-      "text-right": { "text-align": "right" },
-      "font-bold": { "font-weight": "700" },
-      "font-medium": { "font-weight": "500" },
-      "font-normal": { "font-weight": "400" },
-      rounded: { "border-radius": "0.25rem" },
-      "rounded-lg": { "border-radius": "0.5rem" },
-      "rounded-full": { "border-radius": "9999px" },
+      flex: { display: 'flex' },
+      grid: { display: 'grid' },
+      block: { display: 'block' },
+      inline: { display: 'inline' },
+      hidden: { display: 'none' },
+      relative: { position: 'relative' },
+      absolute: { position: 'absolute' },
+      fixed: { position: 'fixed' },
+      sticky: { position: 'sticky' },
+      'justify-center': { 'justify-content': 'center' },
+      'justify-start': { 'justify-content': 'flex-start' },
+      'justify-end': { 'justify-content': 'flex-end' },
+      'justify-between': { 'justify-content': 'space-between' },
+      'items-center': { 'align-items': 'center' },
+      'items-start': { 'align-items': 'flex-start' },
+      'items-end': { 'align-items': 'flex-end' },
+      'text-center': { 'text-align': 'center' },
+      'text-left': { 'text-align': 'left' },
+      'text-right': { 'text-align': 'right' },
+      'font-bold': { 'font-weight': '700' },
+      'font-medium': { 'font-weight': '500' },
+      'font-normal': { 'font-weight': '400' },
+      rounded: { 'border-radius': '0.25rem' },
+      'rounded-lg': { 'border-radius': '0.5rem' },
+      'rounded-full': { 'border-radius': '9999px' },
       shadow: {
-        "box-shadow":
-          "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)",
+        'box-shadow': '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
       },
-      "shadow-lg": {
-        "box-shadow":
-          "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)",
+      'shadow-lg': {
+        'box-shadow': '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
       },
     };
 
@@ -207,27 +197,24 @@ function generateCssFromClasses(classes) {
     }
 
     // Pattern matching for dynamic classes
-    if (coreClass.startsWith("w-")) {
+    if (coreClass.startsWith('w-')) {
       const value = coreClass.substring(2);
-      declarations["width"] = convertTailwindValue(value);
-    } else if (coreClass.startsWith("h-")) {
+      declarations['width'] = convertTailwindValue(value);
+    } else if (coreClass.startsWith('h-')) {
       const value = coreClass.substring(2);
-      declarations["height"] = convertTailwindValue(value);
-    } else if (coreClass.startsWith("m-")) {
+      declarations['height'] = convertTailwindValue(value);
+    } else if (coreClass.startsWith('m-')) {
       const value = coreClass.substring(2);
-      declarations["margin"] = convertTailwindValue(value);
-    } else if (coreClass.startsWith("p-")) {
+      declarations['margin'] = convertTailwindValue(value);
+    } else if (coreClass.startsWith('p-')) {
       const value = coreClass.substring(2);
-      declarations["padding"] = convertTailwindValue(value);
-    } else if (coreClass.startsWith("bg-")) {
+      declarations['padding'] = convertTailwindValue(value);
+    } else if (coreClass.startsWith('bg-')) {
       const color = coreClass.substring(3);
-      declarations["background-color"] = convertTailwindColor(color);
-    } else if (
-      coreClass.startsWith("text-") &&
-      !coreClass.startsWith("text-center")
-    ) {
+      declarations['background-color'] = convertTailwindColor(color);
+    } else if (coreClass.startsWith('text-') && !coreClass.startsWith('text-center')) {
       const color = coreClass.substring(5);
-      declarations["color"] = convertTailwindColor(color);
+      declarations['color'] = convertTailwindColor(color);
     }
   }
 
@@ -239,23 +226,23 @@ function generateCssFromClasses(classes) {
  */
 function convertTailwindValue(value) {
   const spacingMap = {
-    0: "0px",
-    1: "0.25rem",
-    2: "0.5rem",
-    3: "0.75rem",
-    4: "1rem",
-    5: "1.25rem",
-    6: "1.5rem",
-    8: "2rem",
-    10: "2.5rem",
-    12: "3rem",
-    16: "4rem",
-    20: "5rem",
-    24: "6rem",
-    32: "8rem",
-    auto: "auto",
-    full: "100%",
-    screen: "100vh",
+    0: '0px',
+    1: '0.25rem',
+    2: '0.5rem',
+    3: '0.75rem',
+    4: '1rem',
+    5: '1.25rem',
+    6: '1.5rem',
+    8: '2rem',
+    10: '2.5rem',
+    12: '3rem',
+    16: '4rem',
+    20: '5rem',
+    24: '6rem',
+    32: '8rem',
+    auto: 'auto',
+    full: '100%',
+    screen: '100vh',
   };
 
   return spacingMap[value] || value;
@@ -266,25 +253,25 @@ function convertTailwindValue(value) {
  */
 function convertTailwindColor(color) {
   const colorMap = {
-    white: "#ffffff",
-    black: "#000000",
-    "gray-100": "#f3f4f6",
-    "gray-200": "#e5e7eb",
-    "gray-300": "#d1d5db",
-    "gray-400": "#9ca3af",
-    "gray-500": "#6b7280",
-    "gray-600": "#4b5563",
-    "gray-700": "#374151",
-    "gray-800": "#1f2937",
-    "gray-900": "#111827",
-    "blue-500": "#3b82f6",
-    "blue-600": "#2563eb",
-    "red-500": "#ef4444",
-    "green-500": "#10b981",
-    "yellow-500": "#f59e0b",
-    "purple-500": "#8b5cf6",
-    "pink-500": "#ec4899",
-    "indigo-500": "#6366f1",
+    white: '#ffffff',
+    black: '#000000',
+    'gray-100': '#f3f4f6',
+    'gray-200': '#e5e7eb',
+    'gray-300': '#d1d5db',
+    'gray-400': '#9ca3af',
+    'gray-500': '#6b7280',
+    'gray-600': '#4b5563',
+    'gray-700': '#374151',
+    'gray-800': '#1f2937',
+    'gray-900': '#111827',
+    'blue-500': '#3b82f6',
+    'blue-600': '#2563eb',
+    'red-500': '#ef4444',
+    'green-500': '#10b981',
+    'yellow-500': '#f59e0b',
+    'purple-500': '#8b5cf6',
+    'pink-500': '#ec4899',
+    'indigo-500': '#6366f1',
   };
 
   return colorMap[color] || color;
@@ -295,7 +282,7 @@ function convertTailwindColor(color) {
  */
 function generateAutocompleteConfig(utilities, config, patterns, frequencies) {
   const autocompleteData = {
-    version: "1.0.0",
+    version: '1.0.0',
     generatedAt: new Date().toISOString(),
     utilities: Object.keys(utilities).map((selector) => selector.substring(1)), // Remove leading dot
     patterns: [],
@@ -306,9 +293,9 @@ function generateAutocompleteConfig(utilities, config, patterns, frequencies) {
   for (const pattern of patterns) {
     if (pattern.classes && pattern.classes.length > 0) {
       autocompleteData.patterns.push({
-        pattern: pattern.classes.join(" "),
+        pattern: pattern.classes.join(' '),
         frequency: pattern.frequency,
-        type: pattern.type || "atomic",
+        type: pattern.type || 'atomic',
         complexity: pattern.complexity || 1,
       });
     }
@@ -324,7 +311,7 @@ function generateAutocompleteConfig(utilities, config, patterns, frequencies) {
     autocompleteData.suggestions.push({
       trigger: className,
       frequency: frequency,
-      type: "class",
+      type: 'class',
     });
   }
 
@@ -335,15 +322,9 @@ function generateAutocompleteConfig(utilities, config, patterns, frequencies) {
       if (!fs.existsSync(autocompleteDir)) {
         fs.mkdirSync(autocompleteDir, { recursive: true });
       }
-      fs.writeFileSync(
-        config.paths.autocompleteFile,
-        JSON.stringify(autocompleteData, null, 2),
-      );
+      fs.writeFileSync(config.paths.autocompleteFile, JSON.stringify(autocompleteData, null, 2));
     } catch (error) {
-      console.warn(
-        "Tailwind Enigma: Could not save autocomplete config:",
-        error.message,
-      );
+      console.warn('Tailwind Enigma: Could not save autocomplete config:', error.message);
     }
   }
 
@@ -356,10 +337,7 @@ function generateAutocompleteConfig(utilities, config, patterns, frequencies) {
 function setupHotReloading(config, _addUtilities) {
   if (!config.development.hotReload) return;
 
-  const watchPaths = [
-    config.paths.patternsFile,
-    config.paths.frequencyFile,
-  ].filter(fs.existsSync);
+  const watchPaths = [config.paths.patternsFile, config.paths.frequencyFile].filter(fs.existsSync);
 
   if (watchPaths.length === 0) return;
 
@@ -369,35 +347,28 @@ function setupHotReloading(config, _addUtilities) {
       fs.watchFile(filePath, { interval: 1000 }, () => {
         if (config.development.logOptimizations) {
           console.log(
-            `Tailwind Enigma: Detected changes in ${filePath}, regenerating utilities...`,
+            `Tailwind Enigma: Detected changes in ${filePath}, regenerating utilities...`
           );
         }
 
         // Reload pattern data and regenerate utilities
         const { patterns, frequencies } = loadPatternData(
           config.paths.patternsFile,
-          config.paths.frequencyFile,
+          config.paths.frequencyFile
         );
 
-        const newUtilities = generateUtilitiesFromPatterns(
-          patterns,
-          frequencies,
-          config,
-        );
+        const newUtilities = generateUtilitiesFromPatterns(patterns, frequencies, config);
 
         // Note: In a real implementation, you'd need to trigger Tailwind rebuild
         // This is a simplified approach for demonstration
         if (config.development.logOptimizations) {
           console.log(
-            `Tailwind Enigma: Generated ${Object.keys(newUtilities).length} optimized utilities`,
+            `Tailwind Enigma: Generated ${Object.keys(newUtilities).length} optimized utilities`
           );
         }
       });
     } catch (error) {
-      console.warn(
-        `Tailwind Enigma: Could not watch ${filePath}:`,
-        error.message,
-      );
+      console.warn(`Tailwind Enigma: Could not watch ${filePath}:`, error.message);
     }
   });
 }
@@ -429,22 +400,18 @@ const tailwindEnigmaPlugin = plugin.withOptions((options = {}) => {
     // Load pattern data from Enigma analysis
     const { patterns, frequencies } = loadPatternData(
       config.paths.patternsFile,
-      config.paths.frequencyFile,
+      config.paths.frequencyFile
     );
 
     if (config.development.logOptimizations) {
       console.log(
-        `Tailwind Enigma: Loaded ${patterns.length} patterns and ${frequencies.size} frequency entries`,
+        `Tailwind Enigma: Loaded ${patterns.length} patterns and ${frequencies.size} frequency entries`
       );
     }
 
     // Generate utility classes if enabled
     if (config.utilities.enabled) {
-      const utilities = generateUtilitiesFromPatterns(
-        patterns,
-        frequencies,
-        config,
-      );
+      const utilities = generateUtilitiesFromPatterns(patterns, frequencies, config);
 
       if (Object.keys(utilities).length > 0) {
         // Add base utilities to Tailwind
@@ -459,10 +426,10 @@ const tailwindEnigmaPlugin = plugin.withOptions((options = {}) => {
           Object.entries(utilities).forEach(([selector, declarations]) => {
             const className = selector.substring(1); // Remove leading dot
             responsiveUtilities[`.md\\:${className}`] = {
-              [`@media (min-width: 768px)`]: declarations
+              [`@media (min-width: 768px)`]: declarations,
             };
             responsiveUtilities[`.lg\\:${className}`] = {
-              [`@media (min-width: 1024px)`]: declarations
+              [`@media (min-width: 1024px)`]: declarations,
             };
           });
           addUtilities(responsiveUtilities, {
@@ -497,7 +464,7 @@ const tailwindEnigmaPlugin = plugin.withOptions((options = {}) => {
 
         if (config.development.logOptimizations) {
           console.log(
-            `Tailwind Enigma: Generated ${Object.keys(utilities).length} optimized utility classes`,
+            `Tailwind Enigma: Generated ${Object.keys(utilities).length} optimized utility classes`
           );
         }
 
@@ -509,7 +476,7 @@ const tailwindEnigmaPlugin = plugin.withOptions((options = {}) => {
     }
 
     // Set up hot reloading in development
-    if (process.env.NODE_ENV !== "production") {
+    if (process.env.NODE_ENV !== 'production') {
       setupHotReloading(config, addUtilities);
     }
   };

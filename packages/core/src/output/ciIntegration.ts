@@ -8,22 +8,15 @@
 import type {
   CssPerformanceReport,
   // BudgetViolation - removed, not used
-} from "./cssReportGenerator.ts";
-import type { CssOutputConfig } from "./cssOutputConfig";
+} from './cssReportGenerator.ts';
+import type { CssOutputConfig } from './cssOutputConfig';
 
 /**
  * CI environment detection result
  */
 export interface CiEnvironment {
   /** CI provider name */
-  provider:
-    | "github"
-    | "gitlab"
-    | "jenkins"
-    | "azure"
-    | "circleci"
-    | "travis"
-    | "unknown";
+  provider: 'github' | 'gitlab' | 'jenkins' | 'azure' | 'circleci' | 'travis' | 'unknown';
 
   /** Build ID or number */
   buildId?: string;
@@ -74,14 +67,10 @@ export interface PerformanceComparison {
  */
 export interface PerformanceRegression {
   /** Type of regression */
-  type:
-    | "size_increase"
-    | "load_time_increase"
-    | "score_decrease"
-    | "budget_violation";
+  type: 'size_increase' | 'load_time_increase' | 'score_decrease' | 'budget_violation';
 
   /** Severity level */
-  severity: "minor" | "moderate" | "major";
+  severity: 'minor' | 'moderate' | 'major';
 
   /** Description of regression */
   description: string;
@@ -104,11 +93,7 @@ export interface PerformanceRegression {
  */
 export interface PerformanceImprovement {
   /** Type of improvement */
-  type:
-    | "size_reduction"
-    | "load_time_improvement"
-    | "score_increase"
-    | "compression_improvement";
+  type: 'size_reduction' | 'load_time_improvement' | 'score_increase' | 'compression_improvement';
 
   /** Description of improvement */
   description: string;
@@ -182,18 +167,15 @@ export class CiIntegration {
     // GitHub Actions
     if (env.GITHUB_ACTIONS) {
       return {
-        provider: "github",
+        provider: 'github',
         buildId: env.GITHUB_RUN_ID,
         branch: env.GITHUB_REF_NAME,
         commit: env.GITHUB_SHA,
-        pullRequest:
-          env.GITHUB_EVENT_NAME === "pull_request"
-            ? env.GITHUB_EVENT_NUMBER
-            : undefined,
+        pullRequest: env.GITHUB_EVENT_NAME === 'pull_request' ? env.GITHUB_EVENT_NUMBER : undefined,
         env: {
-          GITHUB_REPOSITORY: env.GITHUB_REPOSITORY || "",
-          GITHUB_ACTOR: env.GITHUB_ACTOR || "",
-          GITHUB_WORKFLOW: env.GITHUB_WORKFLOW || "",
+          GITHUB_REPOSITORY: env.GITHUB_REPOSITORY || '',
+          GITHUB_ACTOR: env.GITHUB_ACTOR || '',
+          GITHUB_WORKFLOW: env.GITHUB_WORKFLOW || '',
         },
         isCI: true,
       };
@@ -202,15 +184,15 @@ export class CiIntegration {
     // GitLab CI
     if (env.GITLAB_CI) {
       return {
-        provider: "gitlab",
+        provider: 'gitlab',
         buildId: env.CI_PIPELINE_ID,
         branch: env.CI_COMMIT_REF_NAME,
         commit: env.CI_COMMIT_SHA,
         pullRequest: env.CI_MERGE_REQUEST_IID,
         env: {
-          CI_PROJECT_PATH: env.CI_PROJECT_PATH || "",
-          CI_COMMIT_AUTHOR: env.CI_COMMIT_AUTHOR || "",
-          CI_PIPELINE_URL: env.CI_PIPELINE_URL || "",
+          CI_PROJECT_PATH: env.CI_PROJECT_PATH || '',
+          CI_COMMIT_AUTHOR: env.CI_COMMIT_AUTHOR || '',
+          CI_PIPELINE_URL: env.CI_PIPELINE_URL || '',
         },
         isCI: true,
       };
@@ -219,13 +201,13 @@ export class CiIntegration {
     // Jenkins
     if (env.JENKINS_URL) {
       return {
-        provider: "jenkins",
+        provider: 'jenkins',
         buildId: env.BUILD_NUMBER,
         branch: env.GIT_BRANCH,
         commit: env.GIT_COMMIT,
         env: {
-          JOB_NAME: env.JOB_NAME || "",
-          BUILD_URL: env.BUILD_URL || "",
+          JOB_NAME: env.JOB_NAME || '',
+          BUILD_URL: env.BUILD_URL || '',
         },
         isCI: true,
       };
@@ -234,14 +216,14 @@ export class CiIntegration {
     // Azure DevOps
     if (env.AZURE_HTTP_USER_AGENT) {
       return {
-        provider: "azure",
+        provider: 'azure',
         buildId: env.BUILD_BUILDNUMBER,
         branch: env.BUILD_SOURCEBRANCH,
         commit: env.BUILD_SOURCEVERSION,
         pullRequest: env.SYSTEM_PULLREQUEST_PULLREQUESTNUMBER,
         env: {
-          BUILD_REPOSITORY_NAME: env.BUILD_REPOSITORY_NAME || "",
-          BUILD_DEFINITIONNAME: env.BUILD_DEFINITIONNAME || "",
+          BUILD_REPOSITORY_NAME: env.BUILD_REPOSITORY_NAME || '',
+          BUILD_DEFINITIONNAME: env.BUILD_DEFINITIONNAME || '',
         },
         isCI: true,
       };
@@ -250,14 +232,14 @@ export class CiIntegration {
     // CircleCI
     if (env.CIRCLECI) {
       return {
-        provider: "circleci",
+        provider: 'circleci',
         buildId: env.CIRCLE_BUILD_NUM,
         branch: env.CIRCLE_BRANCH,
         commit: env.CIRCLE_SHA1,
-        pullRequest: env.CIRCLE_PULL_REQUEST?.split("/").pop(),
+        pullRequest: env.CIRCLE_PULL_REQUEST?.split('/').pop(),
         env: {
-          CIRCLE_PROJECT_REPONAME: env.CIRCLE_PROJECT_REPONAME || "",
-          CIRCLE_USERNAME: env.CIRCLE_USERNAME || "",
+          CIRCLE_PROJECT_REPONAME: env.CIRCLE_PROJECT_REPONAME || '',
+          CIRCLE_USERNAME: env.CIRCLE_USERNAME || '',
         },
         isCI: true,
       };
@@ -266,17 +248,14 @@ export class CiIntegration {
     // Travis CI
     if (env.TRAVIS) {
       return {
-        provider: "travis",
+        provider: 'travis',
         buildId: env.TRAVIS_BUILD_NUMBER,
         branch: env.TRAVIS_BRANCH,
         commit: env.TRAVIS_COMMIT,
-        pullRequest:
-          env.TRAVIS_PULL_REQUEST !== "false"
-            ? env.TRAVIS_PULL_REQUEST
-            : undefined,
+        pullRequest: env.TRAVIS_PULL_REQUEST !== 'false' ? env.TRAVIS_PULL_REQUEST : undefined,
         env: {
-          TRAVIS_REPO_SLUG: env.TRAVIS_REPO_SLUG || "",
-          TRAVIS_EVENT_TYPE: env.TRAVIS_EVENT_TYPE || "",
+          TRAVIS_REPO_SLUG: env.TRAVIS_REPO_SLUG || '',
+          TRAVIS_EVENT_TYPE: env.TRAVIS_EVENT_TYPE || '',
         },
         isCI: true,
       };
@@ -286,7 +265,7 @@ export class CiIntegration {
     const isCI = !!(env.CI || env.CONTINUOUS_INTEGRATION);
 
     return {
-      provider: "unknown",
+      provider: 'unknown',
       buildId: env.BUILD_NUMBER || env.BUILD_ID,
       branch: env.BRANCH || env.GIT_BRANCH,
       commit: env.COMMIT || env.GIT_COMMIT,
@@ -310,9 +289,7 @@ export class CiIntegration {
 
     // Load baseline for comparison
     const baseline = await this.loadBaseline();
-    const comparison = baseline
-      ? this.compareReports(report, baseline)
-      : undefined;
+    const comparison = baseline ? this.compareReports(report, baseline) : undefined;
 
     // Check performance thresholds
     if (
@@ -322,12 +299,10 @@ export class CiIntegration {
       success = false;
       exitCode = 1;
       messages.push(
-        `❌ Performance score ${report.metrics.performanceScore} below threshold ${this.options.minPerformanceScore}`,
+        `❌ Performance score ${report.metrics.performanceScore} below threshold ${this.options.minPerformanceScore}`
       );
     } else {
-      messages.push(
-        `✅ Performance score: ${report.metrics.performanceScore}/100`,
-      );
+      messages.push(`✅ Performance score: ${report.metrics.performanceScore}/100`);
     }
 
     // Check budget violations
@@ -335,26 +310,20 @@ export class CiIntegration {
       success = false;
       exitCode = 1;
       const errorViolations = report.budgetAnalysis.violations.filter(
-        (v) => v.severity === "error",
+        (v) => v.severity === 'error'
       );
-      messages.push(
-        `❌ ${errorViolations.length} budget violation(s) detected`,
-      );
+      messages.push(`❌ ${errorViolations.length} budget violation(s) detected`);
     } else if (report.budgetAnalysis.passed) {
       messages.push(`✅ All performance budgets passed`);
     }
 
     // Check for regressions
     if (comparison && this.options.failOnRegression) {
-      const majorRegressions = comparison.regressions.filter(
-        (r) => r.severity === "major",
-      );
+      const majorRegressions = comparison.regressions.filter((r) => r.severity === 'major');
       if (majorRegressions.length > 0) {
         success = false;
         exitCode = 1;
-        messages.push(
-          `❌ ${majorRegressions.length} major performance regression(s) detected`,
-        );
+        messages.push(`❌ ${majorRegressions.length} major performance regression(s) detected`);
       }
     }
 
@@ -365,7 +334,7 @@ export class CiIntegration {
         success = false;
         exitCode = 1;
         messages.push(
-          `❌ Size increase ${sizeIncreasePercent.toFixed(1)}% exceeds threshold ${this.options.maxSizeIncrease}%`,
+          `❌ Size increase ${sizeIncreasePercent.toFixed(1)}% exceeds threshold ${this.options.maxSizeIncrease}%`
         );
       }
     }
@@ -386,7 +355,7 @@ export class CiIntegration {
       await this.sendWebhookNotification(report, success, comparison);
     }
 
-    const summary = messages.join("\n");
+    const summary = messages.join('\n');
 
     return {
       success,
@@ -401,21 +370,17 @@ export class CiIntegration {
    */
   private compareReports(
     current: CssPerformanceReport,
-    baseline: CssPerformanceReport,
+    baseline: CssPerformanceReport
   ): PerformanceComparison {
     const delta = {
-      scoreChange:
-        current.metrics.performanceScore - baseline.metrics.performanceScore,
+      scoreChange: current.metrics.performanceScore - baseline.metrics.performanceScore,
       sizeChange:
-        ((current.metrics.totalCompressedSize -
-          baseline.metrics.totalCompressedSize) /
+        ((current.metrics.totalCompressedSize - baseline.metrics.totalCompressedSize) /
           baseline.metrics.totalCompressedSize) *
         100,
-      loadTimeChange:
-        current.metrics.averageLoadTime - baseline.metrics.averageLoadTime,
+      loadTimeChange: current.metrics.averageLoadTime - baseline.metrics.averageLoadTime,
       compressionChange:
-        current.metrics.overallCompressionRatio -
-        baseline.metrics.overallCompressionRatio,
+        current.metrics.overallCompressionRatio - baseline.metrics.overallCompressionRatio,
     };
 
     const regressions = this.detectRegressions(current, baseline, delta);
@@ -436,28 +401,24 @@ export class CiIntegration {
   private detectRegressions(
     current: CssPerformanceReport,
     baseline: CssPerformanceReport,
-    delta: any,
+    delta: any
   ): PerformanceRegression[] {
     const regressions: PerformanceRegression[] = [];
 
     // Performance score regression
     if (delta.scoreChange < -5) {
       regressions.push({
-        type: "score_decrease",
+        type: 'score_decrease',
         severity:
-          delta.scoreChange < -15
-            ? "major"
-            : delta.scoreChange < -10
-              ? "moderate"
-              : "minor",
+          delta.scoreChange < -15 ? 'major' : delta.scoreChange < -10 ? 'moderate' : 'minor',
         description: `Performance score decreased by ${Math.abs(delta.scoreChange).toFixed(1)} points`,
         current: current.metrics.performanceScore,
         previous: baseline.metrics.performanceScore,
         changePercent: delta.scoreChange,
         actions: [
-          "Review recent CSS changes for optimization opportunities",
-          "Check if new dependencies increased bundle size",
-          "Verify compression settings are optimal",
+          'Review recent CSS changes for optimization opportunities',
+          'Check if new dependencies increased bundle size',
+          'Verify compression settings are optimal',
         ],
       });
     }
@@ -465,21 +426,16 @@ export class CiIntegration {
     // Size increase regression
     if (delta.sizeChange > 5) {
       regressions.push({
-        type: "size_increase",
-        severity:
-          delta.sizeChange > 20
-            ? "major"
-            : delta.sizeChange > 10
-              ? "moderate"
-              : "minor",
+        type: 'size_increase',
+        severity: delta.sizeChange > 20 ? 'major' : delta.sizeChange > 10 ? 'moderate' : 'minor',
         description: `Bundle size increased by ${delta.sizeChange.toFixed(1)}%`,
         current: current.metrics.totalCompressedSize,
         previous: baseline.metrics.totalCompressedSize,
         changePercent: delta.sizeChange,
         actions: [
-          "Analyze which bundles grew in size",
-          "Check for unused CSS that could be removed",
-          "Verify tree-shaking is working correctly",
+          'Analyze which bundles grew in size',
+          'Check for unused CSS that could be removed',
+          'Verify tree-shaking is working correctly',
         ],
       });
     }
@@ -487,48 +443,45 @@ export class CiIntegration {
     // Load time regression
     if (delta.loadTimeChange > 500) {
       const percentChange = (delta.loadTimeChange / baseline.metrics.averageLoadTime) * 100;
-      let severity: "minor" | "moderate" | "major";
-      
+      let severity: 'minor' | 'moderate' | 'major';
+
       // Consider both absolute change and percentage increase
       if (delta.loadTimeChange > 2000 || percentChange > 50) {
-        severity = "major";
+        severity = 'major';
       } else if (delta.loadTimeChange > 1000 || percentChange > 25) {
-        severity = "moderate";
+        severity = 'moderate';
       } else {
-        severity = "minor";
+        severity = 'minor';
       }
-      
+
       regressions.push({
-        type: "load_time_increase",
+        type: 'load_time_increase',
         severity,
         description: `Load time increased by ${delta.loadTimeChange.toFixed(0)}ms`,
         current: current.metrics.averageLoadTime,
         previous: baseline.metrics.averageLoadTime,
-        changePercent:
-          (delta.loadTimeChange / baseline.metrics.averageLoadTime) * 100,
+        changePercent: (delta.loadTimeChange / baseline.metrics.averageLoadTime) * 100,
         actions: [
-          "Optimize critical CSS extraction",
-          "Review chunking strategy",
-          "Enable resource preloading",
+          'Optimize critical CSS extraction',
+          'Review chunking strategy',
+          'Enable resource preloading',
         ],
       });
     }
 
     // Budget violations (new in current report)
     const newViolations = current.budgetAnalysis.violations.filter(
-      (cv) =>
-        !baseline.budgetAnalysis.violations.some((bv) => bv.type === cv.type),
+      (cv) => !baseline.budgetAnalysis.violations.some((bv) => bv.type === cv.type)
     );
 
     newViolations.forEach((violation) => {
       regressions.push({
-        type: "budget_violation",
-        severity: violation.severity === "error" ? "major" : "moderate",
+        type: 'budget_violation',
+        severity: violation.severity === 'error' ? 'major' : 'moderate',
         description: `New budget violation: ${violation.message}`,
         current: violation.actual,
         previous: violation.limit,
-        changePercent:
-          ((violation.actual - violation.limit) / violation.limit) * 100,
+        changePercent: ((violation.actual - violation.limit) / violation.limit) * 100,
         actions: violation.recommendations,
       });
     });
@@ -542,13 +495,13 @@ export class CiIntegration {
   private detectImprovements(
     current: CssPerformanceReport,
     baseline: CssPerformanceReport,
-    delta: any,
+    delta: any
   ): PerformanceImprovement[] {
     const improvements: PerformanceImprovement[] = [];
 
     if (delta.scoreChange > 5) {
       improvements.push({
-        type: "score_increase",
+        type: 'score_increase',
         description: `Performance score improved by ${delta.scoreChange.toFixed(1)} points`,
         current: current.metrics.performanceScore,
         previous: baseline.metrics.performanceScore,
@@ -558,7 +511,7 @@ export class CiIntegration {
 
     if (delta.sizeChange < -5) {
       improvements.push({
-        type: "size_reduction",
+        type: 'size_reduction',
         description: `Bundle size reduced by ${Math.abs(delta.sizeChange).toFixed(1)}%`,
         current: current.metrics.totalCompressedSize,
         previous: baseline.metrics.totalCompressedSize,
@@ -568,19 +521,17 @@ export class CiIntegration {
 
     if (delta.loadTimeChange < -200) {
       improvements.push({
-        type: "load_time_improvement",
+        type: 'load_time_improvement',
         description: `Load time improved by ${Math.abs(delta.loadTimeChange).toFixed(0)}ms`,
         current: current.metrics.averageLoadTime,
         previous: baseline.metrics.averageLoadTime,
-        improvementPercent:
-          Math.abs(delta.loadTimeChange / baseline.metrics.averageLoadTime) *
-          100,
+        improvementPercent: Math.abs(delta.loadTimeChange / baseline.metrics.averageLoadTime) * 100,
       });
     }
 
     if (delta.compressionChange < -0.05) {
       improvements.push({
-        type: "compression_improvement",
+        type: 'compression_improvement',
         description: `Compression ratio improved by ${Math.abs(delta.compressionChange * 100).toFixed(1)}%`,
         current: current.metrics.overallCompressionRatio,
         previous: baseline.metrics.overallCompressionRatio,
@@ -598,8 +549,8 @@ export class CiIntegration {
     if (!this.options.baselinePath) return null;
 
     try {
-      const fs = await import("fs/promises");
-      const content = await fs.readFile(this.options.baselinePath, "utf-8");
+      const fs = await import('fs/promises');
+      const content = await fs.readFile(this.options.baselinePath, 'utf-8');
       return JSON.parse(content);
     } catch {
       return null; // Baseline doesn't exist yet
@@ -613,8 +564,8 @@ export class CiIntegration {
     if (!this.options.baselinePath) return;
 
     try {
-      const fs = await import("fs/promises");
-      const path = await import("path");
+      const fs = await import('fs/promises');
+      const path = await import('path');
 
       // Ensure directory exists
       await fs.mkdir(path.dirname(this.options.baselinePath), {
@@ -622,12 +573,9 @@ export class CiIntegration {
       });
 
       // Save report
-      await fs.writeFile(
-        this.options.baselinePath,
-        JSON.stringify(report, null, 2),
-      );
+      await fs.writeFile(this.options.baselinePath, JSON.stringify(report, null, 2));
     } catch (error) {
-      console.warn("Failed to save baseline report:", error);
+      console.warn('Failed to save baseline report:', error);
     }
   }
 
@@ -636,13 +584,13 @@ export class CiIntegration {
    */
   private async generateCiOutputs(
     report: CssPerformanceReport,
-    comparison?: PerformanceComparison,
+    comparison?: PerformanceComparison
   ): Promise<void> {
-    const outputDir = this.options.outputDir || "./css-performance-reports";
+    const outputDir = this.options.outputDir || './css-performance-reports';
 
     try {
-      const fs = await import("fs/promises");
-      const path = await import("path");
+      const fs = await import('fs/promises');
+      const path = await import('path');
 
       // Ensure output directory exists
       await fs.mkdir(outputDir, { recursive: true });
@@ -650,18 +598,18 @@ export class CiIntegration {
       // Save detailed JSON report
       const reportPath = path.join(
         outputDir,
-        `css-performance-${this.environment.buildId || "latest"}.json`,
+        `css-performance-${this.environment.buildId || 'latest'}.json`
       );
       await fs.writeFile(reportPath, JSON.stringify(report, null, 2));
 
       // Generate markdown summary
-      const { CssReportGenerator } = await import("./cssReportGenerator.js");
+      const { CssReportGenerator } = await import('./cssReportGenerator.js');
       const generator = new CssReportGenerator(this.config);
-      const markdown = await generator.exportReport(report, "markdown");
+      const markdown = await generator.exportReport(report, 'markdown');
 
       const summaryPath = path.join(
         outputDir,
-        `css-performance-${this.environment.buildId || "latest"}.md`,
+        `css-performance-${this.environment.buildId || 'latest'}.md`
       );
       await fs.writeFile(summaryPath, markdown);
 
@@ -670,14 +618,14 @@ export class CiIntegration {
         const ciSummary = this.generateCiSummary(report, comparison);
         const ciSummaryPath = path.join(
           outputDir,
-          `ci-summary-${this.environment.buildId || "latest"}.md`,
+          `ci-summary-${this.environment.buildId || 'latest'}.md`
         );
         await fs.writeFile(ciSummaryPath, ciSummary);
       }
 
       console.log(`📊 CSS performance reports saved to ${outputDir}`);
     } catch (error) {
-      console.warn("Failed to generate CI outputs:", error);
+      console.warn('Failed to generate CI outputs:', error);
     }
   }
 
@@ -686,60 +634,54 @@ export class CiIntegration {
    */
   private generateCiSummary(
     report: CssPerformanceReport,
-    comparison: PerformanceComparison,
+    comparison: PerformanceComparison
   ): string {
-    const lines = ["# CSS Performance Summary\n"];
+    const lines = ['# CSS Performance Summary\n'];
 
     // Key metrics
-    lines.push("## Key Metrics");
+    lines.push('## Key Metrics');
     lines.push(
-      `- **Performance Score:** ${report.metrics.performanceScore}/100 ${comparison.delta.scoreChange >= 0 ? "📈" : "📉"} (${comparison.delta.scoreChange > 0 ? "+" : ""}${comparison.delta.scoreChange.toFixed(1)})`,
+      `- **Performance Score:** ${report.metrics.performanceScore}/100 ${comparison.delta.scoreChange >= 0 ? '📈' : '📉'} (${comparison.delta.scoreChange > 0 ? '+' : ''}${comparison.delta.scoreChange.toFixed(1)})`
     );
     lines.push(
-      `- **Total Size:** ${Math.round(report.metrics.totalCompressedSize / 1024)}KB ${comparison.delta.sizeChange <= 0 ? "📉" : "📈"} (${comparison.delta.sizeChange > 0 ? "+" : ""}${comparison.delta.sizeChange.toFixed(1)}%)`,
+      `- **Total Size:** ${Math.round(report.metrics.totalCompressedSize / 1024)}KB ${comparison.delta.sizeChange <= 0 ? '📉' : '📈'} (${comparison.delta.sizeChange > 0 ? '+' : ''}${comparison.delta.sizeChange.toFixed(1)}%)`
     );
     lines.push(
-      `- **Load Time:** ${Math.round(report.metrics.averageLoadTime)}ms ${comparison.delta.loadTimeChange <= 0 ? "📉" : "📈"} (${comparison.delta.loadTimeChange > 0 ? "+" : ""}${comparison.delta.loadTimeChange.toFixed(0)}ms)`,
+      `- **Load Time:** ${Math.round(report.metrics.averageLoadTime)}ms ${comparison.delta.loadTimeChange <= 0 ? '📉' : '📈'} (${comparison.delta.loadTimeChange > 0 ? '+' : ''}${comparison.delta.loadTimeChange.toFixed(0)}ms)`
     );
-    lines.push(
-      `- **Budget Status:** ${report.budgetAnalysis.passed ? "✅ PASSED" : "❌ FAILED"}`,
-    );
-    lines.push("");
+    lines.push(`- **Budget Status:** ${report.budgetAnalysis.passed ? '✅ PASSED' : '❌ FAILED'}`);
+    lines.push('');
 
     // Regressions
     if (comparison.regressions.length > 0) {
-      lines.push("## ⚠️ Regressions Detected");
+      lines.push('## ⚠️ Regressions Detected');
       comparison.regressions.forEach((regression) => {
         lines.push(
-          `- **${regression.type.replace("_", " ")}:** ${regression.description} (${regression.severity})`,
+          `- **${regression.type.replace('_', ' ')}:** ${regression.description} (${regression.severity})`
         );
       });
-      lines.push("");
+      lines.push('');
     }
 
     // Improvements
     if (comparison.improvements.length > 0) {
-      lines.push("## 🎉 Improvements Detected");
+      lines.push('## 🎉 Improvements Detected');
       comparison.improvements.forEach((improvement) => {
-        lines.push(
-          `- **${improvement.type.replace("_", " ")}:** ${improvement.description}`,
-        );
+        lines.push(`- **${improvement.type.replace('_', ' ')}:** ${improvement.description}`);
       });
-      lines.push("");
+      lines.push('');
     }
 
     // Recommendations (top 3)
     if (report.recommendations.length > 0) {
-      lines.push("## 💡 Top Recommendations");
+      lines.push('## 💡 Top Recommendations');
       report.recommendations.slice(0, 3).forEach((rec) => {
-        lines.push(
-          `- **${rec.title}** (${rec.priority} priority): ${rec.description}`,
-        );
+        lines.push(`- **${rec.title}** (${rec.priority} priority): ${rec.description}`);
       });
-      lines.push("");
+      lines.push('');
     }
 
-    return lines.join("\n");
+    return lines.join('\n');
   }
 
   /**
@@ -747,7 +689,7 @@ export class CiIntegration {
    */
   private async generatePrComment(
     report: CssPerformanceReport,
-    comparison?: PerformanceComparison,
+    comparison?: PerformanceComparison
   ): Promise<void> {
     if (!comparison) return;
 
@@ -755,17 +697,17 @@ export class CiIntegration {
 
     // The actual PR commenting would depend on the CI provider
     // This is a placeholder for the comment content
-    console.log("PR Comment would be:", comment);
+    console.log('PR Comment would be:', comment);
 
     // Save comment to file for CI to post
     if (this.options.outputDir) {
       try {
-        const fs = await import("fs/promises");
-        const path = await import("path");
-        const commentPath = path.join(this.options.outputDir, "pr-comment.md");
+        const fs = await import('fs/promises');
+        const path = await import('path');
+        const commentPath = path.join(this.options.outputDir, 'pr-comment.md');
         await fs.writeFile(commentPath, comment);
       } catch (error) {
-        console.warn("Failed to save PR comment:", error);
+        console.warn('Failed to save PR comment:', error);
       }
     }
   }
@@ -776,7 +718,7 @@ export class CiIntegration {
   private async sendWebhookNotification(
     report: CssPerformanceReport,
     success: boolean,
-    comparison?: PerformanceComparison,
+    comparison?: PerformanceComparison
   ): Promise<void> {
     if (!this.options.webhookUrl) return;
 
@@ -799,8 +741,8 @@ export class CiIntegration {
 
     try {
       const response = await fetch(this.options.webhookUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
 
@@ -808,7 +750,7 @@ export class CiIntegration {
         console.warn(`Webhook notification failed: ${response.status}`);
       }
     } catch (error) {
-      console.warn("Failed to send webhook notification:", error);
+      console.warn('Failed to send webhook notification:', error);
     }
   }
 
@@ -825,7 +767,7 @@ export class CiIntegration {
  */
 export function createCiIntegration(
   config: CssOutputConfig,
-  options?: CiIntegrationOptions,
+  options?: CiIntegrationOptions
 ): CiIntegration {
   return new CiIntegration(config, options);
 }

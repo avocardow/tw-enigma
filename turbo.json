@@ -9,9 +9,9 @@
       "outputs": ["dist/**", ".next/**", "!.next/cache/**"],
       "inputs": [
         "$TURBO_DEFAULT$",
-        "src/**/*.ts", 
-        "src/**/*.js", 
-        "package.json", 
+        "src/**/*.ts",
+        "src/**/*.js",
+        "package.json",
         "tsconfig.json",
         "!**/*.test.*",
         "!**/*.spec.*",
@@ -36,7 +36,7 @@
       "inputs": [
         "$TURBO_DEFAULT$",
         "src/**/*.ts",
-        "package.json", 
+        "package.json",
         "tsconfig.json",
         "../../tsconfig.base.json"
       ]
@@ -45,9 +45,9 @@
       "dependsOn": ["build"],
       "inputs": [
         "$TURBO_DEFAULT$",
-        "src/**/*.ts", 
-        "tests/**/*.ts", 
-        "src/**/*.js", 
+        "src/**/*.ts",
+        "tests/**/*.ts",
+        "src/**/*.js",
         "tests/**/*.js",
         "vitest.config.ts",
         "vitest.workspace.ts"
@@ -60,7 +60,7 @@
       "inputs": [
         "$TURBO_DEFAULT$",
         "src/**/*.ts",
-        "tests/**/*.ts", 
+        "tests/**/*.ts",
         "vitest.config.ts",
         "../../vitest.workspace.ts"
       ],
@@ -72,7 +72,7 @@
         "$TURBO_DEFAULT$",
         "src/**/*.ts",
         "tests/**/*.ts",
-        "vitest.config.ts", 
+        "vitest.config.ts",
         "../../vitest.workspace.ts"
       ],
       "outputs": ["coverage/**"]
@@ -90,9 +90,9 @@
       "dependsOn": ["build"],
       "inputs": [
         "$TURBO_DEFAULT$",
-        "src/**/*.ts", 
-        "tests/**/*.ts", 
-        "src/**/*.js", 
+        "src/**/*.ts",
+        "tests/**/*.ts",
+        "src/**/*.js",
         "tests/**/*.js",
         "vitest.config.ts",
         "vitest.workspace.ts"
@@ -103,9 +103,9 @@
       "dependsOn": ["^lint"],
       "inputs": [
         "$TURBO_DEFAULT$",
-        "src/**/*.ts", 
-        "src/**/*.js", 
-        ".eslintrc.js", 
+        "src/**/*.ts",
+        "src/**/*.js",
+        ".eslintrc.js",
         "tsconfig.json",
         "!**/*.test.*",
         "!**/*.spec.*"
@@ -117,19 +117,38 @@
       "dependsOn": ["^lint"],
       "inputs": [
         "$TURBO_DEFAULT$",
-        "src/**/*.ts", 
-        "src/**/*.js", 
-        ".eslintrc.js", 
+        "src/**/*.ts",
+        "src/**/*.js",
+        ".eslintrc.js",
         "tsconfig.json"
       ],
       "outputs": [],
       "cache": false
     },
+    "format": {
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "**/*.{ts,tsx,md,json}",
+        ".prettierrc*",
+        ".prettierignore"
+      ],
+      "outputs": [],
+      "cache": false
+    },
+    "format:check": {
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "**/*.{ts,tsx,md,json}",
+        ".prettierrc*",
+        ".prettierignore"
+      ],
+      "outputs": []
+    },
     "type-check": {
       "dependsOn": ["^build"],
       "inputs": [
         "$TURBO_DEFAULT$",
-        "src/**/*.ts", 
+        "src/**/*.ts",
         "tsconfig.json",
         "tsconfig.base.json"
       ],
@@ -158,21 +177,21 @@
     }
   },
   "globalDependencies": [
-    ".env", 
-    ".env.local", 
+    ".env",
+    ".env.local",
     "tsconfig.base.json",
     "pnpm-workspace.yaml",
     "turbo.json"
   ],
   "globalEnv": [
     "NODE_ENV",
-    "CI", 
+    "CI",
     "TURBO_TOKEN",
     "TURBO_TEAM"
   ],
   "globalPassThroughEnv": [
     "PATH",
-    "HOME", 
+    "HOME",
     "USER",
     "SHELL"
   ],
@@ -182,4 +201,4 @@
     "timeout": 30,
     "uploadTimeout": 60
   }
-} 
+}

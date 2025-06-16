@@ -10,16 +10,16 @@
  * Provides resilient error handling with automatic failure detection and recovery
  */
 
-import { EventEmitter } from "events";
-import { createLogger } from "../utils/logger";
+import { EventEmitter } from 'events';
+import { createLogger } from '../utils/logger';
 import {
   CircuitBreakerState,
   CircuitBreakerMetrics,
   EnhancedErrorContext,
   CircuitBreakerFallback,
-} from "./types";
+} from './types';
 
-const circuitLogger = createLogger("CircuitBreaker");
+const circuitLogger = createLogger('CircuitBreaker');
 
 /**
  * Circuit breaker error thrown when circuit is open
@@ -27,12 +27,12 @@ const circuitLogger = createLogger("CircuitBreaker");
 export class CircuitBreakerOpenError extends Error {
   constructor(
     public readonly circuitName: string,
-    public readonly lastFailure?: Error,
+    public readonly lastFailure?: Error
   ) {
     super(
-      `Circuit breaker '${circuitName}' is OPEN. Last failure: ${lastFailure?.message || "Unknown"}`,
+      `Circuit breaker '${circuitName}' is OPEN. Last failure: ${lastFailure?.message || 'Unknown'}`
     );
-    this.name = "CircuitBreakerOpenError";
+    this.name = 'CircuitBreakerOpenError';
   }
 }
 
@@ -112,14 +112,14 @@ export class CircuitBreaker extends EventEmitter {
 
   constructor(
     private readonly name: string,
-    private readonly configOverrides: Partial<CircuitBreakerConfig> = {},
+    private readonly configOverrides: Partial<CircuitBreakerConfig> = {}
   ) {
     super();
 
     // Merge with defaults
     this.config = { ...DEFAULT_CONFIG, ...this.configOverrides };
 
-    circuitLogger.debug("Circuit breaker created", {
+    circuitLogger.debug('Circuit breaker created', {
       name: this.name,
       config: this.config,
     });
@@ -133,7 +133,7 @@ export class CircuitBreaker extends EventEmitter {
   async call<T>(
     action: () => Promise<T>,
     fallback?: CircuitBreakerFallback<T>,
-    context?: EnhancedErrorContext,
+    context?: EnhancedErrorContext
   ): Promise<T> {
     if (!this.config.enabled) {
       return action();
@@ -147,7 +147,7 @@ export class CircuitBreaker extends EventEmitter {
       const error = new CircuitBreakerOpenError(this.name, this.getLastError());
 
       if (fallback) {
-        circuitLogger.warn("Circuit open, using fallback", {
+        circuitLogger.warn('Circuit open, using fallback', {
           circuitName: this.name,
           context,
         });
@@ -170,7 +170,7 @@ export class CircuitBreaker extends EventEmitter {
 
       // If we have a fallback and the circuit is now open, use it
       if (fallback) {
-        circuitLogger.warn("Action failed, using fallback", {
+        circuitLogger.warn('Action failed, using fallback', {
           circuitName: this.name,
           error: (error as Error).message,
           circuitState: this.state,
@@ -192,7 +192,7 @@ export class CircuitBreaker extends EventEmitter {
     this.lastSuccessTime = new Date();
     this.responseTimeTracker.addMeasurement(responseTime);
 
-    circuitLogger.debug("Circuit breaker success", {
+    circuitLogger.debug('Circuit breaker success', {
       circuitName: this.name,
       responseTime,
       state: this.state,
@@ -207,7 +207,7 @@ export class CircuitBreaker extends EventEmitter {
       this.moveToState(CircuitBreakerState.CLOSED);
     }
 
-    this.emit("success", {
+    this.emit('success', {
       circuitName: this.name,
       responseTime,
       state: this.state,
@@ -220,7 +220,7 @@ export class CircuitBreaker extends EventEmitter {
   private async onFailure(
     error: Error,
     responseTime: number,
-    context?: EnhancedErrorContext,
+    context?: EnhancedErrorContext
   ): Promise<void> {
     this.totalFailures++;
     this.failureCount++;
@@ -233,13 +233,13 @@ export class CircuitBreaker extends EventEmitter {
 
     const enhancedContext: EnhancedErrorContext = {
       ...context,
-      component: "CircuitBreaker",
+      component: 'CircuitBreaker',
       operationId: `circuit-${this.name}`,
       timestamp: new Date(),
       duration: responseTime,
     };
 
-    circuitLogger.error("Circuit breaker failure", {
+    circuitLogger.error('Circuit breaker failure', {
       circuitName: this.name,
       error: error.message,
       responseTime,
@@ -253,7 +253,7 @@ export class CircuitBreaker extends EventEmitter {
       this.moveToState(CircuitBreakerState.OPEN);
     }
 
-    this.emit("failure", {
+    this.emit('failure', {
       circuitName: this.name,
       error,
       responseTime,
@@ -281,10 +281,7 @@ export class CircuitBreaker extends EventEmitter {
   private cleanupFailureWindow(): void {
     const cutoff = new Date(Date.now() - this.config.monitoringWindow);
     let index = 0;
-    while (
-      index < this.failureWindow.length &&
-      this.failureWindow[index] < cutoff
-    ) {
+    while (index < this.failureWindow.length && this.failureWindow[index] < cutoff) {
       index++;
     }
     this.failureWindow.splice(0, index);
@@ -297,7 +294,7 @@ export class CircuitBreaker extends EventEmitter {
     const oldState = this.state;
     this.state = newState;
 
-    circuitLogger.info("Circuit breaker state change", {
+    circuitLogger.info('Circuit breaker state change', {
       circuitName: this.name,
       oldState,
       newState,
@@ -326,7 +323,7 @@ export class CircuitBreaker extends EventEmitter {
         break;
     }
 
-    this.emit("stateChange", {
+    this.emit('stateChange', {
       circuitName: this.name,
       oldState,
       newState,
@@ -342,14 +339,14 @@ export class CircuitBreaker extends EventEmitter {
 
     this.recoveryTimer = setTimeout(() => {
       if (this.state === CircuitBreakerState.OPEN) {
-        circuitLogger.info("Attempting circuit recovery", {
+        circuitLogger.info('Attempting circuit recovery', {
           circuitName: this.name,
           lastFailure: this.lastFailureTime,
         });
 
         this.moveToState(CircuitBreakerState.HALF_OPEN);
 
-        this.emit("recoveryAttempt", {
+        this.emit('recoveryAttempt', {
           circuitName: this.name,
           timestamp: new Date(),
         });
@@ -372,7 +369,7 @@ export class CircuitBreaker extends EventEmitter {
    */
   private getLastError(): Error | undefined {
     // This would typically store the last error, simplified for now
-    return new Error("Circuit breaker failure threshold exceeded");
+    return new Error('Circuit breaker failure threshold exceeded');
   }
 
   /**
@@ -380,10 +377,7 @@ export class CircuitBreaker extends EventEmitter {
    */
   getMetrics(): CircuitBreakerMetrics {
     const responseTimeStats = this.responseTimeTracker.getStatistics();
-    const uptime =
-      this.totalRequests > 0
-        ? (this.totalSuccesses / this.totalRequests) * 100
-        : 100;
+    const uptime = this.totalRequests > 0 ? (this.totalSuccesses / this.totalRequests) * 100 : 100;
 
     return {
       state: this.state,
@@ -403,7 +397,7 @@ export class CircuitBreaker extends EventEmitter {
    * Reset circuit breaker to initial state
    */
   reset(): void {
-    circuitLogger.info("Resetting circuit breaker", {
+    circuitLogger.info('Resetting circuit breaker', {
       circuitName: this.name,
       previousState: this.state,
     });
@@ -416,7 +410,7 @@ export class CircuitBreaker extends EventEmitter {
     this.lastSuccessTime = null;
     this.responseTimeTracker.reset();
 
-    this.emit("reset", {
+    this.emit('reset', {
       circuitName: this.name,
       timestamp: new Date(),
     });
@@ -426,7 +420,7 @@ export class CircuitBreaker extends EventEmitter {
    * Force circuit to specific state (for testing)
    */
   forceState(state: CircuitBreakerState): void {
-    circuitLogger.warn("Force changing circuit breaker state", {
+    circuitLogger.warn('Force changing circuit breaker state', {
       circuitName: this.name,
       oldState: this.state,
       newState: state,
@@ -456,7 +450,7 @@ export class CircuitBreaker extends EventEmitter {
     this.clearRecoveryTimer();
     this.removeAllListeners();
 
-    circuitLogger.debug("Circuit breaker destroyed", {
+    circuitLogger.debug('Circuit breaker destroyed', {
       circuitName: this.name,
     });
   }
@@ -468,7 +462,7 @@ export class CircuitBreaker extends EventEmitter {
 export class CircuitBreakerRegistry {
   private static instance: CircuitBreakerRegistry;
   private readonly circuits = new Map<string, CircuitBreaker>();
-  private readonly logger = createLogger("CircuitBreakerRegistry");
+  private readonly logger = createLogger('CircuitBreakerRegistry');
 
   static getInstance(): CircuitBreakerRegistry {
     if (!CircuitBreakerRegistry.instance) {
@@ -480,15 +474,12 @@ export class CircuitBreakerRegistry {
   /**
    * Get or create a circuit breaker
    */
-  getCircuit(
-    name: string,
-    config?: Partial<CircuitBreakerConfig>,
-  ): CircuitBreaker {
+  getCircuit(name: string, config?: Partial<CircuitBreakerConfig>): CircuitBreaker {
     if (!this.circuits.has(name)) {
       const circuit = new CircuitBreaker(name, config);
       this.circuits.set(name, circuit);
 
-      this.logger.info("Created new circuit breaker", { name, config });
+      this.logger.info('Created new circuit breaker', { name, config });
     }
 
     return this.circuits.get(name)!;
@@ -520,7 +511,7 @@ export class CircuitBreakerRegistry {
    * Reset all circuit breakers
    */
   resetAll(): void {
-    this.logger.info("Resetting all circuit breakers");
+    this.logger.info('Resetting all circuit breakers');
     this.circuits.forEach((circuit) => circuit.reset());
   }
 
@@ -528,7 +519,7 @@ export class CircuitBreakerRegistry {
    * Destroy all circuit breakers
    */
   destroyAll(): void {
-    this.logger.info("Destroying all circuit breakers");
+    this.logger.info('Destroying all circuit breakers');
     this.circuits.forEach((circuit) => circuit.destroy());
     this.circuits.clear();
   }
@@ -573,7 +564,7 @@ export function withCircuitBreaker<T extends (...args: any[]) => Promise<any>>(
   name: string,
   fn: T,
   config?: Partial<CircuitBreakerConfig>,
-  fallback?: CircuitBreakerFallback<ReturnType<T>>,
+  fallback?: CircuitBreakerFallback<ReturnType<T>>
 ): T {
   const registry = CircuitBreakerRegistry.getInstance();
   const circuit = registry.getCircuit(name, config);
@@ -584,8 +575,8 @@ export function withCircuitBreaker<T extends (...args: any[]) => Promise<any>>(
       fallback as CircuitBreakerFallback<Awaited<ReturnType<T>>>,
       {
         operationId: `wrapped-${name}`,
-        component: "CircuitBreakerWrapper",
-      },
+        component: 'CircuitBreakerWrapper',
+      }
     );
   }) as T;
 }

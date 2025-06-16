@@ -11,57 +11,57 @@
  * and graceful recovery mechanisms.
  */
 
-import { ErrorContext } from "../utils/logger";
+import { ErrorContext } from '../utils/logger';
 
 /**
  * Error severity levels for categorization and routing
  */
 export const ErrorSeverity = {
-  CRITICAL: "critical", // System-threatening errors requiring immediate attention
-  HIGH: "high", // Functional errors affecting core operations
-  MEDIUM: "medium", // Recoverable errors with automatic retry
-  LOW: "low", // Warning-level issues with graceful degradation
+  CRITICAL: 'critical', // System-threatening errors requiring immediate attention
+  HIGH: 'high', // Functional errors affecting core operations
+  MEDIUM: 'medium', // Recoverable errors with automatic retry
+  LOW: 'low', // Warning-level issues with graceful degradation
 } as const;
 
-export type ErrorSeverity = typeof ErrorSeverity[keyof typeof ErrorSeverity];
+export type ErrorSeverity = (typeof ErrorSeverity)[keyof typeof ErrorSeverity];
 
 /**
  * Error categories for different types of failures
  */
 export const ErrorCategory = {
-  OPERATIONAL: "operational", // File system, network, permissions
-  PROGRAMMING: "programming", // Type errors, null references, logic errors
-  EXTERNAL_SERVICE: "external", // API failures, timeouts, external dependencies
-  CONFIGURATION: "configuration", // Invalid config, missing environment variables
-  RESOURCE: "resource", // Memory, disk space, CPU limitations
-  VALIDATION: "validation", // Input validation, schema violations
+  OPERATIONAL: 'operational', // File system, network, permissions
+  PROGRAMMING: 'programming', // Type errors, null references, logic errors
+  EXTERNAL_SERVICE: 'external', // API failures, timeouts, external dependencies
+  CONFIGURATION: 'configuration', // Invalid config, missing environment variables
+  RESOURCE: 'resource', // Memory, disk space, CPU limitations
+  VALIDATION: 'validation', // Input validation, schema violations
 } as const;
 
-export type ErrorCategory = typeof ErrorCategory[keyof typeof ErrorCategory];
+export type ErrorCategory = (typeof ErrorCategory)[keyof typeof ErrorCategory];
 
 /**
  * Circuit breaker states
  */
 export const CircuitBreakerState = {
-  CLOSED: "closed", // Normal operation, requests pass through
-  OPEN: "open", // Circuit is broken, requests fail immediately
-  HALF_OPEN: "half_open", // Testing state, limited requests allowed
+  CLOSED: 'closed', // Normal operation, requests pass through
+  OPEN: 'open', // Circuit is broken, requests fail immediately
+  HALF_OPEN: 'half_open', // Testing state, limited requests allowed
 } as const;
 
-export type CircuitBreakerState = typeof CircuitBreakerState[keyof typeof CircuitBreakerState];
+export type CircuitBreakerState = (typeof CircuitBreakerState)[keyof typeof CircuitBreakerState];
 
 /**
  * Recovery strategy types
  */
 export const RecoveryStrategy = {
-  RETRY: "retry", // Automatic retry with backoff
-  FALLBACK: "fallback", // Use fallback/default values
-  GRACEFUL_DEGRADATION: "degradation", // Reduce functionality
-  CIRCUIT_BREAKER: "circuit_breaker", // Circuit breaker protection
-  MANUAL_INTERVENTION: "manual", // Requires manual intervention
+  RETRY: 'retry', // Automatic retry with backoff
+  FALLBACK: 'fallback', // Use fallback/default values
+  GRACEFUL_DEGRADATION: 'degradation', // Reduce functionality
+  CIRCUIT_BREAKER: 'circuit_breaker', // Circuit breaker protection
+  MANUAL_INTERVENTION: 'manual', // Requires manual intervention
 } as const;
 
-export type RecoveryStrategy = typeof RecoveryStrategy[keyof typeof RecoveryStrategy];
+export type RecoveryStrategy = (typeof RecoveryStrategy)[keyof typeof RecoveryStrategy];
 
 /**
  * Enhanced error context with comprehensive metadata
@@ -214,14 +214,14 @@ export interface ShutdownContext {
  * Health check result interface
  */
 export interface HealthCheckResult {
-  status: "healthy" | "degraded" | "unhealthy"; // Overall health status
+  status: 'healthy' | 'degraded' | 'unhealthy'; // Overall health status
   timestamp: Date; // When health check was performed
   duration: number; // Time taken for health check (ms)
   checks: Record<
     string,
     {
       // Individual check results
-      status: "pass" | "warn" | "fail";
+      status: 'pass' | 'warn' | 'fail';
       message?: string;
       duration?: number;
       metadata?: Record<string, any>;
@@ -265,36 +265,31 @@ export interface ErrorReport {
  */
 export function isOperationalError(error: Error): boolean {
   return (
-    error.name.includes("File") ||
-    error.name.includes("Network") ||
-    error.name.includes("Permission") ||
-    error.name.includes("Timeout")
+    error.name.includes('File') ||
+    error.name.includes('Network') ||
+    error.name.includes('Permission') ||
+    error.name.includes('Timeout')
   );
 }
 
 export function isProgrammingError(error: Error): boolean {
   return (
-    error.name.includes("Type") ||
-    error.name.includes("Reference") ||
-    error.name.includes("Syntax")
+    error.name.includes('Type') || error.name.includes('Reference') || error.name.includes('Syntax')
   );
 }
 
 export function isCriticalError(error: Error): boolean {
   return (
-    error.message.toLowerCase().includes("out of memory") ||
-    error.message.toLowerCase().includes("segmentation fault") ||
-    error.message.toLowerCase().includes("stack overflow")
+    error.message.toLowerCase().includes('out of memory') ||
+    error.message.toLowerCase().includes('segmentation fault') ||
+    error.message.toLowerCase().includes('stack overflow')
   );
 }
 
 /**
  * Utility type for async error handling
  */
-export type AsyncErrorHandler<T> = (
-  error: Error,
-  context?: EnhancedErrorContext,
-) => Promise<T>;
+export type AsyncErrorHandler<T> = (error: Error, context?: EnhancedErrorContext) => Promise<T>;
 
 /**
  * Function signature for error recovery callbacks
@@ -302,7 +297,7 @@ export type AsyncErrorHandler<T> = (
 export type ErrorRecoveryCallback = (
   error: Error,
   context: EnhancedErrorContext,
-  attempt: number,
+  attempt: number
 ) => Promise<boolean>;
 
 /**
@@ -324,12 +319,12 @@ export interface CircuitBreakerHealthStatus {
  * Error recovery strategy interface
  */
 export interface ErrorRecoveryStrategy {
-  type: "retry" | "fallback" | "circuit-breaker" | "graceful-degradation";
+  type: 'retry' | 'fallback' | 'circuit-breaker' | 'graceful-degradation';
   config?: {
     maxRetries?: number;
     retryDelay?: number;
     fallbackAction?: string;
-    degradationLevel?: "minimal" | "partial" | "full";
+    degradationLevel?: 'minimal' | 'partial' | 'full';
   };
   action?: () => Promise<void>;
 }
@@ -338,75 +333,73 @@ export interface ErrorRecoveryStrategy {
  * Health status enumeration
  */
 export const HealthStatus = {
-  HEALTHY: "healthy",
-  DEGRADED: "degraded",
-  UNHEALTHY: "unhealthy",
+  HEALTHY: 'healthy',
+  DEGRADED: 'degraded',
+  UNHEALTHY: 'unhealthy',
 } as const;
 
-export type HealthStatus = typeof HealthStatus[keyof typeof HealthStatus];
+export type HealthStatus = (typeof HealthStatus)[keyof typeof HealthStatus];
 
 /**
  * Check if error is an Enigma error with severity
  */
-export function isEnigmaError(
-  error: Error,
-): error is Error & { severity?: ErrorSeverity } {
-  return error && typeof error === "object" && "severity" in error;
+export function isEnigmaError(error: Error): error is Error & { severity?: ErrorSeverity } {
+  return error && typeof error === 'object' && 'severity' in error;
 }
 
 /**
  * Categorize error based on error type and message
  */
 export function categorizeError(error: Error): ErrorCategory {
-  const message = error.message?.toLowerCase() || "";
-  const name = error.name?.toLowerCase() || "";
+  const message = error.message?.toLowerCase() || '';
+  const name = error.name?.toLowerCase() || '';
 
   // Configuration errors
   if (
-    name.includes("config") ||
-    message.includes("configuration") ||
-    message.includes("env") ||
-    message.includes("environment")
+    name.includes('config') ||
+    message.includes('configuration') ||
+    message.includes('env') ||
+    message.includes('environment')
   ) {
     return ErrorCategory.CONFIGURATION;
   }
 
   // Validation errors
   if (
-    name.includes("validation") ||
-    message.includes("invalid") ||
-    message.includes("schema") ||
-    name.includes("zod")
+    name.includes('validation') ||
+    message.includes('invalid') ||
+    message.includes('schema') ||
+    name.includes('zod')
   ) {
     return ErrorCategory.VALIDATION;
   }
 
   // Resource errors
   if (
-    message.includes("memory") ||
-    message.includes("disk") ||
-    message.includes("enospc") ||
-    message.includes("emfile")
+    message.includes('memory') ||
+    message.includes('disk') ||
+    message.includes('enospc') ||
+    message.includes('emfile')
   ) {
     return ErrorCategory.RESOURCE;
   }
 
   // External service errors
   if (
-    message.includes("network") ||
-    message.includes("timeout") ||
-    message.includes("enotfound") ||
-    message.includes("econnrefused")
+    message.includes('network') ||
+    message.includes('timeout') ||
+    message.includes('enotfound') ||
+    message.includes('econnrefused')
   ) {
     return ErrorCategory.EXTERNAL_SERVICE;
   }
 
   // Programming errors
   if (
-    name.includes("type") ||
-    name.includes("reference") ||
-    message.includes("undefined") ||
-    message.includes("null")
+    name.includes('type') ||
+    name.includes('reference') ||
+    message.includes('undefined') ||
+    message.includes('null')
   ) {
     return ErrorCategory.PROGRAMMING;
   }

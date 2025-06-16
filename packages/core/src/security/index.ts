@@ -3,4 +3,4 @@
  * Provides security features for plugin execution
  */
 
-export * from './pluginSandbox'; 
+export * from './pluginSandbox';

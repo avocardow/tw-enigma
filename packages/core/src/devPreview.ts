@@ -5,11 +5,11 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { EventEmitter } from "events";
-import { watch, FSWatcher } from "chokidar";
-import { createLogger, Logger } from "./utils/logger";
-import { EnigmaConfig } from "./config";
-import { readFile } from "fs/promises";
+import { EventEmitter } from 'events';
+import { watch, FSWatcher } from 'chokidar';
+import { createLogger, Logger } from './utils/logger';
+import { EnigmaConfig } from './config';
+import { readFile } from 'fs/promises';
 
 /**
  * Preview change type for diff visualization
@@ -101,9 +101,9 @@ export interface PreviewConfig {
  * Preview events
  */
 export interface PreviewEvents {
-  'update': (update: PreviewUpdate) => void;
+  update: (update: PreviewUpdate) => void;
   'file-change': (file: string, type: 'add' | 'change' | 'unlink') => void;
-  'error': (error: Error, context?: any) => void;
+  error: (error: Error, context?: any) => void;
   'refresh-start': () => void;
   'refresh-complete': (duration: number) => void;
 }
@@ -123,7 +123,7 @@ export class DevPreview extends EventEmitter {
 
   constructor(config: Partial<PreviewConfig> = {}) {
     super();
-    
+
     this.config = {
       enabled: true,
       autoRefresh: true,
@@ -131,8 +131,15 @@ export class DevPreview extends EventEmitter {
       highlightChanges: true,
       refreshInterval: 2000,
       maxFileSize: 1024 * 1024, // 1MB
-      watchPatterns: ["src/**/*.css", "src/**/*.html", "src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx"],
-      excludePatterns: ["node_modules/**", "dist/**", "build/**"],
+      watchPatterns: [
+        'src/**/*.css',
+        'src/**/*.html',
+        'src/**/*.js',
+        'src/**/*.jsx',
+        'src/**/*.ts',
+        'src/**/*.tsx',
+      ],
+      excludePatterns: ['node_modules/**', 'dist/**', 'build/**'],
       diffOptions: {
         contextLines: 3,
         ignoreWhitespace: false,
@@ -142,9 +149,9 @@ export class DevPreview extends EventEmitter {
       ...config,
     };
 
-    this.logger = createLogger("DevPreview");
+    this.logger = createLogger('DevPreview');
 
-    this.logger.debug("Development preview initialized", {
+    this.logger.debug('Development preview initialized', {
       config: this.config,
     });
   }
@@ -154,17 +161,17 @@ export class DevPreview extends EventEmitter {
    */
   async start(): Promise<void> {
     if (this.isRunning) {
-      this.logger.warn("Development preview already running");
+      this.logger.warn('Development preview already running');
       return;
     }
 
     if (!this.config.enabled) {
-      this.logger.info("Development preview disabled");
+      this.logger.info('Development preview disabled');
       return;
     }
 
     this.isRunning = true;
-    this.logger.info("Starting development preview", {
+    this.logger.info('Starting development preview', {
       watchPatterns: this.config.watchPatterns,
       autoRefresh: this.config.autoRefresh,
     });
@@ -180,7 +187,7 @@ export class DevPreview extends EventEmitter {
     // Perform initial refresh
     await this.refresh('manual-refresh');
 
-    this.logger.info("Development preview started successfully");
+    this.logger.info('Development preview started successfully');
   }
 
   /**
@@ -188,12 +195,12 @@ export class DevPreview extends EventEmitter {
    */
   async stop(): Promise<void> {
     if (!this.isRunning) {
-      this.logger.warn("Development preview not running");
+      this.logger.warn('Development preview not running');
       return;
     }
 
     this.isRunning = false;
-    this.logger.info("Stopping development preview");
+    this.logger.info('Stopping development preview');
 
     // Stop file watcher
     if (this.fileWatcher) {
@@ -207,7 +214,7 @@ export class DevPreview extends EventEmitter {
       this.refreshInterval = undefined;
     }
 
-    this.logger.info("Development preview stopped");
+    this.logger.info('Development preview stopped');
   }
 
   /**
@@ -217,12 +224,12 @@ export class DevPreview extends EventEmitter {
     this.emit('refresh-start');
     const startTime = Date.now();
 
-    this.logger.debug("Refreshing preview", { trigger });
+    this.logger.debug('Refreshing preview', { trigger });
 
     try {
       // Discover files to process
       const files = await this.discoverFiles();
-      
+
       // Process each file and generate diffs
       const fileDiffs: FileDiff[] = [];
       let totalSavings = 0;
@@ -237,7 +244,7 @@ export class DevPreview extends EventEmitter {
             totalChanges += diff.stats.totalChanges;
           }
         } catch (error) {
-          this.logger.warn("Failed to process file for preview", {
+          this.logger.warn('Failed to process file for preview', {
             file,
             error: error instanceof Error ? error.message : String(error),
           });
@@ -265,7 +272,7 @@ export class DevPreview extends EventEmitter {
       this.emit('refresh-complete', processingTime);
       this.emit('update', update);
 
-      this.logger.info("Preview refreshed successfully", {
+      this.logger.info('Preview refreshed successfully', {
         filesProcessed: fileDiffs.length,
         totalChanges,
         totalSavings,
@@ -295,7 +302,7 @@ export class DevPreview extends EventEmitter {
     try {
       return await this.processFile(filePath);
     } catch (error) {
-      this.logger.error("Failed to get file preview", {
+      this.logger.error('Failed to get file preview', {
         filePath,
         error: error instanceof Error ? error.message : String(error),
       });
@@ -309,8 +316,8 @@ export class DevPreview extends EventEmitter {
   updateConfig(newConfig: Partial<PreviewConfig>): void {
     const oldConfig = { ...this.config };
     this.config = { ...this.config, ...newConfig };
-    
-    this.logger.debug("Preview configuration updated", {
+
+    this.logger.debug('Preview configuration updated', {
       oldConfig,
       newConfig,
       fullConfig: this.config,
@@ -366,8 +373,8 @@ export class DevPreview extends EventEmitter {
    * Generate HTML preview for a file diff
    */
   generateHtmlPreview(diff: FileDiff): string {
-    const changes = diff.changes.map(change => this.formatChangeAsHtml(change)).join('\n');
-    
+    const changes = diff.changes.map((change) => this.formatChangeAsHtml(change)).join('\n');
+
     return `
 <!DOCTYPE html>
 <html lang="en">
@@ -429,7 +436,7 @@ export class DevPreview extends EventEmitter {
    * Start file watching
    */
   private async startFileWatching(): Promise<void> {
-    this.logger.debug("Starting file watching for preview", {
+    this.logger.debug('Starting file watching for preview', {
       watchPatterns: this.config.watchPatterns,
       excludePatterns: this.config.excludePatterns,
     });
@@ -448,21 +455,21 @@ export class DevPreview extends EventEmitter {
           .on('change', (path) => this.handleFileChange(path, 'change'))
           .on('unlink', (path) => this.handleFileChange(path, 'unlink'))
           .on('error', (error) => {
-            this.logger.error("File watcher error in preview", { error });
+            this.logger.error('File watcher error in preview', { error });
             this.emit('error', error);
           });
 
-        this.logger.info("File watching started for preview");
+        this.logger.info('File watching started for preview');
       } else {
         // In test environments, file watcher might be mocked or disabled
         if (process.env.NODE_ENV === 'test' || process.env.VITEST) {
-          this.logger.warn("File watcher not available (test environment)");
+          this.logger.warn('File watcher not available (test environment)');
         } else {
-          throw new Error("Failed to create file watcher");
+          throw new Error('Failed to create file watcher');
         }
       }
     } catch (error) {
-      this.logger.error("Failed to start file watching", { error });
+      this.logger.error('Failed to start file watching', { error });
       throw error;
     }
   }
@@ -477,13 +484,13 @@ export class DevPreview extends EventEmitter {
 
     this.refreshInterval = setInterval(() => {
       if (this.isRunning && this.config.autoRefresh) {
-        this.refresh('manual-refresh').catch(error => {
-          this.logger.error("Auto-refresh failed", { error });
+        this.refresh('manual-refresh').catch((error) => {
+          this.logger.error('Auto-refresh failed', { error });
         });
       }
     }, this.config.refreshInterval);
 
-    this.logger.debug("Auto-refresh started", {
+    this.logger.debug('Auto-refresh started', {
       interval: this.config.refreshInterval,
     });
   }
@@ -502,14 +509,14 @@ export class DevPreview extends EventEmitter {
    * Handle file change events
    */
   private handleFileChange(path: string, type: 'add' | 'change' | 'unlink'): void {
-    this.logger.debug("File change detected in preview", { path, type });
+    this.logger.debug('File change detected in preview', { path, type });
     this.emit('file-change', path, type);
 
     if (this.config.autoRefresh) {
       // Debounce file changes to avoid excessive refreshes
       setTimeout(() => {
-        this.refresh('file-change').catch(error => {
-          this.logger.error("File change refresh failed", { path, type, error });
+        this.refresh('file-change').catch((error) => {
+          this.logger.error('File change refresh failed', { path, type, error });
         });
       }, 500);
     }
@@ -522,7 +529,7 @@ export class DevPreview extends EventEmitter {
     // This is a simplified implementation
     // In a real implementation, this would use glob patterns to find files
     const files: string[] = [];
-    
+
     // For now, return some example files
     // This would be replaced with actual file discovery logic
     return files;
@@ -535,10 +542,10 @@ export class DevPreview extends EventEmitter {
     try {
       // Read original content
       const originalContent = await readFile(filePath, 'utf-8');
-      
+
       // Check file size
       if (originalContent.length > this.config.maxFileSize) {
-        this.logger.warn("File too large for preview", {
+        this.logger.warn('File too large for preview', {
           filePath,
           size: originalContent.length,
           maxSize: this.config.maxFileSize,
@@ -548,10 +555,10 @@ export class DevPreview extends EventEmitter {
 
       // Simulate optimization (in real implementation, this would call the actual optimizer)
       const optimizedContent = this.simulateOptimization(originalContent);
-      
+
       // Generate changes
       const changes = this.generateChanges(originalContent, optimizedContent, filePath);
-      
+
       // Calculate stats
       const stats = this.calculateStats(originalContent, optimizedContent, changes);
 
@@ -563,7 +570,7 @@ export class DevPreview extends EventEmitter {
         stats,
       };
     } catch (error) {
-      this.logger.error("Failed to process file", {
+      this.logger.error('Failed to process file', {
         filePath,
         error: error instanceof Error ? error.message : String(error),
       });
@@ -590,7 +597,7 @@ export class DevPreview extends EventEmitter {
     // This is a simplified implementation
     // In a real implementation, this would perform proper diff analysis
     const changes: CssClassChange[] = [];
-    
+
     // Placeholder change for demonstration
     if (original !== optimized) {
       changes.push({
@@ -620,7 +627,11 @@ export class DevPreview extends EventEmitter {
   /**
    * Calculate statistics for a file diff
    */
-  private calculateStats(original: string, optimized: string, changes: CssClassChange[]): FileDiff['stats'] {
+  private calculateStats(
+    original: string,
+    optimized: string,
+    changes: CssClassChange[]
+  ): FileDiff['stats'] {
     const sizeBefore = original.length;
     const sizeAfter = optimized.length;
     const savings = sizeBefore - sizeAfter;
@@ -628,9 +639,9 @@ export class DevPreview extends EventEmitter {
 
     return {
       totalChanges: changes.length,
-      additions: changes.filter(c => c.type === 'added').length,
-      deletions: changes.filter(c => c.type === 'removed').length,
-      modifications: changes.filter(c => c.type === 'modified').length,
+      additions: changes.filter((c) => c.type === 'added').length,
+      deletions: changes.filter((c) => c.type === 'removed').length,
+      modifications: changes.filter((c) => c.type === 'modified').length,
       sizeBefore,
       sizeAfter,
       savings,
@@ -644,7 +655,7 @@ export class DevPreview extends EventEmitter {
   private formatChangeAsHtml(change: CssClassChange): string {
     const typeClass = change.type;
     const typeLabel = change.type.charAt(0).toUpperCase() + change.type.slice(1);
-    
+
     return `
 <div class="change ${typeClass}">
     <div class="change-header">
@@ -685,8 +696,15 @@ export function createDevPreview(config: EnigmaConfig): DevPreview | null {
     highlightChanges: config.dev.preview.highlightChanges ?? true,
     refreshInterval: 2000,
     maxFileSize: 1024 * 1024, // 1MB
-    watchPatterns: ["src/**/*.css", "src/**/*.html", "src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx"],
-    excludePatterns: ["node_modules/**", "dist/**", "build/**"],
+    watchPatterns: [
+      'src/**/*.css',
+      'src/**/*.html',
+      'src/**/*.js',
+      'src/**/*.jsx',
+      'src/**/*.ts',
+      'src/**/*.tsx',
+    ],
+    excludePatterns: ['node_modules/**', 'dist/**', 'build/**'],
     diffOptions: {
       contextLines: 3,
       ignoreWhitespace: false,
@@ -704,4 +722,4 @@ export function createDevPreview(config: EnigmaConfig): DevPreview | null {
 interface DevPreviewEventEmitter {
   on<K extends keyof PreviewEvents>(event: K, listener: PreviewEvents[K]): this;
   emit<K extends keyof PreviewEvents>(event: K, ...args: Parameters<PreviewEvents[K]>): boolean;
-} 
+}

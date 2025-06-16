@@ -5,13 +5,9 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import {
-  IMockFileSystem,
-  createMockFileSystem,
-  FileOperation,
-} from "./mockFileSystem";
-import { DryRunStatistics, createDryRunStatistics } from "./dryRunStatistics";
-import { DryRunReport, createDryRunReport } from "./dryRunReport";
+import { IMockFileSystem, createMockFileSystem, FileOperation } from './mockFileSystem';
+import { DryRunStatistics, createDryRunStatistics } from './dryRunStatistics';
+import { DryRunReport, createDryRunReport } from './dryRunReport';
 
 // =============================================================================
 // TYPES & INTERFACES
@@ -34,7 +30,7 @@ export interface DryRunOptions {
   /** Enable performance metrics collection */
   enableMetrics?: boolean;
   /** Output format for reports */
-  outputFormat?: "json" | "markdown" | "text";
+  outputFormat?: 'json' | 'markdown' | 'text';
 }
 
 /**
@@ -62,11 +58,7 @@ export interface DryRunResult {
  */
 export interface IFileSystemInterceptor {
   /** Intercept and simulate a file system operation */
-  intercept<T>(
-    operation: string,
-    args: any[],
-    originalFn: (...args: any[]) => T,
-  ): T;
+  intercept<T>(operation: string, args: any[], originalFn: (...args: any[]) => T): T;
   /** Check if an operation should be intercepted */
   shouldIntercept(operation: string): boolean;
   /** Get the mock file system instance */
@@ -95,7 +87,7 @@ export class DryRunSimulator {
       preloadFiles: [],
       skipOperations: [],
       enableMetrics: true,
-      outputFormat: "markdown",
+      outputFormat: 'markdown',
       ...options,
     };
     this.mockFs = createMockFileSystem();
@@ -110,7 +102,7 @@ export class DryRunSimulator {
    */
   async start(): Promise<void> {
     if (this.isActive) {
-      throw new Error("Dry run simulation is already active");
+      throw new Error('Dry run simulation is already active');
     }
 
     this.isActive = true;
@@ -126,7 +118,7 @@ export class DryRunSimulator {
     this.installFileSystemHooks();
 
     if (this.options.verbose) {
-      console.log("🏃 Dry run simulation started");
+      console.log('🏃 Dry run simulation started');
     }
   }
 
@@ -135,7 +127,7 @@ export class DryRunSimulator {
    */
   async stop(): Promise<DryRunResult> {
     if (!this.isActive) {
-      throw new Error("Dry run simulation is not active");
+      throw new Error('Dry run simulation is not active');
     }
 
     // Uninstall file system hooks
@@ -144,12 +136,7 @@ export class DryRunSimulator {
     const executionTime = Date.now() - this.startTime;
     const operations = this.mockFs.getOperations();
     const statistics = createDryRunStatistics(operations);
-    const report = createDryRunReport(
-      operations,
-      statistics,
-      this.options,
-      executionTime,
-    );
+    const report = createDryRunReport(operations, statistics, this.options, executionTime);
 
     this.isActive = false;
 
@@ -164,10 +151,8 @@ export class DryRunSimulator {
     };
 
     if (this.options.verbose) {
-      console.log("🏁 Dry run simulation completed");
-      console.log(
-        `📊 ${operations.length} operations simulated in ${executionTime}ms`,
-      );
+      console.log('🏁 Dry run simulation completed');
+      console.log(`📊 ${operations.length} operations simulated in ${executionTime}ms`);
     }
 
     return result;
@@ -177,7 +162,7 @@ export class DryRunSimulator {
    * Execute a function within dry run context
    */
   async executeInDryRun<T>(
-    fn: () => Promise<T>,
+    fn: () => Promise<T>
   ): Promise<{ result: T; dryRunResult: DryRunResult }> {
     await this.start();
 
@@ -191,9 +176,7 @@ export class DryRunSimulator {
       if (this.isActive) {
         const dryRunResult = await this.stop();
         dryRunResult.success = false;
-        dryRunResult.errors.push(
-          error instanceof Error ? error.message : String(error),
-        );
+        dryRunResult.errors.push(error instanceof Error ? error.message : String(error));
 
         return {
           result: undefined as T,
@@ -237,20 +220,20 @@ export class DryRunSimulator {
     const createMockResultForOperation = (operation: string, _args: any[]): any => {
       // Return appropriate mock results for skipped operations
       switch (operation) {
-        case "readFile":
-        case "readFileSync":
-          return "";
-        case "writeFile":
-        case "writeFileSync":
+        case 'readFile':
+        case 'readFileSync':
+          return '';
+        case 'writeFile':
+        case 'writeFileSync':
           return undefined;
-        case "mkdir":
-        case "mkdirSync":
+        case 'mkdir':
+        case 'mkdirSync':
           return undefined;
-        case "exists":
-        case "existsSync":
+        case 'exists':
+        case 'existsSync':
           return false;
-        case "stat":
-        case "statSync":
+        case 'stat':
+        case 'statSync':
           return {
             isFile: () => true,
             isDirectory: () => false,
@@ -264,11 +247,7 @@ export class DryRunSimulator {
     };
 
     return {
-      intercept<T>(
-        operation: string,
-        args: any[],
-        originalFn: (...args: any[]) => T,
-      ): T {
+      intercept<T>(operation: string, args: any[], originalFn: (...args: any[]) => T): T {
         if (skipOps.includes(operation)) {
           // Skip this operation, return a mock result
           return createMockResultForOperation(operation, args) as T;
@@ -276,29 +255,29 @@ export class DryRunSimulator {
 
         // Route to mock file system
         switch (operation) {
-          case "readFile":
+          case 'readFile':
             return (mockFs as any).readFile(args[0], args[1]) as T;
-          case "readFileSync":
+          case 'readFileSync':
             return (mockFs as any).readFileSync(args[0], args[1]) as T;
 
-          case "writeFile":
+          case 'writeFile':
             return (mockFs as any).writeFile(args[0], args[1], args[2]) as T;
-          case "writeFileSync":
+          case 'writeFileSync':
             return (mockFs as any).writeFileSync(args[0], args[1], args[2]) as T;
 
-          case "mkdir":
+          case 'mkdir':
             return (mockFs as any).mkdir(args[0], args[1]) as T;
-          case "mkdirSync":
+          case 'mkdirSync':
             return (mockFs as any).mkdirSync(args[0], args[1]) as T;
 
-          case "exists":
+          case 'exists':
             return (mockFs as any).exists(args[0]) as T;
-          case "existsSync":
+          case 'existsSync':
             return (mockFs as any).existsSync(args[0]) as T;
 
-          case "stat":
+          case 'stat':
             return (mockFs as any).stat(args[0]) as T;
-          case "statSync":
+          case 'statSync':
             return (mockFs as any).statSync(args[0]) as T;
 
           default:
@@ -310,16 +289,16 @@ export class DryRunSimulator {
 
       shouldIntercept(operation: string): boolean {
         const fileOps = [
-          "readFile",
-          "readFileSync",
-          "writeFile",
-          "writeFileSync",
-          "mkdir",
-          "mkdirSync",
-          "exists",
-          "existsSync",
-          "stat",
-          "statSync",
+          'readFile',
+          'readFileSync',
+          'writeFile',
+          'writeFileSync',
+          'mkdir',
+          'mkdirSync',
+          'exists',
+          'existsSync',
+          'stat',
+          'statSync',
         ];
         return fileOps.includes(operation);
       },
@@ -333,21 +312,21 @@ export class DryRunSimulator {
   private installFileSystemHooks(): void {
     // Dynamic require needed for runtime fs method interception
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const fs = require("fs");
+    const fs = require('fs');
     const originalMethods = new Map();
 
     // List of methods to intercept
     const methodsToIntercept = [
-      "readFile",
-      "readFileSync",
-      "writeFile",
-      "writeFileSync",
-      "mkdir",
-      "mkdirSync",
-      "exists",
-      "existsSync",
-      "stat",
-      "statSync",
+      'readFile',
+      'readFileSync',
+      'writeFile',
+      'writeFileSync',
+      'mkdir',
+      'mkdirSync',
+      'exists',
+      'existsSync',
+      'stat',
+      'statSync',
     ];
 
     for (const method of methodsToIntercept) {
@@ -358,11 +337,7 @@ export class DryRunSimulator {
         // Replace with intercepted version
         fs[method] = (...args: any[]) => {
           if (this.interceptor?.shouldIntercept(method)) {
-            return this.interceptor.intercept(
-              method,
-              args,
-              originalMethods.get(method),
-            );
+            return this.interceptor.intercept(method, args, originalMethods.get(method));
           }
           return originalMethods.get(method)(...args);
         };
@@ -376,7 +351,7 @@ export class DryRunSimulator {
   private uninstallFileSystemHooks(): void {
     // Dynamic require needed for runtime fs method restoration
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const fs = require("fs");
+    const fs = require('fs');
     const originalMethods = (this as any)._originalMethods;
 
     if (originalMethods) {
@@ -392,20 +367,20 @@ export class DryRunSimulator {
   private createMockResult(operation: string, _args: any[]): any {
     // Return appropriate mock results for skipped operations
     switch (operation) {
-      case "readFile":
-      case "readFileSync":
-        return "";
-      case "writeFile":
-      case "writeFileSync":
+      case 'readFile':
+      case 'readFileSync':
+        return '';
+      case 'writeFile':
+      case 'writeFileSync':
         return undefined;
-      case "mkdir":
-      case "mkdirSync":
+      case 'mkdir':
+      case 'mkdirSync':
         return undefined;
-      case "exists":
-      case "existsSync":
+      case 'exists':
+      case 'existsSync':
         return false;
-      case "stat":
-      case "statSync":
+      case 'stat':
+      case 'statSync':
         return {
           isFile: () => true,
           isDirectory: () => false,
@@ -445,7 +420,7 @@ export class DryRunSimulator {
     const operations = this.mockFs.getOperations();
     const statistics = createDryRunStatistics(operations);
 
-    let preview = "📋 Dry Run Change Preview\n\n";
+    let preview = '📋 Dry Run Change Preview\n\n';
 
     preview += `📊 Summary:\n`;
     preview += `- Files to create: ${statistics.filesCreated}\n`;
@@ -461,16 +436,9 @@ export class DryRunSimulator {
         // Show first 10 operations
         preview += `- ${op.type.toUpperCase()}: ${op.path}\n`;
 
-        if (
-          this.options.includeContent &&
-          op.newContent &&
-          typeof op.newContent === "string"
-        ) {
-          const content = op.newContent.substring(
-            0,
-            this.options.maxContentPreview || 100,
-          );
-          preview += `  Content: ${content}${op.newContent.length > (this.options.maxContentPreview || 100) ? "..." : ""}\n`;
+        if (this.options.includeContent && op.newContent && typeof op.newContent === 'string') {
+          const content = op.newContent.substring(0, this.options.maxContentPreview || 100);
+          preview += `  Content: ${content}${op.newContent.length > (this.options.maxContentPreview || 100) ? '...' : ''}\n`;
         }
       }
 
@@ -487,7 +455,7 @@ export class DryRunSimulator {
    */
   reset(): void {
     if (this.isActive) {
-      throw new Error("Cannot reset while simulation is active");
+      throw new Error('Cannot reset while simulation is active');
     }
 
     this.mockFs.reset();
@@ -502,9 +470,7 @@ export class DryRunSimulator {
 /**
  * Create a new dry run simulator instance
  */
-export function createDryRunSimulator(
-  options?: DryRunOptions,
-): DryRunSimulator {
+export function createDryRunSimulator(options?: DryRunOptions): DryRunSimulator {
   return new DryRunSimulator(options);
 }
 
@@ -513,7 +479,7 @@ export function createDryRunSimulator(
  */
 export async function simulateDryRun<T>(
   fn: () => Promise<T>,
-  options?: DryRunOptions,
+  options?: DryRunOptions
 ): Promise<{ result: T; dryRunResult: DryRunResult }> {
   const simulator = createDryRunSimulator(options);
   return simulator.executeInDryRun(fn);
@@ -528,11 +494,9 @@ let globalSimulator: DryRunSimulator | null = null;
 /**
  * Enable global dry run mode
  */
-export async function enableGlobalDryRun(
-  options?: DryRunOptions,
-): Promise<void> {
+export async function enableGlobalDryRun(options?: DryRunOptions): Promise<void> {
   if (globalSimulator) {
-    throw new Error("Global dry run is already enabled");
+    throw new Error('Global dry run is already enabled');
   }
 
   globalSimulator = createDryRunSimulator(options);

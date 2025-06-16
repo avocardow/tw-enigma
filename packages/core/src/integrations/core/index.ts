@@ -6,4 +6,4 @@
 export * from './configDetector';
 export * from './buildToolPlugin';
 export * from './hmrHandler';
-export * from './integrationManager'; 
+export * from './integrationManager';

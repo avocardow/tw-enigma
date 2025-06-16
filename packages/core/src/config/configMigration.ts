@@ -14,7 +14,7 @@ export const ConfigVersionSchema = z.object({
   schemaVersion: z.number(),
   createdAt: z.string(),
   updatedAt: z.string(),
-  migratedFrom: z.string().optional()
+  migratedFrom: z.string().optional(),
 });
 
 export type ConfigVersion = z.infer<typeof ConfigVersionSchema>;
@@ -69,18 +69,18 @@ export class ConfigMigration {
   private migrations: Map<string, MigrationScript> = new Map();
   private configPath: string;
   private backupDir: string;
-  
+
   constructor(configPath: string, backupDir?: string) {
     this.configPath = configPath;
     this.backupDir = backupDir || join(dirname(configPath), '.migrations');
     this.initializeMigrations();
-    
+
     // Ensure backup directory exists
     if (!existsSync(this.backupDir)) {
       mkdirSync(this.backupDir, { recursive: true });
     }
   }
-  
+
   /**
    * Initialize built-in migration scripts
    */
@@ -110,19 +110,19 @@ export class ConfigMigration {
             mergeDuplicates: mergeDuplicates ?? false,
             minifyClassNames: minifyClassNames ?? false,
             treeshake: treeshake ?? false,
-            deadCodeElimination: deadCodeElimination ?? false
+            deadCodeElimination: deadCodeElimination ?? false,
           },
           performance: {
             maxMemoryUsage: maxMemoryUsage ?? '256MB',
             timeout: timeout ?? 15000,
-            retries: retries ?? 1
+            retries: retries ?? 1,
           },
           validation: {
             enabled: true,
             strict: false,
             customRules: [],
             errorHandling: 'warn',
-            skipValidation: []
+            skipValidation: [],
           },
           runtime: {
             enabled: true,
@@ -137,8 +137,8 @@ export class ConfigMigration {
               enabled: false,
               maxAttempts: 3,
               fallbackToDefaults: true,
-            }
-          }
+            },
+          },
         };
       },
       rollback: async (config: any) => {
@@ -152,11 +152,11 @@ export class ConfigMigration {
           deadCodeElimination: optimization?.deadCodeElimination,
           maxMemoryUsage: performance?.maxMemoryUsage,
           timeout: performance?.timeout,
-          retries: performance?.retries
+          retries: performance?.retries,
         };
-      }
+      },
     });
-    
+
     // Migration from v0.2.0 to v1.0.0 (schema v2 to v3)
     this.addMigration({
       fromVersion: '0.2.0',
@@ -177,12 +177,12 @@ export class ConfigMigration {
           output: {
             format: outputFormat ?? 'css',
             filename: outputFilename ?? 'optimized.css',
-            preserveOriginal: preserveOriginal ?? true
+            preserveOriginal: preserveOriginal ?? true,
           },
           tailwind: {
             configPath: tailwindConfig ?? './tailwind.config.js',
-            cssPath: tailwindCss ?? './src/styles/tailwind.css'
-          }
+            cssPath: tailwindCss ?? './src/styles/tailwind.css',
+          },
         };
       },
       rollback: async (config: any) => {
@@ -193,14 +193,14 @@ export class ConfigMigration {
           outputFilename: output?.filename,
           preserveOriginal: output?.preserveOriginal,
           tailwindConfig: tailwind?.configPath,
-          tailwindCss: tailwind?.cssPath
+          tailwindCss: tailwind?.cssPath,
         };
-      }
+      },
     });
-    
+
     logger.debug(`Initialized ${this.migrations.size} migration scripts`);
   }
-  
+
   /**
    * Add a migration script
    */
@@ -209,7 +209,7 @@ export class ConfigMigration {
     this.migrations.set(key, migration);
     logger.debug(`Added migration: ${key}`);
   }
-  
+
   /**
    * Detect configuration version
    */
@@ -218,18 +218,18 @@ export class ConfigMigration {
     if (config._version) {
       return ConfigVersionSchema.parse(config._version);
     }
-    
+
     // Infer version from configuration structure
     const inferredVersion = this.inferVersionFromStructure(config);
-    
+
     return {
       version: inferredVersion,
       schemaVersion: this.getSchemaVersionForConfigVersion(inferredVersion),
       createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     };
   }
-  
+
   /**
    * Infer version from configuration structure
    */
@@ -238,66 +238,73 @@ export class ConfigMigration {
     if (config.output && config.tailwind) {
       return '1.0.0';
     }
-    
+
     // Check for v0.2.0 features
     if (config.optimization && config.performance) {
       return '0.2.0';
     }
-    
+
     // Default to earliest version
     return '0.1.0';
   }
-  
+
   /**
    * Get schema version for configuration version
    */
   private getSchemaVersionForConfigVersion(version: string): number {
     switch (version) {
-      case '1.0.0': return 3;
-      case '0.2.0': return 2;
-      case '0.1.0': return 1;
-      default: return 1;
+      case '1.0.0':
+        return 3;
+      case '0.2.0':
+        return 2;
+      case '0.1.0':
+        return 1;
+      default:
+        return 1;
     }
   }
-  
+
   /**
    * Check if migration is needed
    */
   public needsMigration(config: any): boolean {
     const currentVersion = this.detectVersion(config);
-    return currentVersion.version !== CURRENT_CONFIG_VERSION ||
-           currentVersion.schemaVersion !== CURRENT_SCHEMA_VERSION;
+    return (
+      currentVersion.version !== CURRENT_CONFIG_VERSION ||
+      currentVersion.schemaVersion !== CURRENT_SCHEMA_VERSION
+    );
   }
-  
+
   /**
    * Get migration path from current version to target version
    */
   public getMigrationPath(fromVersion: string, toVersion?: string): MigrationScript[] {
     const targetVersion = toVersion || CURRENT_CONFIG_VERSION;
     const path: MigrationScript[] = [];
-    
+
     let currentVersion = fromVersion;
     const visited = new Set<string>();
-    
+
     while (currentVersion !== targetVersion && !visited.has(currentVersion)) {
       visited.add(currentVersion);
-      
+
       // Find migration from current version
-      const migration = Array.from(this.migrations.values())
-        .find(m => m.fromVersion === currentVersion);
-      
+      const migration = Array.from(this.migrations.values()).find(
+        (m) => m.fromVersion === currentVersion
+      );
+
       if (!migration) {
         logger.warn(`No migration found from version ${currentVersion}`);
         break;
       }
-      
+
       path.push(migration);
       currentVersion = migration.toVersion;
     }
-    
+
     return path;
   }
-  
+
   /**
    * Migrate configuration
    */
@@ -307,96 +314,101 @@ export class ConfigMigration {
       createBackup = true,
       dryRun = false,
       force = false,
-      targetVersion
+      targetVersion,
     } = options;
-    
+
     const result: MigrationResult = {
       success: false,
       fromVersion: '',
       toVersion: targetVersion || CURRENT_CONFIG_VERSION,
       migrationsApplied: [],
       warnings: [],
-      errors: []
+      errors: [],
     };
-    
+
     try {
       // Load current configuration
       if (!existsSync(this.configPath)) {
         result.errors.push(`Configuration file not found: ${this.configPath}`);
         return result;
       }
-      
+
       const configContent = readFileSync(this.configPath, 'utf-8');
       let config: any;
-      
+
       try {
         config = JSON.parse(configContent);
       } catch (error) {
         result.errors.push(`Invalid JSON in configuration file: ${error}`);
         return result;
       }
-      
+
       // Detect current version
       const currentVersion = this.detectVersion(config);
       result.fromVersion = currentVersion.version;
-      
+
       // Check if migration is needed
       if (!this.needsMigration(config) && !force) {
         result.success = true;
         result.warnings.push('Configuration is already up to date');
         return result;
       }
-      
+
       // Get migration path
       const migrationPath = this.getMigrationPath(currentVersion.version, targetVersion);
-      
+
       if (migrationPath.length === 0 && this.needsMigration(config)) {
-        result.errors.push(`No migration path found from ${currentVersion.version} to ${result.toVersion}`);
+        result.errors.push(
+          `No migration path found from ${currentVersion.version} to ${result.toVersion}`
+        );
         return result;
       }
-      
+
       // Create backup if requested
       if (createBackup && !dryRun) {
         const backupPath = await this.createBackup(config, currentVersion);
         result.backupPath = backupPath;
       }
-      
+
       // Apply migrations
       let migratedConfig = { ...config };
-      
+
       for (const migration of migrationPath) {
         logger.info(`Applying migration: ${migration.fromVersion} -> ${migration.toVersion}`);
-        
+
         if (!autoMigrate && !force) {
           result.warnings.push(`Manual approval required for migration: ${migration.description}`);
           continue;
         }
-        
+
         try {
           migratedConfig = await migration.migrate(migratedConfig);
           result.migrationsApplied.push(`${migration.fromVersion}->${migration.toVersion}`);
-          
+
           // Validate migration result if validator exists
           if (migration.validate && !migration.validate(migratedConfig)) {
-            result.errors.push(`Migration validation failed: ${migration.fromVersion} -> ${migration.toVersion}`);
+            result.errors.push(
+              `Migration validation failed: ${migration.fromVersion} -> ${migration.toVersion}`
+            );
             return result;
           }
-          
         } catch (error) {
-          result.errors.push(`Migration failed: ${migration.fromVersion} -> ${migration.toVersion}: ${error}`);
+          result.errors.push(
+            `Migration failed: ${migration.fromVersion} -> ${migration.toVersion}: ${error}`
+          );
           return result;
         }
       }
-      
+
       // Add version metadata
       migratedConfig._version = {
         version: result.toVersion,
         schemaVersion: CURRENT_SCHEMA_VERSION,
         createdAt: currentVersion.createdAt,
         updatedAt: new Date().toISOString(),
-        migratedFrom: currentVersion.version
+        migratedFrom: currentVersion.version,
       };
-      
+
       // Validate final configuration
       try {
         EnigmaConfigSchema.parse(migratedConfig);
@@ -404,7 +416,7 @@ export class ConfigMigration {
         result.errors.push(`Final configuration validation failed: ${error}`);
         return result;
       }
-      
+
       // Write migrated configuration
       if (!dryRun) {
         const migratedContent = JSON.stringify(migratedConfig, null, 2);
@@ -413,17 +425,18 @@ export class ConfigMigration {
       } else {
         logger.info('Dry run: Configuration migration would succeed');
       }
-      
+
       result.success = true;
-      
     } catch (error) {
       result.errors.push(`Migration failed: ${error}`);
-      logger.error('Configuration migration failed', { error: error instanceof Error ? error.message : String(error) });
+      logger.error('Configuration migration failed', {
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
-    
+
     return result;
   }
-  
+
   /**
    * Create configuration backup
    */
@@ -431,22 +444,22 @@ export class ConfigMigration {
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const backupFilename = `config-backup-${version.version}-${timestamp}.json`;
     const _backupPath = join(this.backupDir, backupFilename);
-    
+
     const backupData = {
       _backup: {
         originalPath: this.configPath,
         version: version,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
       },
-      ...config
+      ...config,
     };
-    
+
     writeFileSync(_backupPath, JSON.stringify(backupData, null, 2), 'utf-8');
     logger.info(`Configuration backup created: ${_backupPath}`);
-    
+
     return _backupPath;
   }
-  
+
   /**
    * Restore configuration from backup
    */
@@ -456,27 +469,28 @@ export class ConfigMigration {
         logger.error(`Backup file not found: ${backupPath}`);
         return false;
       }
-      
+
       const backupContent = readFileSync(backupPath, 'utf-8');
       const backupData = JSON.parse(backupContent);
-      
+
       // Extract original configuration (remove backup metadata)
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { _backup, ...originalConfig } = backupData;
-      
+
       // Write restored configuration
       const restoredContent = JSON.stringify(originalConfig, null, 2);
       writeFileSync(this.configPath, restoredContent, 'utf-8');
-      
+
       logger.info(`Configuration restored from backup: ${backupPath}`);
       return true;
-      
     } catch (error) {
-      logger.error('Failed to restore configuration from backup', { error: error instanceof Error ? error.message : String(error) });
+      logger.error('Failed to restore configuration from backup', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       return false;
     }
   }
-  
+
   /**
    * List available backups
    */
@@ -492,44 +506,48 @@ export class ConfigMigration {
       createdAt: string;
       size: number;
     }> = [];
-    
+
     if (!existsSync(this.backupDir)) {
       return backups;
     }
-    
+
     const files = readdirSync(this.backupDir);
-    
+
     for (const file of files) {
       if (file.startsWith('config-backup-') && file.endsWith('.json')) {
         const filePath = join(this.backupDir, file);
-        
+
         try {
           const content = readFileSync(filePath, 'utf-8');
           const data = JSON.parse(content);
           const stats = statSync(filePath);
-          
+
           backups.push({
             path: filePath,
             version: data._backup?.version?.version || 'unknown',
             createdAt: data._backup?.createdAt || stats.ctime.toISOString(),
-            size: stats.size
+            size: stats.size,
           });
         } catch (error) {
-          logger.warn(`Failed to read backup file ${file}`, { error: error instanceof Error ? error.message : String(error) });
+          logger.warn(`Failed to read backup file ${file}`, {
+            error: error instanceof Error ? error.message : String(error),
+          });
         }
       }
     }
-    
-    return backups.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+    return backups.sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
   }
-  
+
   /**
    * Get deprecation warnings for current configuration
    */
   public getDeprecationWarnings(config: any): string[] {
     const warnings: string[] = [];
     const version = this.detectVersion(config);
-    
+
     // Check for deprecated configuration options
     if (version.schemaVersion < 2) {
       if (config.removeUnused !== undefined) {
@@ -539,7 +557,7 @@ export class ConfigMigration {
         warnings.push('mergeDuplicates is deprecated, use optimization.mergeDuplicates instead');
       }
     }
-    
+
     if (version.schemaVersion < 3) {
       if (config.outputFormat !== undefined) {
         warnings.push('outputFormat is deprecated, use output.format instead');
@@ -548,41 +566,43 @@ export class ConfigMigration {
         warnings.push('tailwindConfig is deprecated, use tailwind.configPath instead');
       }
     }
-    
+
     return warnings;
   }
-  
+
   /**
    * Get upgrade suggestions
    */
   public getUpgradeSuggestions(config: any): string[] {
     const suggestions: string[] = [];
     const version = this.detectVersion(config);
-    
+
     if (version.version !== CURRENT_CONFIG_VERSION) {
-      suggestions.push(`Upgrade to version ${CURRENT_CONFIG_VERSION} for latest features and improvements`);
+      suggestions.push(
+        `Upgrade to version ${CURRENT_CONFIG_VERSION} for latest features and improvements`
+      );
     }
-    
+
     if (version.schemaVersion < CURRENT_SCHEMA_VERSION) {
       suggestions.push('Run migration to update configuration schema to latest version');
     }
-    
+
     // Feature-specific suggestions
     if (!config.optimization) {
       suggestions.push('Add optimization configuration for better performance');
     }
-    
+
     if (!config.performance) {
       suggestions.push('Add performance configuration for resource management');
     }
-    
+
     if (!config.output) {
       suggestions.push('Add output configuration for better control over generated files');
     }
-    
+
     return suggestions;
   }
-  
+
   /**
    * Create migration from current configuration
    */
@@ -594,19 +614,19 @@ export class ConfigMigration {
     if (!existsSync(this.configPath)) {
       throw new Error(`Configuration file not found: ${this.configPath}`);
     }
-    
+
     const configContent = readFileSync(this.configPath, 'utf-8');
     const config = JSON.parse(configContent);
     const currentVersion = this.detectVersion(config);
-    
+
     const migration: MigrationScript = {
       fromVersion: currentVersion.version,
       toVersion,
       schemaVersion: CURRENT_SCHEMA_VERSION,
       description,
-      migrate: migrationFn
+      migrate: migrationFn,
     };
-    
+
     this.addMigration(migration);
     logger.info(`Created migration from ${currentVersion.version} to ${toVersion}`);
   }
@@ -637,7 +657,7 @@ export function needsConfigMigration(configPath: string): boolean {
   if (!existsSync(configPath)) {
     return false;
   }
-  
+
   try {
     const configContent = readFileSync(configPath, 'utf-8');
     const config = JSON.parse(configContent);
@@ -653,5 +673,5 @@ export function needsConfigMigration(configPath: string): boolean {
  */
 export {
   CURRENT_SCHEMA_VERSION as currentSchemaVersion,
-  CURRENT_CONFIG_VERSION as currentConfigVersion
-}; 
+  CURRENT_CONFIG_VERSION as currentConfigVersion,
+};

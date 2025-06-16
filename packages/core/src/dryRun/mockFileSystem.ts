@@ -5,8 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { Stats } from "fs";
-import { promisify } from "util";
+import { Stats } from 'fs';
+import { promisify } from 'util';
 
 // =============================================================================
 // TYPES & INTERFACES
@@ -52,13 +52,13 @@ export interface MockFileEntry {
  * File operation types for tracking changes
  */
 export type FileOperationType =
-  | "read"
-  | "write"
-  | "delete"
-  | "create"
-  | "mkdir"
-  | "exists"
-  | "stat";
+  | 'read'
+  | 'write'
+  | 'delete'
+  | 'create'
+  | 'mkdir'
+  | 'exists'
+  | 'stat';
 
 /**
  * File operation record for tracking changes
@@ -89,26 +89,12 @@ export interface IMockFileSystem {
   // File operations
   readFile(path: string, encoding?: BufferEncoding): Promise<string | Buffer>;
   readFileSync(path: string, encoding?: BufferEncoding): string | Buffer;
-  writeFile(
-    path: string,
-    content: string | Buffer,
-    encoding?: BufferEncoding,
-  ): Promise<void>;
-  writeFileSync(
-    path: string,
-    content: string | Buffer,
-    encoding?: BufferEncoding,
-  ): void;
+  writeFile(path: string, content: string | Buffer, encoding?: BufferEncoding): Promise<void>;
+  writeFileSync(path: string, content: string | Buffer, encoding?: BufferEncoding): void;
 
   // Directory operations
-  mkdir(
-    path: string,
-    options?: { recursive?: boolean; mode?: number },
-  ): Promise<void>;
-  mkdirSync(
-    path: string,
-    options?: { recursive?: boolean; mode?: number },
-  ): void;
+  mkdir(path: string, options?: { recursive?: boolean; mode?: number }): Promise<void>;
+  mkdirSync(path: string, options?: { recursive?: boolean; mode?: number }): void;
 
   // File system queries
   exists(path: string): Promise<boolean>;
@@ -141,7 +127,7 @@ export class MockFileSystem implements IMockFileSystem {
     // Store reference to original fs module for disk loading
     // We need require here for dynamic loading - cannot use ES6 import
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    this.originalFs = require("fs");
+    this.originalFs = require('fs');
   }
 
   // ---------------------------------------------------------------------------
@@ -151,11 +137,8 @@ export class MockFileSystem implements IMockFileSystem {
   /**
    * Read file content (async)
    */
-  async readFile(
-    path: string,
-    encoding?: BufferEncoding,
-  ): Promise<string | Buffer> {
-    return this.performOperation("read", path, async () => {
+  async readFile(path: string, encoding?: BufferEncoding): Promise<string | Buffer> {
+    return this.performOperation('read', path, async () => {
       const normalized = this.normalizePath(path);
       const entry = this.files.get(normalized);
 
@@ -164,9 +147,7 @@ export class MockFileSystem implements IMockFileSystem {
       }
 
       if (entry.metadata.isDirectory) {
-        throw new Error(
-          `EISDIR: illegal operation on a directory, read '${path}'`,
-        );
+        throw new Error(`EISDIR: illegal operation on a directory, read '${path}'`);
       }
 
       // Update access time
@@ -176,8 +157,8 @@ export class MockFileSystem implements IMockFileSystem {
         return entry.content.toString(encoding);
       }
 
-      if (!encoding && typeof entry.content === "string") {
-        return Buffer.from(entry.content, entry.encoding || "utf8");
+      if (!encoding && typeof entry.content === 'string') {
+        return Buffer.from(entry.content, entry.encoding || 'utf8');
       }
 
       return entry.content;
@@ -192,13 +173,11 @@ export class MockFileSystem implements IMockFileSystem {
     const entry = this.files.get(normalized);
 
     this.recordOperation({
-      type: "read",
+      type: 'read',
       path,
       timestamp: new Date(),
       success: !!entry,
-      error: entry
-        ? undefined
-        : `ENOENT: no such file or directory, open '${path}'`,
+      error: entry ? undefined : `ENOENT: no such file or directory, open '${path}'`,
     });
 
     if (!entry) {
@@ -206,9 +185,7 @@ export class MockFileSystem implements IMockFileSystem {
     }
 
     if (entry.metadata.isDirectory) {
-      throw new Error(
-        `EISDIR: illegal operation on a directory, read '${path}'`,
-      );
+      throw new Error(`EISDIR: illegal operation on a directory, read '${path}'`);
     }
 
     // Update access time
@@ -218,8 +195,8 @@ export class MockFileSystem implements IMockFileSystem {
       return entry.content.toString(encoding);
     }
 
-    if (!encoding && typeof entry.content === "string") {
-      return Buffer.from(entry.content, entry.encoding || "utf8");
+    if (!encoding && typeof entry.content === 'string') {
+      return Buffer.from(entry.content, entry.encoding || 'utf8');
     }
 
     return entry.content;
@@ -231,16 +208,15 @@ export class MockFileSystem implements IMockFileSystem {
   async writeFile(
     path: string,
     content: string | Buffer,
-    encoding?: BufferEncoding,
+    encoding?: BufferEncoding
   ): Promise<void> {
     const normalized = this.normalizePath(path);
     const existing = this.files.get(normalized);
-    
+
     return this.performOperation(
-      "write",
+      'write',
       path,
       async () => {
-
         // Ensure parent directory exists
         const parentDir = this.getParentDirectory(normalized);
         if (parentDir && !this.files.has(parentDir)) {
@@ -250,12 +226,11 @@ export class MockFileSystem implements IMockFileSystem {
         const now = new Date();
         const size = Buffer.isBuffer(content)
           ? content.length
-          : Buffer.byteLength(content, encoding || "utf8");
+          : Buffer.byteLength(content, encoding || 'utf8');
 
         const entry: MockFileEntry = {
           content,
-          encoding:
-            typeof content === "string" ? encoding || "utf8" : undefined,
+          encoding: typeof content === 'string' ? encoding || 'utf8' : undefined,
           metadata: {
             created: existing?.metadata.created || now,
             modified: now,
@@ -271,18 +246,14 @@ export class MockFileSystem implements IMockFileSystem {
         this.files.set(normalized, entry);
       },
       existing?.content,
-      content,
+      content
     );
   }
 
   /**
    * Write file content (sync)
    */
-  writeFileSync(
-    path: string,
-    content: string | Buffer,
-    encoding?: BufferEncoding,
-  ): void {
+  writeFileSync(path: string, content: string | Buffer, encoding?: BufferEncoding): void {
     const normalized = this.normalizePath(path);
     const existing = this.files.get(normalized);
 
@@ -295,11 +266,11 @@ export class MockFileSystem implements IMockFileSystem {
     const now = new Date();
     const size = Buffer.isBuffer(content)
       ? content.length
-      : Buffer.byteLength(content, encoding || "utf8");
+      : Buffer.byteLength(content, encoding || 'utf8');
 
     const entry: MockFileEntry = {
       content,
-      encoding: typeof content === "string" ? encoding || "utf8" : undefined,
+      encoding: typeof content === 'string' ? encoding || 'utf8' : undefined,
       metadata: {
         created: existing?.metadata.created || now,
         modified: now,
@@ -315,7 +286,7 @@ export class MockFileSystem implements IMockFileSystem {
     this.files.set(normalized, entry);
 
     this.recordOperation({
-      type: existing ? "write" : "create",
+      type: existing ? 'write' : 'create',
       path,
       timestamp: now,
       previousContent: existing?.content,
@@ -331,11 +302,8 @@ export class MockFileSystem implements IMockFileSystem {
   /**
    * Create directory (async)
    */
-  async mkdir(
-    path: string,
-    options?: { recursive?: boolean; mode?: number },
-  ): Promise<void> {
-    return this.performOperation("mkdir", path, async () => {
+  async mkdir(path: string, options?: { recursive?: boolean; mode?: number }): Promise<void> {
+    return this.performOperation('mkdir', path, async () => {
       const normalized = this.normalizePath(path);
 
       if (this.files.has(normalized)) {
@@ -347,11 +315,11 @@ export class MockFileSystem implements IMockFileSystem {
 
       // Handle recursive creation
       if (options?.recursive) {
-        const parts = normalized.split("/").filter(Boolean);
-        let currentPath = "";
+        const parts = normalized.split('/').filter(Boolean);
+        let currentPath = '';
 
         for (const part of parts) {
-          currentPath += "/" + part;
+          currentPath += '/' + part;
           if (!this.files.has(currentPath)) {
             this.createDirectory(currentPath, options.mode);
           }
@@ -371,16 +339,13 @@ export class MockFileSystem implements IMockFileSystem {
   /**
    * Create directory (sync)
    */
-  mkdirSync(
-    path: string,
-    options?: { recursive?: boolean; mode?: number },
-  ): void {
+  mkdirSync(path: string, options?: { recursive?: boolean; mode?: number }): void {
     const normalized = this.normalizePath(path);
 
     if (this.files.has(normalized)) {
       if (options?.recursive) {
         this.recordOperation({
-          type: "mkdir",
+          type: 'mkdir',
           path,
           timestamp: new Date(),
           success: true,
@@ -389,7 +354,7 @@ export class MockFileSystem implements IMockFileSystem {
       }
 
       this.recordOperation({
-        type: "mkdir",
+        type: 'mkdir',
         path,
         timestamp: new Date(),
         success: false,
@@ -400,11 +365,11 @@ export class MockFileSystem implements IMockFileSystem {
 
     // Handle recursive creation
     if (options?.recursive) {
-      const parts = normalized.split("/").filter(Boolean);
-      let currentPath = "";
+      const parts = normalized.split('/').filter(Boolean);
+      let currentPath = '';
 
       for (const part of parts) {
-        currentPath += "/" + part;
+        currentPath += '/' + part;
         if (!this.files.has(currentPath)) {
           this.createDirectory(currentPath, options.mode);
         }
@@ -414,7 +379,7 @@ export class MockFileSystem implements IMockFileSystem {
       const parent = this.getParentDirectory(normalized);
       if (parent && !this.files.has(parent)) {
         this.recordOperation({
-          type: "mkdir",
+          type: 'mkdir',
           path,
           timestamp: new Date(),
           success: false,
@@ -427,7 +392,7 @@ export class MockFileSystem implements IMockFileSystem {
     }
 
     this.recordOperation({
-      type: "mkdir",
+      type: 'mkdir',
       path,
       timestamp: new Date(),
       success: true,
@@ -442,7 +407,7 @@ export class MockFileSystem implements IMockFileSystem {
    * Check if file/directory exists (async)
    */
   async exists(path: string): Promise<boolean> {
-    return this.performOperation("exists", path, async () => {
+    return this.performOperation('exists', path, async () => {
       const normalized = this.normalizePath(path);
       return this.files.has(normalized);
     });
@@ -456,7 +421,7 @@ export class MockFileSystem implements IMockFileSystem {
     const exists = this.files.has(normalized);
 
     this.recordOperation({
-      type: "exists",
+      type: 'exists',
       path,
       timestamp: new Date(),
       success: true,
@@ -469,7 +434,7 @@ export class MockFileSystem implements IMockFileSystem {
    * Get file/directory stats (async)
    */
   async stat(path: string): Promise<Stats> {
-    return this.performOperation("stat", path, async () => {
+    return this.performOperation('stat', path, async () => {
       const normalized = this.normalizePath(path);
       const entry = this.files.get(normalized);
 
@@ -490,7 +455,7 @@ export class MockFileSystem implements IMockFileSystem {
 
     if (!entry) {
       this.recordOperation({
-        type: "stat",
+        type: 'stat',
         path,
         timestamp: new Date(),
         success: false,
@@ -500,7 +465,7 @@ export class MockFileSystem implements IMockFileSystem {
     }
 
     this.recordOperation({
-      type: "stat",
+      type: 'stat',
       path,
       timestamp: new Date(),
       success: true,
@@ -590,26 +555,26 @@ export class MockFileSystem implements IMockFileSystem {
 
   private normalizePath(path: string): string {
     // Convert to forward slashes and remove duplicate slashes
-    let normalized = path.replace(/\\/g, "/").replace(/\/+/g, "/");
+    let normalized = path.replace(/\\/g, '/').replace(/\/+/g, '/');
 
     // Ensure absolute path for consistency
-    if (!normalized.startsWith("/")) {
-      normalized = "/" + normalized;
+    if (!normalized.startsWith('/')) {
+      normalized = '/' + normalized;
     }
 
     return normalized;
   }
 
   private getParentDirectory(path: string): string | undefined {
-    const parts = path.split("/").filter(Boolean);
+    const parts = path.split('/').filter(Boolean);
     if (parts.length <= 1) return undefined;
-    return "/" + parts.slice(0, -1).join("/");
+    return '/' + parts.slice(0, -1).join('/');
   }
 
   private createDirectory(path: string, mode?: number): void {
     const now = new Date();
     const entry: MockFileEntry = {
-      content: "",
+      content: '',
       metadata: {
         created: now,
         modified: now,
@@ -646,7 +611,7 @@ export class MockFileSystem implements IMockFileSystem {
     path: string,
     operation: () => Promise<T>,
     previousContent?: Buffer | string,
-    newContent?: Buffer | string,
+    newContent?: Buffer | string
   ): Promise<T> {
     try {
       const result = await operation();
@@ -695,9 +660,7 @@ export function createMockFileSystem(): IMockFileSystem {
 /**
  * Create a mock file system with pre-loaded files from disk
  */
-export async function createMockFileSystemFromDisk(
-  paths: string[],
-): Promise<IMockFileSystem> {
+export async function createMockFileSystemFromDisk(paths: string[]): Promise<IMockFileSystem> {
   const mockFs = new MockFileSystem();
 
   for (const path of paths) {

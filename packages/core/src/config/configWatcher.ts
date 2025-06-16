@@ -5,27 +5,27 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { EventEmitter } from "events";
-import { watch, FSWatcher } from "chokidar";
-import { readFileSync, existsSync, statSync } from "fs";
-import { resolve, basename } from "path";
-import { logger } from "../utils/logger";
-import { ConfigError } from "../utils/errors";
-import { validateConfig } from "./configValidator";
-import type { EnigmaConfig } from "./config";
-import type { ValidationResult } from "./configValidator";
+import { EventEmitter } from 'events';
+import { watch, FSWatcher } from 'chokidar';
+import { readFileSync, existsSync, statSync } from 'fs';
+import { resolve, basename } from 'path';
+import { logger } from '../utils/logger';
+import { ConfigError } from '../utils/errors';
+import { validateConfig } from './configValidator';
+import type { EnigmaConfig } from './config';
+import type { ValidationResult } from './configValidator';
 
 /**
  * Configuration watcher events
  */
 export interface ConfigWatcherEvents {
-  "config-changed": (result: ConfigChangeResult) => void;
-  "config-validated": (result: ValidationResult) => void;
-  "config-error": (error: ConfigError) => void;
-  "file-added": (filepath: string) => void;
-  "file-removed": (filepath: string) => void;
-  "watcher-ready": () => void;
-  "watcher-error": (error: Error) => void;
+  'config-changed': (result: ConfigChangeResult) => void;
+  'config-validated': (result: ValidationResult) => void;
+  'config-error': (error: ConfigError) => void;
+  'file-added': (filepath: string) => void;
+  'file-removed': (filepath: string) => void;
+  'watcher-ready': () => void;
+  'watcher-error': (error: Error) => void;
 }
 
 /**
@@ -34,7 +34,7 @@ export interface ConfigWatcherEvents {
 export interface ConfigChangeResult {
   filepath: string;
   timestamp: Date;
-  changeType: "added" | "changed" | "removed";
+  changeType: 'added' | 'changed' | 'removed';
   isValid: boolean;
   config?: EnigmaConfig;
   validation?: ValidationResult;
@@ -90,7 +90,7 @@ export class ConfigWatcher extends EventEmitter {
 
   constructor(options?: Partial<ConfigWatcherOptions>) {
     super();
-    
+
     this.options = {
       enabled: true,
       debounceMs: 300,
@@ -103,20 +103,15 @@ export class ConfigWatcher extends EventEmitter {
         stabilityThreshold: 100,
         pollInterval: 100,
       },
-      watchPatterns: [
-        "**/.enigmarc*",
-        "**/enigma.config.*",
-        "**/package.json",
-        "**/.env*",
-      ],
+      watchPatterns: ['**/.enigmarc*', '**/enigma.config.*', '**/package.json', '**/.env*'],
       ignorePatterns: [
-        "**/node_modules/**",
-        "**/.git/**",
-        "**/dist/**",
-        "**/build/**",
-        "**/*.tmp",
-        "**/*.temp",
-        "**/.DS_Store",
+        '**/node_modules/**',
+        '**/.git/**',
+        '**/dist/**',
+        '**/build/**',
+        '**/*.tmp',
+        '**/*.temp',
+        '**/.DS_Store',
       ],
       validateOnChange: true,
       backupOnChange: true,
@@ -124,7 +119,7 @@ export class ConfigWatcher extends EventEmitter {
       ...options,
     };
 
-    logger.debug("ConfigWatcher initialized", { options: this.options });
+    logger.debug('ConfigWatcher initialized', { options: this.options });
   }
 
   /**
@@ -132,18 +127,18 @@ export class ConfigWatcher extends EventEmitter {
    */
   public async start(watchPaths?: string[]): Promise<void> {
     if (this.isWatching) {
-      logger.warn("ConfigWatcher is already running");
+      logger.warn('ConfigWatcher is already running');
       return;
     }
 
     if (!this.options.enabled) {
-      logger.info("ConfigWatcher is disabled");
+      logger.info('ConfigWatcher is disabled');
       return;
     }
 
     const pathsToWatch = watchPaths || this.options.watchPatterns;
-    
-    logger.info("Starting configuration file watcher", {
+
+    logger.info('Starting configuration file watcher', {
       paths: pathsToWatch,
       debounceMs: this.options.debounceMs,
     });
@@ -165,30 +160,30 @@ export class ConfigWatcher extends EventEmitter {
       // Wait for watcher to be ready
       await new Promise<void>((resolve, reject) => {
         const timeout = setTimeout(() => {
-          reject(new Error("Watcher initialization timeout"));
+          reject(new Error('Watcher initialization timeout'));
         }, 5000);
 
-        this.watcher!.on("ready", () => {
+        this.watcher!.on('ready', () => {
           clearTimeout(timeout);
           resolve();
         });
 
-        this.watcher!.on("error", (error) => {
+        this.watcher!.on('error', (error) => {
           clearTimeout(timeout);
           reject(error);
         });
       });
 
-      logger.info("Configuration file watcher started successfully");
-      this.emit("watcher-ready");
+      logger.info('Configuration file watcher started successfully');
+      this.emit('watcher-ready');
     } catch (error) {
-      logger.error("Failed to start configuration file watcher", { error });
-      this.emit("watcher-error", error as Error);
+      logger.error('Failed to start configuration file watcher', { error });
+      this.emit('watcher-error', error as Error);
       throw new ConfigError(
         `Failed to start configuration file watcher: ${error instanceof Error ? error.message : String(error)}`,
         undefined,
         error as Error,
-        { operation: "startWatcher" }
+        { operation: 'startWatcher' }
       );
     }
   }
@@ -201,7 +196,7 @@ export class ConfigWatcher extends EventEmitter {
       return;
     }
 
-    logger.info("Stopping configuration file watcher");
+    logger.info('Stopping configuration file watcher');
 
     // Clear all debounce timers
     for (const tracker of Array.from(this.fileTrackers.values())) {
@@ -219,7 +214,7 @@ export class ConfigWatcher extends EventEmitter {
     }
 
     this.isWatching = false;
-    logger.info("Configuration file watcher stopped");
+    logger.info('Configuration file watcher stopped');
   }
 
   /**
@@ -227,10 +222,10 @@ export class ConfigWatcher extends EventEmitter {
    */
   public addWatch(path: string): void {
     if (!this.watcher) {
-      throw new ConfigError("Watcher not initialized", path, undefined, { operation: "addWatch" });
+      throw new ConfigError('Watcher not initialized', path, undefined, { operation: 'addWatch' });
     }
 
-    logger.debug("Adding watch path", { path });
+    logger.debug('Adding watch path', { path });
     this.watcher.add(path);
     this.watchedFiles.add(resolve(path));
   }
@@ -243,7 +238,7 @@ export class ConfigWatcher extends EventEmitter {
       return;
     }
 
-    logger.debug("Removing watch path", { path });
+    logger.debug('Removing watch path', { path });
     this.watcher.unwatch(path);
     this.watchedFiles.delete(resolve(path));
     this.fileTrackers.delete(resolve(path));
@@ -267,25 +262,25 @@ export class ConfigWatcher extends EventEmitter {
    * Manually trigger validation of a configuration file
    */
   public async validateFile(filepath: string): Promise<ValidationResult> {
-    logger.debug("Manually validating configuration file", { filepath });
+    logger.debug('Manually validating configuration file', { filepath });
 
     try {
       const config = await this.loadConfigFile(filepath);
       const validation = await validateConfig(config, filepath);
 
-      this.emit("config-validated", validation);
+      this.emit('config-validated', validation);
       return validation;
     } catch (error) {
-      logger.error("Manual configuration validation failed", { filepath, error });
-      
+      logger.error('Manual configuration validation failed', { filepath, error });
+
       const configError = new ConfigError(
         `Manual validation failed for ${filepath}: ${error instanceof Error ? error.message : String(error)}`,
         filepath,
         error as Error,
-        { operation: "manualValidation" }
+        { operation: 'manualValidation' }
       );
 
-      this.emit("config-error", configError);
+      this.emit('config-error', configError);
       throw configError;
     }
   }
@@ -298,43 +293,43 @@ export class ConfigWatcher extends EventEmitter {
       return;
     }
 
-    this.watcher.on("add", (filepath) => {
-      logger.debug("Configuration file added", { filepath });
+    this.watcher.on('add', (filepath) => {
+      logger.debug('Configuration file added', { filepath });
       this.watchedFiles.add(resolve(filepath));
-      this.emit("file-added", filepath);
-      this.handleFileChange(filepath, "added");
+      this.emit('file-added', filepath);
+      this.handleFileChange(filepath, 'added');
     });
 
-    this.watcher.on("change", (filepath) => {
-      logger.debug("Configuration file changed", { filepath });
-      this.handleFileChange(filepath, "changed");
+    this.watcher.on('change', (filepath) => {
+      logger.debug('Configuration file changed', { filepath });
+      this.handleFileChange(filepath, 'changed');
     });
 
-    this.watcher.on("unlink", (filepath) => {
-      logger.debug("Configuration file removed", { filepath });
+    this.watcher.on('unlink', (filepath) => {
+      logger.debug('Configuration file removed', { filepath });
       this.watchedFiles.delete(resolve(filepath));
       this.fileTrackers.delete(resolve(filepath));
-      this.emit("file-removed", filepath);
-      this.handleFileChange(filepath, "removed");
+      this.emit('file-removed', filepath);
+      this.handleFileChange(filepath, 'removed');
     });
 
-    this.watcher.on("error", (error) => {
-      logger.error("Configuration watcher error", { error });
-      this.emit("watcher-error", error);
+    this.watcher.on('error', (error) => {
+      logger.error('Configuration watcher error', { error });
+      this.emit('watcher-error', error);
     });
 
-    this.watcher.on("ready", () => {
-      logger.debug("Configuration watcher ready");
-      this.emit("watcher-ready");
+    this.watcher.on('ready', () => {
+      logger.debug('Configuration watcher ready');
+      this.emit('watcher-ready');
     });
   }
 
   /**
    * Handle file change with debouncing
    */
-  private handleFileChange(filepath: string, changeType: "added" | "changed" | "removed"): void {
+  private handleFileChange(filepath: string, changeType: 'added' | 'changed' | 'removed'): void {
     const resolvedPath = resolve(filepath);
-    
+
     // Get or create file tracker
     let tracker = this.fileTrackers.get(resolvedPath);
     if (!tracker) {
@@ -359,12 +354,12 @@ export class ConfigWatcher extends EventEmitter {
     tracker.isStable = false;
 
     // Update file size if file exists
-    if (changeType !== "removed" && existsSync(resolvedPath)) {
+    if (changeType !== 'removed' && existsSync(resolvedPath)) {
       try {
         const stats = statSync(resolvedPath);
         tracker.lastSize = stats.size;
       } catch (error) {
-        logger.warn("Failed to get file stats", { filepath: resolvedPath, error });
+        logger.warn('Failed to get file stats', { filepath: resolvedPath, error });
       }
     }
 
@@ -377,11 +372,15 @@ export class ConfigWatcher extends EventEmitter {
   /**
    * Process file change after debounce period
    */
-  private async processFileChange(filepath: string, changeType: "added" | "changed" | "removed", tracker: FileChangeTracker): Promise<void> {
+  private async processFileChange(
+    filepath: string,
+    changeType: 'added' | 'changed' | 'removed',
+    tracker: FileChangeTracker
+  ): Promise<void> {
     tracker.isStable = true;
     tracker.debounceTimer = undefined;
 
-    logger.debug("Processing configuration file change", {
+    logger.debug('Processing configuration file change', {
       filepath,
       changeType,
       changeCount: tracker.changeCount,
@@ -396,10 +395,10 @@ export class ConfigWatcher extends EventEmitter {
     };
 
     try {
-      if (changeType === "removed") {
+      if (changeType === 'removed') {
         // Handle file removal
         result.isValid = true;
-        this.emit("config-changed", result);
+        this.emit('config-changed', result);
         return;
       }
 
@@ -422,7 +421,7 @@ export class ConfigWatcher extends EventEmitter {
           this.addToHistory(configData as EnigmaConfig, filepath);
         }
 
-        this.emit("config-validated", validation);
+        this.emit('config-validated', validation);
       } else {
         // Just load without validation
         const configData = await this.loadConfigFile(filepath);
@@ -432,20 +431,20 @@ export class ConfigWatcher extends EventEmitter {
         this.addToHistory(configData as EnigmaConfig, filepath);
       }
 
-      this.emit("config-changed", result);
+      this.emit('config-changed', result);
     } catch (error) {
-      logger.error("Failed to process configuration file change", { filepath, error });
-      
+      logger.error('Failed to process configuration file change', { filepath, error });
+
       const configError = new ConfigError(
         `Failed to process configuration change in ${filepath}: ${error instanceof Error ? error.message : String(error)}`,
         filepath,
         error as Error,
-        { operation: "processFileChange", changeType }
+        { operation: 'processFileChange', changeType }
       );
 
       result.error = configError;
-      this.emit("config-error", configError);
-      this.emit("config-changed", result);
+      this.emit('config-error', configError);
+      this.emit('config-changed', result);
     }
   }
 
@@ -458,13 +457,13 @@ export class ConfigWatcher extends EventEmitter {
     }
 
     try {
-      const content = readFileSync(filepath, "utf-8");
-      
+      const content = readFileSync(filepath, 'utf-8');
+
       // Parse based on file extension
       const ext = filepath.toLowerCase();
-      if (ext.endsWith(".json")) {
+      if (ext.endsWith('.json')) {
         return JSON.parse(content);
-      } else if (ext.endsWith(".js") || ext.endsWith(".mjs")) {
+      } else if (ext.endsWith('.js') || ext.endsWith('.mjs')) {
         // For JS files, we'd need to use dynamic import or eval (not recommended)
         // For now, assume JSON format
         return JSON.parse(content);
@@ -477,7 +476,7 @@ export class ConfigWatcher extends EventEmitter {
         `Failed to parse configuration file ${filepath}: ${error instanceof Error ? error.message : String(error)}`,
         filepath,
         error as Error,
-        { operation: "loadConfigFile" }
+        { operation: 'loadConfigFile' }
       );
     }
   }
@@ -505,12 +504,12 @@ export class ConfigWatcher extends EventEmitter {
     try {
       // This is a simplified backup - in a real implementation,
       // you might want to write to a backup directory
-      logger.debug("Backing up configuration", { filepath });
-      
+      logger.debug('Backing up configuration', { filepath });
+
       // Add to history as backup
       this.addToHistory(config, filepath);
     } catch (error) {
-      logger.warn("Failed to backup configuration", { filepath, error });
+      logger.warn('Failed to backup configuration', { filepath, error });
     }
   }
 
@@ -519,14 +518,9 @@ export class ConfigWatcher extends EventEmitter {
    */
   private isConfigFile(filepath: string): boolean {
     const filename = basename(filepath).toLowerCase();
-    const configPatterns = [
-      /^\.enigmarc/,
-      /^enigma\.config\./,
-      /^package\.json$/,
-      /^\.env/,
-    ];
+    const configPatterns = [/^\.enigmarc/, /^enigma\.config\./, /^package\.json$/, /^\.env/];
 
-    return configPatterns.some(pattern => pattern.test(filename));
+    return configPatterns.some((pattern) => pattern.test(filename));
   }
 }
 
@@ -540,8 +534,11 @@ export function createConfigWatcher(options?: Partial<ConfigWatcherOptions>): Co
 /**
  * Convenience function for watching a specific configuration file
  */
-export async function watchConfigFile(filepath: string, options?: Partial<ConfigWatcherOptions>): Promise<ConfigWatcher> {
+export async function watchConfigFile(
+  filepath: string,
+  options?: Partial<ConfigWatcherOptions>
+): Promise<ConfigWatcher> {
   const watcher = createConfigWatcher(options);
   await watcher.start([filepath]);
   return watcher;
-} 
+}

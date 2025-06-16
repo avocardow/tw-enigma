@@ -1,9 +1,9 @@
-import { createLogger } from "../utils/logger";
-import { EnigmaPlugin, PluginConfig } from "../types/plugins";
-import * as fs from "fs/promises";
-import * as path from "path";
-import { watch } from "fs";
-import { EventEmitter } from "events";
+import { createLogger } from '../utils/logger';
+import { EnigmaPlugin, PluginConfig } from '../types/plugins';
+import * as fs from 'fs/promises';
+import * as path from 'path';
+import { watch } from 'fs';
+import { EventEmitter } from 'events';
 
 interface PluginRegistryEntry {
   plugin: EnigmaPlugin;
@@ -12,7 +12,7 @@ interface PluginRegistryEntry {
   lastModified?: Date;
   dependencies: string[];
   dependents: string[];
-  status: "active" | "inactive" | "error" | "loading";
+  status: 'active' | 'inactive' | 'error' | 'loading';
   version: string;
   checksum?: string;
 }
@@ -40,7 +40,7 @@ interface PluginRegistryConfig {
  * Advanced Plugin Registry with hot-reload, versioning, and dependency management
  */
 export class PluginRegistry extends EventEmitter {
-  private logger = createLogger("plugin-registry");
+  private logger = createLogger('plugin-registry');
   private plugins = new Map<string, Map<string, PluginRegistryEntry>>();
   private watchers = new Map<string, ReturnType<typeof watch>>();
   private config: Required<PluginRegistryConfig>;
@@ -53,13 +53,13 @@ export class PluginRegistry extends EventEmitter {
       enableHotReload: true,
       enableVersioning: true,
       enableDependencyTracking: true,
-      registryPath: "./plugins",
-      watchPaths: ["./plugins", "./src/core/plugins"],
+      registryPath: './plugins',
+      watchPaths: ['./plugins', './src/core/plugins'],
       maxVersions: 5,
       ...config,
     };
 
-    this.logger.info("Plugin registry initialized", {
+    this.logger.info('Plugin registry initialized', {
       config: this.config,
     });
 
@@ -74,12 +74,12 @@ export class PluginRegistry extends EventEmitter {
   async registerPlugin(
     plugin: EnigmaPlugin,
     config: PluginConfig,
-    filePath?: string,
+    filePath?: string
   ): Promise<void> {
     const pluginName = plugin.meta.name;
     const version = plugin.meta.version;
 
-    this.logger.info("Registering plugin", {
+    this.logger.info('Registering plugin', {
       name: pluginName,
       version,
       filePath,
@@ -97,7 +97,7 @@ export class PluginRegistry extends EventEmitter {
         lastModified: new Date(),
         dependencies: this.extractDependencies(plugin),
         dependents: [],
-        status: "loading",
+        status: 'loading',
         version,
         checksum: filePath ? await this.calculateChecksum(filePath) : undefined,
       };
@@ -111,10 +111,7 @@ export class PluginRegistry extends EventEmitter {
       pluginVersions.set(version, entry);
 
       // Manage version limits
-      if (
-        this.config.enableVersioning &&
-        pluginVersions.size > this.config.maxVersions
-      ) {
+      if (this.config.enableVersioning && pluginVersions.size > this.config.maxVersions) {
         await this.cleanupOldVersions(pluginName);
       }
 
@@ -128,17 +125,17 @@ export class PluginRegistry extends EventEmitter {
         await plugin.initialize(config);
       }
 
-      entry.status = "active";
+      entry.status = 'active';
 
-      this.logger.info("Plugin registered successfully", {
+      this.logger.info('Plugin registered successfully', {
         name: pluginName,
         version,
         dependencies: entry.dependencies.length,
       });
 
-      this.emit("plugin:registered", { name: pluginName, version, entry });
+      this.emit('plugin:registered', { name: pluginName, version, entry });
     } catch (error) {
-      this.logger.error("Failed to register plugin", {
+      this.logger.error('Failed to register plugin', {
         name: pluginName,
         version,
         error: error instanceof Error ? error.message : String(error),
@@ -152,7 +149,7 @@ export class PluginRegistry extends EventEmitter {
         lastModified: new Date(),
         dependencies: [],
         dependents: [],
-        status: "error",
+        status: 'error',
         version,
       };
 
@@ -161,7 +158,7 @@ export class PluginRegistry extends EventEmitter {
       }
       this.plugins.get(pluginName)!.set(version, failedEntry);
 
-      this.emit("plugin:error", { name: pluginName, version, error });
+      this.emit('plugin:error', { name: pluginName, version, error });
       throw error;
     }
   }
@@ -170,7 +167,7 @@ export class PluginRegistry extends EventEmitter {
    * Unregister a plugin from the registry
    */
   async unregisterPlugin(name: string, version?: string): Promise<void> {
-    this.logger.info("Unregistering plugin", { name, version });
+    this.logger.info('Unregistering plugin', { name, version });
 
     const pluginVersions = this.plugins.get(name);
     if (!pluginVersions) {
@@ -207,8 +204,8 @@ export class PluginRegistry extends EventEmitter {
       }
     }
 
-    this.emit("plugin:unregistered", { name, version });
-    this.logger.info("Plugin unregistered", { name, version });
+    this.emit('plugin:unregistered', { name, version });
+    this.logger.info('Plugin unregistered', { name, version });
   }
 
   /**
@@ -226,9 +223,7 @@ export class PluginRegistry extends EventEmitter {
 
     // Return latest version
     const versions = Array.from(pluginVersions.keys()).sort().reverse();
-    return versions.length > 0
-      ? pluginVersions.get(versions[0])?.plugin
-      : undefined;
+    return versions.length > 0 ? pluginVersions.get(versions[0])?.plugin : undefined;
   }
 
   /**
@@ -243,14 +238,11 @@ export class PluginRegistry extends EventEmitter {
         if (options.name && !pluginName.includes(options.name)) continue;
         if (options.version && version !== options.version) continue;
         if (options.status && entry.status !== options.status) continue;
-        if (options.author && entry.plugin.meta.author !== options.author)
-          continue;
+        if (options.author && entry.plugin.meta.author !== options.author) continue;
 
         if (options.tags && options.tags.length > 0) {
           const pluginTags = entry.plugin.meta.tags || [];
-          const hasMatchingTag = options.tags.some((tag) =>
-            pluginTags.includes(tag),
-          );
+          const hasMatchingTag = options.tags.some((tag) => pluginTags.includes(tag));
           if (!hasMatchingTag) continue;
         }
 
@@ -306,7 +298,7 @@ export class PluginRegistry extends EventEmitter {
    * Reload a plugin (hot-reload)
    */
   async reloadPlugin(name: string, version?: string): Promise<void> {
-    this.logger.info("Reloading plugin", { name, version });
+    this.logger.info('Reloading plugin', { name, version });
 
     const pluginVersions = this.plugins.get(name);
     if (!pluginVersions) {
@@ -314,23 +306,18 @@ export class PluginRegistry extends EventEmitter {
     }
 
     const targetVersion =
-      version ||
-      Array.from(pluginVersions.keys()).sort((a, b) =>
-        this.compareVersions(b, a),
-      )[0];
+      version || Array.from(pluginVersions.keys()).sort((a, b) => this.compareVersions(b, a))[0];
 
     const entry = pluginVersions.get(targetVersion);
     if (!entry || !entry.filePath) {
-      throw new Error(
-        `Plugin ${name}@${targetVersion} cannot be reloaded (no file path)`,
-      );
+      throw new Error(`Plugin ${name}@${targetVersion} cannot be reloaded (no file path)`);
     }
 
     try {
       // Check if file has changed
       const currentChecksum = await this.calculateChecksum(entry.filePath);
       if (currentChecksum === entry.checksum) {
-        this.logger.debug("Plugin file unchanged, skipping reload", {
+        this.logger.debug('Plugin file unchanged, skipping reload', {
           name,
           version: targetVersion,
         });
@@ -346,21 +333,21 @@ export class PluginRegistry extends EventEmitter {
       // Re-register with updated plugin
       await this.registerPlugin(newPlugin, entry.config, entry.filePath);
 
-      this.emit("plugin:reloaded", { name, version: targetVersion });
-      this.logger.info("Plugin reloaded successfully", {
+      this.emit('plugin:reloaded', { name, version: targetVersion });
+      this.logger.info('Plugin reloaded successfully', {
         name,
         version: targetVersion,
       });
     } catch (error) {
-      this.logger.error("Failed to reload plugin", {
+      this.logger.error('Failed to reload plugin', {
         name,
         version: targetVersion,
         error: error instanceof Error ? error.message : String(error),
       });
 
       // Mark as error state
-      entry.status = "error";
-      this.emit("plugin:reload-error", { name, version: targetVersion, error });
+      entry.status = 'error';
+      this.emit('plugin:reload-error', { name, version: targetVersion, error });
       throw error;
     }
   }
@@ -377,8 +364,8 @@ export class PluginRegistry extends EventEmitter {
     for (const versions of this.plugins.values()) {
       totalVersions += versions.size;
       for (const entry of versions.values()) {
-        if (entry.status === "active") activePlugins++;
-        if (entry.status === "error") errorPlugins++;
+        if (entry.status === 'active') activePlugins++;
+        if (entry.status === 'error') errorPlugins++;
       }
     }
 
@@ -389,7 +376,7 @@ export class PluginRegistry extends EventEmitter {
       errorPlugins,
       dependencyEdges: Array.from(this.dependencyGraph.values()).reduce(
         (sum, deps) => sum + deps.size,
-        0,
+        0
       ),
       watchedPaths: this.watchers.size,
       hotReloadEnabled: this.config.enableHotReload,
@@ -419,7 +406,7 @@ export class PluginRegistry extends EventEmitter {
     };
 
     await fs.writeFile(filePath, JSON.stringify(exportData, null, 2));
-    this.logger.info("Registry exported", {
+    this.logger.info('Registry exported', {
       filePath,
       plugins: this.plugins.size,
     });
@@ -429,7 +416,7 @@ export class PluginRegistry extends EventEmitter {
    * Cleanup registry resources
    */
   async cleanup(): Promise<void> {
-    this.logger.info("Cleaning up plugin registry");
+    this.logger.info('Cleaning up plugin registry');
 
     // Stop file watchers
     for (const watcher of this.watchers.values()) {
@@ -448,7 +435,7 @@ export class PluginRegistry extends EventEmitter {
     this.dependencyGraph.clear();
     this.removeAllListeners();
 
-    this.logger.info("Plugin registry cleanup completed");
+    this.logger.info('Plugin registry cleanup completed');
   }
 
   /**
@@ -457,33 +444,25 @@ export class PluginRegistry extends EventEmitter {
   private setupHotReload(): void {
     if (!this.config.enableHotReload) return;
 
-    this.logger.info("Setting up hot-reload", {
+    this.logger.info('Setting up hot-reload', {
       watchPaths: this.config.watchPaths,
     });
 
     for (const watchPath of this.config.watchPaths) {
       try {
-        const watcher = watch(
-          watchPath,
-          { recursive: true },
-          async (eventType, filename) => {
-            if (
-              !filename ||
-              (!filename.endsWith(".js") && !filename.endsWith(".ts"))
-            )
-              return;
+        const watcher = watch(watchPath, { recursive: true }, async (eventType, filename) => {
+          if (!filename || (!filename.endsWith('.js') && !filename.endsWith('.ts'))) return;
 
-            const fullPath = path.join(watchPath, filename);
-            this.logger.debug("File change detected", {
-              eventType,
-              path: fullPath,
-            });
-          },
-        );
+          const fullPath = path.join(watchPath, filename);
+          this.logger.debug('File change detected', {
+            eventType,
+            path: fullPath,
+          });
+        });
 
         this.watchers.set(watchPath, watcher);
       } catch (error) {
-        this.logger.warn("Failed to setup watcher for path", {
+        this.logger.warn('Failed to setup watcher for path', {
           watchPath,
           error,
         });
@@ -496,19 +475,17 @@ export class PluginRegistry extends EventEmitter {
    */
   private async validatePlugin(plugin: EnigmaPlugin): Promise<void> {
     if (!plugin.meta || !plugin.meta.name || !plugin.meta.version) {
-      throw new Error(
-        "Plugin must have valid meta information (name and version)",
-      );
+      throw new Error('Plugin must have valid meta information (name and version)');
     }
 
     if (!/^[a-zA-Z0-9-_]+$/.test(plugin.meta.name)) {
       throw new Error(
-        "Plugin name must contain only alphanumeric characters, hyphens, and underscores",
+        'Plugin name must contain only alphanumeric characters, hyphens, and underscores'
       );
     }
 
     if (!/^\d+\.\d+\.\d+/.test(plugin.meta.version)) {
-      throw new Error("Plugin version must follow semantic versioning (x.y.z)");
+      throw new Error('Plugin version must follow semantic versioning (x.y.z)');
     }
   }
 
@@ -517,7 +494,7 @@ export class PluginRegistry extends EventEmitter {
    */
   private extractDependencies(plugin: EnigmaPlugin): string[] {
     // Check if plugin has dependencies property
-    if ("dependencies" in plugin && Array.isArray(plugin.dependencies)) {
+    if ('dependencies' in plugin && Array.isArray(plugin.dependencies)) {
       return plugin.dependencies as string[];
     }
     return [];
@@ -526,10 +503,7 @@ export class PluginRegistry extends EventEmitter {
   /**
    * Update dependency graph
    */
-  private async updateDependencyGraph(
-    pluginName: string,
-    dependencies: string[],
-  ): Promise<void> {
+  private async updateDependencyGraph(pluginName: string, dependencies: string[]): Promise<void> {
     this.dependencyGraph.set(pluginName, new Set(dependencies));
 
     // Update dependents
@@ -546,8 +520,8 @@ export class PluginRegistry extends EventEmitter {
    * Compare semantic versions
    */
   private compareVersions(a: string, b: string): number {
-    const aParts = a.split(".").map(Number);
-    const bParts = b.split(".").map(Number);
+    const aParts = a.split('.').map(Number);
+    const bParts = b.split('.').map(Number);
 
     for (let i = 0; i < Math.max(aParts.length, bParts.length); i++) {
       const aPart = aParts[i] || 0;
@@ -565,12 +539,12 @@ export class PluginRegistry extends EventEmitter {
    */
   private async calculateChecksum(filePath: string): Promise<string> {
     try {
-      const content = await fs.readFile(filePath, "utf-8");
-      const crypto = await import("crypto");
-      return crypto.createHash("sha256").update(content).digest("hex");
+      const content = await fs.readFile(filePath, 'utf-8');
+      const crypto = await import('crypto');
+      return crypto.createHash('sha256').update(content).digest('hex');
     } catch (error) {
-      this.logger.warn("Failed to calculate checksum", { filePath, error });
-      return "";
+      this.logger.warn('Failed to calculate checksum', { filePath, error });
+      return '';
     }
   }
 
@@ -586,7 +560,7 @@ export class PluginRegistry extends EventEmitter {
     const pluginModule = require(filePath);
     const plugin = pluginModule.default || pluginModule;
 
-    if (!plugin || typeof plugin !== "object") {
+    if (!plugin || typeof plugin !== 'object') {
       throw new Error(`Invalid plugin export from ${filePath}`);
     }
 
@@ -601,17 +575,14 @@ export class PluginRegistry extends EventEmitter {
     if (!versions || versions.size <= this.config.maxVersions) return;
 
     const sortedVersions = Array.from(versions.keys()).sort();
-    const versionsToRemove = sortedVersions.slice(
-      0,
-      versions.size - this.config.maxVersions,
-    );
+    const versionsToRemove = sortedVersions.slice(0, versions.size - this.config.maxVersions);
 
     for (const version of versionsToRemove) {
       const entry = versions.get(version);
       if (entry) {
         await this.cleanupPlugin(entry);
         versions.delete(version);
-        this.logger.debug("Removed old plugin version", {
+        this.logger.debug('Removed old plugin version', {
           name: pluginName,
           version,
         });
@@ -628,7 +599,7 @@ export class PluginRegistry extends EventEmitter {
         await entry.plugin.cleanup();
       }
     } catch (error) {
-      this.logger.warn("Plugin cleanup failed", {
+      this.logger.warn('Plugin cleanup failed', {
         name: entry.plugin.meta.name,
         version: entry.version,
         error,
@@ -640,9 +611,7 @@ export class PluginRegistry extends EventEmitter {
 /**
  * Create a new plugin registry instance
  */
-export function createPluginRegistry(
-  config: PluginRegistryConfig = {},
-): PluginRegistry {
+export function createPluginRegistry(config: PluginRegistryConfig = {}): PluginRegistry {
   return new PluginRegistry(config);
 }
 
@@ -654,9 +623,7 @@ let globalRegistry: PluginRegistry | null = null;
 /**
  * Get or create global plugin registry
  */
-export function getGlobalRegistry(
-  config?: PluginRegistryConfig,
-): PluginRegistry {
+export function getGlobalRegistry(config?: PluginRegistryConfig): PluginRegistry {
   if (!globalRegistry) {
     globalRegistry = createPluginRegistry(config);
   }

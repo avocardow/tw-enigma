@@ -10,13 +10,13 @@
  * Centralizes all configuration options for performance optimizations
  */
 
-import { EventEmitter } from "events";
-import { cpus } from "os";
+import { EventEmitter } from 'events';
+import { cpus } from 'os';
 
 /**
  * Cache strategy options
  */
-export type CacheStrategy = "lru" | "lfu" | "ttl" | "arc";
+export type CacheStrategy = 'lru' | 'lfu' | 'ttl' | 'arc';
 
 /**
  * Worker task types for type-safe worker communication
@@ -26,7 +26,7 @@ export interface WorkerTask<T = unknown> {
   type: string;
   data: T;
   timeout?: number;
-  priority?: "low" | "normal" | "high" | "critical";
+  priority?: 'low' | 'normal' | 'high' | 'critical';
   metadata?: Record<string, unknown>;
 }
 
@@ -142,8 +142,8 @@ export interface PerformanceConfig {
   streams: StreamConfig;
   batching: BatchConfig;
   enableAnalytics: boolean;
-  logLevel: "debug" | "info" | "warn" | "error";
-  environmentProfile?: "development" | "production" | "testing";
+  logLevel: 'debug' | 'info' | 'warn' | 'error';
+  environmentProfile?: 'development' | 'production' | 'testing';
 }
 
 /**
@@ -203,26 +203,19 @@ export interface SystemResources {
  * Performance event types for EventEmitter
  */
 export interface PerformanceEvents extends EventEmitter {
-  on(event: "metrics", listener: (metrics: PerformanceMetrics) => void): this;
+  on(event: 'metrics', listener: (metrics: PerformanceMetrics) => void): this;
   on(
-    event: "warning",
-    listener: (warning: {
-      type: string;
-      message: string;
-      data?: unknown;
-    }) => void,
+    event: 'warning',
+    listener: (warning: { type: string; message: string; data?: unknown }) => void
   ): this;
-  on(event: "error", listener: (error: Error) => void): this;
-  on(event: "workerStarted", listener: (workerId: string) => void): this;
-  on(event: "workerStopped", listener: (workerId: string) => void): this;
+  on(event: 'error', listener: (error: Error) => void): this;
+  on(event: 'workerStarted', listener: (workerId: string) => void): this;
+  on(event: 'workerStopped', listener: (workerId: string) => void): this;
+  on(event: 'cacheEviction', listener: (key: string, reason: string) => void): this;
+  on(event: 'memoryPressure', listener: (usage: number) => void): this;
   on(
-    event: "cacheEviction",
-    listener: (key: string, reason: string) => void,
-  ): this;
-  on(event: "memoryPressure", listener: (usage: number) => void): this;
-  on(
-    event: "performanceBudgetExceeded",
-    listener: (operation: string, duration: number) => void,
+    event: 'performanceBudgetExceeded',
+    listener: (operation: string, duration: number) => void
   ): this;
 }
 
@@ -241,7 +234,7 @@ export const DEFAULT_PERFORMANCE_CONFIG: PerformanceConfig = {
   cache: {
     enabled: true,
     maxSize: 100 * 1024 * 1024, // 100MB
-    strategy: "lru",
+    strategy: 'lru',
     ttl: 3600000, // 1 hour
     persistence: false,
     compressionEnabled: true,
@@ -264,7 +257,7 @@ export const DEFAULT_PERFORMANCE_CONFIG: PerformanceConfig = {
     enableFlameGraphs: false,
     enableMemoryProfiling: false,
     enableCPUProfiling: false,
-    outputDirectory: "./performance-profiles",
+    outputDirectory: './performance-profiles',
     autoExport: false,
     enableOpenTelemetry: false,
     // Additional properties used by profiler
@@ -274,9 +267,9 @@ export const DEFAULT_PERFORMANCE_CONFIG: PerformanceConfig = {
     enableMemoryDetails: false,
     maxSamples: 1000,
     autoAnalysis: false,
-    outputDir: "./performance-profiles",
-    clinicJsPath: "clinic",
-    zeroXPath: "0x",
+    outputDir: './performance-profiles',
+    clinicJsPath: 'clinic',
+    zeroXPath: '0x',
     enableClinicJs: false,
     enable0x: false,
   },
@@ -298,7 +291,7 @@ export const DEFAULT_PERFORMANCE_CONFIG: PerformanceConfig = {
     maxConcurrentBatches: 5,
     maxConcurrency: 10,
     batchSize: 100,
-    priorityLevels: ["high", "normal", "low"],
+    priorityLevels: ['high', 'normal', 'low'],
     retryAttempts: 3,
     queueTimeout: 10000,
     enableDependencies: true,
@@ -310,8 +303,8 @@ export const DEFAULT_PERFORMANCE_CONFIG: PerformanceConfig = {
   },
 
   enableAnalytics: true,
-  logLevel: "info",
-  environmentProfile: "production",
+  logLevel: 'info',
+  environmentProfile: 'production',
 };
 
 /**
@@ -324,7 +317,7 @@ export const ENVIRONMENT_PROFILES = {
       enableFlameGraphs: true,
       enableMemoryProfiling: true,
     },
-    logLevel: "debug" as const,
+    logLevel: 'debug' as const,
     workers: {
       poolSize: 2, // Fewer workers for development
     },
@@ -340,7 +333,7 @@ export const ENVIRONMENT_PROFILES = {
     profiling: {
       enabled: false,
     },
-    logLevel: "warn" as const,
+    logLevel: 'warn' as const,
   },
 
   production: {
@@ -351,38 +344,33 @@ export const ENVIRONMENT_PROFILES = {
       enableGCOptimization: true,
       maxSemiSpaceSize: 128, // Larger for production workloads
     },
-    logLevel: "error" as const,
+    logLevel: 'error' as const,
   },
 } as const;
 
 /**
  * Validates performance configuration
  */
-export function validatePerformanceConfig(
-  config: Partial<PerformanceConfig>,
-): string[] {
+export function validatePerformanceConfig(config: Partial<PerformanceConfig>): string[] {
   const errors: string[] = [];
 
   if (config.workers?.poolSize && config.workers.poolSize < 1) {
-    errors.push("Worker pool size must be at least 1");
+    errors.push('Worker pool size must be at least 1');
   }
 
   if (config.cache?.maxSize && config.cache.maxSize < 1024 * 1024) {
-    errors.push("Cache size must be at least 1MB");
+    errors.push('Cache size must be at least 1MB');
   }
 
-  if (
-    config.memory?.memoryBudget &&
-    config.memory.memoryBudget < 128 * 1024 * 1024
-  ) {
-    errors.push("Memory budget must be at least 128MB");
+  if (config.memory?.memoryBudget && config.memory.memoryBudget < 128 * 1024 * 1024) {
+    errors.push('Memory budget must be at least 128MB');
   }
 
   if (
     config.profiling?.samplingRate &&
     (config.profiling.samplingRate < 1 || config.profiling.samplingRate > 1000)
   ) {
-    errors.push("Profiling sampling rate must be between 1 and 1000");
+    errors.push('Profiling sampling rate must be between 1 and 1000');
   }
 
   return errors;
@@ -393,7 +381,7 @@ export function validatePerformanceConfig(
  */
 export function createEnvironmentConfig(
   baseConfig: Partial<PerformanceConfig> = {},
-  environment: keyof typeof ENVIRONMENT_PROFILES = "production",
+  environment: keyof typeof ENVIRONMENT_PROFILES = 'production'
 ): PerformanceConfig {
   const envOverrides = ENVIRONMENT_PROFILES[environment] as any;
 
@@ -430,10 +418,7 @@ export function createEnvironmentConfig(
       ...baseConfig.batching,
       ...(envOverrides.batching || {}),
     },
-    logLevel:
-      envOverrides.logLevel ||
-      baseConfig.logLevel ||
-      DEFAULT_PERFORMANCE_CONFIG.logLevel,
+    logLevel: envOverrides.logLevel || baseConfig.logLevel || DEFAULT_PERFORMANCE_CONFIG.logLevel,
     environmentProfile: environment,
   };
 }

@@ -10,9 +10,9 @@
  * Provides schema validation, configuration management, and integration with main config
  */
 
-import { z } from "zod";
-import { createLogger } from "./utils/logger";
-import type { EnigmaConfig } from "./config";
+import { z } from 'zod';
+import { createLogger } from './utils/logger';
+import type { EnigmaConfig } from './config';
 
 // const logger = createLogger("plugin-config");
 
@@ -38,7 +38,7 @@ export const TailwindOptimizerConfigSchema = CorePluginConfigSchema.extend({
   minFrequency: z.number().min(1).default(2),
   preserveComments: z.boolean().default(false),
   generateUtilityClasses: z.boolean().default(true),
-  prefixOptimized: z.string().default("tw-opt-"),
+  prefixOptimized: z.string().default('tw-opt-'),
   maxUtilityClasses: z.number().positive().default(1000),
   enableInlineOptimization: z.boolean().default(false),
 });
@@ -85,9 +85,7 @@ export const PostCSSProcessorConfigSchema = z.object({
   enableAsync: z.boolean().default(true),
   preserveComments: z.boolean().default(true),
   enableSourceMaps: z.boolean().default(true),
-  optimizationLevel: z
-    .enum(["none", "basic", "standard", "aggressive"])
-    .default("standard"),
+  optimizationLevel: z.enum(['none', 'basic', 'standard', 'aggressive']).default('standard'),
   maxParallelPlugins: z.number().positive().default(4),
   pluginTimeout: z.number().positive().default(30000),
   memoryLimit: z
@@ -102,12 +100,12 @@ export const PostCSSProcessorConfigSchema = z.object({
  */
 export const PluginSystemConfigSchema = z.object({
   enabled: z.boolean().default(true),
-  pluginDirectory: z.string().default("./plugins"),
+  pluginDirectory: z.string().default('./plugins'),
   autoLoad: z.boolean().default(true),
   enableHotReload: z.boolean().default(false),
   maxPlugins: z.number().positive().default(50),
   enableValidation: z.boolean().default(true),
-  errorHandling: z.enum(["ignore", "warn", "throw"]).default("warn"),
+  errorHandling: z.enum(['ignore', 'warn', 'throw']).default('warn'),
   enableMetrics: z.boolean().default(true),
   cachePlugins: z.boolean().default(true),
   enableSandbox: z.boolean().default(false),
@@ -141,29 +139,23 @@ export const PostCSSIntegrationConfigSchema = z.object({
 
 // Type exports
 export type CorePluginConfig = z.infer<typeof CorePluginConfigSchema>;
-export type TailwindOptimizerConfig = z.infer<
-  typeof TailwindOptimizerConfigSchema
->;
+export type TailwindOptimizerConfig = z.infer<typeof TailwindOptimizerConfigSchema>;
 export type CssMinifierConfig = z.infer<typeof CssMinifierConfigSchema>;
 export type SourceMapperConfig = z.infer<typeof SourceMapperConfigSchema>;
-export type PostCSSProcessorConfig = z.infer<
-  typeof PostCSSProcessorConfigSchema
->;
+export type PostCSSProcessorConfig = z.infer<typeof PostCSSProcessorConfigSchema>;
 export type PluginSystemConfig = z.infer<typeof PluginSystemConfigSchema>;
-export type PostCSSIntegrationConfig = z.infer<
-  typeof PostCSSIntegrationConfigSchema
->;
+export type PostCSSIntegrationConfig = z.infer<typeof PostCSSIntegrationConfigSchema>;
 
 /**
  * Configuration validation and management class
  */
 export class PluginConfigManager {
   private config: PostCSSIntegrationConfig;
-  private readonly logger = createLogger("plugin-config-manager");
+  private readonly logger = createLogger('plugin-config-manager');
 
   constructor(config: Partial<PostCSSIntegrationConfig> = {}) {
     this.config = this.validateAndNormalize(config);
-    this.logger.info("Plugin configuration manager initialized", {
+    this.logger.info('Plugin configuration manager initialized', {
       enabledPlugins: this.getEnabledPlugins().length,
       processorEnabled: this.config.processor.enabled,
       pluginSystemEnabled: this.config.pluginSystem.enabled,
@@ -174,19 +166,19 @@ export class PluginConfigManager {
    * Validate and normalize configuration
    */
   private validateAndNormalize(
-    config: Partial<PostCSSIntegrationConfig>,
+    config: Partial<PostCSSIntegrationConfig>
   ): PostCSSIntegrationConfig {
     try {
       const result = PostCSSIntegrationConfigSchema.parse(config);
-      this.logger.debug("Configuration validated successfully");
+      this.logger.debug('Configuration validated successfully');
       return result;
     } catch (error) {
       if (error instanceof z.ZodError) {
         const errorMessages = error.errors
-          .map((err) => `${err.path.join(".")}: ${err.message}`)
-          .join(", ");
+          .map((err) => `${err.path.join('.')}: ${err.message}`)
+          .join(', ');
 
-        this.logger.error("Configuration validation failed", {
+        this.logger.error('Configuration validation failed', {
           errors: errorMessages,
           inputConfig: config,
         });
@@ -222,7 +214,7 @@ export class PluginConfigManager {
    * Get configuration for a specific builtin plugin
    */
   getBuiltinPluginConfig<T = unknown>(
-    pluginName: keyof PostCSSIntegrationConfig["builtinPlugins"],
+    pluginName: keyof PostCSSIntegrationConfig['builtinPlugins']
   ): T {
     return this.config.builtinPlugins[pluginName] as T;
   }
@@ -241,7 +233,7 @@ export class PluginConfigManager {
     const newConfig = { ...this.config.processor, ...updates };
     const validated = PostCSSProcessorConfigSchema.parse(newConfig);
     this.config.processor = validated;
-    this.logger.debug("Processor configuration updated", updates);
+    this.logger.debug('Processor configuration updated', updates);
   }
 
   /**
@@ -251,17 +243,15 @@ export class PluginConfigManager {
     const newConfig = { ...this.config.pluginSystem, ...updates };
     const validated = PluginSystemConfigSchema.parse(newConfig);
     this.config.pluginSystem = validated;
-    this.logger.debug("Plugin system configuration updated", updates);
+    this.logger.debug('Plugin system configuration updated', updates);
   }
 
   /**
    * Update builtin plugin configuration
    */
-  updateBuiltinPluginConfig<
-    T extends keyof PostCSSIntegrationConfig["builtinPlugins"],
-  >(
+  updateBuiltinPluginConfig<T extends keyof PostCSSIntegrationConfig['builtinPlugins']>(
     pluginName: T,
-    updates: Partial<PostCSSIntegrationConfig["builtinPlugins"][T]>,
+    updates: Partial<PostCSSIntegrationConfig['builtinPlugins'][T]>
   ): void {
     const currentConfig = this.config.builtinPlugins[pluginName];
     const newConfig = { ...currentConfig, ...updates };
@@ -269,13 +259,13 @@ export class PluginConfigManager {
     // Validate based on plugin type
     let validated;
     switch (pluginName) {
-      case "tailwindOptimizer":
+      case 'tailwindOptimizer':
         validated = TailwindOptimizerConfigSchema.parse(newConfig);
         break;
-      case "cssMinifier":
+      case 'cssMinifier':
         validated = CssMinifierConfigSchema.parse(newConfig);
         break;
-      case "sourceMapper":
+      case 'sourceMapper':
         validated = SourceMapperConfigSchema.parse(newConfig);
         break;
       default:
@@ -283,7 +273,7 @@ export class PluginConfigManager {
     }
 
     (this.config.builtinPlugins as any)[pluginName] = validated;
-    this.logger.debug("Builtin plugin configuration updated", {
+    this.logger.debug('Builtin plugin configuration updated', {
       pluginName,
       updates,
     });
@@ -294,7 +284,7 @@ export class PluginConfigManager {
    */
   setCustomPluginConfig(pluginName: string, config: unknown): void {
     this.config.customPlugins[pluginName] = config;
-    this.logger.debug("Custom plugin configuration set", { pluginName });
+    this.logger.debug('Custom plugin configuration set', { pluginName });
   }
 
   /**
@@ -303,7 +293,7 @@ export class PluginConfigManager {
   removeCustomPluginConfig(pluginName: string): boolean {
     if (pluginName in this.config.customPlugins) {
       delete this.config.customPlugins[pluginName];
-      this.logger.debug("Custom plugin configuration removed", { pluginName });
+      this.logger.debug('Custom plugin configuration removed', { pluginName });
       return true;
     }
     return false;
@@ -336,13 +326,13 @@ export class PluginConfigManager {
   validatePluginConfig(pluginName: string, config: unknown): boolean {
     try {
       switch (pluginName) {
-        case "tailwindOptimizer":
+        case 'tailwindOptimizer':
           TailwindOptimizerConfigSchema.parse(config);
           return true;
-        case "cssMinifier":
+        case 'cssMinifier':
           CssMinifierConfigSchema.parse(config);
           return true;
-        case "sourceMapper":
+        case 'sourceMapper':
           SourceMapperConfigSchema.parse(config);
           return true;
         default:
@@ -351,7 +341,7 @@ export class PluginConfigManager {
           return config !== null && config !== undefined;
       }
     } catch (error) {
-      this.logger.warn("Plugin configuration validation failed", {
+      this.logger.warn('Plugin configuration validation failed', {
         pluginName,
         error: error instanceof Error ? error.message : String(error),
       });
@@ -373,9 +363,9 @@ export class PluginConfigManager {
     try {
       const parsed = JSON.parse(jsonConfig);
       this.config = this.validateAndNormalize(parsed);
-      this.logger.info("Configuration loaded from JSON");
+      this.logger.info('Configuration loaded from JSON');
     } catch (error) {
-      this.logger.error("Failed to load configuration from JSON", {
+      this.logger.error('Failed to load configuration from JSON', {
         error: error instanceof Error ? error.message : String(error),
       });
       throw error;
@@ -413,7 +403,7 @@ export class PluginConfigManager {
     };
 
     this.config = this.validateAndNormalize(merged);
-    this.logger.debug("Configuration merged");
+    this.logger.debug('Configuration merged');
   }
 
   /**
@@ -429,7 +419,7 @@ export class PluginConfigManager {
         memoryLimit: 512 * 1024 * 1024, // 512MB
         enableAsync: true,
         enableSourceMaps: true,
-        optimizationLevel: "standard",
+        optimizationLevel: 'standard',
         maxParallelPlugins: 4,
         pluginTimeout: 30000,
         enablePerformanceMonitoring: true,
@@ -442,9 +432,9 @@ export class PluginConfigManager {
           maxMemory: 256 * 1024 * 1024, // 256MB
           maxCpuTime: 30000, // 30 seconds
         },
-        errorHandling: "warn",
+        errorHandling: 'warn',
         enableSandbox: false,
-        pluginDirectory: "./plugins",
+        pluginDirectory: './plugins',
         autoLoad: true,
         enableHotReload: false,
         maxPlugins: 50,
@@ -465,7 +455,7 @@ export class PluginConfigManager {
           optimizeFrequentClasses: true,
           minFrequency: 2,
           generateUtilityClasses: true,
-          prefixOptimized: "tw-opt-",
+          prefixOptimized: 'tw-opt-',
           maxUtilityClasses: 1000,
           enableInlineOptimization: false,
         },
@@ -520,8 +510,6 @@ export function createDefaultPluginConfigManager(): PluginConfigManager {
 /**
  * Validate a complete PostCSS integration configuration
  */
-export function validatePostCSSConfig(
-  config: unknown,
-): PostCSSIntegrationConfig {
+export function validatePostCSSConfig(config: unknown): PostCSSIntegrationConfig {
   return PostCSSIntegrationConfigSchema.parse(config);
 }

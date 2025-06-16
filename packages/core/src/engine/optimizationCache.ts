@@ -7,11 +7,11 @@
 
 /**
  * Optimization Results Caching System
- * 
+ *
  * Provides intelligent caching for optimization results to dramatically speed up
  * subsequent optimizations of the same project. Uses the existing CacheManager
  * infrastructure with optimization-specific enhancements.
- * 
+ *
  * Features:
  * - File content hash-based caching
  * - Configuration-aware cache keys
@@ -67,7 +67,7 @@ export interface CachedOptimizationResult extends OptimizationResult {
 /**
  * Cache invalidation reasons
  */
-export type InvalidationReason = 
+export type InvalidationReason =
   | 'file-changed'
   | 'config-changed'
   | 'engine-updated'
@@ -186,8 +186,8 @@ export class OptimizationCache extends EventEmitter {
           'file-changed': 0,
           'config-changed': 0,
           'engine-updated': 0,
-          'manual': 0,
-          'expired': 0,
+          manual: 0,
+          expired: 0,
           'dependency-changed': 0,
         },
         totalInvalidations: 0,
@@ -222,7 +222,7 @@ export class OptimizationCache extends EventEmitter {
         // Update access metadata
         cached.hitCount++;
         cached.lastAccessed = new Date();
-        
+
         // Re-cache with updated metadata
         await this.cache.set(cacheKey, cached);
 
@@ -257,7 +257,7 @@ export class OptimizationCache extends EventEmitter {
 
     try {
       const cacheKey = await this.generateCacheKey(inputFiles, config, framework);
-      
+
       const cachedResult: CachedOptimizationResult = {
         ...result,
         cachedAt: new Date(),
@@ -273,7 +273,7 @@ export class OptimizationCache extends EventEmitter {
       if (success) {
         // Start watching input files for changes
         this.watchFiles(inputFiles);
-        
+
         this.updateAnalytics(cachedResult);
         this.emit('cache-set', { cacheKey, inputFiles, size: this.estimateSize(cachedResult) });
       }
@@ -288,21 +288,22 @@ export class OptimizationCache extends EventEmitter {
   /**
    * Invalidate cache entries based on file changes
    */
-  async invalidateByFiles(files: string[], reason: InvalidationReason = 'file-changed'): Promise<number> {
+  async invalidateByFiles(
+    files: string[],
+    reason: InvalidationReason = 'file-changed'
+  ): Promise<number> {
     let invalidatedCount = 0;
 
     try {
       const allKeys = this.cache.keys();
-      
+
       for (const key of allKeys) {
         const cached = await this.cache.get(key);
         if (!cached) continue;
 
         // Check if any of the changed files affect this cache entry
-        const hasAffectedFile = files.some(file => 
-          cached.inputFiles.some(inputFile => 
-            path.resolve(inputFile) === path.resolve(file)
-          )
+        const hasAffectedFile = files.some((file) =>
+          cached.inputFiles.some((inputFile) => path.resolve(inputFile) === path.resolve(file))
         );
 
         if (hasAffectedFile) {
@@ -335,7 +336,7 @@ export class OptimizationCache extends EventEmitter {
         if (!cached) continue;
 
         const oldConfigHash = this.hashConfig(cached.configSnapshot as EnigmaConfig);
-        
+
         if (oldConfigHash !== newConfigHash) {
           await this.cache.delete(key);
           invalidatedCount++;
@@ -367,16 +368,19 @@ export class OptimizationCache extends EventEmitter {
    */
   getAnalytics(): CacheAnalytics {
     const cacheStats = this.cache.getStats();
-    
+
     return {
       ...this.analytics,
-      hitRate: this.analytics.totalHits + this.analytics.totalMisses > 0 
-        ? (this.analytics.totalHits / (this.analytics.totalHits + this.analytics.totalMisses)) * 100
-        : 0,
+      hitRate:
+        this.analytics.totalHits + this.analytics.totalMisses > 0
+          ? (this.analytics.totalHits / (this.analytics.totalHits + this.analytics.totalMisses)) *
+            100
+          : 0,
       sizeStats: {
         totalEntries: cacheStats.entryCount,
         totalSize: cacheStats.totalSize,
-        averageEntrySize: cacheStats.entryCount > 0 ? cacheStats.totalSize / cacheStats.entryCount : 0,
+        averageEntrySize:
+          cacheStats.entryCount > 0 ? cacheStats.totalSize / cacheStats.entryCount : 0,
         largestEntry: this.analytics.sizeStats.largestEntry,
       },
     };
@@ -392,13 +396,13 @@ export class OptimizationCache extends EventEmitter {
   ): Promise<string> {
     // Generate content hash from all input files
     const contentHash = await this.generateContentHash(inputFiles);
-    
+
     // Generate config hash from optimization-relevant configuration
     const configHash = this.hashConfig(config);
-    
+
     // Use package.json version as engine version
     const engineVersion = process.env.npm_package_version || '1.0.0';
-    
+
     // Determine file type from file extensions
     const fileType = this.determineFileType(inputFiles);
 
@@ -420,7 +424,7 @@ export class OptimizationCache extends EventEmitter {
       let hash = 0;
       for (let i = 0; i < keyString.length; i++) {
         const char = keyString.charCodeAt(i);
-        hash = ((hash << 5) - hash) + char;
+        hash = (hash << 5) - hash + char;
         hash = hash & hash; // Convert to 32-bit integer
       }
       return `cache-key-${Math.abs(hash)}-${keyString.length}`;
@@ -433,10 +437,10 @@ export class OptimizationCache extends EventEmitter {
   private async generateContentHash(files: string[]): Promise<string> {
     try {
       const hash = createHash('sha256');
-      
+
       // Sort files for deterministic hashing
       const sortedFiles = [...files].sort();
-      
+
       for (const file of sortedFiles) {
         try {
           const content = await fs.readFile(file, 'utf8');
@@ -455,7 +459,7 @@ export class OptimizationCache extends EventEmitter {
       let hash = 0;
       for (let i = 0; i < content.length; i++) {
         const char = content.charCodeAt(i);
-        hash = ((hash << 5) - hash) + char;
+        hash = (hash << 5) - hash + char;
         hash = hash & hash; // Convert to 32-bit integer
       }
       return `fallback-hash-${Math.abs(hash)}`;
@@ -469,14 +473,16 @@ export class OptimizationCache extends EventEmitter {
     try {
       // Extract only optimization-relevant config properties
       const relevantConfig = this.extractRelevantConfig(config);
-      
+
       // Sort keys recursively for deterministic serialization
       const configString = JSON.stringify(relevantConfig, (key, value) => {
         if (value && typeof value === 'object' && !Array.isArray(value)) {
           const sorted: any = {};
-          Object.keys(value).sort().forEach(k => {
-            sorted[k] = value[k];
-          });
+          Object.keys(value)
+            .sort()
+            .forEach((k) => {
+              sorted[k] = value[k];
+            });
           return sorted;
         }
         return value;
@@ -485,23 +491,25 @@ export class OptimizationCache extends EventEmitter {
     } catch {
       // Fallback for test environments or crypto issues
       const relevantConfig = this.extractRelevantConfig(config);
-      
+
       // Sort keys recursively for deterministic serialization
       const configString = JSON.stringify(relevantConfig, (key, value) => {
         if (value && typeof value === 'object' && !Array.isArray(value)) {
           const sorted: any = {};
-          Object.keys(value).sort().forEach(k => {
-            sorted[k] = value[k];
-          });
+          Object.keys(value)
+            .sort()
+            .forEach((k) => {
+              sorted[k] = value[k];
+            });
           return sorted;
         }
         return value;
       });
-      
+
       let hash = 0;
       for (let i = 0; i < configString.length; i++) {
         const char = configString.charCodeAt(i);
-        hash = ((hash << 5) - hash) + char;
+        hash = (hash << 5) - hash + char;
         hash = hash & hash; // Convert to 32-bit integer
       }
       return `config-hash-${Math.abs(hash)}`;
@@ -513,31 +521,31 @@ export class OptimizationCache extends EventEmitter {
    */
   private extractRelevantConfig(config: Partial<EnigmaConfig>): Partial<EnigmaConfig> {
     const configAny = config as any;
-          const result: any = {};
-      
-      // Add only existing properties to avoid type issues
-      if (config.input !== undefined) result.input = config.input;
-      if (config.output !== undefined) result.output = config.output;
-      if (configAny.optimization !== undefined) result.optimization = configAny.optimization;
-      if (configAny.nameGeneration !== undefined) result.nameGeneration = configAny.nameGeneration;
-      if (configAny.framework !== undefined) result.framework = configAny.framework;
-      if (configAny.processing !== undefined) result.processing = configAny.processing;
-      if (configAny.performance !== undefined) result.performance = configAny.performance;
-      
-      return result;
+    const result: any = {};
+
+    // Add only existing properties to avoid type issues
+    if (config.input !== undefined) result.input = config.input;
+    if (config.output !== undefined) result.output = config.output;
+    if (configAny.optimization !== undefined) result.optimization = configAny.optimization;
+    if (configAny.nameGeneration !== undefined) result.nameGeneration = configAny.nameGeneration;
+    if (configAny.framework !== undefined) result.framework = configAny.framework;
+    if (configAny.processing !== undefined) result.processing = configAny.processing;
+    if (configAny.performance !== undefined) result.performance = configAny.performance;
+
+    return result;
   }
 
   /**
    * Determine file type from input files
    */
   private determineFileType(files: string[]): string {
-    const extensions = files.map(file => path.extname(file).toLowerCase());
+    const extensions = files.map((file) => path.extname(file).toLowerCase());
     const uniqueExtensions = [...new Set(extensions)];
-    
+
     if (uniqueExtensions.length === 1) {
       return uniqueExtensions[0].substring(1); // Remove the dot
     }
-    
+
     return 'mixed';
   }
 
@@ -584,7 +592,7 @@ export class OptimizationCache extends EventEmitter {
    */
   private handleFileChange(filePath: string): void {
     const absolutePath = path.resolve(filePath);
-    
+
     // Clear existing timer for this file
     if (this.fileChangeTimers.has(absolutePath)) {
       clearTimeout(this.fileChangeTimers.get(absolutePath)!);
@@ -634,17 +642,17 @@ export class OptimizationCache extends EventEmitter {
     if (!this.config.enableAnalytics) return;
 
     this.analytics.totalMisses++;
-    
+
     // Track file types
     const fileType = this.determineFileType(inputFiles);
-    const existingType = this.analytics.topFileTypes.find(t => t.type === fileType);
-    
+    const existingType = this.analytics.topFileTypes.find((t) => t.type === fileType);
+
     if (existingType) {
       existingType.count++;
     } else {
       this.analytics.topFileTypes.push({ type: fileType, count: 1 });
     }
-    
+
     // Keep only top 10 file types
     this.analytics.topFileTypes.sort((a, b) => b.count - a.count);
     this.analytics.topFileTypes = this.analytics.topFileTypes.slice(0, 10);
@@ -667,7 +675,7 @@ export class OptimizationCache extends EventEmitter {
     if (!this.config.enableAnalytics) return;
 
     const size = this.estimateSize(result);
-    
+
     if (size > this.analytics.sizeStats.largestEntry) {
       this.analytics.sizeStats.largestEntry = size;
     }
@@ -702,8 +710,8 @@ export class OptimizationCache extends EventEmitter {
           'file-changed': 0,
           'config-changed': 0,
           'engine-updated': 0,
-          'manual': 0,
-          'expired': 0,
+          manual: 0,
+          expired: 0,
           'dependency-changed': 0,
         },
         totalInvalidations: 0,
@@ -751,6 +759,8 @@ export function getOptimizationCache(config?: Partial<OptimizationCacheConfig>):
 /**
  * Create a new optimization cache instance
  */
-export function createOptimizationCache(config?: Partial<OptimizationCacheConfig>): OptimizationCache {
+export function createOptimizationCache(
+  config?: Partial<OptimizationCacheConfig>
+): OptimizationCache {
   return new OptimizationCache(config);
-} 
+}

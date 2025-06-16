@@ -19,20 +19,20 @@
  * @version 1.0.0
  */
 
-import { parse, ParserOptions } from "@babel/parser";
-import traverse, { NodePath, Visitor } from "@babel/traverse";
-import * as t from "@babel/types";
-import generate from "@babel/generator";
-import fs from "fs/promises";
-import path from "path";
+import { parse, ParserOptions } from '@babel/parser';
+import traverse, { NodePath, Visitor } from '@babel/traverse';
+import * as t from '@babel/types';
+import generate from '@babel/generator';
+import fs from 'fs/promises';
+import path from 'path';
 
 // Re-export types for external use
-export * from "@babel/types";
+export * from '@babel/types';
 
 /**
  * Supported JavaScript file types for pattern replacement
  */
-export type JavaScriptFileType = "js" | "jsx" | "ts" | "tsx" | "mjs" | "cjs";
+export type JavaScriptFileType = 'js' | 'jsx' | 'ts' | 'tsx' | 'mjs' | 'cjs';
 
 /**
  * Context information for pattern replacement decisions
@@ -80,9 +80,7 @@ export interface JSPatternRule {
   /** Regular expression pattern to match */
   pattern: RegExp;
   /** Replacement string or function */
-  replacement:
-    | string
-    | ((match: string, context: JSReplacementContext) => string);
+  replacement: string | ((match: string, context: JSReplacementContext) => string);
   /** Priority for conflict resolution (higher = more important) */
   priority: number;
   /** Whether this rule is enabled */
@@ -102,14 +100,11 @@ export interface JSPatternRule {
  */
 export interface JSConflictResolutionConfig {
   /** Strategy to use when patterns conflict */
-  strategy: "priority" | "merge" | "split" | "auto";
+  strategy: 'priority' | 'merge' | 'split' | 'auto';
   /** Whether to preserve original spacing in conflicts */
   preserveSpacing: boolean;
   /** Custom conflict resolver function */
-  customResolver?: (
-    conflicts: PatternMatch[],
-    context: JSReplacementContext,
-  ) => PatternMatch[];
+  customResolver?: (conflicts: PatternMatch[], context: JSReplacementContext) => PatternMatch[];
 }
 
 /**
@@ -129,7 +124,7 @@ export interface JSFormatPreservationOptions {
     /** Maximum line length before wrapping */
     maxLineLength?: number;
     /** Indentation type (spaces/tabs) */
-    indentType?: "spaces" | "tabs";
+    indentType?: 'spaces' | 'tabs';
     /** Number of spaces/tabs for indentation */
     indentSize?: number;
   };
@@ -179,10 +174,7 @@ export interface JSRewriterConfig {
     /** Maximum number of errors before stopping */
     maxErrors: number;
     /** Custom error handler */
-    onError?: (
-      error: Error,
-      context: { filePath: string; phase: string },
-    ) => void;
+    onError?: (error: Error, context: { filePath: string; phase: string }) => void;
   };
 }
 
@@ -276,7 +268,7 @@ export interface JSBatchProcessingOptions {
 export const DEFAULT_JS_REWRITER_CONFIG: JSRewriterConfig = {
   rules: [],
   conflictResolution: {
-    strategy: "auto",
+    strategy: 'auto',
     preserveSpacing: true,
   },
   formatPreservation: {
@@ -292,19 +284,19 @@ export const DEFAULT_JS_REWRITER_CONFIG: JSRewriterConfig = {
     maxConcurrency: 4,
   },
   parserOptions: {
-    sourceType: "module",
+    sourceType: 'module',
     allowImportExportEverywhere: true,
     allowReturnOutsideFunction: true,
     plugins: [
-      "jsx",
-      "typescript",
-      "decorators-legacy",
-      "classProperties",
-      "objectRestSpread",
-      "functionBind",
-      "dynamicImport",
-      "nullishCoalescingOperator",
-      "optionalChaining",
+      'jsx',
+      'typescript',
+      'decorators-legacy',
+      'classProperties',
+      'objectRestSpread',
+      'functionBind',
+      'dynamicImport',
+      'nullishCoalescingOperator',
+      'optionalChaining',
     ],
   },
   generateSourceMaps: false,
@@ -406,73 +398,70 @@ export class JSRewriter {
     const ext = path.extname(filePath).toLowerCase();
 
     switch (ext) {
-      case ".jsx":
-        return "jsx";
-      case ".ts":
-        return "ts";
-      case ".tsx":
-        return "tsx";
-      case ".mjs":
-        return "mjs";
-      case ".cjs":
-        return "cjs";
-      case ".js":
+      case '.jsx':
+        return 'jsx';
+      case '.ts':
+        return 'ts';
+      case '.tsx':
+        return 'tsx';
+      case '.mjs':
+        return 'mjs';
+      case '.cjs':
+        return 'cjs';
+      case '.js':
       default:
         // Check content for JSX or TypeScript syntax if available
         if (content) {
           // Enhanced TypeScript detection
           const hasTypeScript =
-            content.includes("interface ") ||
-            content.includes("type ") ||
-            content.includes(": string") ||
-            content.includes(": number") ||
-            content.includes(": boolean") ||
-            content.includes("extends ") ||
-            content.includes(" as ") ||
-            content.includes("as const") ||
-            content.includes("<T ") ||
-            content.includes("<T>") ||
-            content.includes("T extends") ||
-            content.includes("?: ") ||
-            content.includes("@Input") ||
-            content.includes("@HostBinding") ||
+            content.includes('interface ') ||
+            content.includes('type ') ||
+            content.includes(': string') ||
+            content.includes(': number') ||
+            content.includes(': boolean') ||
+            content.includes('extends ') ||
+            content.includes(' as ') ||
+            content.includes('as const') ||
+            content.includes('<T ') ||
+            content.includes('<T>') ||
+            content.includes('T extends') ||
+            content.includes('?: ') ||
+            content.includes('@Input') ||
+            content.includes('@HostBinding') ||
             (content.includes("= '") && content.includes("' as const")) ||
             /:\s*\w+(\[\])?(\s*\|\s*\w+)*\s*[;=]/.test(content) ||
-            (/<[A-Z]\w*\s*[<(]/.test(content) && content.includes("extends"));
+            (/<[A-Z]\w*\s*[<(]/.test(content) && content.includes('extends'));
 
           const hasJSX =
-            (content.includes("<") &&
-              content.includes(">") &&
-              (content.includes("className") ||
-                content.includes("jsx") ||
+            (content.includes('<') &&
+              content.includes('>') &&
+              (content.includes('className') ||
+                content.includes('jsx') ||
                 /<[A-Z]\w*/.test(content) ||
-                content.includes("<div"))) ||
-            content.includes("</") ||
-            content.includes("/>");
+                content.includes('<div'))) ||
+            content.includes('</') ||
+            content.includes('/>');
 
-          if (hasTypeScript && hasJSX) return "tsx";
-          if (hasTypeScript) return "ts";
-          if (hasJSX) return "jsx";
+          if (hasTypeScript && hasJSX) return 'tsx';
+          if (hasTypeScript) return 'ts';
+          if (hasJSX) return 'jsx';
         }
-        return "js";
+        return 'js';
     }
   }
 
   /**
    * Process a single JavaScript file
    */
-  async processFile(
-    filePath: string,
-    outputPath?: string,
-  ): Promise<JSReplacementResult> {
+  async processFile(filePath: string, outputPath?: string): Promise<JSReplacementResult> {
     const startTime = Date.now();
-    const content = await fs.readFile(filePath, "utf-8");
+    const content = await fs.readFile(filePath, 'utf-8');
 
     try {
       const result = await this.processCode(content, filePath);
 
       if (result.modified && outputPath) {
-        await fs.writeFile(outputPath, result.code, "utf-8");
+        await fs.writeFile(outputPath, result.code, 'utf-8');
       }
 
       this.updateStatistics(result, Date.now() - startTime);
@@ -485,8 +474,8 @@ export class JSRewriter {
         replacements: [],
         errors: [
           {
-            message: error instanceof Error ? error.message : "Unknown error",
-            phase: "file-processing",
+            message: error instanceof Error ? error.message : 'Unknown error',
+            phase: 'file-processing',
           },
         ],
         performance: {
@@ -501,7 +490,7 @@ export class JSRewriter {
       this.statistics.totalErrors++;
       this.config.errorHandling.onError?.(
         error instanceof Error ? error : new Error(String(error)),
-        { filePath, phase: "file-processing" },
+        { filePath, phase: 'file-processing' }
       );
 
       return errorResult;
@@ -511,10 +500,7 @@ export class JSRewriter {
   /**
    * Process JavaScript code string
    */
-  async processCode(
-    code: string,
-    filePath = "<unknown>",
-  ): Promise<JSReplacementResult> {
+  async processCode(code: string, filePath = '<unknown>'): Promise<JSReplacementResult> {
     const startTime = Date.now();
     const performanceMetrics = {
       parseTime: 0,
@@ -542,18 +528,15 @@ export class JSRewriter {
           throw parseError;
         }
 
-        const errorMessage =
-          parseError instanceof Error ? parseError.message : "Parse error";
+        const errorMessage = parseError instanceof Error ? parseError.message : 'Parse error';
         errors.push({
           message: `Error in code-processing for ${filePath}: ${errorMessage}`,
-          phase: "parsing",
+          phase: 'parsing',
         });
 
         this.config.errorHandling.onError?.(
-          parseError instanceof Error
-            ? parseError
-            : new Error(String(parseError)),
-          { filePath, phase: "parsing" },
+          parseError instanceof Error ? parseError : new Error(String(parseError)),
+          { filePath, phase: 'parsing' }
         );
 
         // Return original code with error info
@@ -593,16 +576,12 @@ export class JSRewriter {
         }
 
         const errorMessage =
-          transformError instanceof Error
-            ? transformError.message
-            : "Transform error";
-        errors.push({ message: errorMessage, phase: "transformation" });
+          transformError instanceof Error ? transformError.message : 'Transform error';
+        errors.push({ message: errorMessage, phase: 'transformation' });
 
         this.config.errorHandling.onError?.(
-          transformError instanceof Error
-            ? transformError
-            : new Error(String(transformError)),
-          { filePath, phase: "transformation" },
+          transformError instanceof Error ? transformError : new Error(String(transformError)),
+          { filePath, phase: 'transformation' }
         );
       }
       performanceMetrics.transformTime = Date.now() - transformStart;
@@ -626,15 +605,8 @@ export class JSRewriter {
         generatedCode = generateResult.code;
 
         // Post-process to preserve quote styles if requested
-        if (
-          this.config.formatPreservation.preserveQuoteStyle &&
-          matches.length > 0
-        ) {
-          generatedCode = this.preserveOriginalQuoteStyles(
-            code,
-            generatedCode,
-            matches,
-          );
+        if (this.config.formatPreservation.preserveQuoteStyle && matches.length > 0) {
+          generatedCode = this.preserveOriginalQuoteStyles(code, generatedCode, matches);
         }
       } catch (generateError) {
         if (
@@ -645,16 +617,12 @@ export class JSRewriter {
         }
 
         const errorMessage =
-          generateError instanceof Error
-            ? generateError.message
-            : "Generate error";
-        errors.push({ message: errorMessage, phase: "generation" });
+          generateError instanceof Error ? generateError.message : 'Generate error';
+        errors.push({ message: errorMessage, phase: 'generation' });
 
         this.config.errorHandling.onError?.(
-          generateError instanceof Error
-            ? generateError
-            : new Error(String(generateError)),
-          { filePath, phase: "generation" },
+          generateError instanceof Error ? generateError : new Error(String(generateError)),
+          { filePath, phase: 'generation' }
         );
       }
 
@@ -671,12 +639,11 @@ export class JSRewriter {
         performance: performanceMetrics,
       };
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Unknown error";
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
 
       this.config.errorHandling.onError?.(
         error instanceof Error ? error : new Error(String(error)),
-        { filePath, phase: "code-processing" },
+        { filePath, phase: 'code-processing' }
       );
 
       return {
@@ -684,7 +651,7 @@ export class JSRewriter {
         code,
         replacementCount: 0,
         replacements: [],
-        errors: [{ message: errorMessage, phase: "code-processing" }],
+        errors: [{ message: errorMessage, phase: 'code-processing' }],
         performance: {
           ...performanceMetrics,
           totalTime: Date.now() - startTime,
@@ -708,7 +675,7 @@ export class JSRewriter {
     };
   }> {
     // Implementation will be added in Step 6
-    throw new Error("Batch processing will be implemented in Step 6");
+    throw new Error('Batch processing will be implemented in Step 6');
   }
 
   /**
@@ -750,7 +717,7 @@ export class JSRewriter {
       return ast;
     } catch (error) {
       throw new Error(
-        `Failed to parse ${filePath}: ${error instanceof Error ? error.message : "Unknown error"}`,
+        `Failed to parse ${filePath}: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
     }
   }
@@ -758,28 +725,26 @@ export class JSRewriter {
   /**
    * Get appropriate parser plugins for file type
    */
-  private getParserPlugins(
-    fileType: JavaScriptFileType,
-  ): ParserOptions["plugins"] {
+  private getParserPlugins(fileType: JavaScriptFileType): ParserOptions['plugins'] {
     const basePlugins = [
-      "decorators-legacy",
-      "classProperties",
-      "objectRestSpread",
-      "functionBind",
-      "dynamicImport",
-      "nullishCoalescingOperator",
-      "optionalChaining",
+      'decorators-legacy',
+      'classProperties',
+      'objectRestSpread',
+      'functionBind',
+      'dynamicImport',
+      'nullishCoalescingOperator',
+      'optionalChaining',
     ] as const;
 
     switch (fileType) {
-      case "jsx":
-        return [...basePlugins, "jsx"] as ParserOptions["plugins"];
-      case "ts":
-        return [...basePlugins, "typescript"] as ParserOptions["plugins"];
-      case "tsx":
-        return [...basePlugins, "jsx", "typescript"] as ParserOptions["plugins"];
-              default:
-          return [...basePlugins] as ParserOptions["plugins"];
+      case 'jsx':
+        return [...basePlugins, 'jsx'] as ParserOptions['plugins'];
+      case 'ts':
+        return [...basePlugins, 'typescript'] as ParserOptions['plugins'];
+      case 'tsx':
+        return [...basePlugins, 'jsx', 'typescript'] as ParserOptions['plugins'];
+      default:
+        return [...basePlugins] as ParserOptions['plugins'];
     }
   }
 
@@ -789,7 +754,7 @@ export class JSRewriter {
   private async transformAST(
     ast: t.File,
     originalCode: string,
-    filePath: string,
+    filePath: string
   ): Promise<{
     transformedAst: t.File;
     matches: PatternMatch[];
@@ -810,17 +775,14 @@ export class JSRewriter {
             originalCode,
             filePath,
             fileType,
-            transformationErrors,
+            transformationErrors
           );
         } catch (error) {
           if (this.config.errorHandling.continueOnError) {
-            const errorMessage =
-              error instanceof Error
-                ? error.message
-                : "String processing error";
+            const errorMessage = error instanceof Error ? error.message : 'String processing error';
             transformationErrors.push({
               message: errorMessage,
-              phase: "string-collection",
+              phase: 'string-collection',
             });
           } else {
             throw error;
@@ -831,22 +793,14 @@ export class JSRewriter {
       // Handle template literals
       TemplateLiteral: (path) => {
         try {
-          this.collectTemplateMatches(
-            path,
-            potentialMatches,
-            originalCode,
-            filePath,
-            fileType,
-          );
+          this.collectTemplateMatches(path, potentialMatches, originalCode, filePath, fileType);
         } catch (error) {
           if (this.config.errorHandling.continueOnError) {
             const errorMessage =
-              error instanceof Error
-                ? error.message
-                : "Template processing error";
+              error instanceof Error ? error.message : 'Template processing error';
             transformationErrors.push({
               message: errorMessage,
-              phase: "template-collection",
+              phase: 'template-collection',
             });
           } else {
             throw error;
@@ -857,22 +811,14 @@ export class JSRewriter {
       // Handle JSX attributes
       JSXAttribute: (path) => {
         try {
-          this.collectJSXAttributeMatches(
-            path,
-            potentialMatches,
-            originalCode,
-            filePath,
-            fileType,
-          );
+          this.collectJSXAttributeMatches(path, potentialMatches, originalCode, filePath, fileType);
         } catch (error) {
           if (this.config.errorHandling.continueOnError) {
             const errorMessage =
-              error instanceof Error
-                ? error.message
-                : "JSX attribute processing error";
+              error instanceof Error ? error.message : 'JSX attribute processing error';
             transformationErrors.push({
               message: errorMessage,
-              phase: "jsx-attribute-collection",
+              phase: 'jsx-attribute-collection',
             });
           } else {
             throw error;
@@ -889,17 +835,15 @@ export class JSRewriter {
             originalCode,
             filePath,
             fileType,
-            transformationErrors,
+            transformationErrors
           );
         } catch (error) {
           if (this.config.errorHandling.continueOnError) {
             const errorMessage =
-              error instanceof Error
-                ? error.message
-                : "JSX text processing error";
+              error instanceof Error ? error.message : 'JSX text processing error';
             transformationErrors.push({
               message: errorMessage,
-              phase: "jsx-text-collection",
+              phase: 'jsx-text-collection',
             });
           } else {
             throw error;
@@ -918,31 +862,26 @@ export class JSRewriter {
     const context: JSReplacementContext = {
       filePath,
       fileType,
-      hasJSX: fileType.includes("x"),
-      hasTypeScript: fileType.includes("ts"),
+      hasJSX: fileType.includes('x'),
+      hasTypeScript: fileType.includes('ts'),
       framework: this.detectFramework(originalCode),
       line: 1,
       column: 1,
-      nodeType: "Program",
+      nodeType: 'Program',
     };
 
     // Phase 3: Resolve conflicts and get final matches to apply
-    const resolvedMatches = this.resolveConflicts(
-      potentialMatches,
-      conflicts,
-      context,
-    );
+    const resolvedMatches = this.resolveConflicts(potentialMatches, conflicts, context);
 
     // Phase 4: Apply resolved matches to AST
     try {
       this.applyMatchesToAST(resolvedMatches);
     } catch (error) {
       if (this.config.errorHandling.continueOnError) {
-        const errorMessage =
-          error instanceof Error ? error.message : "AST application error";
+        const errorMessage = error instanceof Error ? error.message : 'AST application error';
         transformationErrors.push({
           message: errorMessage,
-          phase: "ast-application",
+          phase: 'ast-application',
         });
       } else {
         throw error;
@@ -985,14 +924,11 @@ export class JSRewriter {
     // Sort matches by position (process from end to start to avoid offset issues)
     const sortedMatches = [...matches].sort((a, b) => b.start - a.start);
 
-    if (node.type === "StringLiteral") {
+    if (node.type === 'StringLiteral') {
       this.applyStringLiteralMatches(node as t.StringLiteral, sortedMatches);
-    } else if (node.type === "TemplateLiteral") {
-      this.applyTemplateLiteralMatches(
-        node as t.TemplateLiteral,
-        sortedMatches,
-      );
-    } else if (node.type === "JSXText") {
+    } else if (node.type === 'TemplateLiteral') {
+      this.applyTemplateLiteralMatches(node as t.TemplateLiteral, sortedMatches);
+    } else if (node.type === 'JSXText') {
       this.applyJSXTextMatches(node as t.JSXText, sortedMatches);
     }
   }
@@ -1000,11 +936,8 @@ export class JSRewriter {
   /**
    * Apply matches to a string literal node
    */
-  private applyStringLiteralMatches(
-    node: t.StringLiteral,
-    matches: PatternMatch[],
-  ): void {
-    let currentValue = node.value || "";
+  private applyStringLiteralMatches(node: t.StringLiteral, matches: PatternMatch[]): void {
+    let currentValue = node.value || '';
 
     for (const match of matches) {
       // Calculate relative position within the string
@@ -1026,10 +959,7 @@ export class JSRewriter {
       // Preserve original quote style
       if (node.extra?.raw) {
         const quote = (node.extra.raw as string).charAt(0);
-        const escapedValue = currentValue.replace(
-          new RegExp(quote, "g"),
-          `\\${quote}`,
-        );
+        const escapedValue = currentValue.replace(new RegExp(quote, 'g'), `\\${quote}`);
         node.extra.raw = `${quote}${escapedValue}${quote}`;
       }
     }
@@ -1038,10 +968,7 @@ export class JSRewriter {
   /**
    * Apply matches to a template literal node
    */
-  private applyTemplateLiteralMatches(
-    node: t.TemplateLiteral,
-    matches: PatternMatch[],
-  ): void {
+  private applyTemplateLiteralMatches(node: t.TemplateLiteral, matches: PatternMatch[]): void {
     if (!node.quasis) return;
 
     // Group matches by quasi index
@@ -1052,10 +979,7 @@ export class JSRewriter {
       let quasiIndex = -1;
       for (let i = 0; i < node.quasis.length; i++) {
         const quasi = node.quasis[i];
-        if (
-          match.start >= (quasi.start || 0) &&
-          match.end <= (quasi.end || 0)
-        ) {
+        if (match.start >= (quasi.start || 0) && match.end <= (quasi.end || 0)) {
           quasiIndex = i;
           break;
         }
@@ -1072,12 +996,10 @@ export class JSRewriter {
     // Apply matches to each quasi
     for (const [quasiIndex, quasiMatches] of matchesByQuasi) {
       const quasi = node.quasis[quasiIndex];
-      let currentValue = quasi.value.raw || quasi.value.cooked || "";
+      let currentValue = quasi.value.raw || quasi.value.cooked || '';
 
       // Sort matches for this quasi by position (reverse order)
-      const sortedQuasiMatches = [...quasiMatches].sort(
-        (a, b) => b.start - a.start,
-      );
+      const sortedQuasiMatches = [...quasiMatches].sort((a, b) => b.start - a.start);
 
       for (const match of sortedQuasiMatches) {
         const quasiStart = quasi.start || 0;
@@ -1105,7 +1027,7 @@ export class JSRewriter {
    * Apply matches to a JSX text node
    */
   private applyJSXTextMatches(node: t.JSXText, matches: PatternMatch[]): void {
-    let currentValue = node.value || "";
+    let currentValue = node.value || '';
 
     for (const match of matches) {
       const nodeStart = node.start || 0;
@@ -1129,14 +1051,14 @@ export class JSRewriter {
    * Detect conflicts between pattern matches
    */
   private detectConflicts(matches: PatternMatch[]): Array<{
-    conflictType: "overlap" | "adjacent" | "nested" | "identical";
+    conflictType: 'overlap' | 'adjacent' | 'nested' | 'identical';
     matches: PatternMatch[];
-    severity: "low" | "medium" | "high";
+    severity: 'low' | 'medium' | 'high';
   }> {
     const conflicts: Array<{
-      conflictType: "overlap" | "adjacent" | "nested" | "identical";
+      conflictType: 'overlap' | 'adjacent' | 'nested' | 'identical';
       matches: PatternMatch[];
-      severity: "low" | "medium" | "high";
+      severity: 'low' | 'medium' | 'high';
     }> = [];
 
     // Sort matches by position for easier conflict detection
@@ -1167,11 +1089,11 @@ export class JSRewriter {
    */
   private analyzeMatchConflict(
     match1: PatternMatch,
-    match2: PatternMatch,
+    match2: PatternMatch
   ): {
-    conflictType: "overlap" | "adjacent" | "nested" | "identical";
+    conflictType: 'overlap' | 'adjacent' | 'nested' | 'identical';
     matches: PatternMatch[];
-    severity: "low" | "medium" | "high";
+    severity: 'low' | 'medium' | 'high';
   } | null {
     // Check for identical matches (same position and text)
     if (
@@ -1180,9 +1102,9 @@ export class JSRewriter {
       match1.originalText === match2.originalText
     ) {
       return {
-        conflictType: "identical",
+        conflictType: 'identical',
         matches: [match1, match2],
-        severity: "medium",
+        severity: 'medium',
       };
     }
 
@@ -1194,15 +1116,15 @@ export class JSRewriter {
         (match2.start <= match1.start && match2.end >= match1.end)
       ) {
         return {
-          conflictType: "nested",
+          conflictType: 'nested',
           matches: [match1, match2],
-          severity: "high",
+          severity: 'high',
         };
       } else {
         return {
-          conflictType: "overlap",
+          conflictType: 'overlap',
           matches: [match1, match2],
-          severity: "high",
+          severity: 'high',
         };
       }
     }
@@ -1210,9 +1132,9 @@ export class JSRewriter {
     // Check for adjacent matches (touching but not overlapping)
     if (match1.end === match2.start || match2.end === match1.start) {
       return {
-        conflictType: "adjacent",
+        conflictType: 'adjacent',
         matches: [match1, match2],
-        severity: "low",
+        severity: 'low',
       };
     }
 
@@ -1225,11 +1147,11 @@ export class JSRewriter {
   private resolveConflicts(
     matches: PatternMatch[],
     conflicts: Array<{
-      conflictType: "overlap" | "adjacent" | "nested" | "identical";
+      conflictType: 'overlap' | 'adjacent' | 'nested' | 'identical';
       matches: PatternMatch[];
-      severity: "low" | "medium" | "high";
+      severity: 'low' | 'medium' | 'high';
     }>,
-    context: JSReplacementContext,
+    context: JSReplacementContext
   ): PatternMatch[] {
     if (conflicts.length === 0) {
       return matches;
@@ -1238,13 +1160,13 @@ export class JSRewriter {
     const strategy = this.config.conflictResolution.strategy;
 
     switch (strategy) {
-      case "priority":
+      case 'priority':
         return this.resolvePriorityStrategy(matches, conflicts);
-      case "merge":
+      case 'merge':
         return this.resolveMergeStrategy(matches, conflicts, context);
-      case "split":
+      case 'split':
         return this.resolveSplitStrategy(matches, conflicts);
-      case "auto":
+      case 'auto':
         return this.resolveAutoStrategy(matches, conflicts, context);
       default:
         return this.resolvePriorityStrategy(matches, conflicts);
@@ -1257,33 +1179,28 @@ export class JSRewriter {
   private resolvePriorityStrategy(
     matches: PatternMatch[],
     conflicts: Array<{
-      conflictType: "overlap" | "adjacent" | "nested" | "identical";
+      conflictType: 'overlap' | 'adjacent' | 'nested' | 'identical';
       matches: PatternMatch[];
-      severity: "low" | "medium" | "high";
-    }>,
+      severity: 'low' | 'medium' | 'high';
+    }>
   ): PatternMatch[] {
     const conflictingMatches = new Set<PatternMatch>();
     const resolvedMatches: PatternMatch[] = [];
 
     // Collect all conflicting matches
     for (const conflict of conflicts) {
-      if (
-        conflict.severity === "high" ||
-        conflict.conflictType === "identical"
-      ) {
+      if (conflict.severity === 'high' || conflict.conflictType === 'identical') {
         conflict.matches.forEach((match) => conflictingMatches.add(match));
       }
     }
 
     // Group conflicting matches by position ranges
-    const conflictGroups = this.groupConflictingMatches([
-      ...conflictingMatches,
-    ]);
+    const conflictGroups = this.groupConflictingMatches([...conflictingMatches]);
 
     // Resolve each conflict group by priority
     for (const group of conflictGroups) {
       const highestPriorityMatch = group.reduce((prev, current) =>
-        current.rule.priority > prev.rule.priority ? current : prev,
+        current.rule.priority > prev.rule.priority ? current : prev
       );
       resolvedMatches.push(highestPriorityMatch);
     }
@@ -1304,11 +1221,11 @@ export class JSRewriter {
   private resolveMergeStrategy(
     matches: PatternMatch[],
     conflicts: Array<{
-      conflictType: "overlap" | "adjacent" | "nested" | "identical";
+      conflictType: 'overlap' | 'adjacent' | 'nested' | 'identical';
       matches: PatternMatch[];
-      severity: "low" | "medium" | "high";
+      severity: 'low' | 'medium' | 'high';
     }>,
-    _context: JSReplacementContext,
+    _context: JSReplacementContext
   ): PatternMatch[] {
     // For now, fall back to priority strategy for complex merging
     // This can be enhanced in the future with more sophisticated merging logic
@@ -1321,10 +1238,10 @@ export class JSRewriter {
   private resolveSplitStrategy(
     matches: PatternMatch[],
     conflicts: Array<{
-      conflictType: "overlap" | "adjacent" | "nested" | "identical";
+      conflictType: 'overlap' | 'adjacent' | 'nested' | 'identical';
       matches: PatternMatch[];
-      severity: "low" | "medium" | "high";
-    }>,
+      severity: 'low' | 'medium' | 'high';
+    }>
   ): PatternMatch[] {
     // For now, fall back to priority strategy
     // Split strategy would require more complex text segmentation
@@ -1337,11 +1254,11 @@ export class JSRewriter {
   private resolveAutoStrategy(
     matches: PatternMatch[],
     conflicts: Array<{
-      conflictType: "overlap" | "adjacent" | "nested" | "identical";
+      conflictType: 'overlap' | 'adjacent' | 'nested' | 'identical';
       matches: PatternMatch[];
-      severity: "low" | "medium" | "high";
+      severity: 'low' | 'medium' | 'high';
     }>,
-    _context: JSReplacementContext,
+    _context: JSReplacementContext
   ): PatternMatch[] {
     // Auto strategy logic:
     // - Identical conflicts: Use priority
@@ -1350,7 +1267,7 @@ export class JSRewriter {
     // - Adjacent conflicts: Allow both (no real conflict)
 
     const filteredConflicts = conflicts.filter(
-      (conflict) => conflict.conflictType !== "adjacent", // Adjacent matches are not real conflicts
+      (conflict) => conflict.conflictType !== 'adjacent' // Adjacent matches are not real conflicts
     );
 
     return this.resolvePriorityStrategy(matches, filteredConflicts);
@@ -1359,9 +1276,7 @@ export class JSRewriter {
   /**
    * Group conflicting matches that affect the same text regions
    */
-  private groupConflictingMatches(
-    conflictingMatches: PatternMatch[],
-  ): PatternMatch[][] {
+  private groupConflictingMatches(conflictingMatches: PatternMatch[]): PatternMatch[][] {
     const groups: PatternMatch[][] = [];
     const processed = new Set<PatternMatch>();
 
@@ -1404,19 +1319,19 @@ export class JSRewriter {
    */
   private detectFramework(code: string): string | undefined {
     if (
-      code.includes("import React") ||
+      code.includes('import React') ||
       code.includes('from "react"') ||
       code.includes("from 'react'")
     ) {
-      return "react";
+      return 'react';
     }
 
-    if (code.includes("@Component") || code.includes("angular")) {
-      return "angular";
+    if (code.includes('@Component') || code.includes('angular')) {
+      return 'angular';
     }
 
-    if (code.includes("Vue") || code.includes("@vue")) {
-      return "vue";
+    if (code.includes('Vue') || code.includes('@vue')) {
+      return 'vue';
     }
 
     return undefined;
@@ -1427,7 +1342,7 @@ export class JSRewriter {
    */
   private mergeConfig(
     base: JSRewriterConfig,
-    updates: Partial<JSRewriterConfig>,
+    updates: Partial<JSRewriterConfig>
   ): JSRewriterConfig {
     return {
       ...base,
@@ -1453,10 +1368,7 @@ export class JSRewriter {
   private setupErrorHandling(): void {
     if (!this.config.errorHandling.onError) {
       this.config.errorHandling.onError = (error, context) => {
-        console.error(
-          `Error in ${context.phase} for ${context.filePath}:`,
-          error.message,
-        );
+        console.error(`Error in ${context.phase} for ${context.filePath}:`, error.message);
       };
     }
   }
@@ -1464,20 +1376,15 @@ export class JSRewriter {
   /**
    * Update processing statistics
    */
-  private updateStatistics(
-    result: JSReplacementResult,
-    processingTime: number,
-  ): void {
+  private updateStatistics(result: JSReplacementResult, processingTime: number): void {
     this.statistics.filesProcessed++;
     this.statistics.totalReplacements += result.replacementCount;
     this.statistics.totalErrors += result.errors.length;
 
     // Update average processing time
     const totalTime =
-      this.statistics.avgProcessingTime * (this.statistics.filesProcessed - 1) +
-      processingTime;
-    this.statistics.avgProcessingTime =
-      totalTime / this.statistics.filesProcessed;
+      this.statistics.avgProcessingTime * (this.statistics.filesProcessed - 1) + processingTime;
+    this.statistics.avgProcessingTime = totalTime / this.statistics.filesProcessed;
   }
 
   /**
@@ -1486,7 +1393,7 @@ export class JSRewriter {
   private preserveOriginalQuoteStyles(
     originalCode: string,
     generatedCode: string,
-    matches: PatternMatch[],
+    matches: PatternMatch[]
   ): string {
     let preservedCode = generatedCode;
 
@@ -1512,16 +1419,16 @@ export class JSRewriter {
 
     // Process each replacement to preserve quote style
     for (const match of matches) {
-      if (match.astNode.type === "StringLiteral") {
+      if (match.astNode.type === 'StringLiteral') {
         const originalQuote = quoteStyleMap.get(match.originalText);
         if (originalQuote) {
           // Find the replacement in generated code and update its quote style
           const replacementPattern = new RegExp(
-            `(['"\`])${this.escapeRegex(match.replacementText)}\\1`,
+            `(['"\`])${this.escapeRegex(match.replacementText)}\\1`
           );
           preservedCode = preservedCode.replace(
             replacementPattern,
-            `${originalQuote}${match.replacementText}${originalQuote}`,
+            `${originalQuote}${match.replacementText}${originalQuote}`
           );
         }
       }
@@ -1534,7 +1441,7 @@ export class JSRewriter {
    * Escape special regex characters
    */
   private escapeRegex(str: string): string {
-    return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 
   /**
@@ -1550,15 +1457,14 @@ export class JSRewriter {
       attributeName?: string;
       isClassNameAttribute?: boolean;
       isJSXText?: boolean;
-    },
+    }
   ): JSReplacementContext {
     const node = path.node;
-    const hasJSX =
-      ["jsx", "tsx"].includes(fileType) || originalCode.includes("<");
+    const hasJSX = ['jsx', 'tsx'].includes(fileType) || originalCode.includes('<');
     const hasTypeScript =
-      ["ts", "tsx"].includes(fileType) ||
-      originalCode.includes("interface ") ||
-      originalCode.includes(": ");
+      ['ts', 'tsx'].includes(fileType) ||
+      originalCode.includes('interface ') ||
+      originalCode.includes(': ');
 
     // Get parent node type for better context
     const parentNodeType = path.parent?.type;
@@ -1595,8 +1501,7 @@ export class JSRewriter {
         if (rule.jsxOnly) {
           // Only apply JSX-only rules to JSX attribute contexts
           const isJSXContext =
-            context.jsxContext?.isJSXAttribute ||
-            context.jsxContext?.isClassNameAttribute;
+            context.jsxContext?.isJSXAttribute || context.jsxContext?.isClassNameAttribute;
           if (!isJSXContext) {
             return false;
           }
@@ -1605,7 +1510,7 @@ export class JSRewriter {
         // Check template literal restrictions more precisely
         if (rule.templateLiteralsOnly) {
           // Only apply to actual template literal nodes
-          if (context.nodeType !== "TemplateLiteral") {
+          if (context.nodeType !== 'TemplateLiteral') {
             return false;
           }
         }
@@ -1629,29 +1534,19 @@ export class JSRewriter {
     originalCode: string,
     filePath: string,
     fileType: JavaScriptFileType,
-    errors?: Array<{ message: string; phase: string }>,
+    errors?: Array<{ message: string; phase: string }>
   ): void {
     const node = path.node;
-    if (!node.value || typeof node.value !== "string") {
+    if (!node.value || typeof node.value !== 'string') {
       return;
     }
 
     const originalValue = node.value;
-    const context = this.createProcessingContext(
-      path,
-      originalCode,
-      filePath,
-      fileType,
-    );
+    const context = this.createProcessingContext(path, originalCode, filePath, fileType);
 
     // Collect matches from all applicable rules without applying them
     for (const rule of this.getApplicableRules(context)) {
-      const ruleMatches = this.findPatternMatches(
-        originalValue,
-        rule,
-        context,
-        errors,
-      );
+      const ruleMatches = this.findPatternMatches(originalValue, rule, context, errors);
 
       for (const match of ruleMatches) {
         if (this.validateReplacementContext(match, context, path)) {
@@ -1683,24 +1578,19 @@ export class JSRewriter {
     originalCode: string,
     filePath: string,
     fileType: JavaScriptFileType,
-    errors?: Array<{ message: string; phase: string }>,
+    errors?: Array<{ message: string; phase: string }>
   ): void {
     const node = path.node;
     if (!node.quasis || node.quasis.length === 0) {
       return;
     }
 
-    const context = this.createProcessingContext(
-      path,
-      originalCode,
-      filePath,
-      fileType,
-    );
+    const context = this.createProcessingContext(path, originalCode, filePath, fileType);
 
     // Process each quasi (string part) of the template literal
     for (let i = 0; i < node.quasis.length; i++) {
       const quasi = node.quasis[i];
-      const originalValue = quasi.value.raw || quasi.value.cooked || "";
+      const originalValue = quasi.value.raw || quasi.value.cooked || '';
 
       if (!originalValue) {
         continue;
@@ -1708,12 +1598,7 @@ export class JSRewriter {
 
       // Collect matches from applicable rules
       for (const rule of this.getApplicableRules(context)) {
-        const ruleMatches = this.findPatternMatches(
-          originalValue,
-          rule,
-          context,
-          errors,
-        );
+        const ruleMatches = this.findPatternMatches(originalValue, rule, context, errors);
 
         for (const match of ruleMatches) {
           if (this.validateReplacementContext(match, context, path)) {
@@ -1745,17 +1630,15 @@ export class JSRewriter {
     potentialMatches: PatternMatch[],
     originalCode: string,
     filePath: string,
-    fileType: JavaScriptFileType,
+    fileType: JavaScriptFileType
   ): void {
     const node = path.node;
     if (!node.value) {
       return;
     }
 
-    const attributeName =
-      node.name?.type === "JSXIdentifier" ? node.name.name : "";
-    const isClassNameAttribute =
-      attributeName === "className" || attributeName === "class";
+    const attributeName = node.name?.type === 'JSXIdentifier' ? node.name.name : '';
+    const isClassNameAttribute = attributeName === 'className' || attributeName === 'class';
 
     const jsxContext = {
       isJSXAttribute: true,
@@ -1769,31 +1652,21 @@ export class JSRewriter {
       originalCode,
       filePath,
       fileType,
-      jsxContext,
+      jsxContext
     );
 
     // Handle different types of JSX attribute values
-    if (node.value.type === "StringLiteral") {
+    if (node.value.type === 'StringLiteral') {
       this.collectJSXStringValue(node.value, potentialMatches, context, path);
-    } else if (node.value.type === "JSXExpressionContainer") {
+    } else if (node.value.type === 'JSXExpressionContainer') {
       const expression = node.value.expression;
 
-      if (expression.type === "StringLiteral") {
+      if (expression.type === 'StringLiteral') {
         this.collectJSXStringValue(expression, potentialMatches, context, path);
-      } else if (expression.type === "TemplateLiteral") {
-        this.collectJSXTemplateValue(
-          expression,
-          potentialMatches,
-          context,
-          path,
-        );
-      } else if (expression.type === "ConditionalExpression") {
-        this.collectJSXConditionalValue(
-          expression,
-          potentialMatches,
-          context,
-          path,
-        );
+      } else if (expression.type === 'TemplateLiteral') {
+        this.collectJSXTemplateValue(expression, potentialMatches, context, path);
+      } else if (expression.type === 'ConditionalExpression') {
+        this.collectJSXConditionalValue(expression, potentialMatches, context, path);
       }
     }
   }
@@ -1807,16 +1680,16 @@ export class JSRewriter {
     originalCode: string,
     filePath: string,
     fileType: JavaScriptFileType,
-    errors?: Array<{ message: string; phase: string }>,
+    errors?: Array<{ message: string; phase: string }>
   ): void {
     const node = path.node;
-    if (!node.value || typeof node.value !== "string") {
+    if (!node.value || typeof node.value !== 'string') {
       return;
     }
 
     const jsxContext = {
       isJSXAttribute: false,
-      attributeName: "",
+      attributeName: '',
       isClassNameAttribute: false,
       isJSXText: true,
     };
@@ -1826,7 +1699,7 @@ export class JSRewriter {
       originalCode,
       filePath,
       fileType,
-      jsxContext,
+      jsxContext
     );
     const originalValue = node.value;
 
@@ -1834,12 +1707,7 @@ export class JSRewriter {
     for (const rule of this.getApplicableRules(context)) {
       if (!rule.jsxOnly) {
         // JSX text content should not use jsxOnly rules
-        const ruleMatches = this.findPatternMatches(
-          originalValue,
-          rule,
-          context,
-          errors,
-        );
+        const ruleMatches = this.findPatternMatches(originalValue, rule, context, errors);
 
         for (const match of ruleMatches) {
           if (this.validateReplacementContext(match, context, path)) {
@@ -1870,9 +1738,9 @@ export class JSRewriter {
     stringNode: t.StringLiteral,
     matches: PatternMatch[],
     context: JSReplacementContext,
-    attributePath: NodePath<t.JSXAttribute>,
+    attributePath: NodePath<t.JSXAttribute>
   ): void {
-    const originalValue = stringNode.value || "";
+    const originalValue = stringNode.value || '';
 
     for (const rule of this.getApplicableRules(context)) {
       const ruleMatches = this.findPatternMatches(originalValue, rule, context);
@@ -1905,22 +1773,18 @@ export class JSRewriter {
     templateNode: t.TemplateLiteral,
     matches: PatternMatch[],
     context: JSReplacementContext,
-    attributePath: NodePath<t.JSXAttribute>,
+    attributePath: NodePath<t.JSXAttribute>
   ): void {
     if (!templateNode.quasis) return;
 
     for (let i = 0; i < templateNode.quasis.length; i++) {
       const quasi = templateNode.quasis[i];
-      const originalValue = quasi.value.raw || quasi.value.cooked || "";
+      const originalValue = quasi.value.raw || quasi.value.cooked || '';
 
       if (!originalValue) continue;
 
       for (const rule of this.getApplicableRules(context)) {
-        const ruleMatches = this.findPatternMatches(
-          originalValue,
-          rule,
-          context,
-        );
+        const ruleMatches = this.findPatternMatches(originalValue, rule, context);
 
         for (const match of ruleMatches) {
           if (this.validateReplacementContext(match, context, attributePath)) {
@@ -1951,25 +1815,25 @@ export class JSRewriter {
     conditionalNode: t.ConditionalExpression,
     matches: PatternMatch[],
     context: JSReplacementContext,
-    attributePath: NodePath<t.JSXAttribute>,
+    attributePath: NodePath<t.JSXAttribute>
   ): void {
     // Process consequent (true branch)
-    if (conditionalNode.consequent.type === "StringLiteral") {
+    if (conditionalNode.consequent.type === 'StringLiteral') {
       this.collectJSXStringValue(
         conditionalNode.consequent as t.StringLiteral,
         matches,
         context,
-        attributePath,
+        attributePath
       );
     }
 
     // Process alternate (false branch)
-    if (conditionalNode.alternate.type === "StringLiteral") {
+    if (conditionalNode.alternate.type === 'StringLiteral') {
       this.collectJSXStringValue(
         conditionalNode.alternate as t.StringLiteral,
         matches,
         context,
-        attributePath,
+        attributePath
       );
     }
   }
@@ -1981,7 +1845,7 @@ export class JSRewriter {
     text: string,
     rule: JSPatternRule,
     context: JSReplacementContext,
-    errors?: Array<{ message: string; phase: string }>,
+    errors?: Array<{ message: string; phase: string }>
   ): Array<{ text: string; replacement: string; start: number; end: number }> {
     const matches: Array<{
       text: string;
@@ -1994,9 +1858,7 @@ export class JSRewriter {
       // Use global version of regex to find all matches
       const globalPattern = new RegExp(
         rule.pattern.source,
-        rule.pattern.flags.includes("g")
-          ? rule.pattern.flags
-          : rule.pattern.flags + "g",
+        rule.pattern.flags.includes('g') ? rule.pattern.flags : rule.pattern.flags + 'g'
       );
 
       let match: RegExpExecArray | null;
@@ -2006,17 +1868,15 @@ export class JSRewriter {
         const end = start + matchedText.length;
 
         let replacement: string;
-        if (typeof rule.replacement === "function") {
+        if (typeof rule.replacement === 'function') {
           try {
             replacement = rule.replacement(matchedText, context);
           } catch (error) {
             // Collect error for reporting
             if (errors) {
               const errorMessage =
-                error instanceof Error
-                  ? error.message
-                  : "Replacement function error";
-              errors.push({ message: errorMessage, phase: "transformation" });
+                error instanceof Error ? error.message : 'Replacement function error';
+              errors.push({ message: errorMessage, phase: 'transformation' });
             }
 
             // If replacement function fails, skip this match
@@ -2049,9 +1909,8 @@ export class JSRewriter {
     } catch (error) {
       // Collect error for reporting
       if (errors) {
-        const errorMessage =
-          error instanceof Error ? error.message : "Pattern matching error";
-        errors.push({ message: errorMessage, phase: "transformation" });
+        const errorMessage = error instanceof Error ? error.message : 'Pattern matching error';
+        errors.push({ message: errorMessage, phase: 'transformation' });
       }
 
       // If the rule pattern is invalid, skip it unless error handling is strict
@@ -2069,7 +1928,7 @@ export class JSRewriter {
   private validateReplacementContext(
     match: { text: string; replacement: string; start: number; end: number },
     context: JSReplacementContext,
-    nodePath?: NodePath,
+    nodePath?: NodePath
   ): boolean {
     // Don't replace if the replacement is the same as original
     if (match.text === match.replacement) {
@@ -2078,7 +1937,7 @@ export class JSRewriter {
 
     // Add context-specific validation logic
     // For example, don't replace in comments or specific node types
-    if (context.nodeType === "Comment") {
+    if (context.nodeType === 'Comment') {
       return false;
     }
 
@@ -2093,17 +1952,14 @@ export class JSRewriter {
     if (context.hasTypeScript && context.parentNodeType) {
       // Don't replace string literals that are USED AS types (not default values)
       // This catches cases like: className as 'text-orange-500'
-      if (
-        context.nodeType === "StringLiteral" &&
-        context.parentNodeType === "TSLiteralType"
-      ) {
+      if (context.nodeType === 'StringLiteral' && context.parentNodeType === 'TSLiteralType') {
         return false;
       }
 
       // Don't replace in TSTypeReference or other pure type contexts
       if (
-        context.parentNodeType === "TSTypeReference" ||
-        context.parentNodeType === "TSTypeQuery"
+        context.parentNodeType === 'TSTypeReference' ||
+        context.parentNodeType === 'TSTypeQuery'
       ) {
         return false;
       }
@@ -2125,13 +1981,13 @@ export class JSRewriter {
 
     // Check for direct type contexts
     if (
-      immediateParentType === "TSLiteralType" ||
-      immediateParentType === "TSTypeParameter" ||
-      immediateParentType === "TSTypeReference" ||
-      immediateParentType === "TSTypeQuery" ||
-      immediateParentType === "TSUnionType" ||
-      immediateParentType === "TSIntersectionType" ||
-      immediateParentType === "TSTypeAliasDeclaration"
+      immediateParentType === 'TSLiteralType' ||
+      immediateParentType === 'TSTypeParameter' ||
+      immediateParentType === 'TSTypeReference' ||
+      immediateParentType === 'TSTypeQuery' ||
+      immediateParentType === 'TSUnionType' ||
+      immediateParentType === 'TSIntersectionType' ||
+      immediateParentType === 'TSTypeAliasDeclaration'
     ) {
       return true;
     }
@@ -2146,17 +2002,17 @@ export class JSRewriter {
 
       // Check for type parameter defaults
       // interface Props<T extends string = 'text-purple-500'> - should NOT be replaced
-      if (parentType === "TSTypeParameter") {
+      if (parentType === 'TSTypeParameter') {
         return true;
       }
 
       // Check for type assertion contexts (right side of 'as')
       // className as 'text-orange-500' - should NOT be replaced
-      if (parentType === "TSAsExpression" || parentType === "TSTypeAssertion") {
+      if (parentType === 'TSAsExpression' || parentType === 'TSTypeAssertion') {
         // For TSAsExpression: { expression, typeAnnotation }
         // For TSTypeAssertion: { expression, typeAnnotation }
         const asExpression = current as any;
-        
+
         // Walk back down to see if our original node is in the type annotation
         if (this.isNodeInTypeAnnotation(nodePath.node, asExpression.typeAnnotation)) {
           return true;
@@ -2176,15 +2032,15 @@ export class JSRewriter {
    */
   private isNodeInTypeAnnotation(targetNode: any, typeAnnotation: any): boolean {
     if (!typeAnnotation) return false;
-    
+
     // Direct match
     if (typeAnnotation === targetNode) return true;
-    
+
     // Check if wrapped in TSLiteralType
-    if (typeAnnotation.type === "TSLiteralType" && typeAnnotation.literal === targetNode) {
+    if (typeAnnotation.type === 'TSLiteralType' && typeAnnotation.literal === targetNode) {
       return true;
     }
-    
+
     return false;
   }
 }
@@ -2199,10 +2055,8 @@ export class JSRewriterUtils {
   static createClassNameRule(
     id: string,
     pattern: RegExp,
-    replacement:
-      | string
-      | ((match: string, context: JSReplacementContext) => string),
-    priority = 100,
+    replacement: string | ((match: string, context: JSReplacementContext) => string),
+    priority = 100
   ): JSPatternRule {
     return {
       id,
@@ -2212,7 +2066,7 @@ export class JSRewriterUtils {
       priority,
       enabled: true,
       jsxOnly: true,
-      validator: (context) => context.nodeType === "JSXAttribute",
+      validator: (context) => context.nodeType === 'JSXAttribute',
     };
   }
 
@@ -2222,10 +2076,8 @@ export class JSRewriterUtils {
   static createTemplateLiteralRule(
     id: string,
     pattern: RegExp,
-    replacement:
-      | string
-      | ((match: string, context: JSReplacementContext) => string),
-    priority = 100,
+    replacement: string | ((match: string, context: JSReplacementContext) => string),
+    priority = 100
   ): JSPatternRule {
     return {
       id,
@@ -2235,7 +2087,7 @@ export class JSRewriterUtils {
       priority,
       enabled: true,
       templateLiteralsOnly: true,
-      validator: (context) => context.nodeType === "TemplateLiteral",
+      validator: (context) => context.nodeType === 'TemplateLiteral',
     };
   }
 
@@ -2245,10 +2097,8 @@ export class JSRewriterUtils {
   static createStringLiteralRule(
     id: string,
     pattern: RegExp,
-    replacement:
-      | string
-      | ((match: string, context: JSReplacementContext) => string),
-    priority = 100,
+    replacement: string | ((match: string, context: JSReplacementContext) => string),
+    priority = 100
   ): JSPatternRule {
     return {
       id,
@@ -2257,7 +2107,7 @@ export class JSRewriterUtils {
       replacement,
       priority,
       enabled: true,
-      validator: (context) => context.nodeType === "StringLiteral",
+      validator: (context) => context.nodeType === 'StringLiteral',
     };
   }
 
@@ -2267,20 +2117,20 @@ export class JSRewriterUtils {
   static validateRule(rule: JSPatternRule): string[] {
     const errors: string[] = [];
 
-    if (!rule.id || rule.id.trim() === "") {
-      errors.push("Rule ID is required");
+    if (!rule.id || rule.id.trim() === '') {
+      errors.push('Rule ID is required');
     }
 
     if (!rule.pattern) {
-      errors.push("Pattern is required");
+      errors.push('Pattern is required');
     }
 
     if (rule.priority < 0) {
-      errors.push("Priority must be non-negative");
+      errors.push('Priority must be non-negative');
     }
 
     if (rule.fileTypes && rule.fileTypes.length === 0) {
-      errors.push("File types array cannot be empty if provided");
+      errors.push('File types array cannot be empty if provided');
     }
 
     return errors;
@@ -2291,9 +2141,9 @@ export class JSRewriterUtils {
    */
   static mergeRules(
     rules: JSPatternRule[],
-    strategy: "priority" | "merge" = "priority",
+    strategy: 'priority' | 'merge' = 'priority'
   ): JSPatternRule[] {
-    if (strategy === "priority") {
+    if (strategy === 'priority') {
       return rules.sort((a, b) => b.priority - a.priority);
     }
 
@@ -2306,10 +2156,7 @@ export class JSRewriterUtils {
         merged.set(rule.id, rule);
       } else {
         // Merge logic: higher priority wins, but combine patterns if possible
-        merged.set(
-          rule.id,
-          existing.priority >= rule.priority ? existing : rule,
-        );
+        merged.set(rule.id, existing.priority >= rule.priority ? existing : rule);
       }
     }
 
@@ -2324,14 +2171,12 @@ export class JSRewriterFactory {
   /**
    * Create a JSRewriter instance optimized for React/JSX files
    */
-  static createReactRewriter(
-    customConfig: Partial<JSRewriterConfig> = {},
-  ): JSRewriter {
+  static createReactRewriter(customConfig: Partial<JSRewriterConfig> = {}): JSRewriter {
     const config: Partial<JSRewriterConfig> = {
       ...customConfig,
       parserOptions: {
-        sourceType: "module",
-        plugins: ["jsx", "typescript", "decorators-legacy", "classProperties"],
+        sourceType: 'module',
+        plugins: ['jsx', 'typescript', 'decorators-legacy', 'classProperties'],
         ...customConfig.parserOptions,
       },
     };
@@ -2342,14 +2187,12 @@ export class JSRewriterFactory {
   /**
    * Create a JSRewriter instance optimized for TypeScript files
    */
-  static createTypeScriptRewriter(
-    customConfig: Partial<JSRewriterConfig> = {},
-  ): JSRewriter {
+  static createTypeScriptRewriter(customConfig: Partial<JSRewriterConfig> = {}): JSRewriter {
     const config: Partial<JSRewriterConfig> = {
       ...customConfig,
       parserOptions: {
-        sourceType: "module",
-        plugins: ["typescript", "decorators-legacy", "classProperties"],
+        sourceType: 'module',
+        plugins: ['typescript', 'decorators-legacy', 'classProperties'],
         ...customConfig.parserOptions,
       },
     };
@@ -2360,9 +2203,7 @@ export class JSRewriterFactory {
   /**
    * Create a JSRewriter instance with performance optimizations for large codebases
    */
-  static createHighPerformanceRewriter(
-    customConfig: Partial<JSRewriterConfig> = {},
-  ): JSRewriter {
+  static createHighPerformanceRewriter(customConfig: Partial<JSRewriterConfig> = {}): JSRewriter {
     const config: Partial<JSRewriterConfig> = {
       ...customConfig,
       performance: {

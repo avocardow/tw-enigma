@@ -5,20 +5,11 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-
-import { z } from "zod";
-import { createHash } from "crypto";
-import {
-  writeFile,
-  readFile,
-  access,
-  stat,
-  copyFile,
-  unlink,
-  mkdir,
-} from "fs/promises";
-import { createReadStream, createWriteStream, constants } from "fs";
-import { pipeline } from "stream/promises";
+import { z } from 'zod';
+import { createHash } from 'crypto';
+import { writeFile, readFile, access, stat, copyFile, unlink, mkdir } from 'fs/promises';
+import { createReadStream, createWriteStream, constants } from 'fs';
+import { pipeline } from 'stream/promises';
 import {
   createGzip,
   createGunzip,
@@ -27,25 +18,25 @@ import {
   createBrotliCompress,
   createBrotliDecompress,
   constants as zlibConstants,
-} from "zlib";
-import { EventEmitter } from "events";
-import { resolve, basename, extname, join, dirname } from "path";
-import { createLogger } from "./logger";
-import { ConfigError } from "./errors";
-import * as os from "os";
+} from 'zlib';
+import { EventEmitter } from 'events';
+import { resolve, basename, extname, join, dirname } from 'path';
+import { createLogger } from './logger';
+import { ConfigError } from './errors';
+import * as os from 'os';
 
 /**
  * File integrity validation options schema
  */
 export const FileIntegrityOptionsSchema = z.object({
   /** Hash algorithm to use for checksums (default: 'sha256') */
-  algorithm: z.enum(["md5", "sha1", "sha256", "sha512"]).default("sha256"),
+  algorithm: z.enum(['md5', 'sha1', 'sha256', 'sha512']).default('sha256'),
 
   /** Whether to create backups before file modifications (default: true) */
   createBackups: z.boolean().default(true),
 
   /** Directory for storing backup files (default: '.backups') */
-  backupDirectory: z.string().default(".backups"),
+  backupDirectory: z.string().default('.backups'),
 
   /** Maximum age of backup files in days before cleanup (default: 7) */
   backupRetentionDays: z.number().min(1).max(365).default(7),
@@ -76,7 +67,7 @@ export const FileIntegrityOptionsSchema = z.object({
   enableCompression: z.boolean().default(false),
 
   /** Compression algorithm to use (default: 'gzip') */
-  compressionAlgorithm: z.enum(["gzip", "deflate", "brotli"]).default("gzip"),
+  compressionAlgorithm: z.enum(['gzip', 'deflate', 'brotli']).default('gzip'),
 
   /** Compression level (1-9 for gzip/deflate, 0-11 for brotli, default: 6) */
   compressionLevel: z.number().min(0).max(11).default(6),
@@ -89,12 +80,10 @@ export const FileIntegrityOptionsSchema = z.object({
   enableDeduplication: z.boolean().default(false),
 
   /** Directory for storing deduplicated content (default: '.dedup') */
-  deduplicationDirectory: z.string().default(".dedup"),
+  deduplicationDirectory: z.string().default('.dedup'),
 
   /** Hash algorithm for content deduplication (default: 'sha256') */
-  deduplicationAlgorithm: z
-    .enum(["md5", "sha1", "sha256", "sha512"])
-    .default("sha256"),
+  deduplicationAlgorithm: z.enum(['md5', 'sha1', 'sha256', 'sha512']).default('sha256'),
 
   /** Minimum file size in bytes to deduplicate (default: 1KB) */
   deduplicationThreshold: z.number().min(0).default(1024),
@@ -107,12 +96,10 @@ export const FileIntegrityOptionsSchema = z.object({
   enableIncrementalBackup: z.boolean().default(false),
 
   /** Backup strategy to use (default: 'auto') */
-  backupStrategy: z.enum(["full", "incremental", "auto"]).default("auto"),
+  backupStrategy: z.enum(['full', 'incremental', 'auto']).default('auto'),
 
   /** Change detection method for incremental backups (default: 'mtime') */
-  changeDetectionMethod: z
-    .enum(["mtime", "checksum", "hybrid"])
-    .default("mtime"),
+  changeDetectionMethod: z.enum(['mtime', 'checksum', 'hybrid']).default('mtime'),
 
   /** Maximum incremental chain length before forcing full backup (default: 10) */
   maxIncrementalChain: z.number().min(1).default(10),
@@ -121,16 +108,14 @@ export const FileIntegrityOptionsSchema = z.object({
   fullBackupInterval: z.number().min(1).default(24),
 
   /** Incremental backup metadata directory (default: '.incremental') */
-  incrementalDirectory: z.string().default(".incremental"),
+  incrementalDirectory: z.string().default('.incremental'),
 
   // === DIFFERENTIAL BACKUP OPTIONS ===
   /** Whether to enable differential backup strategy (default: false) */
   enableDifferentialBackup: z.boolean().default(false),
 
   /** Differential backup strategy selection (default: 'auto') */
-  differentialStrategy: z
-    .enum(["auto", "manual", "threshold-based"])
-    .default("auto"),
+  differentialStrategy: z.enum(['auto', 'manual', 'threshold-based']).default('auto'),
 
   /** Size threshold in MB for triggering new full backup in differential strategy (default: 1000) */
   differentialFullBackupThreshold: z.number().min(10).default(1000),
@@ -139,7 +124,7 @@ export const FileIntegrityOptionsSchema = z.object({
   differentialFullBackupInterval: z.number().min(1).default(168),
 
   /** Differential backup metadata directory (default: '.differential') */
-  differentialDirectory: z.string().default(".differential"),
+  differentialDirectory: z.string().default('.differential'),
 
   /** Maximum cumulative size multiplier before forcing full backup (default: 5x original) */
   differentialSizeMultiplier: z.number().min(1).default(5),
@@ -167,9 +152,7 @@ export const FileIntegrityOptionsSchema = z.object({
   eventLoopLagThreshold: z.number().min(1).default(100),
 
   /** Batch processing strategy (default: 'adaptive') */
-  batchProcessingStrategy: z
-    .enum(["sequential", "parallel", "adaptive"])
-    .default("adaptive"),
+  batchProcessingStrategy: z.enum(['sequential', 'parallel', 'adaptive']).default('adaptive'),
 
   /** Enable progress tracking for long-running operations (default: true) */
   enableProgressTracking: z.boolean().default(true),
@@ -240,7 +223,7 @@ export interface BackupResult {
   /** Whether compression was used */
   compressed?: boolean;
   /** Compression algorithm used */
-  compressionAlgorithm?: "gzip" | "deflate" | "brotli";
+  compressionAlgorithm?: 'gzip' | 'deflate' | 'brotli';
   /** Original file size (before compression) */
   originalSize?: number;
   /** Compression ratio (originalSize / backupSize) */
@@ -300,13 +283,7 @@ export interface ValidationMetadata {
   /** Source of the validation operation */
   source: string;
   /** Operation type */
-  operation:
-    | "checksum"
-    | "validation"
-    | "backup"
-    | "rollback"
-    | "cleanup"
-    | "deduplication";
+  operation: 'checksum' | 'validation' | 'backup' | 'rollback' | 'cleanup' | 'deduplication';
   /** Timestamp of the operation */
   timestamp: Date;
   /** Processing time in milliseconds */
@@ -340,7 +317,7 @@ export interface DeduplicationEntry {
   /** Whether the stored content is compressed */
   compressed: boolean;
   /** Compression algorithm if compressed */
-  compressionAlgorithm?: "gzip" | "deflate" | "brotli";
+  compressionAlgorithm?: 'gzip' | 'deflate' | 'brotli';
 }
 
 /**
@@ -417,7 +394,7 @@ export interface IncrementalBackupEntry {
   /** Backup ID (unique identifier) */
   id: string;
   /** Backup type */
-  type: "full" | "incremental";
+  type: 'full' | 'incremental';
   /** Parent backup ID (null for full backups) */
   parentId: string | null;
   /** Backup file path */
@@ -435,7 +412,7 @@ export interface IncrementalBackupEntry {
   /** Files included in this backup (for incremental: only changed files) */
   files: string[];
   /** Change detection method used */
-  changeDetectionMethod: "mtime" | "checksum" | "hybrid";
+  changeDetectionMethod: 'mtime' | 'checksum' | 'hybrid';
   /** Compression used */
   compressed: boolean;
   /** Whether deduplication was used */
@@ -477,7 +454,7 @@ export interface IncrementalIndex {
  */
 export interface IncrementalBackupResult {
   /** Backup operation type performed */
-  backupType: "full" | "incremental" | "skipped";
+  backupType: 'full' | 'incremental' | 'skipped';
   /** Backup ID */
   backupId: string;
   /** Parent backup ID (for incremental) */
@@ -497,7 +474,7 @@ export interface IncrementalBackupResult {
   /** Files included in this backup */
   backedUpFiles: string[];
   /** Change detection method used */
-  changeDetectionMethod: "mtime" | "checksum" | "hybrid";
+  changeDetectionMethod: 'mtime' | 'checksum' | 'hybrid';
   /** Processing time in milliseconds */
   processingTime: number;
   /** Whether backup was successful */
@@ -515,7 +492,7 @@ export interface DifferentialBackupEntry {
   /** Backup ID (unique identifier) */
   id: string;
   /** Backup type */
-  type: "full" | "differential";
+  type: 'full' | 'differential';
   /** Base full backup ID that this differential is based on */
   baseFullBackupId: string | null;
   /** Backup file path */
@@ -533,7 +510,7 @@ export interface DifferentialBackupEntry {
   /** Current differential backup size */
   currentSize: number;
   /** Change detection method used */
-  changeDetectionMethod: "mtime" | "checksum" | "hybrid";
+  changeDetectionMethod: 'mtime' | 'checksum' | 'hybrid';
   /** Whether compression was used */
   compressed: boolean;
   /** Whether deduplication was used */
@@ -578,7 +555,7 @@ export interface DifferentialIndex {
  */
 export interface DifferentialBackupResult {
   /** Backup operation type performed */
-  backupType: "full" | "differential" | "skipped";
+  backupType: 'full' | 'differential' | 'skipped';
   /** Backup ID */
   backupId: string;
   /** Base full backup ID (for differential) */
@@ -604,7 +581,7 @@ export interface DifferentialBackupResult {
   /** All files changed cumulatively since last full backup */
   cumulativeChangedFiles: string[];
   /** Change detection method used */
-  changeDetectionMethod: "mtime" | "checksum" | "hybrid";
+  changeDetectionMethod: 'mtime' | 'checksum' | 'hybrid';
   /** Whether a new full backup should be triggered next time */
   recommendFullBackup: boolean;
   /** Reason for recommending full backup */
@@ -644,7 +621,7 @@ export interface BatchProcessingConfig {
   /** Current batch size */
   batchSize: number;
   /** Processing strategy */
-  strategy: "sequential" | "parallel" | "adaptive";
+  strategy: 'sequential' | 'parallel' | 'adaptive';
   /** Enable dynamic sizing */
   dynamicSizing: boolean;
   /** System metrics thresholds */
@@ -749,13 +726,13 @@ export class IntegrityError extends Error {
 
   constructor(
     message: string,
-    code: string = "INTEGRITY_ERROR",
+    code: string = 'INTEGRITY_ERROR',
     filePath?: string,
     operation?: string,
-    cause?: Error,
+    cause?: Error
   ) {
     super(message);
-    this.name = "IntegrityError";
+    this.name = 'IntegrityError';
     this.code = code;
     this.filePath = filePath;
     this.operation = operation;
@@ -771,8 +748,8 @@ export class IntegrityError extends Error {
  */
 export class ChecksumError extends IntegrityError {
   constructor(message: string, filePath?: string, cause?: Error) {
-    super(message, "CHECKSUM_ERROR", filePath, "checksum", cause);
-    this.name = "ChecksumError";
+    super(message, 'CHECKSUM_ERROR', filePath, 'checksum', cause);
+    this.name = 'ChecksumError';
   }
 }
 
@@ -781,8 +758,8 @@ export class ChecksumError extends IntegrityError {
  */
 export class ValidationError extends IntegrityError {
   constructor(message: string, filePath?: string, cause?: Error) {
-    super(message, "VALIDATION_ERROR", filePath, "validation", cause);
-    this.name = "ValidationError";
+    super(message, 'VALIDATION_ERROR', filePath, 'validation', cause);
+    this.name = 'ValidationError';
   }
 }
 
@@ -791,8 +768,8 @@ export class ValidationError extends IntegrityError {
  */
 export class RollbackError extends IntegrityError {
   constructor(message: string, filePath?: string, cause?: Error) {
-    super(message, "ROLLBACK_ERROR", filePath, "rollback", cause);
-    this.name = "RollbackError";
+    super(message, 'ROLLBACK_ERROR', filePath, 'rollback', cause);
+    this.name = 'RollbackError';
   }
 }
 
@@ -834,31 +811,25 @@ export class FileIntegrityValidator {
       this.options = FileIntegrityOptionsSchema.parse(options);
     } catch (error) {
       throw new ConfigError(
-        "Invalid file integrity validation options",
+        'Invalid file integrity validation options',
         undefined,
         error as Error,
-        { providedOptions: options },
+        { providedOptions: options }
       );
     }
 
-    this.logger = createLogger("FileIntegrity");
+    this.logger = createLogger('FileIntegrity');
 
     // Initialize deduplication index path
-    this.deduplicationIndexPath = join(
-      this.options.deduplicationDirectory,
-      "dedup-index.json",
-    );
+    this.deduplicationIndexPath = join(this.options.deduplicationDirectory, 'dedup-index.json');
 
     // Initialize incremental backup index path
-    this.incrementalIndexPath = join(
-      this.options.incrementalDirectory,
-      "incremental-index.json",
-    );
+    this.incrementalIndexPath = join(this.options.incrementalDirectory, 'incremental-index.json');
 
     // Initialize differential backup index path
     this.differentialIndexPath = join(
       this.options.differentialDirectory,
-      "differential-index.json",
+      'differential-index.json'
     );
 
     // Initialize batch processing configuration
@@ -889,7 +860,7 @@ export class FileIntegrityValidator {
       eventLoopLagSamples: [],
     };
 
-    this.logger.debug("FileIntegrityValidator initialized", {
+    this.logger.debug('FileIntegrityValidator initialized', {
       algorithm: this.options.algorithm,
       createBackups: this.options.createBackups,
       backupDirectory: this.options.backupDirectory,
@@ -914,7 +885,7 @@ export class FileIntegrityValidator {
     const startTime = Date.now();
     const resolvedPath = resolve(filePath);
 
-    this.logger.debug("Calculating checksum", {
+    this.logger.debug('Calculating checksum', {
       filePath: resolvedPath,
       algorithm: this.options.algorithm,
     });
@@ -927,14 +898,14 @@ export class FileIntegrityValidator {
       if (this.options.enableCaching) {
         const cached = this.checksumCache.get(resolvedPath);
         if (cached && cached.timestamp >= stats.mtime) {
-          this.logger.debug("Using cached checksum", {
+          this.logger.debug('Using cached checksum', {
             filePath: resolvedPath,
           });
           return cached;
         } else if (cached && cached.timestamp < stats.mtime) {
           // File was modified since cache entry, remove stale cache
           this.checksumCache.delete(resolvedPath);
-          this.logger.debug("Invalidated stale cache entry", {
+          this.logger.debug('Invalidated stale cache entry', {
             filePath: resolvedPath,
             cached: cached.timestamp,
             modified: stats.mtime,
@@ -943,16 +914,13 @@ export class FileIntegrityValidator {
       }
 
       if (!stats.isFile()) {
-        throw new ChecksumError(
-          `Path is not a file: ${resolvedPath}`,
-          resolvedPath,
-        );
+        throw new ChecksumError(`Path is not a file: ${resolvedPath}`, resolvedPath);
       }
 
       if (stats.size > this.options.maxFileSize) {
         throw new ChecksumError(
           `File size (${stats.size}) exceeds maximum allowed size (${this.options.maxFileSize})`,
-          resolvedPath,
+          resolvedPath
         );
       }
 
@@ -966,21 +934,21 @@ export class FileIntegrityValidator {
           reject(
             new ChecksumError(
               `Checksum calculation timed out after ${this.options.timeout}ms`,
-              resolvedPath,
-            ),
+              resolvedPath
+            )
           );
         }, this.options.timeout);
 
-        stream.on("data", (chunk) => {
+        stream.on('data', (chunk) => {
           hash.update(chunk);
         });
 
-        stream.on("end", () => {
+        stream.on('end', () => {
           clearTimeout(timeout);
           const processingTime = Date.now() - startTime;
 
           const checksumInfo: ChecksumInfo = {
-            hash: hash.digest("hex"),
+            hash: hash.digest('hex'),
             algorithm: this.options.algorithm,
             fileSize: stats.size,
             filePath: resolvedPath,
@@ -993,7 +961,7 @@ export class FileIntegrityValidator {
             this.addToCache(resolvedPath, checksumInfo);
           }
 
-          this.logger.debug("Checksum calculated successfully", {
+          this.logger.debug('Checksum calculated successfully', {
             filePath: resolvedPath,
             hash: checksumInfo.hash,
             processingTime,
@@ -1002,20 +970,20 @@ export class FileIntegrityValidator {
           resolve(checksumInfo);
         });
 
-        stream.on("error", (error) => {
+        stream.on('error', (error) => {
           clearTimeout(timeout);
           reject(
             new ChecksumError(
               `Failed to read file for checksum calculation: ${error.message}`,
               resolvedPath,
-              error,
-            ),
+              error
+            )
           );
         });
       });
     } catch (error) {
       const processingTime = Date.now() - startTime;
-      this.logger.error("Checksum calculation failed", {
+      this.logger.error('Checksum calculation failed', {
         filePath: resolvedPath,
         error: error instanceof Error ? error.message : String(error),
         processingTime,
@@ -1028,7 +996,7 @@ export class FileIntegrityValidator {
       throw new ChecksumError(
         `Checksum calculation failed: ${error instanceof Error ? error.message : String(error)}`,
         resolvedPath,
-        error as Error,
+        error as Error
       );
     }
   }
@@ -1040,7 +1008,7 @@ export class FileIntegrityValidator {
     const startTime = Date.now();
     const resolvedPath = resolve(filePath);
 
-    this.logger.debug("Calculating checksum (sync)", {
+    this.logger.debug('Calculating checksum (sync)', {
       filePath: resolvedPath,
       algorithm: this.options.algorithm,
     });
@@ -1053,14 +1021,14 @@ export class FileIntegrityValidator {
       if (this.options.enableCaching) {
         const cached = this.checksumCache.get(resolvedPath);
         if (cached && cached.timestamp >= stats.mtime) {
-          this.logger.debug("Using cached checksum", {
+          this.logger.debug('Using cached checksum', {
             filePath: resolvedPath,
           });
           return cached;
         } else if (cached && cached.timestamp < stats.mtime) {
           // File was modified since cache entry, remove stale cache
           this.checksumCache.delete(resolvedPath);
-          this.logger.debug("Invalidated stale cache entry", {
+          this.logger.debug('Invalidated stale cache entry', {
             filePath: resolvedPath,
             cached: cached.timestamp,
             modified: stats.mtime,
@@ -1074,7 +1042,7 @@ export class FileIntegrityValidator {
       if (stats.size > this.options.maxFileSize) {
         throw new ChecksumError(
           `File size (${stats.size}) exceeds maximum allowed size (${this.options.maxFileSize})`,
-          resolvedPath,
+          resolvedPath
         );
       }
 
@@ -1084,7 +1052,7 @@ export class FileIntegrityValidator {
       const processingTime = Date.now() - startTime;
 
       const checksumInfo: ChecksumInfo = {
-        hash: hash.digest("hex"),
+        hash: hash.digest('hex'),
         algorithm: this.options.algorithm,
         fileSize: stats.size,
         filePath: resolvedPath,
@@ -1097,7 +1065,7 @@ export class FileIntegrityValidator {
         this.addToCache(resolvedPath, checksumInfo);
       }
 
-      this.logger.debug("Checksum calculated successfully (sync)", {
+      this.logger.debug('Checksum calculated successfully (sync)', {
         filePath: resolvedPath,
         hash: checksumInfo.hash,
         processingTime,
@@ -1106,7 +1074,7 @@ export class FileIntegrityValidator {
       return checksumInfo;
     } catch (error) {
       const processingTime = Date.now() - startTime;
-      this.logger.error("Checksum calculation failed (sync)", {
+      this.logger.error('Checksum calculation failed (sync)', {
         filePath: resolvedPath,
         error: error instanceof Error ? error.message : String(error),
         processingTime,
@@ -1119,7 +1087,7 @@ export class FileIntegrityValidator {
       throw new ChecksumError(
         `Checksum calculation failed: ${error instanceof Error ? error.message : String(error)}`,
         resolvedPath,
-        error as Error,
+        error as Error
       );
     }
   }
@@ -1144,7 +1112,7 @@ export class FileIntegrityValidator {
    */
   clearCache(): void {
     this.checksumCache.clear();
-    this.logger.debug("Checksum cache cleared");
+    this.logger.debug('Checksum cache cleared');
   }
 
   /**
@@ -1155,7 +1123,7 @@ export class FileIntegrityValidator {
     this.deduplicationIndex = null;
     this.incrementalIndex = null;
     this.differentialIndex = null;
-    this.logger.debug("All caches and indexes cleared");
+    this.logger.debug('All caches and indexes cleared');
   }
 
   /**
@@ -1173,17 +1141,15 @@ export class FileIntegrityValidator {
    */
   async validateFile(
     filePath: string,
-    expectedChecksum: string | ChecksumInfo,
+    expectedChecksum: string | ChecksumInfo
   ): Promise<FileValidationResult> {
     const startTime = Date.now();
     const resolvedPath = resolve(filePath);
 
-    this.logger.debug("Validating file integrity", {
+    this.logger.debug('Validating file integrity', {
       filePath: resolvedPath,
       expectedChecksum:
-        typeof expectedChecksum === "string"
-          ? expectedChecksum
-          : expectedChecksum.hash,
+        typeof expectedChecksum === 'string' ? expectedChecksum : expectedChecksum.hash,
     });
 
     try {
@@ -1192,9 +1158,7 @@ export class FileIntegrityValidator {
 
       // Extract expected hash
       const expectedHash =
-        typeof expectedChecksum === "string"
-          ? expectedChecksum
-          : expectedChecksum.hash;
+        typeof expectedChecksum === 'string' ? expectedChecksum : expectedChecksum.hash;
 
       const isValid = currentChecksum.hash === expectedHash;
       const processingTime = Date.now() - startTime;
@@ -1203,22 +1167,21 @@ export class FileIntegrityValidator {
         filePath: resolvedPath,
         isValid,
         currentChecksum,
-        originalChecksum:
-          typeof expectedChecksum === "object" ? expectedChecksum : undefined,
+        originalChecksum: typeof expectedChecksum === 'object' ? expectedChecksum : undefined,
         validatedAt: new Date(),
         processingTime,
       };
 
       if (!isValid) {
         result.error = `Checksum mismatch: expected ${expectedHash}, got ${currentChecksum.hash}`;
-        this.logger.warn("File integrity validation failed", {
+        this.logger.warn('File integrity validation failed', {
           filePath: resolvedPath,
           expected: expectedHash,
           actual: currentChecksum.hash,
           processingTime,
         });
       } else {
-        this.logger.debug("File integrity validation passed", {
+        this.logger.debug('File integrity validation passed', {
           filePath: resolvedPath,
           checksum: currentChecksum.hash,
           processingTime,
@@ -1228,7 +1191,7 @@ export class FileIntegrityValidator {
       return result;
     } catch (error) {
       const processingTime = Date.now() - startTime;
-      this.logger.error("File integrity validation error", {
+      this.logger.error('File integrity validation error', {
         filePath: resolvedPath,
         error: error instanceof Error ? error.message : String(error),
         processingTime,
@@ -1248,11 +1211,11 @@ export class FileIntegrityValidator {
    * Validate multiple files in batch
    */
   async validateBatch(
-    files: Array<{ path: string; expectedChecksum: string | ChecksumInfo }>,
+    files: Array<{ path: string; expectedChecksum: string | ChecksumInfo }>
   ): Promise<BatchValidationResult> {
     const startTime = Date.now();
 
-    this.logger.debug("Starting batch validation", {
+    this.logger.debug('Starting batch validation', {
       fileCount: files.length,
       batchSize: this.options.batchSize,
     });
@@ -1266,17 +1229,14 @@ export class FileIntegrityValidator {
       for (let i = 0; i < files.length; i += this.options.batchSize) {
         const batch = files.slice(i, i + this.options.batchSize);
 
-        this.logger.debug(
-          `Processing batch ${Math.floor(i / this.options.batchSize) + 1}`,
-          {
-            batchStart: i,
-            batchSize: batch.length,
-          },
-        );
+        this.logger.debug(`Processing batch ${Math.floor(i / this.options.batchSize) + 1}`, {
+          batchStart: i,
+          batchSize: batch.length,
+        });
 
         // Process batch in parallel
         const batchPromises = batch.map((file) =>
-          this.validateFile(file.path, file.expectedChecksum),
+          this.validateFile(file.path, file.expectedChecksum)
         );
 
         const batchResults = await Promise.all(batchPromises);
@@ -1303,7 +1263,7 @@ export class FileIntegrityValidator {
         processedAt: new Date(),
       };
 
-      this.logger.info("Batch validation completed", {
+      this.logger.info('Batch validation completed', {
         totalFiles: files.length,
         validFiles,
         invalidFiles,
@@ -1313,7 +1273,7 @@ export class FileIntegrityValidator {
       return batchResult;
     } catch (error) {
       const totalProcessingTime = Date.now() - startTime;
-      this.logger.error("Batch validation failed", {
+      this.logger.error('Batch validation failed', {
         error: error instanceof Error ? error.message : String(error),
         processedFiles: results.length,
         totalFiles: files.length,
@@ -1323,7 +1283,7 @@ export class FileIntegrityValidator {
       throw new ValidationError(
         `Batch validation failed: ${error instanceof Error ? error.message : String(error)}`,
         undefined,
-        error as Error,
+        error as Error
       );
     }
   }
@@ -1333,7 +1293,7 @@ export class FileIntegrityValidator {
    */
   async compareFiles(
     filePath1: string,
-    filePath2: string,
+    filePath2: string
   ): Promise<{
     match: boolean;
     checksum1: ChecksumInfo;
@@ -1342,7 +1302,7 @@ export class FileIntegrityValidator {
   }> {
     const startTime = Date.now();
 
-    this.logger.debug("Comparing files", {
+    this.logger.debug('Comparing files', {
       file1: filePath1,
       file2: filePath2,
     });
@@ -1357,7 +1317,7 @@ export class FileIntegrityValidator {
       const match = checksum1.hash === checksum2.hash;
       const processingTime = Date.now() - startTime;
 
-      this.logger.debug("File comparison completed", {
+      this.logger.debug('File comparison completed', {
         file1: filePath1,
         file2: filePath2,
         match,
@@ -1372,7 +1332,7 @@ export class FileIntegrityValidator {
       };
     } catch (error) {
       const processingTime = Date.now() - startTime;
-      this.logger.error("File comparison failed", {
+      this.logger.error('File comparison failed', {
         file1: filePath1,
         file2: filePath2,
         error: error instanceof Error ? error.message : String(error),
@@ -1382,7 +1342,7 @@ export class FileIntegrityValidator {
       throw new ValidationError(
         `File comparison failed: ${error instanceof Error ? error.message : String(error)}`,
         undefined,
-        error as Error,
+        error as Error
       );
     }
   }
@@ -1409,7 +1369,7 @@ export class FileIntegrityValidator {
         return {
           exists: true,
           readable: false,
-          error: "Path exists but is not a file",
+          error: 'Path exists but is not a file',
         };
       }
 
@@ -1419,7 +1379,7 @@ export class FileIntegrityValidator {
         size: stats.size,
       };
     } catch (error) {
-      this.logger.debug("File access verification failed", {
+      this.logger.debug('File access verification failed', {
         filePath: resolvedPath,
         error: error instanceof Error ? error.message : String(error),
       });
@@ -1436,12 +1396,12 @@ export class FileIntegrityValidator {
    * Generate validation metadata for reporting
    */
   generateMetadata(
-    operation: "checksum" | "validation" | "backup" | "rollback" | "cleanup",
+    operation: 'checksum' | 'validation' | 'backup' | 'rollback' | 'cleanup',
     processingTime: number,
-    context?: Record<string, unknown>,
+    context?: Record<string, unknown>
   ): ValidationMetadata {
     return {
-      source: "FileIntegrityValidator",
+      source: 'FileIntegrityValidator',
       operation,
       timestamp: new Date(),
       processingTime,
@@ -1457,23 +1417,18 @@ export class FileIntegrityValidator {
     const { compressionAlgorithm, compressionLevel } = this.options;
 
     switch (compressionAlgorithm) {
-      case "gzip":
+      case 'gzip':
         return createGzip({ level: Math.min(compressionLevel, 9) });
-      case "deflate":
+      case 'deflate':
         return createDeflate({ level: Math.min(compressionLevel, 9) });
-      case "brotli":
+      case 'brotli':
         return createBrotliCompress({
           params: {
-            [zlibConstants.BROTLI_PARAM_QUALITY]: Math.min(
-              compressionLevel,
-              11,
-            ),
+            [zlibConstants.BROTLI_PARAM_QUALITY]: Math.min(compressionLevel, 11),
           },
         });
       default:
-        throw new IntegrityError(
-          `Unsupported compression algorithm: ${compressionAlgorithm}`,
-        );
+        throw new IntegrityError(`Unsupported compression algorithm: ${compressionAlgorithm}`);
     }
   }
 
@@ -1484,16 +1439,14 @@ export class FileIntegrityValidator {
     const ext = extname(filePath).toLowerCase();
 
     switch (ext) {
-      case ".gz":
+      case '.gz':
         return createGunzip();
-      case ".deflate":
+      case '.deflate':
         return createInflate();
-      case ".br":
+      case '.br':
         return createBrotliDecompress();
       default:
-        throw new IntegrityError(
-          `Cannot determine decompression method for file: ${filePath}`,
-        );
+        throw new IntegrityError(`Cannot determine decompression method for file: ${filePath}`);
     }
   }
 
@@ -1518,14 +1471,14 @@ export class FileIntegrityValidator {
    */
   private getCompressedExtension(): string {
     switch (this.options.compressionAlgorithm) {
-      case "gzip":
-        return ".gz";
-      case "deflate":
-        return ".deflate";
-      case "brotli":
-        return ".br";
+      case 'gzip':
+        return '.gz';
+      case 'deflate':
+        return '.deflate';
+      case 'brotli':
+        return '.br';
       default:
-        return ".gz";
+        return '.gz';
     }
   }
 
@@ -1541,10 +1494,10 @@ export class FileIntegrityValidator {
 
     try {
       await access(this.deduplicationIndexPath);
-      const indexData = await readFile(this.deduplicationIndexPath, "utf-8");
+      const indexData = await readFile(this.deduplicationIndexPath, 'utf-8');
       this.deduplicationIndex = JSON.parse(indexData);
 
-      this.logger.debug("Deduplication index loaded", {
+      this.logger.debug('Deduplication index loaded', {
         indexPath: this.deduplicationIndexPath,
         totalEntries: this.deduplicationIndex?.totalEntries,
       });
@@ -1553,7 +1506,7 @@ export class FileIntegrityValidator {
     } catch {
       // Create new index if file doesn't exist
       this.deduplicationIndex = {
-        version: "1.0.0",
+        version: '1.0.0',
         totalEntries: 0,
         spaceSaved: 0,
         lastUpdated: new Date(),
@@ -1568,7 +1521,7 @@ export class FileIntegrityValidator {
 
       await this.saveDeduplicationIndex();
 
-      this.logger.debug("Created new deduplication index", {
+      this.logger.debug('Created new deduplication index', {
         indexPath: this.deduplicationIndexPath,
       });
 
@@ -1590,9 +1543,9 @@ export class FileIntegrityValidator {
       try {
         await access(dedupDir);
       } catch {
-        const { mkdir } = await import("node:fs/promises");
+        const { mkdir } = await import('node:fs/promises');
         await mkdir(dedupDir, { recursive: true });
-        this.logger.debug("Created deduplication directory", { dedupDir });
+        this.logger.debug('Created deduplication directory', { dedupDir });
       }
 
       // Update timestamp and stats
@@ -1601,22 +1554,22 @@ export class FileIntegrityValidator {
 
       // Save to disk
       const indexData = JSON.stringify(this.deduplicationIndex, null, 2);
-      await import("node:fs/promises").then((fs) =>
-        fs.writeFile(this.deduplicationIndexPath, indexData, "utf-8"),
+      await import('node:fs/promises').then((fs) =>
+        fs.writeFile(this.deduplicationIndexPath, indexData, 'utf-8')
       );
 
-      this.logger.debug("Deduplication index saved", {
+      this.logger.debug('Deduplication index saved', {
         indexPath: this.deduplicationIndexPath,
         totalEntries: this.deduplicationIndex.totalEntries,
       });
     } catch (error) {
-      this.logger.error("Failed to save deduplication index", {
+      this.logger.error('Failed to save deduplication index', {
         indexPath: this.deduplicationIndexPath,
         error: error instanceof Error ? error.message : String(error),
       });
       throw new IntegrityError(
         `Failed to save deduplication index: ${error instanceof Error ? error.message : String(error)}`,
-        "DEDUP_INDEX_SAVE_ERROR",
+        'DEDUP_INDEX_SAVE_ERROR'
       );
     }
   }
@@ -1649,14 +1602,12 @@ export class FileIntegrityValidator {
       totalReferences += entry.referenceCount;
     }
 
-    this.deduplicationIndex.spaceSaved =
-      totalOriginalSize - totalDeduplicatedSize;
+    this.deduplicationIndex.spaceSaved = totalOriginalSize - totalDeduplicatedSize;
     this.deduplicationIndex.stats = {
       totalOriginalSize,
       totalDeduplicatedSize,
       duplicatesFound,
-      averageReferenceCount:
-        entries.length > 0 ? totalReferences / entries.length : 0,
+      averageReferenceCount: entries.length > 0 ? totalReferences / entries.length : 0,
     };
   }
 
@@ -1677,22 +1628,22 @@ export class FileIntegrityValidator {
           reject(
             new IntegrityError(
               `Content hash calculation timed out after ${this.options.timeout}ms`,
-              "CONTENT_HASH_TIMEOUT",
-              resolvedPath,
-            ),
+              'CONTENT_HASH_TIMEOUT',
+              resolvedPath
+            )
           );
         }, this.options.timeout);
 
-        stream.on("data", (chunk) => {
+        stream.on('data', (chunk) => {
           hash.update(chunk);
         });
 
-        stream.on("end", () => {
+        stream.on('end', () => {
           clearTimeout(timeout);
-          const contentHash = hash.digest("hex");
+          const contentHash = hash.digest('hex');
           const processingTime = Date.now() - startTime;
 
-          this.logger.debug("Content hash calculated", {
+          this.logger.debug('Content hash calculated', {
             filePath: resolvedPath,
             contentHash,
             algorithm: this.options.deduplicationAlgorithm,
@@ -1702,26 +1653,26 @@ export class FileIntegrityValidator {
           resolve(contentHash);
         });
 
-        stream.on("error", (error) => {
+        stream.on('error', (error) => {
           clearTimeout(timeout);
           reject(
             new IntegrityError(
               `Failed to calculate content hash: ${error.message}`,
-              "CONTENT_HASH_ERROR",
+              'CONTENT_HASH_ERROR',
               resolvedPath,
-              "deduplication",
-              error,
-            ),
+              'deduplication',
+              error
+            )
           );
         });
       });
     } catch (error) {
       throw new IntegrityError(
         `Content hash calculation failed: ${error instanceof Error ? error.message : String(error)}`,
-        "CONTENT_HASH_ERROR",
+        'CONTENT_HASH_ERROR',
         resolvedPath,
-        "deduplication",
-        error as Error,
+        'deduplication',
+        error as Error
       );
     }
   }
@@ -1745,15 +1696,12 @@ export class FileIntegrityValidator {
   /**
    * Perform deduplication for a file
    */
-  async deduplicateFile(
-    filePath: string,
-    targetPath?: string,
-  ): Promise<DeduplicationResult> {
+  async deduplicateFile(filePath: string, targetPath?: string): Promise<DeduplicationResult> {
     const startTime = Date.now();
     const resolvedPath = resolve(filePath);
     const finalTargetPath = targetPath ? resolve(targetPath) : resolvedPath;
 
-    this.logger.debug("Starting file deduplication", {
+    this.logger.debug('Starting file deduplication', {
       filePath: resolvedPath,
       targetPath: finalTargetPath,
       threshold: this.options.deduplicationThreshold,
@@ -1767,7 +1715,7 @@ export class FileIntegrityValidator {
         const processingTime = Date.now() - startTime;
         return {
           deduplicated: false,
-          contentHash: "",
+          contentHash: '',
           isNewEntry: false,
           referenceCount: 0,
           spaceSaved: 0,
@@ -1781,7 +1729,7 @@ export class FileIntegrityValidator {
       if (!shouldDeduplicate) {
         return {
           deduplicated: false,
-          contentHash: "",
+          contentHash: '',
           isNewEntry: false,
           referenceCount: 0,
           spaceSaved: 0,
@@ -1811,27 +1759,24 @@ export class FileIntegrityValidator {
         // Create hard link or copy if hard links not supported/enabled
         if (this.options.useHardLinks) {
           try {
-            const { link } = await import("node:fs/promises");
+            const { link } = await import('node:fs/promises');
             await link(existingEntry.storagePath, finalTargetPath);
-            this.logger.debug("Created hard link for deduplicated content", {
+            this.logger.debug('Created hard link for deduplicated content', {
               source: existingEntry.storagePath,
               target: finalTargetPath,
             });
           } catch (error) {
             // Fallback to copy if hard linking fails
             await copyFile(existingEntry.storagePath, finalTargetPath);
-            this.logger.debug(
-              "Hard link failed, used copy for deduplicated content",
-              {
-                source: existingEntry.storagePath,
-                target: finalTargetPath,
-                error: error instanceof Error ? error.message : String(error),
-              },
-            );
+            this.logger.debug('Hard link failed, used copy for deduplicated content', {
+              source: existingEntry.storagePath,
+              target: finalTargetPath,
+              error: error instanceof Error ? error.message : String(error),
+            });
           }
         } else {
           await copyFile(existingEntry.storagePath, finalTargetPath);
-          this.logger.debug("Copied deduplicated content", {
+          this.logger.debug('Copied deduplicated content', {
             source: existingEntry.storagePath,
             target: finalTargetPath,
           });
@@ -1842,7 +1787,7 @@ export class FileIntegrityValidator {
         const processingTime = Date.now() - startTime;
         const spaceSaved = fileSize; // We saved the full file size
 
-        this.logger.info("File deduplicated (existing content)", {
+        this.logger.info('File deduplicated (existing content)', {
           filePath: resolvedPath,
           contentHash,
           referenceCount: existingEntry.referenceCount,
@@ -1887,25 +1832,19 @@ export class FileIntegrityValidator {
         if (finalTargetPath !== resolvedPath) {
           if (this.options.useHardLinks) {
             try {
-              const { link } = await import("node:fs/promises");
+              const { link } = await import('node:fs/promises');
               await link(storagePath, finalTargetPath);
-              this.logger.debug(
-                "Created hard link for new deduplicated content",
-                {
-                  source: storagePath,
-                  target: finalTargetPath,
-                },
-              );
+              this.logger.debug('Created hard link for new deduplicated content', {
+                source: storagePath,
+                target: finalTargetPath,
+              });
             } catch (error) {
               await copyFile(storagePath, finalTargetPath);
-              this.logger.debug(
-                "Hard link failed, used copy for new deduplicated content",
-                {
-                  source: storagePath,
-                  target: finalTargetPath,
-                  error: error instanceof Error ? error.message : String(error),
-                },
-              );
+              this.logger.debug('Hard link failed, used copy for new deduplicated content', {
+                source: storagePath,
+                target: finalTargetPath,
+                error: error instanceof Error ? error.message : String(error),
+              });
             }
           } else {
             await copyFile(storagePath, finalTargetPath);
@@ -1916,7 +1855,7 @@ export class FileIntegrityValidator {
 
         const processingTime = Date.now() - startTime;
 
-        this.logger.info("File deduplicated (new content)", {
+        this.logger.info('File deduplicated (new content)', {
           filePath: resolvedPath,
           contentHash,
           storagePath,
@@ -1936,7 +1875,7 @@ export class FileIntegrityValidator {
       }
     } catch (error) {
       const processingTime = Date.now() - startTime;
-      this.logger.error("File deduplication failed", {
+      this.logger.error('File deduplication failed', {
         filePath: resolvedPath,
         error: error instanceof Error ? error.message : String(error),
         processingTime,
@@ -1944,7 +1883,7 @@ export class FileIntegrityValidator {
 
       return {
         deduplicated: false,
-        contentHash: "",
+        contentHash: '',
         isNewEntry: false,
         referenceCount: 0,
         spaceSaved: 0,
@@ -2000,21 +1939,19 @@ export class FileIntegrityValidator {
 
     try {
       await access(this.incrementalIndexPath);
-      const data = await readFile(this.incrementalIndexPath, "utf-8");
+      const data = await readFile(this.incrementalIndexPath, 'utf-8');
       this.incrementalIndex = JSON.parse(data) as IncrementalIndex;
 
       // Convert date strings back to Date objects
       if (this.incrementalIndex) {
-        this.incrementalIndex.lastUpdated = new Date(
-          this.incrementalIndex.lastUpdated,
-        );
+        this.incrementalIndex.lastUpdated = new Date(this.incrementalIndex.lastUpdated);
         if (this.incrementalIndex.lastFullBackup) {
           this.incrementalIndex.lastFullBackup.createdAt = new Date(
-            this.incrementalIndex.lastFullBackup.createdAt,
+            this.incrementalIndex.lastFullBackup.createdAt
           );
         }
         this.incrementalIndex.stats.lastBackupAt = new Date(
-          this.incrementalIndex.stats.lastBackupAt,
+          this.incrementalIndex.stats.lastBackupAt
         );
 
         // Convert backup chain dates
@@ -2030,7 +1967,7 @@ export class FileIntegrityValidator {
         });
       }
 
-      this.logger.debug("Incremental index loaded", {
+      this.logger.debug('Incremental index loaded', {
         totalBackups: this.incrementalIndex?.stats.totalBackups,
         chainLength: this.incrementalIndex?.stats.chainLength,
         lastBackup: this.incrementalIndex?.stats.lastBackupAt,
@@ -2038,7 +1975,7 @@ export class FileIntegrityValidator {
     } catch {
       // Initialize new index if file doesn't exist
       this.incrementalIndex = {
-        version: "1.0.0",
+        version: '1.0.0',
         currentChainId: this.generateBackupId(),
         lastFullBackup: null,
         backupChain: [],
@@ -2053,7 +1990,7 @@ export class FileIntegrityValidator {
         lastUpdated: new Date(),
       };
 
-      this.logger.debug("Initialized new incremental index", {
+      this.logger.debug('Initialized new incremental index', {
         chainId: this.incrementalIndex.currentChainId,
         indexPath: this.incrementalIndexPath,
       });
@@ -2078,7 +2015,7 @@ export class FileIntegrityValidator {
         await access(incrementalDir);
       } catch {
         await mkdir(incrementalDir, { recursive: true });
-        this.logger.debug("Created incremental directory", { incrementalDir });
+        this.logger.debug('Created incremental directory', { incrementalDir });
       }
 
       // Update timestamp and save
@@ -2086,21 +2023,21 @@ export class FileIntegrityValidator {
       await writeFile(
         this.incrementalIndexPath,
         JSON.stringify(this.incrementalIndex, null, 2),
-        "utf-8",
+        'utf-8'
       );
 
-      this.logger.debug("Incremental index saved", {
+      this.logger.debug('Incremental index saved', {
         indexPath: this.incrementalIndexPath,
         backupCount: this.incrementalIndex.stats.totalBackups,
       });
     } catch (error) {
-      this.logger.error("Failed to save incremental index", {
+      this.logger.error('Failed to save incremental index', {
         error: error instanceof Error ? error.message : String(error),
         indexPath: this.incrementalIndexPath,
       });
       throw new IntegrityError(
         `Failed to save incremental index: ${error instanceof Error ? error.message : String(error)}`,
-        "INDEX_SAVE_ERROR",
+        'INDEX_SAVE_ERROR'
       );
     }
   }
@@ -2133,33 +2070,29 @@ export class FileIntegrityValidator {
 
       // Determine if file has changed based on detection method
       switch (this.options.changeDetectionMethod) {
-        case "mtime":
-          currentState.hasChanged =
-            !existingState || stats.mtime > existingState.mtime;
+        case 'mtime':
+          currentState.hasChanged = !existingState || stats.mtime > existingState.mtime;
           break;
 
-        case "checksum":
+        case 'checksum':
           currentState.contentHash = await this.createContentHash(resolvedPath);
           currentState.hasChanged =
-            !existingState ||
-            currentState.contentHash !== existingState.contentHash;
+            !existingState || currentState.contentHash !== existingState.contentHash;
           break;
 
-        case "hybrid":
+        case 'hybrid':
           // First check mtime for efficiency, then checksum if needed
           if (!existingState || stats.mtime > existingState.mtime) {
-            currentState.contentHash =
-              await this.createContentHash(resolvedPath);
+            currentState.contentHash = await this.createContentHash(resolvedPath);
             currentState.hasChanged =
-              !existingState ||
-              currentState.contentHash !== existingState.contentHash;
+              !existingState || currentState.contentHash !== existingState.contentHash;
           } else {
             currentState.hasChanged = false;
           }
           break;
       }
 
-      this.logger.debug("File change detection result", {
+      this.logger.debug('File change detection result', {
         filePath: resolvedPath,
         hasChanged: currentState.hasChanged,
         method: this.options.changeDetectionMethod,
@@ -2169,7 +2102,7 @@ export class FileIntegrityValidator {
 
       return currentState;
     } catch (error) {
-      this.logger.error("File change detection failed", {
+      this.logger.error('File change detection failed', {
         filePath: resolvedPath,
         error: error instanceof Error ? error.message : String(error),
       });
@@ -2189,71 +2122,68 @@ export class FileIntegrityValidator {
    * Determine backup strategy based on configuration and current state
    */
   private async determineBackupStrategy(
-    filePath: string,
-  ): Promise<"full" | "incremental" | "skip"> {
+    filePath: string
+  ): Promise<'full' | 'incremental' | 'skip'> {
     if (!this.options.enableIncrementalBackup) {
-      return "full";
+      return 'full';
     }
 
     const index = await this.loadIncrementalIndex();
 
     // Force full backup if no previous backups exist
     if (!index.lastFullBackup || index.backupChain.length === 0) {
-      this.logger.debug("No previous backups found, forcing full backup");
-      return "full";
+      this.logger.debug('No previous backups found, forcing full backup');
+      return 'full';
     }
 
     // Force full backup if chain is too long
     if (index.stats.chainLength >= this.options.maxIncrementalChain) {
-      this.logger.debug("Chain length exceeded maximum, forcing full backup", {
+      this.logger.debug('Chain length exceeded maximum, forcing full backup', {
         chainLength: index.stats.chainLength,
         maxChain: this.options.maxIncrementalChain,
       });
-      return "full";
+      return 'full';
     }
 
     // Force full backup if too much time has passed
     const hoursSinceLastFull =
-      (Date.now() - index.lastFullBackup.createdAt.getTime()) /
-      (1000 * 60 * 60);
+      (Date.now() - index.lastFullBackup.createdAt.getTime()) / (1000 * 60 * 60);
     if (hoursSinceLastFull >= this.options.fullBackupInterval) {
-      this.logger.debug("Time interval exceeded, forcing full backup", {
+      this.logger.debug('Time interval exceeded, forcing full backup', {
         hoursSinceLastFull,
         maxInterval: this.options.fullBackupInterval,
       });
-      return "full";
+      return 'full';
     }
 
     // Check if file has changed
     const changeState = await this.detectFileChanges(filePath);
     if (!changeState.hasChanged) {
-      this.logger.debug("File unchanged since last backup, skipping");
-      return "skip";
+      this.logger.debug('File unchanged since last backup, skipping');
+      return 'skip';
     }
 
     // Use strategy configuration
     switch (this.options.backupStrategy) {
-      case "full":
-        return "full";
-      case "incremental":
-        return "incremental";
-      case "auto":
+      case 'full':
+        return 'full';
+      case 'incremental':
+        return 'incremental';
+      case 'auto':
       default:
         // Auto strategy: use incremental if conditions are met
-        return "incremental";
+        return 'incremental';
     }
   }
 
   /**
    * Create an incremental backup
    */
-  async createIncrementalBackup(
-    filePath: string,
-  ): Promise<IncrementalBackupResult> {
+  async createIncrementalBackup(filePath: string): Promise<IncrementalBackupResult> {
     const startTime = Date.now();
     const resolvedPath = resolve(filePath);
 
-    this.logger.debug("Creating incremental backup", {
+    this.logger.debug('Creating incremental backup', {
       filePath: resolvedPath,
       strategy: this.options.backupStrategy,
       changeDetection: this.options.changeDetectionMethod,
@@ -2263,15 +2193,15 @@ export class FileIntegrityValidator {
       // Determine backup strategy
       const strategy = await this.determineBackupStrategy(resolvedPath);
 
-      if (strategy === "skip") {
+      if (strategy === 'skip') {
         return {
-          backupType: "skipped",
-          backupId: "",
+          backupType: 'skipped',
+          backupId: '',
           parentId: null,
           filesBackedUp: 0,
           filesChanged: 0,
           filesSkipped: 1,
-          backupPath: "",
+          backupPath: '',
           backupSize: 0,
           spaceSaved: 0,
           backedUpFiles: [],
@@ -2291,25 +2221,20 @@ export class FileIntegrityValidator {
       const backupResult = await this.createBackup(resolvedPath);
 
       if (!backupResult.success) {
-        throw new RollbackError(
-          backupResult.error || "Backup creation failed",
-          resolvedPath,
-        );
+        throw new RollbackError(backupResult.error || 'Backup creation failed', resolvedPath);
       }
 
       // Create incremental backup entry
       const backupEntry: IncrementalBackupEntry = {
         id: backupId,
         type: strategy,
-        parentId: strategy === "full" ? null : index.lastFullBackup?.id || null,
+        parentId: strategy === 'full' ? null : index.lastFullBackup?.id || null,
         backupPath: backupResult.backupPath,
         originalPath: resolvedPath,
         createdAt: new Date(),
         mtime: fileStats.mtime,
         size: fileStats.size,
-        contentHash:
-          changeState.contentHash ||
-          (await this.createContentHash(resolvedPath)),
+        contentHash: changeState.contentHash || (await this.createContentHash(resolvedPath)),
         files: [resolvedPath],
         changeDetectionMethod: this.options.changeDetectionMethod,
         compressed: backupResult.compressed || false,
@@ -2326,7 +2251,7 @@ export class FileIntegrityValidator {
 
       // Update statistics
       index.stats.totalBackups++;
-      if (strategy === "incremental") {
+      if (strategy === 'incremental') {
         index.stats.totalIncrementals++;
         index.stats.chainLength++;
       } else {
@@ -2358,8 +2283,7 @@ export class FileIntegrityValidator {
         filesSkipped: 0,
         backupPath: backupResult.backupPath,
         backupSize: backupResult.backupSize || 0,
-        spaceSaved:
-          (backupResult.originalSize || 0) - (backupResult.backupSize || 0),
+        spaceSaved: (backupResult.originalSize || 0) - (backupResult.backupSize || 0),
         backedUpFiles: [resolvedPath],
         changeDetectionMethod: this.options.changeDetectionMethod,
         processingTime,
@@ -2367,7 +2291,7 @@ export class FileIntegrityValidator {
         createdAt: new Date(),
       };
 
-      this.logger.info("Incremental backup created successfully", {
+      this.logger.info('Incremental backup created successfully', {
         backupType: strategy,
         backupId,
         filePath: resolvedPath,
@@ -2380,20 +2304,20 @@ export class FileIntegrityValidator {
       return result;
     } catch (error) {
       const processingTime = Date.now() - startTime;
-      this.logger.error("Incremental backup creation failed", {
+      this.logger.error('Incremental backup creation failed', {
         filePath: resolvedPath,
         error: error instanceof Error ? error.message : String(error),
         processingTime,
       });
 
       return {
-        backupType: "incremental",
-        backupId: "",
+        backupType: 'incremental',
+        backupId: '',
         parentId: null,
         filesBackedUp: 0,
         filesChanged: 0,
         filesSkipped: 0,
-        backupPath: "",
+        backupPath: '',
         backupSize: 0,
         spaceSaved: 0,
         backedUpFiles: [],
@@ -2466,7 +2390,7 @@ export class FileIntegrityValidator {
         await access(differentialDir);
       } catch {
         await mkdir(differentialDir, { recursive: true });
-        this.logger.debug("Created differential backup directory", {
+        this.logger.debug('Created differential backup directory', {
           differentialDir,
         });
       }
@@ -2474,13 +2398,13 @@ export class FileIntegrityValidator {
       // Try to load existing index
       try {
         await access(this.differentialIndexPath);
-        const indexData = await readFile(this.differentialIndexPath, "utf-8");
+        const indexData = await readFile(this.differentialIndexPath, 'utf-8');
         const parsedIndex = JSON.parse(indexData) as DifferentialIndex;
 
         // Convert date strings back to Date objects
         if (parsedIndex.currentFullBackup) {
           parsedIndex.currentFullBackup.createdAt = new Date(
-            parsedIndex.currentFullBackup.createdAt,
+            parsedIndex.currentFullBackup.createdAt
           );
         }
         parsedIndex.differentialChain.forEach((entry) => {
@@ -2490,26 +2414,24 @@ export class FileIntegrityValidator {
           state.mtime = new Date(state.mtime);
           state.lastBackup = new Date(state.lastBackup);
         });
-        parsedIndex.stats.lastBackupAt = new Date(
-          parsedIndex.stats.lastBackupAt,
-        );
+        parsedIndex.stats.lastBackupAt = new Date(parsedIndex.stats.lastBackupAt);
         parsedIndex.lastUpdated = new Date(parsedIndex.lastUpdated);
 
         this.differentialIndex = parsedIndex;
-        this.logger.debug("Loaded differential index", {
+        this.logger.debug('Loaded differential index', {
           totalDifferentials: parsedIndex.stats.totalDifferentials,
           currentChainLength: parsedIndex.stats.currentChainLength,
         });
         return parsedIndex;
       } catch (parseError) {
         // Handle corruption by logging and creating new index
-        this.logger.warn("Differential index corrupted or invalid, creating new index", {
+        this.logger.warn('Differential index corrupted or invalid, creating new index', {
           error: parseError instanceof Error ? parseError.message : String(parseError),
         });
         // Clear any cached index to ensure clean state
         this.differentialIndex = null;
         this.differentialIndex = {
-          version: "1.0.0",
+          version: '1.0.0',
           currentFullBackup: null,
           differentialChain: [],
           cumulativeFileStates: {},
@@ -2526,16 +2448,16 @@ export class FileIntegrityValidator {
         };
 
         await this.saveDifferentialIndex();
-        this.logger.debug("Created new differential index");
+        this.logger.debug('Created new differential index');
         return this.differentialIndex;
       }
     } catch (error) {
-      this.logger.error("Failed to load differential index", {
+      this.logger.error('Failed to load differential index', {
         error: error instanceof Error ? error.message : String(error),
       });
       throw new IntegrityError(
         `Failed to load differential backup index: ${error instanceof Error ? error.message : String(error)}`,
-        "DIFFERENTIAL_INDEX_LOAD_ERROR",
+        'DIFFERENTIAL_INDEX_LOAD_ERROR'
       );
     }
   }
@@ -2551,19 +2473,19 @@ export class FileIntegrityValidator {
     try {
       this.differentialIndex.lastUpdated = new Date();
       const indexData = JSON.stringify(this.differentialIndex, null, 2);
-      await writeFile(this.differentialIndexPath, indexData, "utf-8");
+      await writeFile(this.differentialIndexPath, indexData, 'utf-8');
 
-      this.logger.debug("Saved differential index", {
+      this.logger.debug('Saved differential index', {
         totalDifferentials: this.differentialIndex.stats.totalDifferentials,
         cumulativeSize: this.differentialIndex.stats.cumulativeSize,
       });
     } catch (error) {
-      this.logger.error("Failed to save differential index", {
+      this.logger.error('Failed to save differential index', {
         error: error instanceof Error ? error.message : String(error),
       });
       throw new IntegrityError(
         `Failed to save differential backup index: ${error instanceof Error ? error.message : String(error)}`,
-        "DIFFERENTIAL_INDEX_SAVE_ERROR",
+        'DIFFERENTIAL_INDEX_SAVE_ERROR'
       );
     }
   }
@@ -2588,39 +2510,31 @@ export class FileIntegrityValidator {
     }
 
     const timeSinceFullBackup =
-      (Date.now() - index.currentFullBackup.createdAt.getTime()) /
-      (1000 * 60 * 60);
+      (Date.now() - index.currentFullBackup.createdAt.getTime()) / (1000 * 60 * 60);
     const fileStats = await stat(filePath);
 
     // Check if this specific file has changed since last full backup
     const existingState = index.cumulativeFileStates[filePath];
     let hasChanged = false;
 
-    if (
-      !existingState ||
-      existingState.lastBackup < index.currentFullBackup.createdAt
-    ) {
+    if (!existingState || existingState.lastBackup < index.currentFullBackup.createdAt) {
       // File not tracked or last backup was before current full backup
       hasChanged = true;
     } else {
       // Use selected change detection method
       switch (this.options.changeDetectionMethod) {
-        case "mtime":
+        case 'mtime':
           hasChanged = fileStats.mtime > existingState.mtime;
           break;
-        case "checksum": {
+        case 'checksum': {
           const currentHash = await this.createContentHash(filePath);
-          hasChanged =
-            !existingState.contentHash ||
-            currentHash !== existingState.contentHash;
+          hasChanged = !existingState.contentHash || currentHash !== existingState.contentHash;
           break;
         }
-        case "hybrid":
+        case 'hybrid':
           if (fileStats.mtime > existingState.mtime) {
             const currentHash = await this.createContentHash(filePath);
-            hasChanged =
-              !existingState.contentHash ||
-              currentHash !== existingState.contentHash;
+            hasChanged = !existingState.contentHash || currentHash !== existingState.contentHash;
           } else {
             hasChanged = false;
           }
@@ -2630,12 +2544,10 @@ export class FileIntegrityValidator {
 
     // Get all cumulative changes since last full backup
     // This includes ALL files that have been backed up since the full backup was created
-    const cumulativeChanges = Object.keys(index.cumulativeFileStates).filter(
-      (path) => {
-        const state = index.cumulativeFileStates[path];
-        return index.currentFullBackup && state.lastBackup >= index.currentFullBackup.createdAt;
-      },
-    );
+    const cumulativeChanges = Object.keys(index.cumulativeFileStates).filter((path) => {
+      const state = index.cumulativeFileStates[path];
+      return index.currentFullBackup && state.lastBackup >= index.currentFullBackup.createdAt;
+    });
 
     // Add current file if it has changed
     if (hasChanged && !cumulativeChanges.includes(filePath)) {
@@ -2653,49 +2565,44 @@ export class FileIntegrityValidator {
    * Determine differential backup strategy
    */
   private async determineDifferentialStrategy(
-    filePath: string,
-  ): Promise<"full" | "differential" | "skip"> {
+    filePath: string
+  ): Promise<'full' | 'differential' | 'skip'> {
     if (!this.options.enableDifferentialBackup) {
-      return "skip";
+      return 'skip';
     }
 
     const index = await this.loadDifferentialIndex();
     const changeInfo = await this.detectCumulativeFileChanges(filePath);
 
-
-
     // Skip if no changes
     if (!changeInfo.hasChanged) {
-      this.logger.debug("No changes detected, skipping backup");
-      return "skip";
+      this.logger.debug('No changes detected, skipping backup');
+      return 'skip';
     }
 
     // Force full backup if no current full backup exists
     if (!index.currentFullBackup) {
-      this.logger.info("DEBUG: No full backup exists, forcing full backup");
-      return "full";
+      this.logger.info('DEBUG: No full backup exists, forcing full backup');
+      return 'full';
     }
 
     // Check time-based threshold for full backup
-    if (
-      changeInfo.timeSinceFullBackup >=
-      this.options.differentialFullBackupInterval
-    ) {
-      this.logger.debug("Time threshold exceeded, forcing full backup", {
+    if (changeInfo.timeSinceFullBackup >= this.options.differentialFullBackupInterval) {
+      this.logger.debug('Time threshold exceeded, forcing full backup', {
         timeSinceFullBackup: changeInfo.timeSinceFullBackup,
         threshold: this.options.differentialFullBackupInterval,
       });
-      return "full";
+      return 'full';
     }
 
     // Check size-based threshold for full backup
     const cumulativeSizeMB = index.stats.cumulativeSize / (1024 * 1024);
     if (cumulativeSizeMB >= this.options.differentialFullBackupThreshold) {
-      this.logger.debug("Size threshold exceeded, forcing full backup", {
+      this.logger.debug('Size threshold exceeded, forcing full backup', {
         cumulativeSize: cumulativeSizeMB,
         threshold: this.options.differentialFullBackupThreshold,
       });
-      return "full";
+      return 'full';
     }
 
     // Check size multiplier threshold only if cumulative size > 0 and full backup exists
@@ -2704,37 +2611,35 @@ export class FileIntegrityValidator {
       index.stats.cumulativeSize > 0 &&
       index.stats.cumulativeSizeRatio >= this.options.differentialSizeMultiplier
     ) {
-      this.logger.debug("Size multiplier exceeded, forcing full backup", {
+      this.logger.debug('Size multiplier exceeded, forcing full backup', {
         sizeRatio: index.stats.cumulativeSizeRatio,
         threshold: this.options.differentialSizeMultiplier,
       });
-      return "full";
+      return 'full';
     }
 
     // Use differential strategy
     switch (this.options.differentialStrategy) {
-      case "auto":
-        return "differential";
-      case "manual":
-        return "differential";
-      case "threshold-based":
+      case 'auto':
+        return 'differential';
+      case 'manual':
+        return 'differential';
+      case 'threshold-based':
         // Additional threshold checks could be added here
-        return "differential";
+        return 'differential';
       default:
-        return "differential";
+        return 'differential';
     }
   }
 
   /**
    * Create differential backup
    */
-  async createDifferentialBackup(
-    filePath: string,
-  ): Promise<DifferentialBackupResult> {
+  async createDifferentialBackup(filePath: string): Promise<DifferentialBackupResult> {
     const startTime = Date.now();
     const resolvedPath = resolve(filePath);
 
-    this.logger.debug("Creating differential backup", {
+    this.logger.debug('Creating differential backup', {
       filePath: resolvedPath,
       strategy: this.options.differentialStrategy,
     });
@@ -2745,12 +2650,12 @@ export class FileIntegrityValidator {
         await access(resolvedPath);
       } catch {
         return {
-          backupType: "skipped",
-          backupId: "",
+          backupType: 'skipped',
+          backupId: '',
           filesBackedUp: 0,
           cumulativeFilesChanged: 0,
           filesSkipped: 1,
-          backupPath: "",
+          backupPath: '',
           currentBackupSize: 0,
           cumulativeSize: 0,
           cumulativeSizeRatio: 0,
@@ -2761,22 +2666,22 @@ export class FileIntegrityValidator {
           recommendFullBackup: false,
           processingTime: Date.now() - startTime,
           success: false,
-          error: "File does not exist",
+          error: 'File does not exist',
           createdAt: new Date(),
         };
       }
 
       const strategy = await this.determineDifferentialStrategy(resolvedPath);
 
-      if (strategy === "skip") {
+      if (strategy === 'skip') {
         const changeInfo = await this.detectCumulativeFileChanges(resolvedPath);
         return {
-          backupType: "skipped",
-          backupId: "",
+          backupType: 'skipped',
+          backupId: '',
           filesBackedUp: 0,
           cumulativeFilesChanged: changeInfo.cumulativeChanges.length,
           filesSkipped: 1,
-          backupPath: "",
+          backupPath: '',
           currentBackupSize: 0,
           cumulativeSize: 0,
           cumulativeSizeRatio: 0,
@@ -2798,17 +2703,14 @@ export class FileIntegrityValidator {
       const backupResult = await this.createBackup(resolvedPath);
 
       if (!backupResult.success) {
-        throw new RollbackError(
-          backupResult.error || "Backup creation failed",
-          resolvedPath,
-        );
+        throw new RollbackError(backupResult.error || 'Backup creation failed', resolvedPath);
       }
 
       const backupId = this.generateBackupId();
       const currentTime = new Date();
       const fileStats = await stat(resolvedPath);
 
-      if (strategy === "full") {
+      if (strategy === 'full') {
         // Reset differential chain with new full backup
         index.currentFullBackup = {
           id: backupId,
@@ -2828,7 +2730,7 @@ export class FileIntegrityValidator {
           timeSinceFullBackup: 0,
         };
 
-        this.logger.info("Created new full backup for differential chain", {
+        this.logger.info('Created new full backup for differential chain', {
           backupId,
           filePath: resolvedPath,
           backupPath: backupResult.backupPath,
@@ -2837,14 +2739,13 @@ export class FileIntegrityValidator {
         // Add differential backup to chain
         const differentialEntry: DifferentialBackupEntry = {
           id: backupId,
-          type: "differential",
+          type: 'differential',
           baseFullBackupId: index.currentFullBackup!.id,
           backupPath: backupResult.backupPath,
           originalPath: resolvedPath,
           createdAt: currentTime,
           cumulativeFiles: changeInfo.cumulativeChanges,
-          cumulativeSize:
-            index.stats.cumulativeSize + (backupResult.backupSize || 0),
+          cumulativeSize: index.stats.cumulativeSize + (backupResult.backupSize || 0),
           currentFiles: [resolvedPath],
           currentSize: backupResult.backupSize || 0,
           changeDetectionMethod: this.options.changeDetectionMethod,
@@ -2863,7 +2764,7 @@ export class FileIntegrityValidator {
         index.stats.lastBackupAt = currentTime;
         index.stats.timeSinceFullBackup = changeInfo.timeSinceFullBackup;
 
-        this.logger.info("Created differential backup", {
+        this.logger.info('Created differential backup', {
           backupId,
           filePath: resolvedPath,
           cumulativeSize: index.stats.cumulativeSize,
@@ -2873,7 +2774,7 @@ export class FileIntegrityValidator {
 
       // Update file state
       const contentHash =
-        this.options.changeDetectionMethod !== "mtime"
+        this.options.changeDetectionMethod !== 'mtime'
           ? await this.createContentHash(resolvedPath)
           : undefined;
 
@@ -2883,7 +2784,7 @@ export class FileIntegrityValidator {
         mtime: fileStats.mtime,
         contentHash,
         lastBackup: currentTime,
-        hasChanged: strategy === "full" ? false : true, // Only reset for full backups, keep true for differential
+        hasChanged: strategy === 'full' ? false : true, // Only reset for full backups, keep true for differential
       };
 
       await this.saveDifferentialIndex();
@@ -2897,13 +2798,12 @@ export class FileIntegrityValidator {
       // Determine if next backup should be full
       const recommendFullBackup =
         (index.currentFullBackup && updatedSizeRatio >= this.options.differentialSizeMultiplier) ||
-        changeInfo.timeSinceFullBackup >=
-          this.options.differentialFullBackupInterval * 0.8; // 80% threshold
+        changeInfo.timeSinceFullBackup >= this.options.differentialFullBackupInterval * 0.8; // 80% threshold
 
       let recommendationReason: string | undefined;
       if (recommendFullBackup) {
         if (
-          index.currentFullBackup && 
+          index.currentFullBackup &&
           updatedSizeRatio >= this.options.differentialSizeMultiplier
         ) {
           recommendationReason = `Cumulative size ratio (${updatedSizeRatio.toFixed(2)}) approaching threshold (${this.options.differentialSizeMultiplier})`;
@@ -2917,8 +2817,7 @@ export class FileIntegrityValidator {
       return {
         backupType: strategy,
         backupId,
-        baseFullBackupId:
-          strategy === "differential" ? index.currentFullBackup?.id : undefined,
+        baseFullBackupId: strategy === 'differential' ? index.currentFullBackup?.id : undefined,
         filesBackedUp: 1,
         cumulativeFilesChanged: changeInfo.cumulativeChanges.length,
         filesSkipped: 0,
@@ -2938,19 +2837,19 @@ export class FileIntegrityValidator {
       };
     } catch (error) {
       const processingTime = Date.now() - startTime;
-      this.logger.error("Differential backup failed", {
+      this.logger.error('Differential backup failed', {
         filePath: resolvedPath,
         error: error instanceof Error ? error.message : String(error),
         processingTime,
       });
 
       return {
-        backupType: "skipped",
-        backupId: "",
+        backupType: 'skipped',
+        backupId: '',
         filesBackedUp: 0,
         cumulativeFilesChanged: 0,
         filesSkipped: 1,
-        backupPath: "",
+        backupPath: '',
         currentBackupSize: 0,
         cumulativeSize: 0,
         cumulativeSizeRatio: 0,
@@ -3054,9 +2953,7 @@ export class FileIntegrityValidator {
     // Calculate event loop lag from recent samples
     const recentLag =
       this.performanceTracker.eventLoopLagSamples.length > 0
-        ? this.performanceTracker.eventLoopLagSamples
-            .slice(-10)
-            .reduce((a, b) => a + b, 0) /
+        ? this.performanceTracker.eventLoopLagSamples.slice(-10).reduce((a, b) => a + b, 0) /
           Math.min(10, this.performanceTracker.eventLoopLagSamples.length)
         : 0;
 
@@ -3106,14 +3003,11 @@ export class FileIntegrityValidator {
 
     const metrics = await this.getCurrentSystemMetrics();
     let newBatchSize = this.currentBatchSize;
-    let adjustmentReason = "";
+    let adjustmentReason = '';
 
     // Memory pressure check
     if (metrics.memoryUsage > this.batchProcessingConfig.thresholds.memory) {
-      newBatchSize = Math.max(
-        this.options.minBatchSize,
-        Math.floor(this.currentBatchSize * 0.7),
-      );
+      newBatchSize = Math.max(this.options.minBatchSize, Math.floor(this.currentBatchSize * 0.7));
       adjustmentReason = `High memory usage: ${metrics.memoryUsage.toFixed(1)}%`;
     }
 
@@ -3122,44 +3016,29 @@ export class FileIntegrityValidator {
       metrics.loadAverage >
       (this.batchProcessingConfig.thresholds.cpu / 100) * os.cpus().length
     ) {
-      newBatchSize = Math.max(
-        this.options.minBatchSize,
-        Math.floor(this.currentBatchSize * 0.8),
-      );
+      newBatchSize = Math.max(this.options.minBatchSize, Math.floor(this.currentBatchSize * 0.8));
       adjustmentReason = `High CPU load: ${metrics.loadAverage.toFixed(2)}`;
     }
 
     // Event loop lag check
-    else if (
-      metrics.eventLoopLag > this.batchProcessingConfig.thresholds.eventLoopLag
-    ) {
-      newBatchSize = Math.max(
-        this.options.minBatchSize,
-        Math.floor(this.currentBatchSize * 0.6),
-      );
+    else if (metrics.eventLoopLag > this.batchProcessingConfig.thresholds.eventLoopLag) {
+      newBatchSize = Math.max(this.options.minBatchSize, Math.floor(this.currentBatchSize * 0.6));
       adjustmentReason = `High event loop lag: ${metrics.eventLoopLag.toFixed(1)}ms`;
     }
 
     // Reduce batch size if good conditions (can increase performance)
     else if (
-      metrics.memoryUsage <
-        this.batchProcessingConfig.thresholds.memory * 0.5 &&
+      metrics.memoryUsage < this.batchProcessingConfig.thresholds.memory * 0.5 &&
       metrics.loadAverage <
-        (this.batchProcessingConfig.thresholds.cpu / 100) *
-          os.cpus().length *
-          0.5 &&
-      metrics.eventLoopLag <
-        this.batchProcessingConfig.thresholds.eventLoopLag * 0.5
+        (this.batchProcessingConfig.thresholds.cpu / 100) * os.cpus().length * 0.5 &&
+      metrics.eventLoopLag < this.batchProcessingConfig.thresholds.eventLoopLag * 0.5
     ) {
-      newBatchSize = Math.min(
-        this.options.maxBatchSize,
-        Math.floor(this.currentBatchSize * 1.2),
-      );
-      adjustmentReason = "Optimal system conditions, increasing batch size";
+      newBatchSize = Math.min(this.options.maxBatchSize, Math.floor(this.currentBatchSize * 1.2));
+      adjustmentReason = 'Optimal system conditions, increasing batch size';
     }
 
     if (newBatchSize !== this.currentBatchSize) {
-      this.logger.debug("Adjusting batch size", {
+      this.logger.debug('Adjusting batch size', {
         oldSize: this.currentBatchSize,
         newSize: newBatchSize,
         reason: adjustmentReason,
@@ -3185,7 +3064,7 @@ export class FileIntegrityValidator {
     total: number,
     currentFile: string,
     operation: string,
-    startTime: number,
+    startTime: number
   ): ProgressInfo {
     const elapsed = Date.now() - startTime;
     const percentage = total > 0 ? (processed / total) * 100 : 0;
@@ -3217,9 +3096,9 @@ export class FileIntegrityValidator {
    */
   private emitProgress(progressInfo: ProgressInfo): void {
     if (this.options.enableProgressTracking) {
-      this.progressEmitter.emit("progress", progressInfo);
+      this.progressEmitter.emit('progress', progressInfo);
 
-      this.logger.debug("Progress update", {
+      this.logger.debug('Progress update', {
         operation: progressInfo.operation,
         percentage: `${progressInfo.percentage.toFixed(1)}%`,
         processed: progressInfo.processed,
@@ -3242,7 +3121,7 @@ export class FileIntegrityValidator {
       progressCallback?: (progress: ProgressInfo) => void;
       errorHandler?: (error: Error, filePath: string) => boolean; // return true to continue
       enableProgressTracking?: boolean;
-    } = {},
+    } = {}
   ): Promise<BatchOperationResult<T>> {
     const startTime = Date.now();
     const totalFiles = files.length;
@@ -3270,14 +3149,11 @@ export class FileIntegrityValidator {
         const batchFiles = files.slice(i, i + this.currentBatchSize);
         const batchStartTime = Date.now();
 
-        this.logger.debug(
-          `Processing batch ${Math.floor(i / this.currentBatchSize) + 1}`,
-          {
-            batchSize: batchFiles.length,
-            startIndex: i,
-            endIndex: Math.min(i + this.currentBatchSize - 1, files.length - 1),
-          },
-        );
+        this.logger.debug(`Processing batch ${Math.floor(i / this.currentBatchSize) + 1}`, {
+          batchSize: batchFiles.length,
+          startIndex: i,
+          endIndex: Math.min(i + this.currentBatchSize - 1, files.length - 1),
+        });
 
         // Process batch based on strategy
         let batchResults: Array<{
@@ -3286,7 +3162,7 @@ export class FileIntegrityValidator {
           filePath: string;
         }> = [];
 
-        if (this.batchProcessingConfig.strategy === "parallel") {
+        if (this.batchProcessingConfig.strategy === 'parallel') {
           // Parallel processing
           const promises = batchFiles.map(async (filePath) => {
             try {
@@ -3331,11 +3207,11 @@ export class FileIntegrityValidator {
             if (options.errorHandler) {
               const shouldContinue = options.errorHandler(
                 new Error(batchResult.error),
-                batchResult.filePath,
+                batchResult.filePath
               );
               if (!shouldContinue) {
                 throw new Error(
-                  `Processing stopped due to error in ${batchResult.filePath}: ${batchResult.error}`,
+                  `Processing stopped due to error in ${batchResult.filePath}: ${batchResult.error}`
                 );
               }
             }
@@ -3350,7 +3226,7 @@ export class FileIntegrityValidator {
             totalFiles,
             batchResult.filePath,
             operation,
-            startTime,
+            startTime
           );
 
           // Emit progress events
@@ -3385,9 +3261,9 @@ export class FileIntegrityValidator {
       const finalProgress = this.createProgressInfo(
         processed,
         totalFiles,
-        "Complete",
+        'Complete',
         operation,
-        startTime,
+        startTime
       );
 
       this.emitProgress(finalProgress);
@@ -3429,10 +3305,10 @@ export class FileIntegrityValidator {
 
       throw new IntegrityError(
         `Batch operation failed: ${error instanceof Error ? error.message : String(error)}`,
-        "BATCH_OPERATION_ERROR",
+        'BATCH_OPERATION_ERROR',
         undefined,
         operation,
-        error as Error,
+        error as Error
       );
     }
   }
@@ -3444,7 +3320,7 @@ export class FileIntegrityValidator {
     const startTime = Date.now();
     const resolvedPath = resolve(filePath);
 
-    this.logger.debug("Creating backup", {
+    this.logger.debug('Creating backup', {
       filePath: resolvedPath,
       backupDirectory: this.options.backupDirectory,
       compressionEnabled: this.options.enableCompression,
@@ -3456,8 +3332,8 @@ export class FileIntegrityValidator {
       const fileAccess = await this.verifyFileAccess(resolvedPath);
       if (!fileAccess.exists || !fileAccess.readable) {
         throw new RollbackError(
-          `Cannot backup file: ${fileAccess.error || "File not accessible"}`,
-          resolvedPath,
+          `Cannot backup file: ${fileAccess.error || 'File not accessible'}`,
+          resolvedPath
         );
       }
 
@@ -3471,9 +3347,9 @@ export class FileIntegrityValidator {
         await access(backupDir);
       } catch {
         // Create backup directory if it doesn't exist
-        const { mkdir } = await import("node:fs/promises");
+        const { mkdir } = await import('node:fs/promises');
         await mkdir(backupDir, { recursive: true });
-        this.logger.debug("Created backup directory", { backupDir });
+        this.logger.debug('Created backup directory', { backupDir });
       }
 
       // Check if deduplication should be attempted first
@@ -3481,18 +3357,17 @@ export class FileIntegrityValidator {
       let deduplicationResult: DeduplicationResult | null = null;
 
       if (shouldDeduplicate) {
-        this.logger.debug("Attempting deduplication for backup", {
+        this.logger.debug('Attempting deduplication for backup', {
           filePath: resolvedPath,
         });
         deduplicationResult = await this.deduplicateFile(resolvedPath);
       }
 
       // Determine if compression should be used (if not using deduplication)
-      const shouldCompress =
-        !shouldDeduplicate && (await this.shouldCompressFile(resolvedPath));
+      const shouldCompress = !shouldDeduplicate && (await this.shouldCompressFile(resolvedPath));
 
       // Generate backup file path with timestamp
-      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
       const originalName = basename(resolvedPath);
       const extension = extname(originalName);
       const nameWithoutExt = originalName.slice(0, -extension.length);
@@ -3508,7 +3383,7 @@ export class FileIntegrityValidator {
 
         // Create metadata file pointing to deduplicated content
         const dedupMetadata = {
-          type: "deduplication_reference",
+          type: 'deduplication_reference',
           originalPath: resolvedPath,
           contentHash: deduplicationResult.contentHash,
           storagePath: deduplicationResult.storagePath,
@@ -3517,18 +3392,14 @@ export class FileIntegrityValidator {
           algorithm: this.options.deduplicationAlgorithm,
         };
 
-        await import("node:fs/promises").then((fs) =>
-          fs.writeFile(
-            backupPath,
-            JSON.stringify(dedupMetadata, null, 2),
-            "utf-8",
-          ),
+        await import('node:fs/promises').then((fs) =>
+          fs.writeFile(backupPath, JSON.stringify(dedupMetadata, null, 2), 'utf-8')
         );
 
         const metadataStats = await stat(backupPath);
         backupSize = metadataStats.size;
 
-        this.logger.debug("Created deduplication reference backup", {
+        this.logger.debug('Created deduplication reference backup', {
           originalPath: resolvedPath,
           backupPath,
           contentHash: deduplicationResult.contentHash,
@@ -3567,19 +3438,15 @@ export class FileIntegrityValidator {
         backupSize,
         originalSize,
         compressed: shouldCompress,
-        compressionAlgorithm: shouldCompress
-          ? this.options.compressionAlgorithm
-          : undefined,
-        compressionRatio: shouldCompress
-          ? originalSize / backupSize
-          : undefined,
+        compressionAlgorithm: shouldCompress ? this.options.compressionAlgorithm : undefined,
+        compressionRatio: shouldCompress ? originalSize / backupSize : undefined,
         deduplicated: deduplicationResult?.deduplicated || false,
         contentHash: deduplicationResult?.contentHash,
         referenceCount: deduplicationResult?.referenceCount,
         deduplicationPath: deduplicationResult?.storagePath,
       };
 
-      this.logger.info("Backup created successfully", {
+      this.logger.info('Backup created successfully', {
         originalPath: resolvedPath,
         backupPath,
         originalSize,
@@ -3595,7 +3462,7 @@ export class FileIntegrityValidator {
       return result;
     } catch (error) {
       const processingTime = Date.now() - startTime;
-      this.logger.error("Backup creation failed", {
+      this.logger.error('Backup creation failed', {
         filePath: resolvedPath,
         error: error instanceof Error ? error.message : String(error),
         processingTime,
@@ -3608,7 +3475,7 @@ export class FileIntegrityValidator {
       throw new RollbackError(
         `Backup creation failed: ${error instanceof Error ? error.message : String(error)}`,
         resolvedPath,
-        error as Error,
+        error as Error
       );
     }
   }
@@ -3616,10 +3483,7 @@ export class FileIntegrityValidator {
   /**
    * Create a compressed backup using streaming compression
    */
-  private async createCompressedBackup(
-    sourcePath: string,
-    backupPath: string,
-  ): Promise<void> {
+  private async createCompressedBackup(sourcePath: string, backupPath: string): Promise<void> {
     try {
       const source = createReadStream(sourcePath);
       const destination = createWriteStream(backupPath);
@@ -3628,7 +3492,7 @@ export class FileIntegrityValidator {
       // Use pipeline for efficient streaming compression
       await pipeline(source, compressor, destination);
 
-      this.logger.debug("Compressed backup created successfully", {
+      this.logger.debug('Compressed backup created successfully', {
         sourcePath,
         backupPath,
         algorithm: this.options.compressionAlgorithm,
@@ -3644,7 +3508,7 @@ export class FileIntegrityValidator {
       throw new RollbackError(
         `Compressed backup creation failed: ${error instanceof Error ? error.message : String(error)}`,
         sourcePath,
-        error as Error,
+        error as Error
       );
     }
   }
@@ -3655,19 +3519,16 @@ export class FileIntegrityValidator {
   private isCompressedBackup(backupPath: string): boolean {
     const fileName = basename(backupPath);
     return (
-      fileName.endsWith(".backup.gz") ||
-      fileName.endsWith(".backup.deflate") ||
-      fileName.endsWith(".backup.br")
+      fileName.endsWith('.backup.gz') ||
+      fileName.endsWith('.backup.deflate') ||
+      fileName.endsWith('.backup.br')
     );
   }
 
   /**
    * Restore a file from a compressed backup using streaming decompression
    */
-  private async restoreCompressedBackup(
-    backupPath: string,
-    targetPath: string,
-  ): Promise<void> {
+  private async restoreCompressedBackup(backupPath: string, targetPath: string): Promise<void> {
     try {
       const source = createReadStream(backupPath);
       const destination = createWriteStream(targetPath);
@@ -3676,7 +3537,7 @@ export class FileIntegrityValidator {
       // Use pipeline for efficient streaming decompression
       await pipeline(source, decompressor, destination);
 
-      this.logger.debug("Compressed backup restored successfully", {
+      this.logger.debug('Compressed backup restored successfully', {
         backupPath,
         targetPath,
       });
@@ -3691,7 +3552,7 @@ export class FileIntegrityValidator {
       throw new RollbackError(
         `Compressed backup restoration failed: ${error instanceof Error ? error.message : String(error)}`,
         targetPath,
-        error as Error,
+        error as Error
       );
     }
   }
@@ -3699,15 +3560,12 @@ export class FileIntegrityValidator {
   /**
    * Restore a file from backup
    */
-  async restoreFromBackup(
-    filePath: string,
-    backupPath: string,
-  ): Promise<RollbackResult> {
+  async restoreFromBackup(filePath: string, backupPath: string): Promise<RollbackResult> {
     const startTime = Date.now();
     const resolvedPath = resolve(filePath);
     const resolvedBackupPath = resolve(backupPath);
 
-    this.logger.debug("Restoring from backup", {
+    this.logger.debug('Restoring from backup', {
       filePath: resolvedPath,
       backupPath: resolvedBackupPath,
     });
@@ -3717,8 +3575,8 @@ export class FileIntegrityValidator {
       const backupAccess = await this.verifyFileAccess(resolvedBackupPath);
       if (!backupAccess.exists || !backupAccess.readable) {
         throw new RollbackError(
-          `Cannot restore from backup: ${backupAccess.error || "Backup file not accessible"}`,
-          resolvedPath,
+          `Cannot restore from backup: ${backupAccess.error || 'Backup file not accessible'}`,
+          resolvedPath
         );
       }
 
@@ -3731,17 +3589,14 @@ export class FileIntegrityValidator {
           await new Promise((resolve) => setTimeout(resolve, 2));
           const currentBackup = await this.createBackup(resolvedPath);
           currentFileBackupPath = currentBackup.backupPath;
-          this.logger.debug("Created safety backup of current file", {
+          this.logger.debug('Created safety backup of current file', {
             originalPath: resolvedPath,
             safetyBackupPath: currentFileBackupPath,
           });
         } catch (error) {
-          this.logger.warn(
-            "Failed to create safety backup, proceeding anyway",
-            {
-              error: error instanceof Error ? error.message : String(error),
-            },
-          );
+          this.logger.warn('Failed to create safety backup, proceeding anyway', {
+            error: error instanceof Error ? error.message : String(error),
+          });
         }
       }
 
@@ -3766,49 +3621,38 @@ export class FileIntegrityValidator {
           // so we verify that the file was restored successfully by checking it exists and is readable
           if (isCompressed) {
             const restoredAccess = await this.verifyFileAccess(resolvedPath);
-            integrityVerified =
-              restoredAccess.exists && restoredAccess.readable;
+            integrityVerified = restoredAccess.exists && restoredAccess.readable;
 
             if (!integrityVerified) {
               throw new RollbackError(
-                "Rollback verification failed: restored file is not accessible",
-                resolvedPath,
+                'Rollback verification failed: restored file is not accessible',
+                resolvedPath
               );
             }
           } else {
             // For uncompressed backups, we can compare checksums
-            const comparison = await this.compareFiles(
-              resolvedPath,
-              resolvedBackupPath,
-            );
+            const comparison = await this.compareFiles(resolvedPath, resolvedBackupPath);
             integrityVerified = comparison.match;
 
             if (!integrityVerified) {
               // Restoration failed, try to restore from safety backup if available
               if (currentFileBackupPath) {
-                const safetyIsCompressed = this.isCompressedBackup(
-                  currentFileBackupPath,
-                );
+                const safetyIsCompressed = this.isCompressedBackup(currentFileBackupPath);
                 if (safetyIsCompressed) {
-                  await this.restoreCompressedBackup(
-                    currentFileBackupPath,
-                    resolvedPath,
-                  );
+                  await this.restoreCompressedBackup(currentFileBackupPath, resolvedPath);
                 } else {
                   await copyFile(currentFileBackupPath, resolvedPath);
                 }
-                this.logger.warn(
-                  "Restored original file due to rollback verification failure",
-                );
+                this.logger.warn('Restored original file due to rollback verification failure');
               }
               throw new RollbackError(
-                "Rollback verification failed: restored file checksum does not match backup",
-                resolvedPath,
+                'Rollback verification failed: restored file checksum does not match backup',
+                resolvedPath
               );
             }
           }
         } catch (error) {
-          this.logger.error("Rollback verification failed", {
+          this.logger.error('Rollback verification failed', {
             error: error instanceof Error ? error.message : String(error),
           });
           if (error instanceof RollbackError) {
@@ -3818,7 +3662,7 @@ export class FileIntegrityValidator {
           throw new RollbackError(
             `Rollback verification failed: ${error instanceof Error ? error.message : String(error)}`,
             resolvedPath,
-            error as Error,
+            error as Error
           );
         }
       }
@@ -3834,7 +3678,7 @@ export class FileIntegrityValidator {
         processingTime,
       };
 
-      this.logger.info("File restored from backup successfully", {
+      this.logger.info('File restored from backup successfully', {
         filePath: resolvedPath,
         backupPath: resolvedBackupPath,
         integrityVerified,
@@ -3844,7 +3688,7 @@ export class FileIntegrityValidator {
       return result;
     } catch (error) {
       const processingTime = Date.now() - startTime;
-      this.logger.error("Rollback failed", {
+      this.logger.error('Rollback failed', {
         filePath: resolvedPath,
         backupPath: resolvedBackupPath,
         error: error instanceof Error ? error.message : String(error),
@@ -3858,7 +3702,7 @@ export class FileIntegrityValidator {
       throw new RollbackError(
         `Rollback failed: ${error instanceof Error ? error.message : String(error)}`,
         resolvedPath,
-        error as Error,
+        error as Error
       );
     }
   }
@@ -3874,14 +3718,14 @@ export class FileIntegrityValidator {
     const startTime = Date.now();
     const backupDir = resolve(this.options.backupDirectory);
 
-    this.logger.debug("Starting backup cleanup", {
+    this.logger.debug('Starting backup cleanup', {
       backupDirectory: backupDir,
       retentionDays: this.options.backupRetentionDays,
     });
 
     try {
       // Check if backup directory exists
-      const { readdir, stat: statFile } = await import("node:fs/promises");
+      const { readdir, stat: statFile } = await import('node:fs/promises');
       let files: string[];
 
       try {
@@ -3892,8 +3736,7 @@ export class FileIntegrityValidator {
       }
 
       const now = Date.now();
-      const retentionMs =
-        this.options.backupRetentionDays * 24 * 60 * 60 * 1000;
+      const retentionMs = this.options.backupRetentionDays * 24 * 60 * 60 * 1000;
       const cutoffTime = now - retentionMs;
 
       let cleaned = 0;
@@ -3903,10 +3746,10 @@ export class FileIntegrityValidator {
       for (const file of files) {
         // Check for both compressed and uncompressed backup files
         const isBackupFile =
-          file.endsWith(".backup") ||
-          file.endsWith(".backup.gz") ||
-          file.endsWith(".backup.deflate") ||
-          file.endsWith(".backup.br");
+          file.endsWith('.backup') ||
+          file.endsWith('.backup.gz') ||
+          file.endsWith('.backup.deflate') ||
+          file.endsWith('.backup.br');
 
         if (!isBackupFile) {
           continue; // Skip non-backup files
@@ -3921,24 +3764,22 @@ export class FileIntegrityValidator {
             cleaned++;
             totalSize += stats.size;
 
-            this.logger.debug("Cleaned up old backup", {
+            this.logger.debug('Cleaned up old backup', {
               file: filePath,
-              age: Math.round(
-                (now - stats.mtime.getTime()) / (24 * 60 * 60 * 1000),
-              ),
+              age: Math.round((now - stats.mtime.getTime()) / (24 * 60 * 60 * 1000)),
               size: stats.size,
             });
           }
         } catch (error) {
           const errorMsg = `Failed to clean backup ${file}: ${error instanceof Error ? error.message : String(error)}`;
           errors.push(errorMsg);
-          this.logger.warn("Backup cleanup error", { file, error: errorMsg });
+          this.logger.warn('Backup cleanup error', { file, error: errorMsg });
         }
       }
 
       const processingTime = Date.now() - startTime;
 
-      this.logger.info("Backup cleanup completed", {
+      this.logger.info('Backup cleanup completed', {
         cleaned,
         errors: errors.length,
         totalSize,
@@ -3947,7 +3788,7 @@ export class FileIntegrityValidator {
 
       return { cleaned, errors, totalSize };
     } catch (error) {
-      this.logger.error("Backup cleanup failed", {
+      this.logger.error('Backup cleanup failed', {
         backupDirectory: backupDir,
         error: error instanceof Error ? error.message : String(error),
       });
@@ -3955,7 +3796,7 @@ export class FileIntegrityValidator {
       throw new RollbackError(
         `Backup cleanup failed: ${error instanceof Error ? error.message : String(error)}`,
         backupDir,
-        error as Error,
+        error as Error
       );
     }
   }
@@ -3967,15 +3808,15 @@ export class FileIntegrityValidator {
    */
   async processLargeProject(
     files: string[],
-    operation: "checksum" | "validate" | "backup",
+    operation: 'checksum' | 'validate' | 'backup',
     options: {
       progressCallback?: (progress: ProgressInfo) => void;
       errorHandler?: (error: Error, filePath: string) => boolean;
       expectedChecksums?: Record<string, string | ChecksumInfo>;
-    } = {},
+    } = {}
   ): Promise<LargeProjectResult> {
     const startTime = Date.now();
-    this.logger.info("Starting large project processing", {
+    this.logger.info('Starting large project processing', {
       operation,
       totalFiles: files.length,
       enableBatchProcessing: this.options.enableBatchProcessing,
@@ -3995,18 +3836,16 @@ export class FileIntegrityValidator {
     try {
       let result: BatchOperationResult<any>;
 
-      if (operation === "checksum") {
+      if (operation === 'checksum') {
         result = await this.processBatchWithOptimization(
           files,
-          "Large Project Checksum Calculation",
+          'Large Project Checksum Calculation',
           async (filePath: string) => this.calculateChecksum(filePath),
-          options,
+          options
         );
-      } else if (operation === "validate") {
+      } else if (operation === 'validate') {
         if (!options.expectedChecksums) {
-          throw new ValidationError(
-            "Expected checksums required for validation operation",
-          );
+          throw new ValidationError('Expected checksums required for validation operation');
         }
 
         const validationFiles = files
@@ -4018,25 +3857,22 @@ export class FileIntegrityValidator {
 
         result = await this.processBatchWithOptimization(
           validationFiles.map((f) => f.path),
-          "Large Project Validation",
+          'Large Project Validation',
           async (filePath: string) => {
             const expectedChecksum = options.expectedChecksums![filePath];
             return this.validateFile(filePath, expectedChecksum);
           },
-          options,
+          options
         );
-      } else if (operation === "backup") {
+      } else if (operation === 'backup') {
         result = await this.processBatchWithOptimization(
           files,
-          "Large Project Backup",
+          'Large Project Backup',
           async (filePath: string) => this.createBackup(filePath),
-          options,
+          options
         );
       } else {
-        throw new IntegrityError(
-          `Unsupported operation: ${operation}`,
-          "UNSUPPORTED_OPERATION",
-        );
+        throw new IntegrityError(`Unsupported operation: ${operation}`, 'UNSUPPORTED_OPERATION');
       }
 
       // Calculate statistics
@@ -4053,34 +3889,32 @@ export class FileIntegrityValidator {
 
       const averageEventLoopLag =
         this.performanceTracker.eventLoopLagSamples.length > 0
-          ? this.performanceTracker.eventLoopLagSamples.reduce(
-              (a, b) => a + b,
-              0,
-            ) / this.performanceTracker.eventLoopLagSamples.length
+          ? this.performanceTracker.eventLoopLagSamples.reduce((a, b) => a + b, 0) /
+            this.performanceTracker.eventLoopLagSamples.length
           : 0;
 
       // Add optimization details
       if (this.options.enableBatchProcessing) {
         optimizationDetails.push(
-          `Batch processing enabled with adaptive sizing (initial: ${this.options.batchSize}, final: ${this.currentBatchSize})`,
+          `Batch processing enabled with adaptive sizing (initial: ${this.options.batchSize}, final: ${this.currentBatchSize})`
         );
       }
 
       if (this.performanceTracker.batchSizeAdjustments > 0) {
         optimizationDetails.push(
-          `Dynamic batch size adjustments: ${this.performanceTracker.batchSizeAdjustments}`,
+          `Dynamic batch size adjustments: ${this.performanceTracker.batchSizeAdjustments}`
         );
       }
 
       if (this.options.enableProgressTracking) {
-        optimizationDetails.push("Progress tracking enabled for user feedback");
+        optimizationDetails.push('Progress tracking enabled for user feedback');
       }
 
       optimizationDetails.push(
-        `Memory tracking: ${initialMemory}MB → ${this.memoryTracker.peak}MB (peak) → ${finalMemory}MB`,
+        `Memory tracking: ${initialMemory}MB → ${this.memoryTracker.peak}MB (peak) → ${finalMemory}MB`
       );
       optimizationDetails.push(
-        `System metrics monitoring: CPU load, memory pressure, event loop lag`,
+        `System metrics monitoring: CPU load, memory pressure, event loop lag`
       );
 
       const largeProjectResult: LargeProjectResult = {
@@ -4102,19 +3936,18 @@ export class FileIntegrityValidator {
           batchSizeAdjustments: this.performanceTracker.batchSizeAdjustments,
         },
         optimizationApplied:
-          this.options.enableBatchProcessing ||
-          this.options.enableProgressTracking,
+          this.options.enableBatchProcessing || this.options.enableProgressTracking,
         optimizationDetails,
       };
 
-      this.logger.info("Large project processing completed", {
+      this.logger.info('Large project processing completed', {
         operation,
         ...largeProjectResult,
       });
 
       return largeProjectResult;
     } catch (error) {
-      this.logger.error("Large project processing failed", {
+      this.logger.error('Large project processing failed', {
         operation,
         error: error instanceof Error ? error.message : String(error),
         filesProcessed: this.performanceTracker.filesProcessed,
@@ -4123,10 +3956,10 @@ export class FileIntegrityValidator {
 
       throw new IntegrityError(
         `Large project processing failed: ${error instanceof Error ? error.message : String(error)}`,
-        "LARGE_PROJECT_ERROR",
+        'LARGE_PROJECT_ERROR',
         undefined,
         operation,
-        error as Error,
+        error as Error
       );
     }
   }
@@ -4164,22 +3997,18 @@ export class FileIntegrityValidator {
     const currentMetrics = await this.getCurrentSystemMetrics();
     const averageMemory =
       this.memoryTracker.samples.length > 0
-        ? this.memoryTracker.samples.reduce((a, b) => a + b, 0) /
-          this.memoryTracker.samples.length
+        ? this.memoryTracker.samples.reduce((a, b) => a + b, 0) / this.memoryTracker.samples.length
         : this.memoryTracker.current;
 
     const averageEventLoopLag =
       this.performanceTracker.eventLoopLagSamples.length > 0
-        ? this.performanceTracker.eventLoopLagSamples.reduce(
-            (a, b) => a + b,
-            0,
-          ) / this.performanceTracker.eventLoopLagSamples.length
+        ? this.performanceTracker.eventLoopLagSamples.reduce((a, b) => a + b, 0) /
+          this.performanceTracker.eventLoopLagSamples.length
         : 0;
 
     const averageFileProcessingTime =
       this.performanceTracker.filesProcessed > 0
-        ? this.performanceTracker.totalProcessingTime /
-          this.performanceTracker.filesProcessed
+        ? this.performanceTracker.totalProcessingTime / this.performanceTracker.filesProcessed
         : 0;
 
     return {
@@ -4230,28 +4059,28 @@ export class FileIntegrityValidator {
       samples: [currentMemory],
     };
 
-    this.logger.debug("Performance tracking statistics reset");
+    this.logger.debug('Performance tracking statistics reset');
   }
 
   /**
    * Add progress event listener for long-running operations
    */
   onProgress(callback: (progress: ProgressInfo) => void): void {
-    this.progressEmitter.on("progress", callback);
+    this.progressEmitter.on('progress', callback);
   }
 
   /**
    * Remove progress event listener
    */
   offProgress(callback: (progress: ProgressInfo) => void): void {
-    this.progressEmitter.removeListener("progress", callback);
+    this.progressEmitter.removeListener('progress', callback);
   }
 
   /**
    * Remove all progress event listeners
    */
   removeAllProgressListeners(): void {
-    this.progressEmitter.removeAllListeners("progress");
+    this.progressEmitter.removeAllListeners('progress');
   }
 }
 
@@ -4259,7 +4088,7 @@ export class FileIntegrityValidator {
  * Convenience factory function for creating FileIntegrityValidator instances
  */
 export function createFileIntegrityValidator(
-  options: Partial<FileIntegrityOptions> = {},
+  options: Partial<FileIntegrityOptions> = {}
 ): FileIntegrityValidator {
   return new FileIntegrityValidator(options);
 }
@@ -4269,7 +4098,7 @@ export function createFileIntegrityValidator(
  */
 export async function calculateFileChecksum(
   filePath: string,
-  algorithm: "md5" | "sha1" | "sha256" | "sha512" = "sha256",
+  algorithm: 'md5' | 'sha1' | 'sha256' | 'sha512' = 'sha256'
 ): Promise<ChecksumInfo> {
   const validator = new FileIntegrityValidator({ algorithm });
   return validator.calculateChecksum(filePath);
@@ -4281,7 +4110,7 @@ export async function calculateFileChecksum(
 export async function validateFileIntegrity(
   filePath: string,
   expectedChecksum: string,
-  algorithm: "md5" | "sha1" | "sha256" | "sha512" = "sha256",
+  algorithm: 'md5' | 'sha1' | 'sha256' | 'sha512' = 'sha256'
 ): Promise<boolean> {
   try {
     const checksumInfo = await calculateFileChecksum(filePath, algorithm);

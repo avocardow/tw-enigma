@@ -10,35 +10,35 @@
  * Base interface for integrating Tailwind Enigma with build tools
  */
 
-import type { z } from "zod";
-import type { EnigmaPlugin, PluginConfig } from "../../types/plugins";
-import type { FrameworkInfo } from "../../frameworkDetector";
+import type { z } from 'zod';
+import type { EnigmaPlugin, PluginConfig } from '../../types/plugins';
+import type { FrameworkInfo } from '../../frameworkDetector';
 
 /**
  * Build tool lifecycle phases
  */
 export type BuildPhase =
-  | "beforeBuild"
-  | "buildStart"
-  | "compilation"
-  | "transform"
-  | "generateBundle"
-  | "emit"
-  | "afterBuild"
-  | "development"
-  | "production";
+  | 'beforeBuild'
+  | 'buildStart'
+  | 'compilation'
+  | 'transform'
+  | 'generateBundle'
+  | 'emit'
+  | 'afterBuild'
+  | 'development'
+  | 'production';
 
 /**
  * Build tool types supported by the integration system
  */
 export type BuildToolType =
-  | "webpack"
-  | "vite"
-  | "esbuild"
-  | "rollup"
-  | "nextjs"
-  | "parcel"
-  | "custom";
+  | 'webpack'
+  | 'vite'
+  | 'esbuild'
+  | 'rollup'
+  | 'nextjs'
+  | 'parcel'
+  | 'custom';
 
 /**
  * Build context information passed to plugin hooks
@@ -121,7 +121,7 @@ export interface HMRUpdate {
   /** Updated file path */
   filePath: string;
   /** Update type */
-  type: "css" | "js" | "asset";
+  type: 'css' | 'js' | 'asset';
   /** New content */
   content: string;
   /** Source map if available */
@@ -184,11 +184,7 @@ export interface BuildToolHooks {
   compilation?(context: BuildToolContext): Promise<void> | void;
 
   /** Called during file transformation */
-  transform?(
-    context: BuildToolContext,
-    code: string,
-    filePath: string,
-  ): Promise<string> | string;
+  transform?(context: BuildToolContext, code: string, filePath: string): Promise<string> | string;
 
   /** Called when generating bundle */
   generateBundle?(context: BuildToolContext): Promise<void> | void;
@@ -206,16 +202,10 @@ export interface BuildToolHooks {
   production?(context: BuildToolContext): Promise<void> | void;
 
   /** Called on HMR update */
-  onHMRUpdate?(
-    update: HMRUpdate,
-    context: BuildToolContext,
-  ): Promise<void> | void;
+  onHMRUpdate?(update: HMRUpdate, context: BuildToolContext): Promise<void> | void;
 
   /** Called on file change */
-  onFileChange?(
-    filePath: string,
-    context: BuildToolContext,
-  ): Promise<void> | void;
+  onFileChange?(filePath: string, context: BuildToolContext): Promise<void> | void;
 }
 
 /**
@@ -241,7 +231,7 @@ export interface BuildToolResult {
  */
 export interface BuildToolPlugin extends EnigmaPlugin {
   /** Plugin type identifier */
-  readonly pluginType: "build-tool";
+  readonly pluginType: 'build-tool';
 
   /** Plugin name */
   readonly name: string;
@@ -258,22 +248,17 @@ export interface BuildToolPlugin extends EnigmaPlugin {
   /** Initialize with build tool context */
   initializeBuildTool(
     context: BuildToolContext,
-    config: BuildToolPluginConfig,
+    config: BuildToolPluginConfig
   ): Promise<void> | void;
 
   /** Process files during build */
   processBuild(context: BuildToolContext): Promise<BuildToolResult>;
 
   /** Handle HMR updates */
-  handleHMR?(
-    update: HMRUpdate,
-    context: BuildToolContext,
-  ): Promise<void> | void;
+  handleHMR?(update: HMRUpdate, context: BuildToolContext): Promise<void> | void;
 
   /** Get build tool configuration */
-  getBuildToolConfig?(
-    buildTool: BuildToolType,
-  ): Record<string, any> | undefined;
+  getBuildToolConfig?(buildTool: BuildToolType): Record<string, any> | undefined;
 }
 
 /**
@@ -284,10 +269,10 @@ export class BuildToolIntegrationError extends Error {
     message: string,
     public readonly buildTool: BuildToolType,
     public readonly phase: BuildPhase,
-    public readonly cause?: Error,
+    public readonly cause?: Error
   ) {
     super(message);
-    this.name = "BuildToolIntegrationError";
+    this.name = 'BuildToolIntegrationError';
   }
 }
 
@@ -297,12 +282,12 @@ export class BuildToolIntegrationError extends Error {
 export function isBuildToolPlugin(plugin: any): plugin is BuildToolPlugin {
   return (
     plugin &&
-    typeof plugin === "object" &&
-    plugin.pluginType === "build-tool" &&
+    typeof plugin === 'object' &&
+    plugin.pluginType === 'build-tool' &&
     Array.isArray(plugin.supportedBuildTools) &&
-    typeof plugin.hooks === "object" &&
-    typeof plugin.initializeBuildTool === "function" &&
-    typeof plugin.processBuild === "function"
+    typeof plugin.hooks === 'object' &&
+    typeof plugin.initializeBuildTool === 'function' &&
+    typeof plugin.processBuild === 'function'
   );
 }
 
@@ -312,13 +297,13 @@ export function isBuildToolPlugin(plugin: any): plugin is BuildToolPlugin {
 export function createBuildToolContext(
   buildTool: BuildToolType,
   phase: BuildPhase,
-  options: Partial<BuildToolContext> = {},
+  options: Partial<BuildToolContext> = {}
 ): BuildToolContext {
   return {
     buildTool,
     phase,
-    isDevelopment: process.env.NODE_ENV === "development",
-    isProduction: process.env.NODE_ENV === "production",
+    isDevelopment: process.env.NODE_ENV === 'development',
+    isProduction: process.env.NODE_ENV === 'production',
     projectRoot: process.cwd(),
     sourceFiles: [],
     assets: new Map(),

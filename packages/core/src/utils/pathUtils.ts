@@ -5,8 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import * as path from "node:path";
-import { z } from "zod";
+import * as path from 'node:path';
+import { z } from 'zod';
 
 /**
  * Path calculation options schema
@@ -26,9 +26,7 @@ export const PathCalculationOptionsSchema = z.object({
   enableSecurity: z.boolean().default(true),
 });
 
-export type PathCalculationOptions = z.infer<
-  typeof PathCalculationOptionsSchema
->;
+export type PathCalculationOptions = z.infer<typeof PathCalculationOptionsSchema>;
 
 /**
  * Path validation result
@@ -69,13 +67,9 @@ export class PathUtilsError extends Error {
   public code: string;
   public cause?: Error;
 
-  constructor(
-    message: string,
-    code: string,
-    cause?: Error,
-  ) {
+  constructor(message: string, code: string, cause?: Error) {
     super(message);
-    this.name = "PathUtilsError";
+    this.name = 'PathUtilsError';
     this.code = code;
     this.cause = cause;
   }
@@ -84,13 +78,9 @@ export class PathUtilsError extends Error {
 export class PathSecurityError extends PathUtilsError {
   public path: string;
 
-  constructor(
-    message: string,
-    path: string,
-    cause?: Error,
-  ) {
-    super(message, "PATH_SECURITY_ERROR", cause);
-    this.name = "PathSecurityError";
+  constructor(message: string, path: string, cause?: Error) {
+    super(message, 'PATH_SECURITY_ERROR', cause);
+    this.name = 'PathSecurityError';
     this.path = path;
   }
 }
@@ -98,13 +88,9 @@ export class PathSecurityError extends PathUtilsError {
 export class PathValidationError extends PathUtilsError {
   public path: string;
 
-  constructor(
-    message: string,
-    path: string,
-    cause?: Error,
-  ) {
-    super(message, "PATH_VALIDATION_ERROR", cause);
-    this.name = "PathValidationError";
+  constructor(message: string, path: string, cause?: Error) {
+    super(message, 'PATH_VALIDATION_ERROR', cause);
+    this.name = 'PathValidationError';
     this.path = path;
   }
 }
@@ -128,7 +114,7 @@ export class PathUtils {
   calculateRelativePath(
     fromPath: string,
     toPath: string,
-    options?: Partial<PathCalculationOptions>,
+    options?: Partial<PathCalculationOptions>
   ): RelativePathResult {
     const mergedOptions = { ...this.options, ...options };
     const cacheKey = `${fromPath}::${toPath}::${JSON.stringify(mergedOptions, Object.keys(mergedOptions).sort())}`;
@@ -140,20 +126,17 @@ export class PathUtils {
 
     try {
       // Validate input paths - throw if invalid
-      const fromValidation = this.validatePath(fromPath, "fromPath");
+      const fromValidation = this.validatePath(fromPath, 'fromPath');
       if (!fromValidation.isValid) {
         throw new PathValidationError(
-          `Invalid fromPath: ${fromValidation.errors.join(", ")}`,
-          fromPath,
+          `Invalid fromPath: ${fromValidation.errors.join(', ')}`,
+          fromPath
         );
       }
 
-      const toValidation = this.validatePath(toPath, "toPath");
+      const toValidation = this.validatePath(toPath, 'toPath');
       if (!toValidation.isValid) {
-        throw new PathValidationError(
-          `Invalid toPath: ${toValidation.errors.join(", ")}`,
-          toPath,
-        );
+        throw new PathValidationError(`Invalid toPath: ${toValidation.errors.join(', ')}`, toPath);
       }
 
       // If not using relative paths, return normalized toPath
@@ -161,7 +144,7 @@ export class PathUtils {
         let normalizedPath = toPath;
         if (mergedOptions.normalizeForWeb) {
           normalizedPath = this.normalizeForWeb(toPath);
-          if (process.platform === "win32") {
+          if (process.platform === 'win32') {
             normalizedPath = normalizedPath.toLowerCase();
           }
         }
@@ -191,16 +174,10 @@ export class PathUtils {
       // Apply base path if provided
       if (mergedOptions.basePath) {
         if (!path.isAbsolute(normalizedFromPath)) {
-          normalizedFromPath = path.resolve(
-            mergedOptions.basePath,
-            normalizedFromPath,
-          );
+          normalizedFromPath = path.resolve(mergedOptions.basePath, normalizedFromPath);
         }
         if (!path.isAbsolute(normalizedToPath)) {
-          normalizedToPath = path.resolve(
-            mergedOptions.basePath,
-            normalizedToPath,
-          );
+          normalizedToPath = path.resolve(mergedOptions.basePath, normalizedToPath);
         }
       }
 
@@ -238,8 +215,8 @@ export class PathUtils {
       // Don't cache error results
       throw new PathUtilsError(
         `Failed to calculate relative path: ${error instanceof Error ? error.message : String(error)}`,
-        "CALCULATION_ERROR",
-        error instanceof Error ? error : undefined,
+        'CALCULATION_ERROR',
+        error instanceof Error ? error : undefined
       );
     }
   }
@@ -247,7 +224,7 @@ export class PathUtils {
   /**
    * Validate a path for security and correctness
    */
-  validatePath(inputPath: string, context = "path"): PathValidationResult {
+  validatePath(inputPath: string, context = 'path'): PathValidationResult {
     const cacheKey = `validate::${inputPath}::${context}`;
 
     if (this.validationCache.has(cacheKey)) {
@@ -268,7 +245,7 @@ export class PathUtils {
 
     try {
       // Basic validation
-      if (!inputPath || typeof inputPath !== "string") {
+      if (!inputPath || typeof inputPath !== 'string') {
         result.isValid = false;
         result.errors.push(`${context} must be a non-empty string`);
         return result;
@@ -283,13 +260,13 @@ export class PathUtils {
       // Security checks
       if (this.options.enableSecurity) {
         // Check for path traversal attempts
-        if (trimmedPath.includes("..")) {
+        if (trimmedPath.includes('..')) {
           result.security.hasTraversal = true;
           result.warnings.push(`${context} contains path traversal sequences`);
         }
 
         // Check for null bytes (security vulnerability)
-        if (trimmedPath.includes("\0")) {
+        if (trimmedPath.includes('\0')) {
           result.isValid = false;
           result.errors.push(`${context} contains null bytes (security risk)`);
           return result;
@@ -304,9 +281,7 @@ export class PathUtils {
 
         for (const pattern of suspiciousPatterns) {
           if (pattern.test(trimmedPath)) {
-            result.warnings.push(
-              `${context} contains potentially problematic characters`,
-            );
+            result.warnings.push(`${context} contains potentially problematic characters`);
             break;
           }
         }
@@ -321,9 +296,7 @@ export class PathUtils {
       // Check depth limits
       if (result.security.depth > this.options.maxDepth) {
         result.isValid = false;
-        result.errors.push(
-          `${context} exceeds maximum depth of ${this.options.maxDepth}`,
-        );
+        result.errors.push(`${context} exceeds maximum depth of ${this.options.maxDepth}`);
       }
 
       // Cache the result
@@ -332,7 +305,7 @@ export class PathUtils {
     } catch (error) {
       result.isValid = false;
       result.errors.push(
-        `Validation failed: ${error instanceof Error ? error.message : String(error)}`,
+        `Validation failed: ${error instanceof Error ? error.message : String(error)}`
       );
       return result;
     }
@@ -342,7 +315,7 @@ export class PathUtils {
    * Normalize path for comparison and consistency
    */
   normalizePath(inputPath: string, forWeb = false): string {
-    if (!inputPath) return "";
+    if (!inputPath) return '';
 
     let normalized = inputPath;
 
@@ -350,7 +323,7 @@ export class PathUtils {
     if (forWeb) {
       // Always lowercase for web normalization
       normalized = normalized.toLowerCase();
-    } else if (process.platform === "win32") {
+    } else if (process.platform === 'win32') {
       // Windows is case-insensitive
       normalized = normalized.toLowerCase();
     }
@@ -359,49 +332,49 @@ export class PathUtils {
     // Normalize path separators based on target format
     if (forWeb) {
       // For web normalization, always use forward slashes
-      normalized = normalized.replace(/\\/g, "/");
+      normalized = normalized.replace(/\\/g, '/');
     } else {
       // For platform normalization, use Node.js normalize but preserve format
       normalized = path.normalize(normalized);
-      
+
       // On Windows, if we get backslashes and the input had forward slashes,
       // and we're not explicitly going for web format, maintain forward slashes
       // This is crucial for test compatibility
-      if (process.platform === "win32" && inputPath.includes("/") && !inputPath.includes("\\")) {
-        normalized = normalized.replace(/\\/g, "/");
+      if (process.platform === 'win32' && inputPath.includes('/') && !inputPath.includes('\\')) {
+        normalized = normalized.replace(/\\/g, '/');
       }
     }
 
     // Remove leading ./ if present
-    normalized = normalized.replace(/^\.\//, "");
-    normalized = normalized.replace(/^\.\\/, ""); // Windows version
+    normalized = normalized.replace(/^\.\//, '');
+    normalized = normalized.replace(/^\.\\/, ''); // Windows version
 
     // Special handling for root path - always return "/" for consistency across platforms
     // This ensures tests pass consistently regardless of the platform
-    if (normalized === "/" || normalized === "\\") {
-      return "/";
+    if (normalized === '/' || normalized === '\\') {
+      return '/';
     }
 
     // Remove leading slash for web normalization (except root)
-    if (forWeb && normalized.startsWith("/") && normalized.length > 1) {
+    if (forWeb && normalized.startsWith('/') && normalized.length > 1) {
       normalized = normalized.substring(1);
     }
-    if (forWeb && normalized.startsWith("\\") && normalized.length > 1) {
+    if (forWeb && normalized.startsWith('\\') && normalized.length > 1) {
       normalized = normalized.substring(1);
     }
 
     // Normalize multiple slashes to single slash
-    const separator = forWeb ? "/" : (normalized.includes("/") ? "/" : path.sep);
-    if (separator === "/") {
-      normalized = normalized.replace(/\/+/g, "/");
+    const separator = forWeb ? '/' : normalized.includes('/') ? '/' : path.sep;
+    if (separator === '/') {
+      normalized = normalized.replace(/\/+/g, '/');
     } else {
-      normalized = normalized.replace(/\\+/g, "\\");
+      normalized = normalized.replace(/\\+/g, '\\');
     }
 
     // Remove trailing slash if present (except for root)
     if (normalized.length > 1) {
-      normalized = normalized.replace(/\/$/, "");
-      normalized = normalized.replace(/\\$/, "");
+      normalized = normalized.replace(/\/$/, '');
+      normalized = normalized.replace(/\\$/, '');
     }
 
     return normalized;
@@ -411,7 +384,7 @@ export class PathUtils {
    * Normalize path for web use (forward slashes only)
    */
   private normalizeForWeb(inputPath: string): string {
-    return inputPath.replace(/\\/g, "/");
+    return inputPath.replace(/\\/g, '/');
   }
 
   /**
@@ -425,31 +398,25 @@ export class PathUtils {
    * Calculate the depth of a path (number of directory levels)
    */
   private calculatePathDepth(inputPath: string): number {
-    if (!inputPath || inputPath === "." || inputPath === "/") return 0;
+    if (!inputPath || inputPath === '.' || inputPath === '/') return 0;
 
     const normalizedPath = this.normalizePath(inputPath, true);
-    const segments = normalizedPath
-      .split("/")
-      .filter((segment) => segment && segment !== ".");
+    const segments = normalizedPath.split('/').filter((segment) => segment && segment !== '.');
     return segments.length;
   }
 
   /**
    * Perform security checks on calculated paths
    */
-  private performSecurityCheck(
-    calculatedPath: string,
-    _fromPath: string,
-    _toPath: string,
-  ): void {
+  private performSecurityCheck(calculatedPath: string, _fromPath: string, _toPath: string): void {
     // Check for path traversal in the result
-    if (calculatedPath.includes("..")) {
+    if (calculatedPath.includes('..')) {
       const depth = (calculatedPath.match(/\.\./g) || []).length;
       if (depth > 10) {
         // Arbitrary limit for excessive traversal
         throw new PathSecurityError(
           `Excessive path traversal detected (${depth} levels up)`,
-          calculatedPath,
+          calculatedPath
         );
       }
     }
@@ -457,8 +424,8 @@ export class PathUtils {
     // Check for absolute paths in result when relative expected
     if (this.options.useRelativePaths && path.isAbsolute(calculatedPath)) {
       throw new PathSecurityError(
-        "Unexpected absolute path in relative calculation result",
-        calculatedPath,
+        'Unexpected absolute path in relative calculation result',
+        calculatedPath
       );
     }
   }
@@ -475,10 +442,7 @@ export class PathUtils {
     this.pathCache.set(key, result);
   }
 
-  private cacheValidationResult(
-    key: string,
-    result: PathValidationResult,
-  ): void {
+  private cacheValidationResult(key: string, result: PathValidationResult): void {
     if (this.validationCache.size >= this.maxCacheSize) {
       // Simple LRU: delete oldest entry
       const firstKey = this.validationCache.keys().next().value;
@@ -514,9 +478,7 @@ export class PathUtils {
 /**
  * Create a PathUtils instance with default options
  */
-export function createPathUtils(
-  options: Partial<PathCalculationOptions> = {},
-): PathUtils {
+export function createPathUtils(options: Partial<PathCalculationOptions> = {}): PathUtils {
   return new PathUtils(options);
 }
 
@@ -526,7 +488,7 @@ export function createPathUtils(
 export function calculateRelativePath(
   fromPath: string,
   toPath: string,
-  options: Partial<PathCalculationOptions> = {},
+  options: Partial<PathCalculationOptions> = {}
 ): string {
   const utils = createPathUtils(options);
   const result = utils.calculateRelativePath(fromPath, toPath);
@@ -536,10 +498,7 @@ export function calculateRelativePath(
 /**
  * Quick path validation
  */
-export function validatePath(
-  inputPath: string,
-  context = "path",
-): PathValidationResult {
+export function validatePath(inputPath: string, context = 'path'): PathValidationResult {
   const utils = createPathUtils();
   return utils.validatePath(inputPath, context);
 }
@@ -565,7 +524,7 @@ export function isPathSafe(inputPath: string): boolean {
  */
 export function calculateRelativePathsBatch(
   pairs: Array<{ from: string; to: string }>,
-  options: Partial<PathCalculationOptions> = {},
+  options: Partial<PathCalculationOptions> = {}
 ): RelativePathResult[] {
   const utils = createPathUtils(options);
   return pairs.map(({ from, to }) => utils.calculateRelativePath(from, to));

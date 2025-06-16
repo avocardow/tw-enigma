@@ -5,8 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import Table from "cli-table3";
-import chalk from "chalk";
+import Table from 'cli-table3';
+import chalk from 'chalk';
 
 // =============================================================================
 // CONFIGURATION & DOCUMENTATION
@@ -96,8 +96,8 @@ export class Reporter {
    */
   mergeConfig(userConfig) {
     const defaultConfig = {
-      format: "console",
-      verbosity: "summary",
+      format: 'console',
+      verbosity: 'summary',
       colors: true,
       showPerformance: true,
       showPatterns: true,
@@ -105,8 +105,8 @@ export class Reporter {
       maxTableItems: 10,
       includeRecommendations: true,
       tableStyle: {
-        head: ["cyan", "bold"],
-        border: ["grey"],
+        head: ['cyan', 'bold'],
+        border: ['grey'],
         compact: false,
       },
     };
@@ -122,8 +122,8 @@ export class Reporter {
       const report = {
         metadata: {
           timestamp: new Date().toISOString(),
-          version: "1.0.0",
-          environment: process.env.NODE_ENV || "development",
+          version: '1.0.0',
+          environment: process.env.NODE_ENV || 'development',
         },
         sizeMetrics: this.calculateSizeMetrics(data),
         patternStats: this.generatePatternStats(data),
@@ -144,15 +144,15 @@ export class Reporter {
    */
   displayReport(report) {
     switch (this.config.format) {
-      case "console":
+      case 'console':
         return this.displayConsoleReport(report);
-      case "json":
+      case 'json':
         return this.displayJsonReport(report);
-      case "markdown":
+      case 'markdown':
         return this.displayMarkdownReport(report);
-      case "html":
+      case 'html':
         return this.displayHtmlReport(report);
-      case "all":
+      case 'all':
         return {
           console: this.displayConsoleReport(report),
           json: this.displayJsonReport(report),
@@ -172,56 +172,52 @@ export class Reporter {
     const { colors } = this.config;
 
     // Header
-    output.push("");
-    output.push(
-      colors
-        ? chalk.cyan.bold("📊 OPTIMIZATION REPORT")
-        : "📊 OPTIMIZATION REPORT",
-    );
+    output.push('');
+    output.push(colors ? chalk.cyan.bold('📊 OPTIMIZATION REPORT') : '📊 OPTIMIZATION REPORT');
     output.push(
       colors
         ? chalk.gray(`Generated: ${new Date(report.metadata.timestamp).toLocaleString()}`)
-        : `Generated: ${new Date(report.metadata.timestamp).toLocaleString()}`,
+        : `Generated: ${new Date(report.metadata.timestamp).toLocaleString()}`
     );
-    output.push("");
+    output.push('');
 
     // Size Analysis
     if (this.config.showSizeAnalysis) {
       output.push(this.generateSummaryTable(report.sizeMetrics));
-      output.push("");
+      output.push('');
     }
 
     // Pattern Statistics
     if (this.config.showPatterns && report.patternStats.length > 0) {
       output.push(this.generatePatternTable(report.patternStats));
-      output.push("");
+      output.push('');
     }
 
     // Performance Metrics
     if (this.config.showPerformance) {
       output.push(this.generatePerformanceTable(report.performanceMetrics));
-      output.push("");
+      output.push('');
     }
 
     // Recommendations
     if (this.config.includeRecommendations && report.recommendations.length > 0) {
-      output.push(colors ? chalk.green.bold("💡 RECOMMENDATIONS") : "💡 RECOMMENDATIONS");
+      output.push(colors ? chalk.green.bold('💡 RECOMMENDATIONS') : '💡 RECOMMENDATIONS');
       report.recommendations.forEach((rec, i) => {
         output.push(colors ? chalk.green(`${i + 1}. ${rec}`) : `${i + 1}. ${rec}`);
       });
-      output.push("");
+      output.push('');
     }
 
     // Warnings
     if (report.warnings.length > 0) {
-      output.push(colors ? chalk.yellow.bold("⚠️  WARNINGS") : "⚠️  WARNINGS");
+      output.push(colors ? chalk.yellow.bold('⚠️  WARNINGS') : '⚠️  WARNINGS');
       report.warnings.forEach((warning, i) => {
         output.push(colors ? chalk.yellow(`${i + 1}. ${warning}`) : `${i + 1}. ${warning}`);
       });
-      output.push("");
+      output.push('');
     }
 
-    return output.join("\n");
+    return output.join('\n');
   }
 
   /**
@@ -237,60 +233,62 @@ export class Reporter {
   displayMarkdownReport(report) {
     const lines = [];
 
-    lines.push("# Optimization Report");
-    lines.push("");
+    lines.push('# Optimization Report');
+    lines.push('');
     lines.push(`**Generated:** ${new Date(report.metadata.timestamp).toLocaleString()}`);
     lines.push(`**Environment:** ${report.metadata.environment}`);
-    lines.push("");
+    lines.push('');
 
     // Size Metrics
-    lines.push("## Size Analysis");
-    lines.push("");
-    lines.push("| Metric | Value |");
-    lines.push("|--------|-------|");
+    lines.push('## Size Analysis');
+    lines.push('');
+    lines.push('| Metric | Value |');
+    lines.push('|--------|-------|');
     lines.push(`| Original Size | ${this.formatBytes(report.sizeMetrics.originalSize)} |`);
     lines.push(`| Optimized Size | ${this.formatBytes(report.sizeMetrics.optimizedSize)} |`);
     lines.push(`| Size Reduction | ${this.formatBytes(report.sizeMetrics.sizeReduction)} |`);
     lines.push(`| Percentage Reduction | ${report.sizeMetrics.percentageReduction.toFixed(1)}% |`);
-    lines.push(`| Compression Ratio | ${(report.sizeMetrics.compressionRatio * 100).toFixed(1)}% |`);
-    lines.push("");
+    lines.push(
+      `| Compression Ratio | ${(report.sizeMetrics.compressionRatio * 100).toFixed(1)}% |`
+    );
+    lines.push('');
 
     // Pattern Stats
     if (report.patternStats.length > 0) {
-      lines.push("## Pattern Statistics");
-      lines.push("");
-      lines.push("| Pattern | Type | Frequency | Savings | Efficiency |");
-      lines.push("|---------|------|-----------|---------|------------|");
+      lines.push('## Pattern Statistics');
+      lines.push('');
+      lines.push('| Pattern | Type | Frequency | Savings | Efficiency |');
+      lines.push('|---------|------|-----------|---------|------------|');
       report.patternStats.slice(0, this.config.maxTableItems).forEach((pattern) => {
         lines.push(
-          `| ${pattern.patternName} | ${pattern.type} | ${pattern.frequency} | ${this.formatBytes(pattern.sizeSavings)} | ${(pattern.efficiency * 100).toFixed(1)}% |`,
+          `| ${pattern.patternName} | ${pattern.type} | ${pattern.frequency} | ${this.formatBytes(pattern.sizeSavings)} | ${(pattern.efficiency * 100).toFixed(1)}% |`
         );
       });
-      lines.push("");
+      lines.push('');
     }
 
     // Performance
-    lines.push("## Performance Metrics");
-    lines.push("");
-    lines.push("| Metric | Value |");
-    lines.push("|--------|-------|");
+    lines.push('## Performance Metrics');
+    lines.push('');
+    lines.push('| Metric | Value |');
+    lines.push('|--------|-------|');
     lines.push(`| Execution Time | ${report.performanceMetrics.executionTime}ms |`);
     lines.push(`| Memory Usage | ${this.formatBytes(report.performanceMetrics.memoryUsage)} |`);
     lines.push(`| Throughput | ${this.formatBytes(report.performanceMetrics.throughput)}/s |`);
     lines.push(`| Files Processed | ${report.performanceMetrics.filesProcessed} |`);
-    lines.push("");
+    lines.push('');
 
     // Recommendations
     if (report.recommendations.length > 0) {
-      lines.push("## Recommendations");
-      lines.push("");
+      lines.push('## Recommendations');
+      lines.push('');
       report.recommendations.forEach((rec, i) => {
         lines.push(`${i + 1}. ${rec}`);
       });
-      lines.push("");
+      lines.push('');
     }
 
-    return lines.join("\n");
+    return lines.join('\n');
   }
 
   /**
@@ -329,23 +327,31 @@ export class Reporter {
         </table>
     </div>
 
-    ${report.recommendations.length > 0 ? `
+    ${
+      report.recommendations.length > 0
+        ? `
     <div class="recommendations">
         <h3>💡 Recommendations</h3>
         <ul>
-            ${report.recommendations.map(rec => `<li>${rec}</li>`).join('')}
+            ${report.recommendations.map((rec) => `<li>${rec}</li>`).join('')}
         </ul>
     </div>
-    ` : ''}
+    `
+        : ''
+    }
 
-    ${report.warnings.length > 0 ? `
+    ${
+      report.warnings.length > 0
+        ? `
     <div class="warnings">
         <h3>⚠️ Warnings</h3>
         <ul>
-            ${report.warnings.map(warning => `<li>${warning}</li>`).join('')}
+            ${report.warnings.map((warning) => `<li>${warning}</li>`).join('')}
         </ul>
     </div>
-    ` : ''}
+    `
+        : ''
+    }
 </body>
 </html>
     `.trim();
@@ -384,7 +390,11 @@ export class Reporter {
 /**
  * Calculate size reduction metrics
  */
-Reporter.prototype.calculateSizeReductions = function(beforeSize, afterSize, compressedSize = null) {
+Reporter.prototype.calculateSizeReductions = function (
+  beforeSize,
+  afterSize,
+  compressedSize = null
+) {
   const sizeReduction = beforeSize - afterSize;
   const percentageReduction = beforeSize > 0 ? (sizeReduction / beforeSize) * 100 : 0;
   const compressionRatio = beforeSize > 0 ? afterSize / beforeSize : 1;
@@ -402,7 +412,7 @@ Reporter.prototype.calculateSizeReductions = function(beforeSize, afterSize, com
 /**
  * Calculate compression metrics
  */
-Reporter.prototype.calculateCompressionMetrics = function(originalSize, compressedSize) {
+Reporter.prototype.calculateCompressionMetrics = function (originalSize, compressedSize) {
   const compressionRatio = originalSize > 0 ? compressedSize / originalSize : 1;
   const compressionSavings = originalSize - compressedSize;
   const compressionPercentage = originalSize > 0 ? (compressionSavings / originalSize) * 100 : 0;
@@ -419,16 +429,18 @@ Reporter.prototype.calculateCompressionMetrics = function(originalSize, compress
 /**
  * Calculate optimization savings
  */
-Reporter.prototype.calculateOptimizationSavings = function(data) {
+Reporter.prototype.calculateOptimizationSavings = function (data) {
   if (!data || !Array.isArray(data.files)) {
     return { totalSavings: 0, averageSavings: 0, maxSavings: 0, minSavings: 0 };
   }
 
-  const savings = data.files.map(file => {
-    const before = file.originalSize || 0;
-    const after = file.optimizedSize || 0;
-    return before - after;
-  }).filter(saving => saving >= 0);
+  const savings = data.files
+    .map((file) => {
+      const before = file.originalSize || 0;
+      const after = file.optimizedSize || 0;
+      return before - after;
+    })
+    .filter((saving) => saving >= 0);
 
   const totalSavings = savings.reduce((sum, saving) => sum + saving, 0);
   const averageSavings = savings.length > 0 ? totalSavings / savings.length : 0;
@@ -447,14 +459,15 @@ Reporter.prototype.calculateOptimizationSavings = function(data) {
 /**
  * Calculate size metrics from data
  */
-Reporter.prototype.calculateSizeMetrics = function(data) {
+Reporter.prototype.calculateSizeMetrics = function (data) {
   if (!data || typeof data !== 'object') {
     return this.calculateSizeReductions(0, 0, 0);
   }
-  
+
   const originalSize = data.originalSize || data.totalOriginalSize || 0;
   const optimizedSize = data.optimizedSize || data.totalOptimizedSize || 0;
-  const compressedSize = data.compressedSize || data.totalCompressedSize || Math.round(optimizedSize * 0.3);
+  const compressedSize =
+    data.compressedSize || data.totalCompressedSize || Math.round(optimizedSize * 0.3);
 
   return this.calculateSizeReductions(originalSize, optimizedSize, compressedSize);
 };
@@ -466,42 +479,44 @@ Reporter.prototype.calculateSizeMetrics = function(data) {
 /**
  * Generate pattern statistics
  */
-Reporter.prototype.generatePatternStats = function(data) {
+Reporter.prototype.generatePatternStats = function (data) {
   if (!data.patterns || !Array.isArray(data.patterns)) {
     return [];
   }
 
-  return data.patterns.map(pattern => ({
-    patternId: pattern.id || pattern.name || 'unknown',
-    patternName: pattern.name || pattern.id || 'Unknown Pattern',
-    frequency: pattern.frequency || pattern.count || 0,
-    sizeSavings: pattern.sizeSavings || pattern.savings || 0,
-    efficiency: this.calculatePatternEfficiency(pattern),
-    type: pattern.type || 'utility',
-    coOccurrenceStrength: pattern.coOccurrenceStrength || 0,
-  })).sort((a, b) => b.sizeSavings - a.sizeSavings);
+  return data.patterns
+    .map((pattern) => ({
+      patternId: pattern.id || pattern.name || 'unknown',
+      patternName: pattern.name || pattern.id || 'Unknown Pattern',
+      frequency: pattern.frequency || pattern.count || 0,
+      sizeSavings: pattern.sizeSavings || pattern.savings || 0,
+      efficiency: this.calculatePatternEfficiency(pattern),
+      type: pattern.type || 'utility',
+      coOccurrenceStrength: pattern.coOccurrenceStrength || 0,
+    }))
+    .sort((a, b) => b.sizeSavings - a.sizeSavings);
 };
 
 /**
  * Calculate pattern efficiency
  */
-Reporter.prototype.calculatePatternEfficiency = function(pattern) {
+Reporter.prototype.calculatePatternEfficiency = function (pattern) {
   const frequency = pattern.frequency || pattern.count || 0;
   const sizeSavings = pattern.sizeSavings || pattern.savings || 0;
-  
+
   if (frequency === 0) return 0;
-  
+
   // Efficiency = (size savings per occurrence) / (average pattern size)
   const savingsPerOccurrence = sizeSavings / frequency;
   const averagePatternSize = pattern.size || 50; // Estimate if not provided
-  
+
   return Math.min(1, savingsPerOccurrence / averagePatternSize);
 };
 
 /**
  * Generate pattern breakdown by type
  */
-Reporter.prototype.generatePatternBreakdown = function(patterns) {
+Reporter.prototype.generatePatternBreakdown = function (patterns) {
   const breakdown = {
     atomic: { count: 0, totalSavings: 0 },
     utility: { count: 0, totalSavings: 0 },
@@ -509,7 +524,7 @@ Reporter.prototype.generatePatternBreakdown = function(patterns) {
     layout: { count: 0, totalSavings: 0 },
   };
 
-  patterns.forEach(pattern => {
+  patterns.forEach((pattern) => {
     const type = pattern.type || 'utility';
     if (breakdown[type]) {
       breakdown[type].count++;
@@ -527,27 +542,27 @@ Reporter.prototype.generatePatternBreakdown = function(patterns) {
 /**
  * Format bytes to human readable string
  */
-Reporter.prototype.formatBytes = function(bytes) {
+Reporter.prototype.formatBytes = function (bytes) {
   if (bytes === 0) return '0 B';
-  
+
   const k = 1024;
   const sizes = ['B', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  
+
   return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
 };
 
 /**
  * Format percentage with proper precision
  */
-Reporter.prototype.formatPercentage = function(value) {
+Reporter.prototype.formatPercentage = function (value) {
   return `${(value * 100).toFixed(1)}%`;
 };
 
 /**
  * Format duration in milliseconds
  */
-Reporter.prototype.formatDuration = function(ms) {
+Reporter.prototype.formatDuration = function (ms) {
   if (ms < 1000) return `${ms}ms`;
   if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`;
   return `${(ms / 60000).toFixed(1)}m`;
@@ -560,9 +575,9 @@ Reporter.prototype.formatDuration = function(ms) {
 /**
  * Generate summary table for size metrics
  */
-Reporter.prototype.generateSummaryTable = function(sizeMetrics) {
+Reporter.prototype.generateSummaryTable = function (sizeMetrics) {
   const table = new Table({
-    head: this.config.colors 
+    head: this.config.colors
       ? [chalk.cyan.bold('Metric'), chalk.cyan.bold('Value')]
       : ['Metric', 'Value'],
     style: {
@@ -578,7 +593,7 @@ Reporter.prototype.generateSummaryTable = function(sizeMetrics) {
     ['Compressed Size', this.formatBytes(sizeMetrics.compressedSize)],
     ['Size Reduction', this.formatBytes(sizeMetrics.sizeReduction)],
     ['Percentage Reduction', `${sizeMetrics.percentageReduction.toFixed(1)}%`],
-    ['Compression Ratio', `${(sizeMetrics.compressionRatio * 100).toFixed(1)}%`],
+    ['Compression Ratio', `${(sizeMetrics.compressionRatio * 100).toFixed(1)}%`]
   );
 
   return `${this.config.colors ? chalk.blue.bold('📊 SIZE ANALYSIS') : '📊 SIZE ANALYSIS'}\n${table.toString()}`;
@@ -587,9 +602,9 @@ Reporter.prototype.generateSummaryTable = function(sizeMetrics) {
 /**
  * Generate detailed table for comprehensive statistics
  */
-Reporter.prototype.generateDetailedTable = function(report) {
+Reporter.prototype.generateDetailedTable = function (report) {
   const table = new Table({
-    head: this.config.colors 
+    head: this.config.colors
       ? [chalk.cyan.bold('Category'), chalk.cyan.bold('Metric'), chalk.cyan.bold('Value')]
       : ['Category', 'Metric', 'Value'],
     style: {
@@ -603,14 +618,14 @@ Reporter.prototype.generateDetailedTable = function(report) {
   table.push(
     ['Size', 'Original', this.formatBytes(report.sizeMetrics.originalSize)],
     ['Size', 'Optimized', this.formatBytes(report.sizeMetrics.optimizedSize)],
-    ['Size', 'Reduction', this.formatBytes(report.sizeMetrics.sizeReduction)],
+    ['Size', 'Reduction', this.formatBytes(report.sizeMetrics.sizeReduction)]
   );
 
   // Performance metrics
   table.push(
     ['Performance', 'Execution Time', this.formatDuration(report.performanceMetrics.executionTime)],
     ['Performance', 'Memory Usage', this.formatBytes(report.performanceMetrics.memoryUsage)],
-    ['Performance', 'Throughput', `${this.formatBytes(report.performanceMetrics.throughput)}/s`],
+    ['Performance', 'Throughput', `${this.formatBytes(report.performanceMetrics.throughput)}/s`]
   );
 
   // Pattern metrics
@@ -619,7 +634,7 @@ Reporter.prototype.generateDetailedTable = function(report) {
     const totalSavings = report.patternStats.reduce((sum, p) => sum + p.sizeSavings, 0);
     table.push(
       ['Patterns', 'Total Count', totalPatterns.toString()],
-      ['Patterns', 'Total Savings', this.formatBytes(totalSavings)],
+      ['Patterns', 'Total Savings', this.formatBytes(totalSavings)]
     );
   }
 
@@ -629,13 +644,15 @@ Reporter.prototype.generateDetailedTable = function(report) {
 /**
  * Generate pattern table for pattern-specific data
  */
-Reporter.prototype.generatePatternTable = function(patternStats) {
+Reporter.prototype.generatePatternTable = function (patternStats) {
   if (!patternStats || patternStats.length === 0) {
-    return this.config.colors ? chalk.gray('No pattern data available') : 'No pattern data available';
+    return this.config.colors
+      ? chalk.gray('No pattern data available')
+      : 'No pattern data available';
   }
 
   const table = new Table({
-    head: this.config.colors 
+    head: this.config.colors
       ? [
           chalk.cyan.bold('Pattern'),
           chalk.cyan.bold('Type'),
@@ -652,17 +669,21 @@ Reporter.prototype.generatePatternTable = function(patternStats) {
   });
 
   const displayPatterns = patternStats.slice(0, this.config.maxTableItems);
-  
-  displayPatterns.forEach(pattern => {
+
+  displayPatterns.forEach((pattern) => {
     const efficiency = `${(pattern.efficiency * 100).toFixed(1)}%`;
-    const efficiencyColored = this.config.colors 
-      ? (pattern.efficiency > 0.7 ? chalk.green(efficiency) : 
-         pattern.efficiency > 0.4 ? chalk.yellow(efficiency) : 
-         chalk.red(efficiency))
+    const efficiencyColored = this.config.colors
+      ? pattern.efficiency > 0.7
+        ? chalk.green(efficiency)
+        : pattern.efficiency > 0.4
+          ? chalk.yellow(efficiency)
+          : chalk.red(efficiency)
       : efficiency;
 
     table.push([
-      pattern.patternName.length > 30 ? pattern.patternName.substring(0, 27) + '...' : pattern.patternName,
+      pattern.patternName.length > 30
+        ? pattern.patternName.substring(0, 27) + '...'
+        : pattern.patternName,
       pattern.type,
       pattern.frequency.toString(),
       this.formatBytes(pattern.sizeSavings),
@@ -670,10 +691,13 @@ Reporter.prototype.generatePatternTable = function(patternStats) {
     ]);
   });
 
-  const title = this.config.colors ? chalk.blue.bold('🎯 PATTERN STATISTICS') : '🎯 PATTERN STATISTICS';
-  const subtitle = patternStats.length > this.config.maxTableItems 
-    ? `\n${this.config.colors ? chalk.gray(`Showing top ${this.config.maxTableItems} of ${patternStats.length} patterns`) : `Showing top ${this.config.maxTableItems} of ${patternStats.length} patterns`}`
-    : '';
+  const title = this.config.colors
+    ? chalk.blue.bold('🎯 PATTERN STATISTICS')
+    : '🎯 PATTERN STATISTICS';
+  const subtitle =
+    patternStats.length > this.config.maxTableItems
+      ? `\n${this.config.colors ? chalk.gray(`Showing top ${this.config.maxTableItems} of ${patternStats.length} patterns`) : `Showing top ${this.config.maxTableItems} of ${patternStats.length} patterns`}`
+      : '';
 
   return `${title}\n${table.toString()}${subtitle}`;
 };
@@ -681,9 +705,9 @@ Reporter.prototype.generatePatternTable = function(patternStats) {
 /**
  * Generate performance table for execution time and memory usage
  */
-Reporter.prototype.generatePerformanceTable = function(performanceMetrics) {
+Reporter.prototype.generatePerformanceTable = function (performanceMetrics) {
   const table = new Table({
-    head: this.config.colors 
+    head: this.config.colors
       ? [chalk.cyan.bold('Metric'), chalk.cyan.bold('Value'), chalk.cyan.bold('Status')]
       : ['Metric', 'Value', 'Status'],
     style: {
@@ -694,37 +718,51 @@ Reporter.prototype.generatePerformanceTable = function(performanceMetrics) {
   });
 
   // Execution time with status indicator
-  const executionStatus = performanceMetrics.executionTime < 1000 ? 'Excellent' :
-                         performanceMetrics.executionTime < 5000 ? 'Good' :
-                         performanceMetrics.executionTime < 10000 ? 'Fair' : 'Slow';
-  
-  const executionStatusColored = this.config.colors 
-    ? (executionStatus === 'Excellent' ? chalk.green(executionStatus) :
-       executionStatus === 'Good' ? chalk.yellow(executionStatus) :
-       executionStatus === 'Fair' ? chalk.hex('#FFA500')(executionStatus) :
-       chalk.red(executionStatus))
+  const executionStatus =
+    performanceMetrics.executionTime < 1000
+      ? 'Excellent'
+      : performanceMetrics.executionTime < 5000
+        ? 'Good'
+        : performanceMetrics.executionTime < 10000
+          ? 'Fair'
+          : 'Slow';
+
+  const executionStatusColored = this.config.colors
+    ? executionStatus === 'Excellent'
+      ? chalk.green(executionStatus)
+      : executionStatus === 'Good'
+        ? chalk.yellow(executionStatus)
+        : executionStatus === 'Fair'
+          ? chalk.hex('#FFA500')(executionStatus)
+          : chalk.red(executionStatus)
     : executionStatus;
 
   // Memory usage with status indicator
   const memoryMB = performanceMetrics.memoryUsage / (1024 * 1024);
-  const memoryStatus = memoryMB < 50 ? 'Low' :
-                      memoryMB < 200 ? 'Moderate' :
-                      memoryMB < 500 ? 'High' : 'Very High';
-  
-  const memoryStatusColored = this.config.colors 
-    ? (memoryStatus === 'Low' ? chalk.green(memoryStatus) :
-       memoryStatus === 'Moderate' ? chalk.yellow(memoryStatus) :
-       memoryStatus === 'High' ? chalk.hex('#FFA500')(memoryStatus) :
-       chalk.red(memoryStatus))
+  const memoryStatus =
+    memoryMB < 50 ? 'Low' : memoryMB < 200 ? 'Moderate' : memoryMB < 500 ? 'High' : 'Very High';
+
+  const memoryStatusColored = this.config.colors
+    ? memoryStatus === 'Low'
+      ? chalk.green(memoryStatus)
+      : memoryStatus === 'Moderate'
+        ? chalk.yellow(memoryStatus)
+        : memoryStatus === 'High'
+          ? chalk.hex('#FFA500')(memoryStatus)
+          : chalk.red(memoryStatus)
     : memoryStatus;
 
   table.push(
-    ['Execution Time', this.formatDuration(performanceMetrics.executionTime), executionStatusColored],
+    [
+      'Execution Time',
+      this.formatDuration(performanceMetrics.executionTime),
+      executionStatusColored,
+    ],
     ['Memory Usage', this.formatBytes(performanceMetrics.memoryUsage), memoryStatusColored],
     ['Peak Memory', this.formatBytes(performanceMetrics.peakMemoryUsage), ''],
     ['Throughput', `${this.formatBytes(performanceMetrics.throughput)}/s`, ''],
     ['Files Processed', performanceMetrics.filesProcessed.toString(), ''],
-    ['Avg Time/File', this.formatDuration(performanceMetrics.avgProcessingTime), ''],
+    ['Avg Time/File', this.formatDuration(performanceMetrics.avgProcessingTime), '']
   );
 
   return `${this.config.colors ? chalk.blue.bold('⚡ PERFORMANCE METRICS') : '⚡ PERFORMANCE METRICS'}\n${table.toString()}`;
@@ -733,13 +771,15 @@ Reporter.prototype.generatePerformanceTable = function(performanceMetrics) {
 /**
  * Generate benchmark table for performance comparisons
  */
-Reporter.prototype.generateBenchmarkTable = function(benchmarks) {
+Reporter.prototype.generateBenchmarkTable = function (benchmarks) {
   if (!benchmarks || benchmarks.length === 0) {
-    return this.config.colors ? chalk.gray('No benchmark data available') : 'No benchmark data available';
+    return this.config.colors
+      ? chalk.gray('No benchmark data available')
+      : 'No benchmark data available';
   }
 
   const table = new Table({
-    head: this.config.colors 
+    head: this.config.colors
       ? [
           chalk.cyan.bold('Test'),
           chalk.cyan.bold('Duration'),
@@ -755,13 +795,16 @@ Reporter.prototype.generateBenchmarkTable = function(benchmarks) {
     },
   });
 
-  benchmarks.forEach(benchmark => {
+  benchmarks.forEach((benchmark) => {
     const score = benchmark.score || 'N/A';
-    const scoreColored = this.config.colors && typeof score === 'number'
-      ? (score > 80 ? chalk.green(score) : 
-         score > 60 ? chalk.yellow(score) : 
-         chalk.red(score))
-      : score;
+    const scoreColored =
+      this.config.colors && typeof score === 'number'
+        ? score > 80
+          ? chalk.green(score)
+          : score > 60
+            ? chalk.yellow(score)
+            : chalk.red(score)
+        : score;
 
     table.push([
       benchmark.name,
@@ -778,13 +821,15 @@ Reporter.prototype.generateBenchmarkTable = function(benchmarks) {
 /**
  * Generate throughput table for processing speed metrics
  */
-Reporter.prototype.generateThroughputTable = function(throughputData) {
+Reporter.prototype.generateThroughputTable = function (throughputData) {
   if (!throughputData || throughputData.length === 0) {
-    return this.config.colors ? chalk.gray('No throughput data available') : 'No throughput data available';
+    return this.config.colors
+      ? chalk.gray('No throughput data available')
+      : 'No throughput data available';
   }
 
   const table = new Table({
-    head: this.config.colors 
+    head: this.config.colors
       ? [
           chalk.cyan.bold('Operation'),
           chalk.cyan.bold('Items/sec'),
@@ -799,13 +844,15 @@ Reporter.prototype.generateThroughputTable = function(throughputData) {
     },
   });
 
-  throughputData.forEach(data => {
+  throughputData.forEach((data) => {
     const efficiency = data.efficiency || 0;
     const efficiencyFormatted = `${(efficiency * 100).toFixed(1)}%`;
-    const efficiencyColored = this.config.colors 
-      ? (efficiency > 0.8 ? chalk.green(efficiencyFormatted) :
-         efficiency > 0.6 ? chalk.yellow(efficiencyFormatted) :
-         chalk.red(efficiencyFormatted))
+    const efficiencyColored = this.config.colors
+      ? efficiency > 0.8
+        ? chalk.green(efficiencyFormatted)
+        : efficiency > 0.6
+          ? chalk.yellow(efficiencyFormatted)
+          : chalk.red(efficiencyFormatted)
       : efficiencyFormatted;
 
     table.push([
@@ -826,7 +873,7 @@ Reporter.prototype.generateThroughputTable = function(throughputData) {
 /**
  * Calculate performance metrics from data
  */
-Reporter.prototype.calculatePerformanceMetrics = function(data) {
+Reporter.prototype.calculatePerformanceMetrics = function (data) {
   if (!data || typeof data !== 'object') {
     return {
       executionTime: 0,
@@ -837,7 +884,7 @@ Reporter.prototype.calculatePerformanceMetrics = function(data) {
       peakMemoryUsage: process.memoryUsage().heapUsed,
     };
   }
-  
+
   const executionTime = data.executionTime || data.duration || 0;
   const memoryUsage = data.memoryUsage || process.memoryUsage().heapUsed;
   const filesProcessed = data.filesProcessed || data.fileCount || 0;
@@ -864,50 +911,63 @@ Reporter.prototype.calculatePerformanceMetrics = function(data) {
 /**
  * Generate optimization recommendations
  */
-Reporter.prototype.generateRecommendations = function(data) {
+Reporter.prototype.generateRecommendations = function (data) {
   const recommendations = [];
-  
+
   // Size-based recommendations
   const sizeMetrics = this.calculateSizeMetrics(data);
   if (sizeMetrics.percentageReduction < 10) {
-    recommendations.push('Consider enabling more aggressive optimization settings for better size reduction');
+    recommendations.push(
+      'Consider enabling more aggressive optimization settings for better size reduction'
+    );
   }
-  if (sizeMetrics.originalSize > 500 * 1024) { // > 500KB
+  if (sizeMetrics.originalSize > 500 * 1024) {
+    // > 500KB
     recommendations.push('Large CSS files detected - consider code splitting or lazy loading');
   }
-  
+
   // Performance-based recommendations
   const performanceMetrics = this.calculatePerformanceMetrics(data);
-  if (performanceMetrics.executionTime > 10000) { // > 10 seconds
-    recommendations.push('Optimization is taking longer than expected - consider processing files in batches');
+  if (performanceMetrics.executionTime > 10000) {
+    // > 10 seconds
+    recommendations.push(
+      'Optimization is taking longer than expected - consider processing files in batches'
+    );
   }
-  if (performanceMetrics.memoryUsage > 500 * 1024 * 1024) { // > 500MB
-    recommendations.push('High memory usage detected - consider streaming processing for large files');
+  if (performanceMetrics.memoryUsage > 500 * 1024 * 1024) {
+    // > 500MB
+    recommendations.push(
+      'High memory usage detected - consider streaming processing for large files'
+    );
   }
-  
+
   // Pattern-based recommendations
   const patternStats = this.generatePatternStats(data);
   if (patternStats.length > 0) {
-    const lowEfficiencyPatterns = patternStats.filter(p => p.efficiency < 0.3);
+    const lowEfficiencyPatterns = patternStats.filter((p) => p.efficiency < 0.3);
     if (lowEfficiencyPatterns.length > 0) {
-      recommendations.push(`${lowEfficiencyPatterns.length} patterns have low efficiency - review pattern definitions`);
+      recommendations.push(
+        `${lowEfficiencyPatterns.length} patterns have low efficiency - review pattern definitions`
+      );
     }
-    
-    const highFrequencyPatterns = patternStats.filter(p => p.frequency > 100);
+
+    const highFrequencyPatterns = patternStats.filter((p) => p.frequency > 100);
     if (highFrequencyPatterns.length > 0) {
-      recommendations.push(`${highFrequencyPatterns.length} patterns are used very frequently - consider caching optimizations`);
+      recommendations.push(
+        `${highFrequencyPatterns.length} patterns are used very frequently - consider caching optimizations`
+      );
     }
   }
-  
+
   return recommendations;
 };
 
 /**
  * Generate warnings for potential issues
  */
-Reporter.prototype.generateWarnings = function(data) {
+Reporter.prototype.generateWarnings = function (data) {
   const warnings = [];
-  
+
   // Size warnings
   const sizeMetrics = this.calculateSizeMetrics(data);
   if (sizeMetrics.sizeReduction < 0) {
@@ -916,16 +976,18 @@ Reporter.prototype.generateWarnings = function(data) {
   if (sizeMetrics.compressionRatio > 1.1) {
     warnings.push('Compression ratio is unusually high - verify input data');
   }
-  
+
   // Performance warnings
   const performanceMetrics = this.calculatePerformanceMetrics(data);
-  if (performanceMetrics.executionTime > 20000) { // > 20 seconds (lowered threshold)
+  if (performanceMetrics.executionTime > 20000) {
+    // > 20 seconds (lowered threshold)
     warnings.push('Optimization is taking very long - consider timeout settings');
   }
-  if (performanceMetrics.memoryUsage > 800 * 1024 * 1024) { // > 800MB (lowered threshold)
+  if (performanceMetrics.memoryUsage > 800 * 1024 * 1024) {
+    // > 800MB (lowered threshold)
     warnings.push('Very high memory usage - risk of out-of-memory errors');
   }
-  
+
   // Data validation warnings
   if (!data || typeof data !== 'object') {
     warnings.push('Invalid or missing optimization data');
@@ -944,9 +1006,9 @@ Reporter.prototype.generateWarnings = function(data) {
   if (data && data.errors && data.errors.length > 0) {
     warnings.push(`${data.errors.length} errors occurred during optimization`);
   }
-  
+
   return warnings;
 };
 
 // Export the Reporter class and utility functions
-export default Reporter; 
+export default Reporter;

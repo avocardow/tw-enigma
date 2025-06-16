@@ -3,4 +3,4 @@
  * Manages background processing workers
  */
 
-export * from './batchWorker'; 
+export * from './batchWorker';

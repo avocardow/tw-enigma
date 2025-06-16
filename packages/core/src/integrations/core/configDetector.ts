@@ -10,20 +10,14 @@
  * Leverages framework detection from Task 25 to automatically configure build tool integrations
  */
 
-import { readFile, access } from "fs/promises";
-import { join } from "path";
-import { createLogger } from "../../utils/logger";
-import { FrameworkDetector } from "../../frameworkDetector";
-import type {
-  FrameworkInfo,
-} from "../../frameworkDetector.ts";
-import type {
-  BuildToolType,
-  BuildToolPluginConfig,
-  BuildPhase,
-} from "./buildToolPlugin.ts";
+import { readFile, access } from 'fs/promises';
+import { join } from 'path';
+import { createLogger } from '../../utils/logger';
+import { FrameworkDetector } from '../../frameworkDetector';
+import type { FrameworkInfo } from '../../frameworkDetector.ts';
+import type { BuildToolType, BuildToolPluginConfig, BuildPhase } from './buildToolPlugin.ts';
 
-const logger = createLogger("config-detector");
+const logger = createLogger('config-detector');
 
 /**
  * Detected build tool configuration
@@ -38,11 +32,7 @@ export interface DetectedBuildConfig {
   /** Confidence score (0-1) */
   confidence: number;
   /** Detection source */
-  source:
-    | "config-file"
-    | "package-json"
-    | "file-structure"
-    | "framework-detection";
+  source: 'config-file' | 'package-json' | 'file-structure' | 'framework-detection';
   /** Framework information */
   framework?: FrameworkInfo;
 }
@@ -76,10 +66,7 @@ interface ConfigPattern {
   /** Signature patterns in config files */
   signatures: string[];
   /** Detection function */
-  detect: (
-    configPath: string,
-    content: string,
-  ) => Promise<DetectedBuildConfig | null>;
+  detect: (configPath: string, content: string) => Promise<DetectedBuildConfig | null>;
 }
 
 /**
@@ -93,7 +80,7 @@ export class ConfigDetector {
     this.frameworkDetector = new FrameworkDetector();
     this.patterns = this.initializePatterns();
 
-    logger.debug("Configuration detector initialized");
+    logger.debug('Configuration detector initialized');
   }
 
   /**
@@ -109,10 +96,10 @@ export class ConfigDetector {
 
     try {
       // Check for critical package.json issues first
-      const packageJsonPath = join(projectRoot, "package.json");
+      const packageJsonPath = join(projectRoot, 'package.json');
       try {
         await access(packageJsonPath);
-        const packageContent = await readFile(packageJsonPath, "utf-8");
+        const packageContent = await readFile(packageJsonPath, 'utf-8');
         JSON.parse(packageContent); // Validate JSON syntax
       } catch (error) {
         if (error instanceof SyntaxError) {
@@ -126,7 +113,7 @@ export class ConfigDetector {
       const frameworkResults = await this.frameworkDetector.detect(projectRoot);
       const framework = frameworkResults.primary; // Use primary framework
 
-      logger.debug("Framework detection completed", {
+      logger.debug('Framework detection completed', {
         framework: framework?.name,
         confidence: framework?.confidence,
       });
@@ -134,16 +121,12 @@ export class ConfigDetector {
       // Detect build tools based on configuration files
       for (const pattern of this.patterns) {
         try {
-          const configs = await this.detectBuildTool(
-            projectRoot,
-            pattern,
-            framework,
-          );
+          const configs = await this.detectBuildTool(projectRoot, pattern, framework);
           result.detected.push(...configs);
         } catch (error) {
           logger.warn(`Error detecting ${pattern.buildTool}`, { error });
           result.warnings.push(
-            `Failed to detect ${pattern.buildTool}: ${error instanceof Error ? error.message : String(error)}`,
+            `Failed to detect ${pattern.buildTool}: ${error instanceof Error ? error.message : String(error)}`
           );
         }
       }
@@ -158,20 +141,17 @@ export class ConfigDetector {
       }
 
       // Generate plugin configurations
-      result.pluginConfigs = await this.generatePluginConfigs(
-        result.detected,
-        framework,
-      );
+      result.pluginConfigs = await this.generatePluginConfigs(result.detected, framework);
 
-      logger.info("Configuration detection completed", {
+      logger.info('Configuration detection completed', {
         detected: result.detected.length,
         recommended: result.recommended?.buildTool,
         framework: framework?.name,
       });
     } catch (error) {
-      logger.error("Configuration detection failed", { error });
+      logger.error('Configuration detection failed', { error });
       result.errors.push(
-        `Configuration detection failed: ${error instanceof Error ? error.message : String(error)}`,
+        `Configuration detection failed: ${error instanceof Error ? error.message : String(error)}`
       );
       // Re-throw critical errors
       throw error;
@@ -187,67 +167,54 @@ export class ConfigDetector {
     return [
       // Webpack
       {
-        buildTool: "webpack",
-        configFiles: [
-          "webpack.config.js",
-          "webpack.config.ts",
-          "webpack.config.mjs",
-        ],
-        dependencies: ["webpack", "webpack-cli", "webpack-dev-server"],
-        signatures: ["module.exports", "entry:", "output:", "plugins:"],
+        buildTool: 'webpack',
+        configFiles: ['webpack.config.js', 'webpack.config.ts', 'webpack.config.mjs'],
+        dependencies: ['webpack', 'webpack-cli', 'webpack-dev-server'],
+        signatures: ['module.exports', 'entry:', 'output:', 'plugins:'],
         detect: this.detectWebpack.bind(this),
       },
 
       // Vite
       {
-        buildTool: "vite",
-        configFiles: ["vite.config.js", "vite.config.ts", "vite.config.mjs"],
-        dependencies: ["vite", "@vitejs/plugin-react", "@vitejs/plugin-vue"],
-        signatures: ["defineConfig", "plugins:", "build:", "server:"],
+        buildTool: 'vite',
+        configFiles: ['vite.config.js', 'vite.config.ts', 'vite.config.mjs'],
+        dependencies: ['vite', '@vitejs/plugin-react', '@vitejs/plugin-vue'],
+        signatures: ['defineConfig', 'plugins:', 'build:', 'server:'],
         detect: this.detectVite.bind(this),
       },
 
       // Next.js
       {
-        buildTool: "nextjs",
-        configFiles: ["next.config.js", "next.config.mjs"],
-        dependencies: ["next"],
-        signatures: [
-          "nextConfig",
-          "module.exports",
-          "experimental:",
-          "webpack:",
-        ],
+        buildTool: 'nextjs',
+        configFiles: ['next.config.js', 'next.config.mjs'],
+        dependencies: ['next'],
+        signatures: ['nextConfig', 'module.exports', 'experimental:', 'webpack:'],
         detect: this.detectNextjs.bind(this),
       },
 
       // ESBuild
       {
-        buildTool: "esbuild",
-        configFiles: ["esbuild.config.js", "esbuild.config.mjs"],
-        dependencies: ["esbuild"],
-        signatures: ["build(", "entryPoints:", "outdir:", "bundle:"],
+        buildTool: 'esbuild',
+        configFiles: ['esbuild.config.js', 'esbuild.config.mjs'],
+        dependencies: ['esbuild'],
+        signatures: ['build(', 'entryPoints:', 'outdir:', 'bundle:'],
         detect: this.detectESBuild.bind(this),
       },
 
       // Rollup
       {
-        buildTool: "rollup",
-        configFiles: [
-          "rollup.config.js",
-          "rollup.config.ts",
-          "rollup.config.mjs",
-        ],
-        dependencies: ["rollup"],
-        signatures: ["export default", "input:", "output:", "plugins:"],
+        buildTool: 'rollup',
+        configFiles: ['rollup.config.js', 'rollup.config.ts', 'rollup.config.mjs'],
+        dependencies: ['rollup'],
+        signatures: ['export default', 'input:', 'output:', 'plugins:'],
         detect: this.detectRollup.bind(this),
       },
 
       // Parcel
       {
-        buildTool: "parcel",
-        configFiles: [".parcelrc", "parcel.config.js"],
-        dependencies: ["parcel"],
+        buildTool: 'parcel',
+        configFiles: ['.parcelrc', 'parcel.config.js'],
+        dependencies: ['parcel'],
         signatures: ['"extends":', '"transformers":', '"bundler":'],
         detect: this.detectParcel.bind(this),
       },
@@ -260,7 +227,7 @@ export class ConfigDetector {
   private async detectBuildTool(
     projectRoot: string,
     pattern: ConfigPattern,
-    framework?: FrameworkInfo,
+    framework?: FrameworkInfo
   ): Promise<DetectedBuildConfig[]> {
     const configs: DetectedBuildConfig[] = [];
 
@@ -270,12 +237,10 @@ export class ConfigDetector {
 
       try {
         await access(configPath);
-        const content = await readFile(configPath, "utf-8");
+        const content = await readFile(configPath, 'utf-8');
 
         // Check for signature patterns
-        const hasSignatures = pattern.signatures.some((sig) =>
-          content.includes(sig),
-        );
+        const hasSignatures = pattern.signatures.some((sig) => content.includes(sig));
         if (hasSignatures) {
           const detected = await pattern.detect(configPath, content);
           if (detected) {
@@ -290,9 +255,9 @@ export class ConfigDetector {
 
     // Check package.json for dependencies if no config file found
     if (configs.length === 0) {
-      const packageJsonPath = join(projectRoot, "package.json");
+      const packageJsonPath = join(projectRoot, 'package.json');
       try {
-        const packageContent = await readFile(packageJsonPath, "utf-8");
+        const packageContent = await readFile(packageJsonPath, 'utf-8');
         const packageJson = JSON.parse(packageContent);
         const allDeps = {
           ...packageJson.dependencies,
@@ -306,7 +271,7 @@ export class ConfigDetector {
             buildTool: pattern.buildTool,
             config: packageJson,
             confidence: 0.6, // Medium confidence for package.json only
-            source: "package-json",
+            source: 'package-json',
             framework,
           });
         }
@@ -329,33 +294,28 @@ export class ConfigDetector {
    */
   private async detectWebpack(
     configPath: string,
-    content: string,
+    content: string
   ): Promise<DetectedBuildConfig | null> {
     try {
       // Basic webpack config detection
       const config = {
         configPath,
-        type: "webpack",
-        hasReact: content.includes("react"),
-        hasTypescript:
-          content.includes("typescript") || content.includes(".ts"),
-        hasDevServer:
-          content.includes("webpack-dev-server") ||
-          content.includes("devServer"),
-        hasHMR:
-          content.includes("hot: true") ||
-          content.includes("HotModuleReplacementPlugin"),
+        type: 'webpack',
+        hasReact: content.includes('react'),
+        hasTypescript: content.includes('typescript') || content.includes('.ts'),
+        hasDevServer: content.includes('webpack-dev-server') || content.includes('devServer'),
+        hasHMR: content.includes('hot: true') || content.includes('HotModuleReplacementPlugin'),
       };
 
       return {
-        buildTool: "webpack",
+        buildTool: 'webpack',
         configPath,
         config,
         confidence: 0.9,
-        source: "config-file",
+        source: 'config-file',
       };
     } catch (error) {
-      logger.warn("Failed to parse webpack config", { configPath, error });
+      logger.warn('Failed to parse webpack config', { configPath, error });
       return null;
     }
   }
@@ -365,33 +325,28 @@ export class ConfigDetector {
    */
   private async detectVite(
     configPath: string,
-    content: string,
+    content: string
   ): Promise<DetectedBuildConfig | null> {
     try {
       const config = {
         configPath,
-        type: "vite",
-        hasReact:
-          content.includes("@vitejs/plugin-react") ||
-          content.includes("plugin-react"),
-        hasVue:
-          content.includes("@vitejs/plugin-vue") ||
-          content.includes("plugin-vue"),
-        hasTypescript:
-          content.includes("typescript") || configPath.endsWith(".ts"),
-        hasServer: content.includes("server:"),
-        hasBuild: content.includes("build:"),
+        type: 'vite',
+        hasReact: content.includes('@vitejs/plugin-react') || content.includes('plugin-react'),
+        hasVue: content.includes('@vitejs/plugin-vue') || content.includes('plugin-vue'),
+        hasTypescript: content.includes('typescript') || configPath.endsWith('.ts'),
+        hasServer: content.includes('server:'),
+        hasBuild: content.includes('build:'),
       };
 
       return {
-        buildTool: "vite",
+        buildTool: 'vite',
         configPath,
         config,
         confidence: 0.95,
-        source: "config-file",
+        source: 'config-file',
       };
     } catch (error) {
-      logger.warn("Failed to parse vite config", { configPath, error });
+      logger.warn('Failed to parse vite config', { configPath, error });
       return null;
     }
   }
@@ -401,28 +356,27 @@ export class ConfigDetector {
    */
   private async detectNextjs(
     configPath: string,
-    content: string,
+    content: string
   ): Promise<DetectedBuildConfig | null> {
     try {
       const config = {
         configPath,
-        type: "nextjs",
-        hasAppDir:
-          content.includes("appDir") || content.includes("experimental"),
-        hasTypescript: content.includes("typescript"),
-        hasWebpackConfig: content.includes("webpack:"),
-        hasExperimental: content.includes("experimental:"),
+        type: 'nextjs',
+        hasAppDir: content.includes('appDir') || content.includes('experimental'),
+        hasTypescript: content.includes('typescript'),
+        hasWebpackConfig: content.includes('webpack:'),
+        hasExperimental: content.includes('experimental:'),
       };
 
       return {
-        buildTool: "nextjs",
+        buildTool: 'nextjs',
         configPath,
         config,
         confidence: 0.95,
-        source: "config-file",
+        source: 'config-file',
       };
     } catch (error) {
-      logger.warn("Failed to parse next.js config", { configPath, error });
+      logger.warn('Failed to parse next.js config', { configPath, error });
       return null;
     }
   }
@@ -432,26 +386,26 @@ export class ConfigDetector {
    */
   private async detectESBuild(
     configPath: string,
-    content: string,
+    content: string
   ): Promise<DetectedBuildConfig | null> {
     try {
       const config = {
         configPath,
-        type: "esbuild",
-        hasBundle: content.includes("bundle:"),
-        hasWatch: content.includes("watch:"),
-        hasMinify: content.includes("minify:"),
+        type: 'esbuild',
+        hasBundle: content.includes('bundle:'),
+        hasWatch: content.includes('watch:'),
+        hasMinify: content.includes('minify:'),
       };
 
       return {
-        buildTool: "esbuild",
+        buildTool: 'esbuild',
         configPath,
         config,
         confidence: 0.85,
-        source: "config-file",
+        source: 'config-file',
       };
     } catch (error) {
-      logger.warn("Failed to parse esbuild config", { configPath, error });
+      logger.warn('Failed to parse esbuild config', { configPath, error });
       return null;
     }
   }
@@ -461,26 +415,26 @@ export class ConfigDetector {
    */
   private async detectRollup(
     configPath: string,
-    content: string,
+    content: string
   ): Promise<DetectedBuildConfig | null> {
     try {
       const config = {
         configPath,
-        type: "rollup",
-        hasPlugins: content.includes("plugins:"),
-        hasInput: content.includes("input:"),
-        hasOutput: content.includes("output:"),
+        type: 'rollup',
+        hasPlugins: content.includes('plugins:'),
+        hasInput: content.includes('input:'),
+        hasOutput: content.includes('output:'),
       };
 
       return {
-        buildTool: "rollup",
+        buildTool: 'rollup',
         configPath,
         config,
         confidence: 0.85,
-        source: "config-file",
+        source: 'config-file',
       };
     } catch (error) {
-      logger.warn("Failed to parse rollup config", { configPath, error });
+      logger.warn('Failed to parse rollup config', { configPath, error });
       return null;
     }
   }
@@ -490,26 +444,26 @@ export class ConfigDetector {
    */
   private async detectParcel(
     configPath: string,
-    content: string,
+    content: string
   ): Promise<DetectedBuildConfig | null> {
     try {
       const config = {
         configPath,
-        type: "parcel",
-        hasTransformers: content.includes("transformers"),
-        hasBundler: content.includes("bundler"),
-        hasExtends: content.includes("extends"),
+        type: 'parcel',
+        hasTransformers: content.includes('transformers'),
+        hasBundler: content.includes('bundler'),
+        hasExtends: content.includes('extends'),
       };
 
       return {
-        buildTool: "parcel",
+        buildTool: 'parcel',
         configPath,
         config,
         confidence: 0.8,
-        source: "config-file",
+        source: 'config-file',
       };
     } catch (error) {
-      logger.warn("Failed to parse parcel config", { configPath, error });
+      logger.warn('Failed to parse parcel config', { configPath, error });
       return null;
     }
   }
@@ -517,12 +471,10 @@ export class ConfigDetector {
   /**
    * Remove duplicate configurations
    */
-  private deduplicateConfigs(
-    configs: DetectedBuildConfig[],
-  ): DetectedBuildConfig[] {
+  private deduplicateConfigs(configs: DetectedBuildConfig[]): DetectedBuildConfig[] {
     const seen = new Set<string>();
     return configs.filter((config) => {
-      const key = `${config.buildTool}-${config.configPath || "no-path"}`;
+      const key = `${config.buildTool}-${config.configPath || 'no-path'}`;
       if (seen.has(key)) {
         return false;
       }
@@ -536,7 +488,7 @@ export class ConfigDetector {
    */
   private async generatePluginConfigs(
     configs: DetectedBuildConfig[],
-    framework?: FrameworkInfo,
+    framework?: FrameworkInfo
   ): Promise<BuildToolPluginConfig[]> {
     const pluginConfigs: BuildToolPluginConfig[] = [];
 
@@ -599,45 +551,36 @@ export class ConfigDetector {
    */
   private getEnabledPhases(buildTool: BuildToolType): BuildPhase[] {
     const phaseMap: Record<BuildToolType, BuildPhase[]> = {
-      webpack: ["beforeBuild", "compilation", "emit", "afterBuild"],
-      vite: ["buildStart", "transform", "generateBundle", "afterBuild"],
-      nextjs: [
-        "beforeBuild",
-        "compilation",
-        "afterBuild",
-        "development",
-        "production",
-      ],
-      esbuild: ["beforeBuild", "transform", "afterBuild"],
-      rollup: ["buildStart", "transform", "generateBundle", "afterBuild"],
-      parcel: ["beforeBuild", "transform", "afterBuild"],
-      custom: ["beforeBuild", "transform", "afterBuild"],
+      webpack: ['beforeBuild', 'compilation', 'emit', 'afterBuild'],
+      vite: ['buildStart', 'transform', 'generateBundle', 'afterBuild'],
+      nextjs: ['beforeBuild', 'compilation', 'afterBuild', 'development', 'production'],
+      esbuild: ['beforeBuild', 'transform', 'afterBuild'],
+      rollup: ['buildStart', 'transform', 'generateBundle', 'afterBuild'],
+      parcel: ['beforeBuild', 'transform', 'afterBuild'],
+      custom: ['beforeBuild', 'transform', 'afterBuild'],
     };
 
-    return phaseMap[buildTool] || ["beforeBuild", "afterBuild"];
+    return phaseMap[buildTool] || ['beforeBuild', 'afterBuild'];
   }
 
   /**
    * Customize plugin configuration for specific frameworks
    */
-  private customizeForFramework(
-    config: BuildToolPluginConfig,
-    framework: FrameworkInfo,
-  ): void {
+  private customizeForFramework(config: BuildToolPluginConfig, framework: FrameworkInfo): void {
     switch (framework.type) {
-      case "react":
+      case 'react':
         if (config.buildTool.development) {
           config.buildTool.development.hmr = true; // React benefits from HMR
         }
         break;
 
-      case "nextjs":
+      case 'nextjs':
         if (config.buildTool.production) {
           config.buildTool.production.extractCSS = true; // Next.js handles CSS extraction
         }
         break;
 
-      case "vite":
+      case 'vite':
         if (config.buildTool.development) {
           config.buildTool.development.hmrDelay = 50; // Vite is faster
         }

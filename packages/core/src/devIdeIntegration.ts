@@ -5,11 +5,11 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { EventEmitter } from "events";
-import { createLogger, Logger } from "./utils/logger";
-import { EnigmaConfig } from "./config";
-import { writeFile, readFile, mkdir } from "fs/promises";
-import { join, dirname } from "path";
+import { EventEmitter } from 'events';
+import { createLogger, Logger } from './utils/logger';
+import { EnigmaConfig } from './config';
+import { writeFile, readFile, mkdir } from 'fs/promises';
+import { join, dirname } from 'path';
 
 /**
  * IDE integration configuration
@@ -149,7 +149,7 @@ export interface IdeIntegrationEvents {
   'snippet-inserted': (snippet: CodeSnippet, location: string) => void;
   'code-action-executed': (action: string, uri: string) => void;
   'config-updated': (ide: string, config: any) => void;
-  'error': (error: Error) => void;
+  error: (error: Error) => void;
 }
 
 /**
@@ -178,9 +178,9 @@ export class DevIdeIntegration extends EventEmitter {
     projectRoot?: string
   ) {
     super();
-    
+
     this.projectRoot = projectRoot || process.cwd();
-    
+
     this.config = {
       enabled: true,
       supportedIdes: {
@@ -231,8 +231,8 @@ export class DevIdeIntegration extends EventEmitter {
       ...config,
     };
 
-    this.logger = createLogger("DevIdeIntegration");
-    
+    this.logger = createLogger('DevIdeIntegration');
+
     this.ideConfigs = {
       vscode: {
         settingsPath: join(this.projectRoot, '.vscode', 'settings.json'),
@@ -254,7 +254,7 @@ export class DevIdeIntegration extends EventEmitter {
       },
     };
 
-    this.logger.debug("IDE integration initialized", { config: this.config });
+    this.logger.debug('IDE integration initialized', { config: this.config });
   }
 
   /**
@@ -306,12 +306,12 @@ export class DevIdeIntegration extends EventEmitter {
    */
   async stop(): Promise<void> {
     if (!this.isActive) {
-      this.logger.warn("IDE integration not running");
+      this.logger.warn('IDE integration not running');
       return;
     }
 
     this.isActive = false;
-    this.logger.info("Stopping IDE integration");
+    this.logger.info('Stopping IDE integration');
 
     try {
       // Stop language server
@@ -322,10 +322,9 @@ export class DevIdeIntegration extends EventEmitter {
         this.activeLanguageServer = undefined;
       }
 
-      this.logger.info("IDE integration stopped");
-
+      this.logger.info('IDE integration stopped');
     } catch (error) {
-      this.logger.error("Error stopping IDE integration", { error });
+      this.logger.error('Error stopping IDE integration', { error });
       throw error;
     }
   }
@@ -341,9 +340,9 @@ export class DevIdeIntegration extends EventEmitter {
     const extension = uri.split('.').pop()?.toLowerCase();
     const framework = this.detectFramework(uri);
     const key = `${extension}-${framework}-${context}`;
-    
+
     this.emit('autocomplete-requested', uri, position);
-    
+
     return this.autoCompleteItems.get(key) || this.autoCompleteItems.get('default') || [];
   }
 
@@ -360,27 +359,26 @@ export class DevIdeIntegration extends EventEmitter {
    */
   async validateFile(uri: string): Promise<DiagnosticItem[]> {
     const diagnostics: DiagnosticItem[] = [];
-    
+
     try {
       const content = await readFile(uri, 'utf-8');
       const framework = this.detectFramework(uri);
-      
+
       // Validate CSS classes
       const classValidation = await this.validateClasses(content, framework);
       diagnostics.push(...classValidation);
-      
+
       // Validate configuration
       if (uri.includes('enigma.config') || uri.includes('.enigmarc')) {
         const configValidation = await this.validateConfiguration(content);
         diagnostics.push(...configValidation);
       }
-      
+
       this.emit('diagnostics-updated', uri, diagnostics);
-      
     } catch (error) {
-      this.logger.debug("Error validating file", { uri, error });
+      this.logger.debug('Error validating file', { uri, error });
     }
-    
+
     return diagnostics;
   }
 
@@ -389,7 +387,7 @@ export class DevIdeIntegration extends EventEmitter {
    */
   updateConfig(newConfig: Partial<IdeIntegrationConfig>): void {
     this.config = { ...this.config, ...newConfig };
-    this.logger.debug("Configuration updated", { config: this.config });
+    this.logger.debug('Configuration updated', { config: this.config });
   }
 
   /**
@@ -446,7 +444,7 @@ export class DevIdeIntegration extends EventEmitter {
     directives: AutoCompleteItem[];
     configOptions: AutoCompleteItem[];
   }> {
-    const classItems: AutoCompleteItem[] = classes.map(className => ({
+    const classItems: AutoCompleteItem[] = classes.map((className) => ({
       label: className,
       kind: 'class' as const,
       detail: `Tailwind CSS class: ${className}`,
@@ -532,9 +530,13 @@ export class DevIdeIntegration extends EventEmitter {
         isRunning: true,
       };
 
-      this.logger.info(`Language server started on ${this.config.languageServer.host}:${this.config.languageServer.port}`);
+      this.logger.info(
+        `Language server started on ${this.config.languageServer.host}:${this.config.languageServer.port}`
+      );
     } catch (error) {
-      this.logger.error('Failed to start language server', { error: error instanceof Error ? error.message : String(error) });
+      this.logger.error('Failed to start language server', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       throw error;
     }
   }
@@ -599,7 +601,7 @@ export class DevIdeIntegration extends EventEmitter {
    */
   async setupVSCode(): Promise<void> {
     const startTime = Date.now();
-    this.generateVSCodeConfig().catch(error => {
+    this.generateVSCodeConfig().catch((error) => {
       this.logger.error('generateVSCodeConfig failed', { error });
       this.emit('error', error instanceof Error ? error : new Error(String(error)));
     });
@@ -612,7 +614,7 @@ export class DevIdeIntegration extends EventEmitter {
    */
   async setupVim(): Promise<void> {
     const startTime = Date.now();
-    this.generateVimConfig().catch(error => {
+    this.generateVimConfig().catch((error) => {
       this.logger.error('generateVimConfig failed', { error });
       this.emit('error', error instanceof Error ? error : new Error(String(error)));
     });
@@ -625,7 +627,7 @@ export class DevIdeIntegration extends EventEmitter {
    */
   async setupWebStorm(): Promise<void> {
     const startTime = Date.now();
-    this.generateWebStormConfig().catch(error => {
+    this.generateWebStormConfig().catch((error) => {
       this.logger.error('generateWebStormConfig failed', { error });
       this.emit('error', error instanceof Error ? error : new Error(String(error)));
     });
@@ -644,7 +646,7 @@ export class DevIdeIntegration extends EventEmitter {
   }): Promise<void> {
     // Update autocomplete data with new classes
     await this.generateAutocomplete(result.classes);
-    
+
     // Update diagnostics if needed
     // Note: 'optimization-result' is not a valid event in IdeIntegrationEvents
     // this.emit('optimization-result', result);
@@ -653,12 +655,14 @@ export class DevIdeIntegration extends EventEmitter {
   /**
    * Get optimization suggestions for CSS content
    */
-  async getOptimizationSuggestions(cssContent: string): Promise<Array<{
-    type: string;
-    message: string;
-    suggestion: string;
-    severity: 'info' | 'warning' | 'error';
-  }>> {
+  async getOptimizationSuggestions(cssContent: string): Promise<
+    Array<{
+      type: string;
+      message: string;
+      suggestion: string;
+      severity: 'info' | 'warning' | 'error';
+    }>
+  > {
     const suggestions: Array<{
       type: string;
       message: string;
@@ -737,83 +741,83 @@ export class DevIdeIntegration extends EventEmitter {
     try {
       // VSCode settings
       const settings = {
-        "enigma.enabled": true,
-        "enigma.autoOptimize": this.enigmaConfig.dev.enabled,
-        "enigma.showDiagnostics": this.config.features.diagnostics,
-        "enigma.enableAutoComplete": this.config.features.autocomplete,
-        "enigma.languageServer": {
-          "enabled": this.config.languageServer.enabled,
-          "port": this.config.languageServer.port,
+        'enigma.enabled': true,
+        'enigma.autoOptimize': this.enigmaConfig.dev.enabled,
+        'enigma.showDiagnostics': this.config.features.diagnostics,
+        'enigma.enableAutoComplete': this.config.features.autocomplete,
+        'enigma.languageServer': {
+          enabled: this.config.languageServer.enabled,
+          port: this.config.languageServer.port,
         },
-        "files.associations": {
-          "*.enigmarc": "json",
-          "enigma.config.*": "javascript",
+        'files.associations': {
+          '*.enigmarc': 'json',
+          'enigma.config.*': 'javascript',
         },
-        "emmet.includeLanguages": {
-          "javascript": "html",
-          "typescript": "html",
-          "javascriptreact": "html",
-          "typescriptreact": "html",
+        'emmet.includeLanguages': {
+          javascript: 'html',
+          typescript: 'html',
+          javascriptreact: 'html',
+          typescriptreact: 'html',
         },
       };
       // VSCode extensions recommendations
       const extensions = {
-        "recommendations": [
-          "bradlc.vscode-tailwindcss",
-          "esbenp.prettier-vscode",
-          "ms-vscode.vscode-typescript-next",
+        recommendations: [
+          'bradlc.vscode-tailwindcss',
+          'esbenp.prettier-vscode',
+          'ms-vscode.vscode-typescript-next',
         ],
       };
       // VSCode tasks
       const tasks = {
-        "version": "2.0.0",
-        "tasks": [
+        version: '2.0.0',
+        tasks: [
           {
-            "label": "Enigma: Optimize",
-            "type": "shell",
-            "command": "npx",
-            "args": ["enigma", "optimize"],
-            "group": "build",
-            "presentation": {
-              "echo": true,
-              "reveal": "always",
-              "focus": false,
-              "panel": "shared",
+            label: 'Enigma: Optimize',
+            type: 'shell',
+            command: 'npx',
+            args: ['enigma', 'optimize'],
+            group: 'build',
+            presentation: {
+              echo: true,
+              reveal: 'always',
+              focus: false,
+              panel: 'shared',
             },
-            "problemMatcher": [],
-            "_test": "enigma optimize"
+            problemMatcher: [],
+            _test: 'enigma optimize',
           },
           {
-            "label": "Enigma: Watch",
-            "type": "shell",
-            "command": "npx",
-            "args": ["enigma", "watch"],
-            "group": "build",
-            "isBackground": true,
-            "presentation": {
-              "echo": true,
-              "reveal": "always",
-              "focus": false,
-              "panel": "shared",
+            label: 'Enigma: Watch',
+            type: 'shell',
+            command: 'npx',
+            args: ['enigma', 'watch'],
+            group: 'build',
+            isBackground: true,
+            presentation: {
+              echo: true,
+              reveal: 'always',
+              focus: false,
+              panel: 'shared',
             },
-            "problemMatcher": [],
+            problemMatcher: [],
           },
         ],
-        "_test": "enigma optimize"
+        _test: 'enigma optimize',
       };
       // VSCode launch configuration
       const launch = {
-        "version": "0.2.0",
-        "configurations": [
+        version: '0.2.0',
+        configurations: [
           {
-            "name": "Debug Enigma",
-            "type": "node",
-            "request": "launch",
-            "program": "${workspaceFolder}/node_modules/.bin/enigma",
-            "args": ["optimize", "--debug"],
-            "console": "integratedTerminal",
-            "env": {
-              "NODE_ENV": "development",
+            name: 'Debug Enigma',
+            type: 'node',
+            request: 'launch',
+            program: '${workspaceFolder}/node_modules/.bin/enigma',
+            args: ['optimize', '--debug'],
+            console: 'integratedTerminal',
+            env: {
+              NODE_ENV: 'development',
             },
           },
         ],
@@ -989,8 +993,14 @@ nnoremap <leader>ew :EnigmaWatch<CR>`;
     // Configuration options
     if (fileType === 'javascript' || fileType === 'typescript') {
       const configOptions = [
-        'input', 'output', 'removeUnused', 'minify', 'classPrefix',
-        'excludePatterns', 'preserveComments', 'sourceMaps'
+        'input',
+        'output',
+        'removeUnused',
+        'minify',
+        'classPrefix',
+        'excludePatterns',
+        'preserveComments',
+        'sourceMaps',
       ];
 
       for (const option of configOptions) {
@@ -1040,7 +1050,7 @@ nnoremap <leader>ew :EnigmaWatch<CR>`;
         prefix: 'enigma-react-component',
         description: 'React component with Tailwind CSS classes',
         body: [
-          'import React from \'react\';',
+          "import React from 'react';",
           '',
           'interface ${1:ComponentName}Props {',
           '  ${2:prop}: ${3:string};',
@@ -1080,10 +1090,10 @@ nnoremap <leader>ew :EnigmaWatch<CR>`;
           '</template>',
           '',
           '<script lang="ts">',
-          'import { defineComponent } from \'vue\';',
+          "import { defineComponent } from 'vue';",
           '',
           'export default defineComponent({',
-          '  name: \'${4:ComponentName}\',',
+          "  name: '${4:ComponentName}',",
           '  props: {',
           '    ${3:title}: {',
           '      type: String,',
@@ -1118,13 +1128,11 @@ nnoremap <leader>ew :EnigmaWatch<CR>`;
         name: 'Utility Class Example',
         prefix: 'tw-util',
         description: 'Basic Tailwind utility class usage',
-        body: [
-          '<div class="bg-blue-500 text-white p-4 rounded">Hello, world!</div>'
-        ],
+        body: ['<div class="bg-blue-500 text-white p-4 rounded">Hello, world!</div>'],
         scope: ['css', 'html'],
         category: 'utility',
-        placeholders: []
-      }
+        placeholders: [],
+      },
     ];
   }
 
@@ -1141,7 +1149,7 @@ nnoremap <leader>ew :EnigmaWatch<CR>`;
           if (!allSnippets.has(scope)) {
             allSnippets.set(scope, {});
           }
-          
+
           allSnippets.get(scope)[snippet.name] = {
             prefix: snippet.prefix,
             body: snippet.body,
@@ -1164,12 +1172,12 @@ nnoremap <leader>ew :EnigmaWatch<CR>`;
    */
   private async validateClasses(content: string, _framework?: string): Promise<DiagnosticItem[]> {
     const diagnostics: DiagnosticItem[] = [];
-    
+
     // Simple validation - check for unknown Tailwind classes
     const classRegex = /class(?:Name)?=['"]([^'"]*)['"]/g;
     let match;
     let lineNumber = 0;
-    
+
     const lines = content.split('\n');
     for (const line of lines) {
       while ((match = classRegex.exec(line)) !== null) {
@@ -1200,7 +1208,7 @@ nnoremap <leader>ew :EnigmaWatch<CR>`;
       }
       lineNumber++;
     }
-    
+
     return diagnostics;
   }
 
@@ -1209,10 +1217,10 @@ nnoremap <leader>ew :EnigmaWatch<CR>`;
    */
   private async validateConfiguration(content: string): Promise<DiagnosticItem[]> {
     const diagnostics: DiagnosticItem[] = [];
-    
+
     try {
       const config = JSON.parse(content);
-      
+
       // Validate against schema
       if (!config.input) {
         diagnostics.push({
@@ -1223,7 +1231,6 @@ nnoremap <leader>ew :EnigmaWatch<CR>`;
           code: 'missing-field',
         });
       }
-      
     } catch {
       diagnostics.push({
         range: { start: { line: 0, character: 0 }, end: { line: 0, character: 0 } },
@@ -1233,7 +1240,7 @@ nnoremap <leader>ew :EnigmaWatch<CR>`;
         code: 'syntax-error',
       });
     }
-    
+
     return diagnostics;
   }
 
@@ -1244,14 +1251,29 @@ nnoremap <leader>ew :EnigmaWatch<CR>`;
     // This would typically check against a comprehensive list
     // For now, we'll do basic validation
     const commonPrefixes = [
-      'flex', 'grid', 'block', 'inline', 'hidden',
-      'text-', 'bg-', 'border-', 'p-', 'm-', 'w-', 'h-',
-      'rounded', 'shadow', 'opacity-', 'transform',
+      'flex',
+      'grid',
+      'block',
+      'inline',
+      'hidden',
+      'text-',
+      'bg-',
+      'border-',
+      'p-',
+      'm-',
+      'w-',
+      'h-',
+      'rounded',
+      'shadow',
+      'opacity-',
+      'transform',
     ];
-    
-    return commonPrefixes.some(prefix => className.startsWith(prefix)) || 
-           className.includes('-') || 
-           className.length < 20; // Basic heuristic
+
+    return (
+      commonPrefixes.some((prefix) => className.startsWith(prefix)) ||
+      className.includes('-') ||
+      className.length < 20
+    ); // Basic heuristic
   }
 
   /**
@@ -1281,7 +1303,7 @@ nnoremap <leader>ew :EnigmaWatch<CR>`;
       await mkdir(dirname(filepath), { recursive: true });
       await writeFile(filepath, JSON.stringify(data, null, 2));
     } catch (error) {
-      this.logger.debug("Error writing JSON file", { filepath, error });
+      this.logger.debug('Error writing JSON file', { filepath, error });
     }
   }
 }
@@ -1307,5 +1329,8 @@ export function createDevIdeIntegration(
 // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export declare interface DevIdeIntegration {
   on<K extends keyof IdeIntegrationEvents>(event: K, listener: IdeIntegrationEvents[K]): this;
-  emit<K extends keyof IdeIntegrationEvents>(event: K, ...args: Parameters<IdeIntegrationEvents[K]>): boolean;
-} 
+  emit<K extends keyof IdeIntegrationEvents>(
+    event: K,
+    ...args: Parameters<IdeIntegrationEvents[K]>
+  ): boolean;
+}

@@ -1,15 +1,12 @@
-import { createLogger } from "../utils/logger";
-import {
-  EnigmaPlugin,
-  EnigmaPluginContext,
-} from "../types/plugins";
-import { performance } from "perf_hooks";
-import * as fs from "fs/promises";
-import * as path from "path";
+import { createLogger } from '../utils/logger';
+import { EnigmaPlugin, EnigmaPluginContext } from '../types/plugins';
+import { performance } from 'perf_hooks';
+import * as fs from 'fs/promises';
+import * as path from 'path';
 
 interface DebugOptions {
   verbose?: boolean;
-  logLevel?: "debug" | "info" | "warn" | "error";
+  logLevel?: 'debug' | 'info' | 'warn' | 'error';
   outputDir?: string;
   captureMemory?: boolean;
   capturePerformance?: boolean;
@@ -44,14 +41,14 @@ interface TestCase {
  * Plugin Debugger - A comprehensive tool for testing and debugging Enigma plugins
  */
 export class PluginDebugger {
-  private logger = createLogger("plugin-debugger");
+  private logger = createLogger('plugin-debugger');
   private options: DebugOptions;
 
   constructor(options: DebugOptions = {}) {
     this.options = {
       verbose: false,
-      logLevel: "debug",
-      outputDir: "./debug-output",
+      logLevel: 'debug',
+      outputDir: './debug-output',
       captureMemory: true,
       capturePerformance: true,
       saveResults: true,
@@ -71,15 +68,13 @@ export class PluginDebugger {
   async testPlugin(
     plugin: EnigmaPlugin,
     input: string,
-    context: EnigmaPluginContext,
+    context: EnigmaPluginContext
   ): Promise<DebugResult> {
     const startTime = performance.now();
-    const memoryBefore = this.options.captureMemory
-      ? process.memoryUsage()
-      : undefined;
+    const memoryBefore = this.options.captureMemory ? process.memoryUsage() : undefined;
 
     const result: DebugResult = {
-      pluginName: plugin.meta?.name || "unknown",
+      pluginName: plugin.meta?.name || 'unknown',
       success: false,
       executionTime: 0,
       warnings: [],
@@ -104,7 +99,7 @@ export class PluginDebugger {
       if (plugin.validate) {
         const isValid = await plugin.validate(context);
         if (!isValid) {
-          throw new Error("Plugin validation failed");
+          throw new Error('Plugin validation failed');
         }
       }
 
@@ -113,7 +108,7 @@ export class PluginDebugger {
       if (plugin.processCss) {
         output = await plugin.processCss(input, context);
       } else {
-        throw new Error("Plugin does not implement processCss method");
+        throw new Error('Plugin does not implement processCss method');
       }
 
       // Calculate execution time
@@ -176,7 +171,7 @@ export class PluginDebugger {
   async runTestSuite(
     plugin: EnigmaPlugin,
     testCases: TestCase[],
-    baseContext: EnigmaPluginContext,
+    baseContext: EnigmaPluginContext
   ): Promise<DebugResult[]> {
     this.logger.info(`Running test suite for plugin: ${plugin.meta?.name}`, {
       testCaseCount: testCases.length,
@@ -197,11 +192,10 @@ export class PluginDebugger {
 
         // Validate expected output if provided
         if (testCase.expectedOutput && result.output) {
-          const matches =
-            result.output.trim() === testCase.expectedOutput.trim();
+          const matches = result.output.trim() === testCase.expectedOutput.trim();
           if (!matches) {
             result.warnings.push(
-              `Output mismatch: expected "${testCase.expectedOutput}" but got "${result.output}"`,
+              `Output mismatch: expected "${testCase.expectedOutput}" but got "${result.output}"`
             );
           }
         }
@@ -221,7 +215,7 @@ export class PluginDebugger {
         results.push(result);
       } catch (error) {
         const failedResult: DebugResult = {
-          pluginName: plugin.meta?.name || "unknown",
+          pluginName: plugin.meta?.name || 'unknown',
           success: false,
           executionTime: 0,
           error: error instanceof Error ? error : new Error(String(error)),
@@ -240,7 +234,7 @@ export class PluginDebugger {
 
     // Generate summary
     const summary = this.generateTestSummary(results);
-    this.logger.info("Test suite completed", summary);
+    this.logger.info('Test suite completed', summary);
 
     // Save test suite results
     if (this.options.saveResults) {
@@ -257,13 +251,13 @@ export class PluginDebugger {
     pluginA: EnigmaPlugin,
     pluginB: EnigmaPlugin,
     input: string,
-    context: EnigmaPluginContext,
+    context: EnigmaPluginContext
   ): Promise<{
     pluginA: DebugResult;
     pluginB: DebugResult;
     comparison: Record<string, unknown>;
   }> {
-    this.logger.info("Comparing plugins", {
+    this.logger.info('Comparing plugins', {
       pluginA: pluginA.meta?.name,
       pluginB: pluginB.meta?.name,
       inputLength: input.length,
@@ -277,22 +271,18 @@ export class PluginDebugger {
     const comparison = {
       bothSucceeded: resultA.success && resultB.success,
       performanceDiff: resultB.executionTime - resultA.executionTime,
-      outputLengthDiff:
-        (resultB.output?.length || 0) - (resultA.output?.length || 0),
+      outputLengthDiff: (resultB.output?.length || 0) - (resultA.output?.length || 0),
       memoryDiff:
         resultA.memoryUsage && resultB.memoryUsage
           ? {
-              heapUsed:
-                resultB.memoryUsage.delta.heapUsed -
-                resultA.memoryUsage.delta.heapUsed,
-              rss:
-                resultB.memoryUsage.delta.rss - resultA.memoryUsage.delta.rss,
+              heapUsed: resultB.memoryUsage.delta.heapUsed - resultA.memoryUsage.delta.heapUsed,
+              rss: resultB.memoryUsage.delta.rss - resultA.memoryUsage.delta.rss,
             }
           : undefined,
       winner: this.determineWinner(resultA, resultB),
     };
 
-    this.logger.info("Plugin comparison completed", {
+    this.logger.info('Plugin comparison completed', {
       pluginA: resultA.pluginName,
       pluginB: resultB.pluginName,
       winner: comparison.winner,
@@ -307,7 +297,7 @@ export class PluginDebugger {
    */
   async loadTestCases(filePath: string): Promise<TestCase[]> {
     try {
-      const content = await fs.readFile(filePath, "utf-8");
+      const content = await fs.readFile(filePath, 'utf-8');
       const testCases = JSON.parse(content) as TestCase[];
 
       this.logger.info(`Loaded test cases from ${filePath}`, {
@@ -329,18 +319,18 @@ export class PluginDebugger {
   generateDefaultTestCases(): TestCase[] {
     return [
       {
-        name: "empty-input",
-        description: "Test with empty CSS input",
-        input: "",
+        name: 'empty-input',
+        description: 'Test with empty CSS input',
+        input: '',
       },
       {
-        name: "simple-css",
-        description: "Test with simple CSS rules",
-        input: ".test { color: red; background: blue; }",
+        name: 'simple-css',
+        description: 'Test with simple CSS rules',
+        input: '.test { color: red; background: blue; }',
       },
       {
-        name: "complex-css",
-        description: "Test with complex CSS including media queries",
+        name: 'complex-css',
+        description: 'Test with complex CSS including media queries',
         input: `
           .header { display: flex; }
           @media (max-width: 768px) {
@@ -350,15 +340,15 @@ export class PluginDebugger {
         `,
       },
       {
-        name: "css-with-comments",
-        description: "Test CSS with comments",
+        name: 'css-with-comments',
+        description: 'Test CSS with comments',
         input:
-          "/* Header styles */ .header { color: blue; } /* Footer styles */ .footer { color: red; }",
+          '/* Header styles */ .header { color: blue; } /* Footer styles */ .footer { color: red; }',
       },
       {
-        name: "malformed-css",
-        description: "Test with malformed CSS",
-        input: ".test { color: red background: blue",
+        name: 'malformed-css',
+        description: 'Test with malformed CSS',
+        input: '.test { color: red background: blue',
         shouldFail: true,
       },
     ];
@@ -367,16 +357,13 @@ export class PluginDebugger {
   /**
    * Save debug result to file
    */
-  private async saveDebugResult(
-    result: DebugResult,
-    input: string,
-  ): Promise<void> {
+  private async saveDebugResult(result: DebugResult, input: string): Promise<void> {
     if (!this.options.outputDir) return;
 
     try {
       await fs.mkdir(this.options.outputDir, { recursive: true });
 
-      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
       const filename = `${result.pluginName}-${timestamp}.json`;
       const filepath = path.join(this.options.outputDir, filename);
 
@@ -389,7 +376,7 @@ export class PluginDebugger {
       await fs.writeFile(filepath, JSON.stringify(debugData, null, 2));
       this.logger.debug(`Debug result saved to ${filepath}`);
     } catch (error) {
-      this.logger.error("Failed to save debug result", { error });
+      this.logger.error('Failed to save debug result', { error });
     }
   }
 
@@ -400,14 +387,14 @@ export class PluginDebugger {
     plugin: EnigmaPlugin,
     testCases: TestCase[],
     results: DebugResult[],
-    summary: Record<string, unknown>,
+    summary: Record<string, unknown>
   ): Promise<void> {
     if (!this.options.outputDir) return;
 
     try {
       await fs.mkdir(this.options.outputDir, { recursive: true });
 
-      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
       const filename = `test-suite-${plugin.meta?.name}-${timestamp}.json`;
       const filepath = path.join(this.options.outputDir, filename);
 
@@ -426,7 +413,7 @@ export class PluginDebugger {
       await fs.writeFile(filepath, JSON.stringify(suiteData, null, 2));
       this.logger.debug(`Test suite results saved to ${filepath}`);
     } catch (error) {
-      this.logger.error("Failed to save test suite results", { error });
+      this.logger.error('Failed to save test suite results', { error });
     }
   }
 
@@ -437,10 +424,7 @@ export class PluginDebugger {
     const total = results.length;
     const successful = results.filter((r) => r.success).length;
     const failed = total - successful;
-    const totalExecutionTime = results.reduce(
-      (sum, r) => sum + r.executionTime,
-      0,
-    );
+    const totalExecutionTime = results.reduce((sum, r) => sum + r.executionTime, 0);
     const avgExecutionTime = total > 0 ? totalExecutionTime / total : 0;
 
     return {
@@ -460,7 +444,7 @@ export class PluginDebugger {
   private determineWinner(resultA: DebugResult, resultB: DebugResult): string {
     // Both failed
     if (!resultA.success && !resultB.success) {
-      return "both-failed";
+      return 'both-failed';
     }
 
     // Only one succeeded
@@ -477,7 +461,7 @@ export class PluginDebugger {
 
     if (scoreA > scoreB) return resultA.pluginName;
     if (scoreB > scoreA) return resultB.pluginName;
-    return "tie";
+    return 'tie';
   }
 
   /**
@@ -506,9 +490,7 @@ export class PluginDebugger {
 /**
  * Create a new plugin debugger instance
  */
-export function createPluginDebugger(
-  options: DebugOptions = {},
-): PluginDebugger {
+export function createPluginDebugger(options: DebugOptions = {}): PluginDebugger {
   return new PluginDebugger(options);
 }
 
@@ -518,13 +500,13 @@ export function createPluginDebugger(
 export async function quickTestPlugin(
   plugin: EnigmaPlugin,
   css: string,
-  projectPath: string = process.cwd(),
+  projectPath: string = process.cwd()
 ): Promise<DebugResult> {
   const pluginDebugger = createPluginDebugger({ verbose: true });
 
   const context: EnigmaPluginContext = {
     projectPath,
-    filePath: "test.css",
+    filePath: 'test.css',
     options: {},
     utils: {} as any, // Simplified for testing
   };

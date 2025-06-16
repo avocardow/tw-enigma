@@ -12,15 +12,15 @@
  * transform stream chaining, and progress tracking for long operations.
  */
 
-import { Transform, Readable, Writable, pipeline } from "stream";
-import { createReadStream } from "fs";
-import { EventEmitter } from "events";
-import { performance } from "perf_hooks";
-import { promisify } from "util";
-import { createLogger } from "../utils/logger";
-import type { StreamConfig, PerformanceMetrics } from "./config";
+import { Transform, Readable, Writable, pipeline } from 'stream';
+import { createReadStream } from 'fs';
+import { EventEmitter } from 'events';
+import { performance } from 'perf_hooks';
+import { promisify } from 'util';
+import { createLogger } from '../utils/logger';
+import type { StreamConfig, PerformanceMetrics } from './config';
 
-const logger = createLogger("StreamOptimizer");
+const logger = createLogger('StreamOptimizer');
 const pipelineAsync = promisify(pipeline);
 
 /**
@@ -96,7 +96,7 @@ export class StreamOptimizer extends EventEmitter {
       ...config,
     };
 
-    logger.info("StreamOptimizer initialized", {
+    logger.info('StreamOptimizer initialized', {
       highWaterMark: this.config.highWaterMark,
       chunkSize: this.config.chunkSize,
       maxConcurrentStreams: this.config.maxConcurrentStreams,
@@ -109,7 +109,7 @@ export class StreamOptimizer extends EventEmitter {
   async processFile<T = string>(
     filePath: string,
     transforms: Array<(chunk: Buffer | string) => Promise<T> | T>,
-    options: StreamProcessingOptions = {},
+    options: StreamProcessingOptions = {}
   ): Promise<StreamResult<T[]>> {
     const streamId = `file-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const startTime = performance.now();
@@ -127,7 +127,7 @@ export class StreamOptimizer extends EventEmitter {
     this.activeStreams.set(streamId, stats);
 
     try {
-      logger.debug("Starting file stream processing", {
+      logger.debug('Starting file stream processing', {
         streamId,
         filePath,
         transforms: transforms.length,
@@ -146,7 +146,7 @@ export class StreamOptimizer extends EventEmitter {
       const transformStream = this.createTransformChain(transforms, {
         ...options,
         onProgress: (progress) => {
-          this.emit("progress", { streamId, progress });
+          this.emit('progress', { streamId, progress });
         },
         onStats: (newStats) => {
           Object.assign(stats, newStats);
@@ -165,12 +165,7 @@ export class StreamOptimizer extends EventEmitter {
 
       // Monitor backpressure
       if (this.config.enableBackpressure) {
-        this.setupBackpressureMonitoring(
-          readStream,
-          transformStream,
-          writeStream,
-          stats,
-        );
+        this.setupBackpressureMonitoring(readStream, transformStream, writeStream, stats);
       }
 
       // Execute stream pipeline
@@ -183,7 +178,7 @@ export class StreamOptimizer extends EventEmitter {
 
       this.activeStreams.delete(streamId);
 
-      logger.info("File stream processing completed", {
+      logger.info('File stream processing completed', {
         streamId,
         filePath,
         bytesProcessed: stats.bytesProcessed,
@@ -202,7 +197,7 @@ export class StreamOptimizer extends EventEmitter {
       stats.endTime = performance.now();
       this.activeStreams.delete(streamId);
 
-      logger.error("File stream processing failed", {
+      logger.error('File stream processing failed', {
         streamId,
         filePath,
         error: error instanceof Error ? error.message : String(error),
@@ -222,7 +217,7 @@ export class StreamOptimizer extends EventEmitter {
   async processTextStream(
     text: string,
     processor: (chunk: string) => Promise<string> | string,
-    options: StreamProcessingOptions = {},
+    options: StreamProcessingOptions = {}
   ): Promise<StreamResult<string>> {
     const streamId = `text-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const chunkSize = options.chunkSize || this.config.chunkSize;
@@ -241,13 +236,13 @@ export class StreamOptimizer extends EventEmitter {
     this.activeStreams.set(streamId, stats);
 
     try {
-      logger.debug("Starting text stream processing", {
+      logger.debug('Starting text stream processing', {
         streamId,
         textLength: text.length,
         chunkSize,
       });
 
-      let result = "";
+      let result = '';
       const totalChunks = Math.ceil(text.length / chunkSize);
 
       // Create readable stream from text chunks
@@ -277,11 +272,9 @@ export class StreamOptimizer extends EventEmitter {
                 percentComplete: (stats.itemsProcessed / totalChunks) * 100,
                 estimatedTimeRemaining: this.calculateETA(stats, totalChunks),
                 currentThroughput: stats.throughput,
-                averageThroughput:
-                  stats.bytesProcessed /
-                  ((performance.now() - startTime) / 1000),
+                averageThroughput: stats.bytesProcessed / ((performance.now() - startTime) / 1000),
               };
-              this.emit("progress", { streamId, progress });
+              this.emit('progress', { streamId, progress });
             }
 
             callback(null, processed);
@@ -317,7 +310,7 @@ export class StreamOptimizer extends EventEmitter {
 
       this.activeStreams.delete(streamId);
 
-      logger.info("Text stream processing completed", {
+      logger.info('Text stream processing completed', {
         streamId,
         inputLength: text.length,
         outputLength: result.length,
@@ -335,7 +328,7 @@ export class StreamOptimizer extends EventEmitter {
       stats.endTime = performance.now();
       this.activeStreams.delete(streamId);
 
-      logger.error("Text stream processing failed", {
+      logger.error('Text stream processing failed', {
         streamId,
         error: error instanceof Error ? error.message : String(error),
       });
@@ -354,12 +347,12 @@ export class StreamOptimizer extends EventEmitter {
   async processBatchStream<T>(
     filePaths: string[],
     processor: (filePath: string, content: Buffer) => Promise<T> | T,
-    options: StreamProcessingOptions = {},
+    options: StreamProcessingOptions = {}
   ): Promise<StreamResult<T[]>> {
     const streamId = `batch-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const concurrency = Math.min(
       options.maxConcurrentStreams || this.config.maxConcurrentStreams,
-      filePaths.length,
+      filePaths.length
     );
 
     const startTime = performance.now();
@@ -376,7 +369,7 @@ export class StreamOptimizer extends EventEmitter {
     this.activeStreams.set(streamId, stats);
 
     try {
-      logger.info("Starting batch stream processing", {
+      logger.info('Starting batch stream processing', {
         streamId,
         totalFiles: filePaths.length,
         concurrency,
@@ -391,11 +384,7 @@ export class StreamOptimizer extends EventEmitter {
         const batch = filePaths.slice(i, i + concurrency);
         const batchPromises = batch.map(async (filePath, _batchIndex) => {
           try {
-            const result = await this.processFileWithLimiter(
-              filePath,
-              processor,
-              options,
-            );
+            const result = await this.processFileWithLimiter(filePath, processor, options);
             stats.itemsProcessed++;
             completedFiles++;
 
@@ -406,22 +395,17 @@ export class StreamOptimizer extends EventEmitter {
                 totalItems: filePaths.length,
                 processedBytes: stats.bytesProcessed,
                 percentComplete: (completedFiles / filePaths.length) * 100,
-                estimatedTimeRemaining: this.calculateETA(
-                  stats,
-                  filePaths.length,
-                ),
+                estimatedTimeRemaining: this.calculateETA(stats, filePaths.length),
                 currentThroughput: stats.throughput,
-                averageThroughput:
-                  stats.bytesProcessed /
-                  ((performance.now() - startTime) / 1000),
+                averageThroughput: stats.bytesProcessed / ((performance.now() - startTime) / 1000),
               };
-              this.emit("progress", { streamId, progress });
+              this.emit('progress', { streamId, progress });
             }
 
             return { success: true as const, result, filePath };
           } catch (error) {
             stats.errorCount++;
-            logger.error("File processing failed in batch", {
+            logger.error('File processing failed in batch', {
               filePath,
               error: error instanceof Error ? error.message : String(error),
             });
@@ -433,24 +417,20 @@ export class StreamOptimizer extends EventEmitter {
 
         // Process batch results
         batchResults.forEach((settledResult, _batchIndex) => {
-          if (settledResult.status === "fulfilled") {
+          if (settledResult.status === 'fulfilled') {
             const value = settledResult.value;
             if (value.success) {
               results.push(value.result);
             } else {
               stats.errorCount++;
               errors.push(
-                value.error instanceof Error
-                  ? value.error
-                  : new Error(String(value.error)),
+                value.error instanceof Error ? value.error : new Error(String(value.error))
               );
             }
           } else {
             // Promise.allSettled rejection (shouldn't happen with our error handling)
             stats.errorCount++;
-            const error = new Error(
-              `Batch processing failed: ${settledResult.reason}`,
-            );
+            const error = new Error(`Batch processing failed: ${settledResult.reason}`);
             errors.push(error);
           }
         });
@@ -463,7 +443,7 @@ export class StreamOptimizer extends EventEmitter {
 
       this.activeStreams.delete(streamId);
 
-      logger.info("Batch stream processing completed", {
+      logger.info('Batch stream processing completed', {
         streamId,
         totalFiles: filePaths.length,
         successfulFiles: results.length,
@@ -482,7 +462,7 @@ export class StreamOptimizer extends EventEmitter {
       stats.endTime = performance.now();
       this.activeStreams.delete(streamId);
 
-      logger.error("Batch stream processing failed", {
+      logger.error('Batch stream processing failed', {
         streamId,
         error: error instanceof Error ? error.message : String(error),
       });
@@ -507,18 +487,11 @@ export class StreamOptimizer extends EventEmitter {
    */
   getOverallMetrics(): PerformanceMetrics {
     const allStats = Array.from(this.activeStreams.values());
-    const totalItems = allStats.reduce(
-      (sum, stat) => sum + stat.itemsProcessed,
-      0,
-    );
-    const totalErrors = allStats.reduce(
-      (sum, stat) => sum + stat.errorCount,
-      0,
-    );
+    const totalItems = allStats.reduce((sum, stat) => sum + stat.itemsProcessed, 0);
+    const totalErrors = allStats.reduce((sum, stat) => sum + stat.errorCount, 0);
     const avgThroughput =
       allStats.length > 0
-        ? allStats.reduce((sum, stat) => sum + stat.throughput, 0) /
-          allStats.length
+        ? allStats.reduce((sum, stat) => sum + stat.throughput, 0) / allStats.length
         : 0;
 
     return {
@@ -538,8 +511,7 @@ export class StreamOptimizer extends EventEmitter {
       cacheSize: 0,
       cacheHitRate: 0,
       cpuUsage: 0,
-      memoryUsage:
-        process.memoryUsage().heapUsed / process.memoryUsage().heapTotal,
+      memoryUsage: process.memoryUsage().heapUsed / process.memoryUsage().heapTotal,
       eventLoopLag: 0,
       throughput: avgThroughput,
       latency: 0,
@@ -556,7 +528,7 @@ export class StreamOptimizer extends EventEmitter {
     options: StreamProcessingOptions & {
       onProgress?: (progress: StreamProgress) => void;
       onStats?: (stats: Partial<StreamStats>) => void;
-    },
+    }
   ): Transform {
     return new Transform({
       objectMode: true,
@@ -593,15 +565,15 @@ export class StreamOptimizer extends EventEmitter {
     readStream: Readable,
     transformStream: Transform,
     writeStream: Writable,
-    stats: StreamStats,
+    stats: StreamStats
   ): void {
     const monitors = [readStream, transformStream, writeStream];
 
     monitors.forEach((stream, index) => {
-      stream.on("drain", () => {
+      stream.on('drain', () => {
         stats.backpressureEvents++;
-        this.emit("backpressure", {
-          streamType: ["read", "transform", "write"][index],
+        this.emit('backpressure', {
+          streamType: ['read', 'transform', 'write'][index],
           timestamp: Date.now(),
         });
       });
@@ -614,7 +586,7 @@ export class StreamOptimizer extends EventEmitter {
   private async processFileWithLimiter<T>(
     filePath: string,
     processor: (filePath: string, content: Buffer) => Promise<T> | T,
-    options: StreamProcessingOptions,
+    options: StreamProcessingOptions
   ): Promise<T> {
     return new Promise((resolve, reject) => {
       const chunks: Buffer[] = [];
@@ -622,11 +594,11 @@ export class StreamOptimizer extends EventEmitter {
         highWaterMark: options.highWaterMark || this.config.highWaterMark,
       });
 
-      readStream.on("data", (chunk: string | Buffer) => {
+      readStream.on('data', (chunk: string | Buffer) => {
         chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
       });
 
-      readStream.on("end", async () => {
+      readStream.on('end', async () => {
         try {
           const content = Buffer.concat(chunks);
           const result = await processor(filePath, content);
@@ -636,7 +608,7 @@ export class StreamOptimizer extends EventEmitter {
         }
       });
 
-      readStream.on("error", reject);
+      readStream.on('error', reject);
     });
   }
 

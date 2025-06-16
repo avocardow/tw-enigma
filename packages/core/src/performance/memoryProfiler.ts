@@ -22,11 +22,11 @@
  * - Memory budget enforcement
  */
 
-import { PerformanceObserver } from "perf_hooks";
-import { EventEmitter } from "events";
-import v8 from "v8";
-import process from "process";
-import type { MemoryConfig } from "./config";
+import { PerformanceObserver } from 'perf_hooks';
+import { EventEmitter } from 'events';
+import v8 from 'v8';
+import process from 'process';
+import type { MemoryConfig } from './config';
 
 /**
  * Memory usage snapshot
@@ -56,12 +56,8 @@ interface MemorySnapshot {
  * Memory leak detection result
  */
 interface MemoryLeakInfo {
-  type:
-    | "gradual_increase"
-    | "sudden_spike"
-    | "memory_not_released"
-    | "gc_ineffective";
-  severity: "low" | "medium" | "high" | "critical";
+  type: 'gradual_increase' | 'sudden_spike' | 'memory_not_released' | 'gc_ineffective';
+  severity: 'low' | 'medium' | 'high' | 'critical';
   description: string;
   memoryIncrease: number; // Bytes
   timeframe: number; // Milliseconds
@@ -105,7 +101,7 @@ interface ProfilingSession {
  */
 interface GCStats {
   timestamp: number;
-  type: "minor" | "major" | "incremental";
+  type: 'minor' | 'major' | 'incremental';
   duration: number; // Milliseconds
   memoryBefore: number;
   memoryAfter: number;
@@ -117,13 +113,8 @@ interface GCStats {
  * Memory optimization recommendations
  */
 interface MemoryRecommendation {
-  type:
-    | "gc_tuning"
-    | "object_pooling"
-    | "memory_leak"
-    | "buffer_optimization"
-    | "v8_flags";
-  priority: "low" | "medium" | "high" | "critical";
+  type: 'gc_tuning' | 'object_pooling' | 'memory_leak' | 'buffer_optimization' | 'v8_flags';
+  priority: 'low' | 'medium' | 'high' | 'critical';
   description: string;
   action: string;
   estimatedImprovement: string;
@@ -187,7 +178,7 @@ export class MemoryProfiler extends EventEmitter {
     this.memoryBaseline = this.takeMemorySnapshot();
     session.snapshots.push(this.memoryBaseline);
 
-    this.emit("profilingStarted", id);
+    this.emit('profilingStarted', id);
     return id;
   }
 
@@ -215,7 +206,7 @@ export class MemoryProfiler extends EventEmitter {
       this.activeSession = null;
     }
 
-    this.emit("profilingStopped", id, session);
+    this.emit('profilingStopped', id, session);
     return session;
   }
 
@@ -257,14 +248,14 @@ export class MemoryProfiler extends EventEmitter {
       const after = this.takeMemorySnapshot();
 
       const freed = before.heapUsed - after.heapUsed;
-      this.emit("gcForced", { before, after, freed });
+      this.emit('gcForced', { before, after, freed });
 
       return true;
     }
 
     this.emit(
-      "warning",
-      "GC not available. Start Node.js with --expose-gc flag to enable forced GC.",
+      'warning',
+      'GC not available. Start Node.js with --expose-gc flag to enable forced GC.'
     );
     return false;
   }
@@ -276,7 +267,7 @@ export class MemoryProfiler extends EventEmitter {
     name: string,
     factory: () => T,
     reset: (obj: T) => void,
-    maxSize = 100,
+    maxSize = 100
   ): ObjectPool<T> {
     const pool: ObjectPool<T> = {
       name,
@@ -292,7 +283,7 @@ export class MemoryProfiler extends EventEmitter {
     };
 
     this.objectPools.set(name, pool);
-    this.emit("poolCreated", name, maxSize);
+    this.emit('poolCreated', name, maxSize);
 
     return pool;
   }
@@ -316,8 +307,7 @@ export class MemoryProfiler extends EventEmitter {
     }
 
     pool.inUse.add(obj);
-    pool.reuseRate =
-      (pool.totalReused / (pool.totalCreated + pool.totalReused)) * 100;
+    pool.reuseRate = (pool.totalReused / (pool.totalCreated + pool.totalReused)) * 100;
 
     return obj;
   }
@@ -373,7 +363,7 @@ export class MemoryProfiler extends EventEmitter {
   getMemoryStatus(): {
     current: MemorySnapshot;
     usage: number; // Percentage of budget
-    pressure: "low" | "medium" | "high" | "critical";
+    pressure: 'low' | 'medium' | 'high' | 'critical';
     recommendations: MemoryRecommendation[];
     pools: Map<string, ObjectPool<any>>;
     leaks: MemoryLeakInfo[];
@@ -381,11 +371,11 @@ export class MemoryProfiler extends EventEmitter {
     const current = this.takeMemorySnapshot();
     const usage = (current.heapUsed / this.config.memoryBudget) * 100;
 
-    let pressure: "low" | "medium" | "high" | "critical";
-    if (usage > 90) pressure = "critical";
-    else if (usage > 75) pressure = "high";
-    else if (usage > 50) pressure = "medium";
-    else pressure = "low";
+    let pressure: 'low' | 'medium' | 'high' | 'critical';
+    if (usage > 90) pressure = 'critical';
+    else if (usage > 75) pressure = 'high';
+    else if (usage > 50) pressure = 'medium';
+    else pressure = 'low';
 
     return {
       current,
@@ -403,10 +393,10 @@ export class MemoryProfiler extends EventEmitter {
   generateHeapSnapshot(): string {
     try {
       const snapshot = v8.writeHeapSnapshot();
-      this.emit("heapSnapshotGenerated", snapshot);
+      this.emit('heapSnapshotGenerated', snapshot);
       return snapshot;
     } catch (error) {
-      this.emit("error", { type: "heap_snapshot_error", error });
+      this.emit('error', { type: 'heap_snapshot_error', error });
       throw error;
     }
   }
@@ -424,31 +414,21 @@ export class MemoryProfiler extends EventEmitter {
     const settings: Partial<MemoryConfig> = {};
 
     // Analyze heap usage patterns
-    const heapUtilization =
-      (current.usedHeapSize / current.totalHeapSize) * 100;
+    const heapUtilization = (current.usedHeapSize / current.totalHeapSize) * 100;
 
     if (heapUtilization > 80) {
-      settings.maxOldSpaceSize = Math.max(
-        this.config.maxOldSpaceSize * 1.5,
-        2048,
-      );
-      recommendations.push(
-        "Increase old space size due to high heap utilization",
-      );
+      settings.maxOldSpaceSize = Math.max(this.config.maxOldSpaceSize * 1.5, 2048);
+      recommendations.push('Increase old space size due to high heap utilization');
     }
 
     if (this.lastGCStats.length > 0) {
       const avgGCTime =
-        this.lastGCStats.reduce((sum, gc) => sum + gc.duration, 0) /
-        this.lastGCStats.length;
+        this.lastGCStats.reduce((sum, gc) => sum + gc.duration, 0) / this.lastGCStats.length;
 
       if (avgGCTime > 50) {
         // GC taking more than 50ms on average
-        settings.maxSemiSpaceSize = Math.min(
-          this.config.maxSemiSpaceSize * 2,
-          256,
-        );
-        recommendations.push("Increase semi-space size to reduce GC frequency");
+        settings.maxSemiSpaceSize = Math.min(this.config.maxSemiSpaceSize * 2, 256);
+        recommendations.push('Increase semi-space size to reduce GC frequency');
       }
     }
 
@@ -470,16 +450,16 @@ export class MemoryProfiler extends EventEmitter {
         const entries = list.getEntries();
 
         for (const entry of entries) {
-          if (entry.entryType === "gc") {
+          if (entry.entryType === 'gc') {
             const gcStats: GCStats = {
               timestamp: Date.now(),
               type:
                 entry.detail &&
-                typeof entry.detail === "object" &&
-                "kind" in entry.detail &&
-                entry.detail.kind === "minor"
-                  ? "minor"
-                  : "major",
+                typeof entry.detail === 'object' &&
+                'kind' in entry.detail &&
+                entry.detail.kind === 'minor'
+                  ? 'minor'
+                  : 'major',
               duration: entry.duration,
               memoryBefore: 0, // Will be filled by snapshot comparison
               memoryAfter: 0,
@@ -496,17 +476,14 @@ export class MemoryProfiler extends EventEmitter {
               this.activeSession.gcStats.push(gcStats);
             }
 
-            this.emit("gcOccurred", gcStats);
+            this.emit('gcOccurred', gcStats);
           }
         }
       });
 
-      this.gcObserver.observe({ entryTypes: ["gc"] });
+      this.gcObserver.observe({ entryTypes: ['gc'] });
     } catch {
-      this.emit(
-        "warning",
-        "GC observation not available in this Node.js version",
-      );
+      this.emit('warning', 'GC observation not available in this Node.js version');
     }
   }
 
@@ -531,14 +508,14 @@ export class MemoryProfiler extends EventEmitter {
       this.checkMemoryPressure(snapshot);
 
       // Emit memory update
-      this.emit("memoryUpdate", snapshot);
+      this.emit('memoryUpdate', snapshot);
     }, 5000); // Every 5 seconds
 
     // Start leak detection
     this.leakDetectionInterval = setInterval(() => {
       const leaks = this.detectMemoryLeaks();
       if (leaks.length > 0) {
-        this.emit("memoryLeaksDetected", leaks);
+        this.emit('memoryLeaksDetected', leaks);
       }
     }, 30000); // Every 30 seconds
   }
@@ -547,13 +524,10 @@ export class MemoryProfiler extends EventEmitter {
    * Set up process monitoring for memory events
    */
   private setupProcessMonitoring(): void {
-    process.on("warning", (warning) => {
-      if (
-        warning.name === "MaxListenersExceededWarning" ||
-        warning.message.includes("memory")
-      ) {
-        this.emit("memoryWarning", {
-          type: "process_warning",
+    process.on('warning', (warning) => {
+      if (warning.name === 'MaxListenersExceededWarning' || warning.message.includes('memory')) {
+        this.emit('memoryWarning', {
+          type: 'process_warning',
           message: warning.message,
           stack: warning.stack,
         });
@@ -561,12 +535,12 @@ export class MemoryProfiler extends EventEmitter {
     });
 
     // Monitor for process exit due to memory issues
-    process.on("exit", (code) => {
+    process.on('exit', (code) => {
       if (code === 134) {
         // SIGABRT - often memory related
-        this.emit("memoryWarning", {
-          type: "memory_exit",
-          message: "Process exiting with memory-related error code",
+        this.emit('memoryWarning', {
+          type: 'memory_exit',
+          message: 'Process exiting with memory-related error code',
           code,
         });
       }
@@ -583,10 +557,10 @@ export class MemoryProfiler extends EventEmitter {
     if (usage > this.config.gcThreshold && !this.memoryAlerts.has(alertKey)) {
       this.memoryAlerts.add(alertKey);
 
-      this.emit("memoryPressure", {
+      this.emit('memoryPressure', {
         usage,
         snapshot,
-        recommendation: usage > 90 ? "critical" : "high",
+        recommendation: usage > 90 ? 'critical' : 'high',
       });
 
       // Auto-trigger GC if enabled and available
@@ -613,16 +587,16 @@ export class MemoryProfiler extends EventEmitter {
     if (trend > 1024 * 1024) {
       // More than 1MB increase trend
       return {
-        type: "gradual_increase",
-        severity: trend > 10 * 1024 * 1024 ? "high" : "medium",
+        type: 'gradual_increase',
+        severity: trend > 10 * 1024 * 1024 ? 'high' : 'medium',
         description: `Gradual memory increase detected: ${this.formatBytes(trend)} over time`,
         memoryIncrease: trend,
         timeframe: recent[recent.length - 1].timestamp - recent[0].timestamp,
         recommendations: [
-          "Check for unclosed resources (files, streams, connections)",
-          "Look for growing caches or collections",
-          "Review event listeners for proper cleanup",
-          "Consider implementing object pooling",
+          'Check for unclosed resources (files, streams, connections)',
+          'Look for growing caches or collections',
+          'Review event listeners for proper cleanup',
+          'Consider implementing object pooling',
         ],
       };
     }
@@ -643,16 +617,16 @@ export class MemoryProfiler extends EventEmitter {
     if (increase > 50 * 1024 * 1024) {
       // More than 50MB increase
       return {
-        type: "sudden_spike",
-        severity: increase > 100 * 1024 * 1024 ? "critical" : "high",
+        type: 'sudden_spike',
+        severity: increase > 100 * 1024 * 1024 ? 'critical' : 'high',
         description: `Sudden memory spike detected: ${this.formatBytes(increase)}`,
         memoryIncrease: increase,
         timeframe: current.timestamp - previous.timestamp,
         recommendations: [
-          "Check recent code changes for memory-intensive operations",
-          "Review large object allocations",
-          "Consider streaming for large data processing",
-          "Implement chunking for bulk operations",
+          'Check recent code changes for memory-intensive operations',
+          'Review large object allocations',
+          'Consider streaming for large data processing',
+          'Implement chunking for bulk operations',
         ],
       };
     }
@@ -667,25 +641,20 @@ export class MemoryProfiler extends EventEmitter {
     if (this.lastGCStats.length < 3) return null;
 
     const recentGCs = this.lastGCStats.slice(-3);
-    const avgFreed =
-      recentGCs.reduce((sum, gc) => sum + gc.memoryFreed, 0) / recentGCs.length;
+    const avgFreed = recentGCs.reduce((sum, gc) => sum + gc.memoryFreed, 0) / recentGCs.length;
 
-    if (
-      avgFreed < 1024 * 1024 &&
-      recentGCs.every((gc) => gc.memoryFreed < 2 * 1024 * 1024)
-    ) {
+    if (avgFreed < 1024 * 1024 && recentGCs.every((gc) => gc.memoryFreed < 2 * 1024 * 1024)) {
       return {
-        type: "gc_ineffective",
-        severity: "medium",
-        description: "Garbage collection is not freeing significant memory",
+        type: 'gc_ineffective',
+        severity: 'medium',
+        description: 'Garbage collection is not freeing significant memory',
         memoryIncrease: 0,
-        timeframe:
-          recentGCs[recentGCs.length - 1].timestamp - recentGCs[0].timestamp,
+        timeframe: recentGCs[recentGCs.length - 1].timestamp - recentGCs[0].timestamp,
         recommendations: [
-          "Check for circular references preventing GC",
-          "Review large objects that may not be eligible for collection",
-          "Consider explicit memory cleanup in critical paths",
-          "Check for global variable accumulation",
+          'Check for circular references preventing GC',
+          'Review large objects that may not be eligible for collection',
+          'Consider explicit memory cleanup in critical paths',
+          'Check for global variable accumulation',
         ],
       };
     }
@@ -715,26 +684,23 @@ export class MemoryProfiler extends EventEmitter {
 
     if (usage > 80) {
       recommendations.push({
-        type: "memory_leak",
-        priority: "high",
-        description: "High memory usage detected",
-        action:
-          "Investigate potential memory leaks and optimize allocation patterns",
-        estimatedImprovement: "20-40% memory reduction",
-        implementation:
-          "Use heap profiling and review object lifecycle management",
+        type: 'memory_leak',
+        priority: 'high',
+        description: 'High memory usage detected',
+        action: 'Investigate potential memory leaks and optimize allocation patterns',
+        estimatedImprovement: '20-40% memory reduction',
+        implementation: 'Use heap profiling and review object lifecycle management',
       });
     }
 
     if (this.objectPools.size === 0 && this.config.enableObjectPooling) {
       recommendations.push({
-        type: "object_pooling",
-        priority: "medium",
-        description: "No object pools configured",
-        action: "Implement object pooling for frequently allocated objects",
-        estimatedImprovement: "10-25% memory reduction",
-        implementation:
-          "Create pools for common objects like CSS AST nodes, buffers",
+        type: 'object_pooling',
+        priority: 'medium',
+        description: 'No object pools configured',
+        action: 'Implement object pooling for frequently allocated objects',
+        estimatedImprovement: '10-25% memory reduction',
+        implementation: 'Create pools for common objects like CSS AST nodes, buffers',
       });
     }
 
@@ -753,16 +719,12 @@ export class MemoryProfiler extends EventEmitter {
       const increase = last.heapUsed - first.heapUsed;
 
       if (increase > 10 * 1024 * 1024) {
-        recommendations.push(
-          `Memory increased by ${this.formatBytes(increase)} during session`,
-        );
+        recommendations.push(`Memory increased by ${this.formatBytes(increase)} during session`);
       }
     }
 
     if (session.leaks.length > 0) {
-      recommendations.push(
-        `${session.leaks.length} potential memory leak(s) detected`,
-      );
+      recommendations.push(`${session.leaks.length} potential memory leak(s) detected`);
     }
 
     return recommendations;
@@ -772,7 +734,7 @@ export class MemoryProfiler extends EventEmitter {
    * Format bytes for human-readable output
    */
   private formatBytes(bytes: number): string {
-    const units = ["B", "KB", "MB", "GB"];
+    const units = ['B', 'KB', 'MB', 'GB'];
     let size = bytes;
     let unitIndex = 0;
 
@@ -814,9 +776,7 @@ let globalMemoryProfiler: MemoryProfiler | null = null;
 /**
  * Get or create global memory profiler
  */
-export function getGlobalMemoryProfiler(
-  config?: Partial<MemoryConfig>,
-): MemoryProfiler {
+export function getGlobalMemoryProfiler(config?: Partial<MemoryConfig>): MemoryProfiler {
   if (!globalMemoryProfiler) {
     globalMemoryProfiler = new MemoryProfiler(config);
   }

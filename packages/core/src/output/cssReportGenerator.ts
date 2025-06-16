@@ -5,11 +5,11 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import type { CssChunk } from "./cssChunker";
-import type { CssOutputConfig, PerformanceBudget } from "./cssOutputConfig";
-import type { AssetHash } from "./assetHasher";
+import type { CssChunk } from './cssChunker';
+import type { CssOutputConfig, PerformanceBudget } from './cssOutputConfig';
+import type { AssetHash } from './assetHasher';
 
-import type { CriticalCssResult } from "./criticalCssExtractor";
+import type { CriticalCssResult } from './criticalCssExtractor';
 
 /**
  * Performance metrics for CSS bundles
@@ -110,12 +110,7 @@ export interface GlobalPerformanceMetrics {
  */
 export interface BudgetViolation {
   /** Type of budget violated */
-  type:
-    | "bundle_size"
-    | "critical_css"
-    | "chunk_count"
-    | "load_time"
-    | "total_size";
+  type: 'bundle_size' | 'critical_css' | 'chunk_count' | 'load_time' | 'total_size';
 
   /** Actual value */
   actual: number;
@@ -124,7 +119,7 @@ export interface BudgetViolation {
   limit: number;
 
   /** Severity level */
-  severity: "warning" | "error";
+  severity: 'warning' | 'error';
 
   /** Description of violation */
   message: string;
@@ -138,15 +133,10 @@ export interface BudgetViolation {
  */
 export interface OptimizationRecommendation {
   /** Recommendation category */
-  category:
-    | "chunking"
-    | "compression"
-    | "critical_css"
-    | "caching"
-    | "delivery";
+  category: 'chunking' | 'compression' | 'critical_css' | 'caching' | 'delivery';
 
   /** Priority level */
-  priority: "low" | "medium" | "high";
+  priority: 'low' | 'medium' | 'high';
 
   /** Title of recommendation */
   title: string;
@@ -158,7 +148,7 @@ export interface OptimizationRecommendation {
   impact: string;
 
   /** Implementation complexity */
-  complexity: "simple" | "moderate" | "complex";
+  complexity: 'simple' | 'moderate' | 'complex';
 
   /** Implementation steps */
   steps: string[];
@@ -218,7 +208,7 @@ export interface ChunkAnalysisResult {
   compressedSize: number;
 
   /** Load priority */
-  priority: "critical" | "high" | "medium" | "low";
+  priority: 'critical' | 'high' | 'medium' | 'low';
 
   /** Dependencies */
   dependencies: string[];
@@ -259,17 +249,14 @@ export class CssReportGenerator {
     const bundleMetrics = this.calculateBundleMetrics(results);
     const globalMetrics = this.calculateGlobalMetrics(bundleMetrics);
     const budgetAnalysis = this.analyzeBudgetCompliance(globalMetrics);
-    const recommendations = this.generateRecommendations(
-      globalMetrics,
-      results,
-    );
+    const recommendations = this.generateRecommendations(globalMetrics, results);
     const chunkAnalysis = this.analyzeChunks(results.chunks);
 
     return {
       metadata: {
         timestamp: new Date().toISOString(),
-        version: "1.0.0",
-        environment: this.config.environment || "production",
+        version: '1.0.0',
+        environment: this.config.environment || 'production',
         configHash: this.generateConfigHash(),
       },
       metrics: globalMetrics,
@@ -296,21 +283,16 @@ export class CssReportGenerator {
     optimizationTime: number;
   }): BundlePerformanceMetrics[] {
     return results.bundles.map((bundle) => {
-      const bundleChunks = results.chunks.filter(
-        (chunk) => (chunk as any).bundleId === bundle.id,
-      );
+      const bundleChunks = results.chunks.filter((chunk) => (chunk as any).bundleId === bundle.id);
 
       const originalSize = bundle.content.length;
-      const optimizedSize = bundleChunks.reduce(
-        (sum, chunk) => sum + chunk.content.length,
-        0,
-      );
+      const optimizedSize = bundleChunks.reduce((sum, chunk) => sum + chunk.content.length, 0);
       const compressedSize = Math.round(optimizedSize * 0.3); // Estimate gzip compression
       const brotliSize = Math.round(optimizedSize * 0.25); // Estimate brotli compression
 
       const chunkSizes = bundleChunks.map((chunk) => chunk.content.length);
       const criticalCssSize = bundleChunks
-        .filter((chunk) => chunk.type === "critical")
+        .filter((chunk) => chunk.type === 'critical')
         .reduce((sum, chunk) => sum + chunk.content.length, 0);
 
       return {
@@ -322,32 +304,24 @@ export class CssReportGenerator {
         chunkCount: bundleChunks.length,
         averageChunkSize:
           chunkSizes.length > 0
-            ? Math.round(
-                chunkSizes.reduce((a, b) => a + b, 0) / chunkSizes.length,
-              )
+            ? Math.round(chunkSizes.reduce((a, b) => a + b, 0) / chunkSizes.length)
             : 0,
         maxChunkSize: chunkSizes.length > 0 ? Math.max(...chunkSizes) : 0,
         minChunkSize: chunkSizes.length > 0 ? Math.min(...chunkSizes) : 0,
         criticalCssSize,
-        estimatedLoadTime: this.estimateLoadTime(
-          compressedSize,
-          bundleChunks.length,
-        ),
+        estimatedLoadTime: this.estimateLoadTime(compressedSize, bundleChunks.length),
         compressionRatio: originalSize > 0 ? optimizedSize / originalSize : 1,
         optimizationTime: results.optimizationTime,
         ruleCount: bundle.rules?.length || 0,
         selectorCount:
           bundle.rules?.reduce(
             (sum: number, rule: any) => sum + (rule.selectors?.length || 0),
-            0,
+            0
           ) || 0,
         unusedRulesRemoved: Math.max(
           0,
           (bundle.rules?.length || 0) -
-            bundleChunks.reduce(
-              (sum, chunk) => sum + (chunk.rules?.length || 0),
-              0,
-            ),
+            bundleChunks.reduce((sum, chunk) => sum + (chunk.rules?.length || 0), 0)
         ),
         cacheEfficiency: this.calculateCacheEfficiency(bundleChunks),
       };
@@ -358,47 +332,35 @@ export class CssReportGenerator {
    * Calculate global performance metrics
    */
   private calculateGlobalMetrics(
-    bundleMetrics: BundlePerformanceMetrics[],
+    bundleMetrics: BundlePerformanceMetrics[]
   ): GlobalPerformanceMetrics {
-    const totalOriginalSize = bundleMetrics.reduce(
-      (sum, bundle) => sum + bundle.originalSize,
-      0,
-    );
-    const totalOptimizedSize = bundleMetrics.reduce(
-      (sum, bundle) => sum + bundle.optimizedSize,
-      0,
-    );
+    const totalOriginalSize = bundleMetrics.reduce((sum, bundle) => sum + bundle.originalSize, 0);
+    const totalOptimizedSize = bundleMetrics.reduce((sum, bundle) => sum + bundle.optimizedSize, 0);
     const totalCompressedSize = bundleMetrics.reduce(
       (sum, bundle) => sum + bundle.compressedSize,
-      0,
+      0
     );
-    const totalChunkCount = bundleMetrics.reduce(
-      (sum, bundle) => sum + bundle.chunkCount,
-      0,
-    );
+    const totalChunkCount = bundleMetrics.reduce((sum, bundle) => sum + bundle.chunkCount, 0);
     const totalCriticalCssSize = bundleMetrics.reduce(
       (sum, bundle) => sum + bundle.criticalCssSize,
-      0,
+      0
     );
     const totalOptimizationTime = bundleMetrics.reduce(
       (sum, bundle) => sum + bundle.optimizationTime,
-      0,
+      0
     );
 
     const averageLoadTime =
       bundleMetrics.length > 0
-        ? bundleMetrics.reduce(
-            (sum, bundle) => sum + bundle.estimatedLoadTime,
-            0,
-          ) / bundleMetrics.length
+        ? bundleMetrics.reduce((sum, bundle) => sum + bundle.estimatedLoadTime, 0) /
+          bundleMetrics.length
         : 0;
 
     const performanceScore = this.calculatePerformanceScore({
       totalCompressedSize,
       totalCriticalCssSize,
       averageLoadTime,
-      compressionRatio:
-        totalOriginalSize > 0 ? totalOptimizedSize / totalOriginalSize : 1,
+      compressionRatio: totalOriginalSize > 0 ? totalOptimizedSize / totalOriginalSize : 1,
     });
 
     return {
@@ -407,8 +369,7 @@ export class CssReportGenerator {
       totalCompressedSize,
       bundleCount: bundleMetrics.length,
       totalChunkCount,
-      overallCompressionRatio:
-        totalOriginalSize > 0 ? totalOptimizedSize / totalOriginalSize : 1,
+      overallCompressionRatio: totalOriginalSize > 0 ? totalOptimizedSize / totalOriginalSize : 1,
       totalCriticalCssSize,
       averageLoadTime,
       totalOptimizationTime,
@@ -437,18 +398,15 @@ export class CssReportGenerator {
     metrics.bundles.forEach((bundle) => {
       if (bundle.compressedSize > budget.maxTotalSize) {
         violations.push({
-          type: "bundle_size",
+          type: 'bundle_size',
           actual: bundle.compressedSize,
           limit: budget.maxTotalSize,
-          severity:
-            bundle.compressedSize > budget.maxTotalSize * 1.5
-              ? "error"
-              : "warning",
+          severity: bundle.compressedSize > budget.maxTotalSize * 1.5 ? 'error' : 'warning',
           message: `Bundle ${bundle.bundleId} exceeds size limit`,
           recommendations: [
-            "Enable more aggressive chunking",
-            "Remove unused CSS rules",
-            "Consider lazy loading non-critical styles",
+            'Enable more aggressive chunking',
+            'Remove unused CSS rules',
+            'Consider lazy loading non-critical styles',
           ],
         });
       }
@@ -457,18 +415,16 @@ export class CssReportGenerator {
     // Check critical CSS violations
     if (metrics.totalCriticalCssSize > budget.maxCriticalCssSize) {
       violations.push({
-        type: "critical_css",
+        type: 'critical_css',
         actual: metrics.totalCriticalCssSize,
         limit: budget.maxCriticalCssSize,
         severity:
-          metrics.totalCriticalCssSize > budget.maxCriticalCssSize * 1.3
-            ? "error"
-            : "warning",
-        message: "Critical CSS size exceeds limit",
+          metrics.totalCriticalCssSize > budget.maxCriticalCssSize * 1.3 ? 'error' : 'warning',
+        message: 'Critical CSS size exceeds limit',
         recommendations: [
-          "Reduce critical CSS scope",
-          "Use more aggressive critical CSS extraction",
-          "Inline only above-the-fold styles",
+          'Reduce critical CSS scope',
+          'Use more aggressive critical CSS extraction',
+          'Inline only above-the-fold styles',
         ],
       });
     }
@@ -476,15 +432,15 @@ export class CssReportGenerator {
     // Check chunk count violations
     if (metrics.totalChunkCount > budget.maxChunks) {
       violations.push({
-        type: "chunk_count",
+        type: 'chunk_count',
         actual: metrics.totalChunkCount,
         limit: budget.maxChunks,
-        severity: "warning",
-        message: "Too many chunks may impact performance",
+        severity: 'warning',
+        message: 'Too many chunks may impact performance',
         recommendations: [
-          "Increase minimum chunk size",
-          "Merge similar chunks",
-          "Consider reducing chunking granularity",
+          'Increase minimum chunk size',
+          'Merge similar chunks',
+          'Consider reducing chunking granularity',
         ],
       });
     }
@@ -492,42 +448,37 @@ export class CssReportGenerator {
     // Check load time violations
     if (metrics.averageLoadTime > budget.estimatedLoadTime) {
       violations.push({
-        type: "load_time",
+        type: 'load_time',
         actual: metrics.averageLoadTime,
         limit: budget.estimatedLoadTime,
-        severity: "error",
-        message: "Estimated load time exceeds target",
+        severity: 'error',
+        message: 'Estimated load time exceeds target',
         recommendations: [
-          "Enable HTTP/2 push for critical resources",
-          "Optimize compression settings",
-          "Implement resource preloading",
+          'Enable HTTP/2 push for critical resources',
+          'Optimize compression settings',
+          'Implement resource preloading',
         ],
       });
     }
 
     // Check total size violations
-    if (
-      metrics.totalCompressedSize >
-      budget.maxTotalSize
-    ) {
+    if (metrics.totalCompressedSize > budget.maxTotalSize) {
       violations.push({
-        type: "total_size",
+        type: 'total_size',
         actual: metrics.totalCompressedSize,
         limit: budget.maxTotalSize,
-        severity: "error",
-        message: "Total CSS size exceeds limit",
+        severity: 'error',
+        message: 'Total CSS size exceeds limit',
         recommendations: [
-          "Remove unused CSS across all bundles",
-          "Enable more aggressive minification",
-          "Consider CSS-in-JS for dynamic styles",
+          'Remove unused CSS across all bundles',
+          'Enable more aggressive minification',
+          'Consider CSS-in-JS for dynamic styles',
         ],
       });
     }
 
-    const errorCount = violations.filter((v) => v.severity === "error").length;
-    const warningCount = violations.filter(
-      (v) => v.severity === "warning",
-    ).length;
+    const errorCount = violations.filter((v) => v.severity === 'error').length;
+    const warningCount = violations.filter((v) => v.severity === 'warning').length;
     const score = Math.max(0, 100 - errorCount * 25 - warningCount * 10);
 
     return {
@@ -542,24 +493,24 @@ export class CssReportGenerator {
    */
   private generateRecommendations(
     metrics: GlobalPerformanceMetrics,
-    _results: any,
+    _results: any
   ): OptimizationRecommendation[] {
     const recommendations: OptimizationRecommendation[] = [];
 
     // Chunking recommendations
     if (metrics.overallCompressionRatio > 0.8) {
       recommendations.push({
-        category: "chunking",
-        priority: "high",
-        title: "Improve CSS Chunking Strategy",
+        category: 'chunking',
+        priority: 'high',
+        title: 'Improve CSS Chunking Strategy',
         description:
-          "Large bundles detected. Better chunking can improve caching and loading performance.",
+          'Large bundles detected. Better chunking can improve caching and loading performance.',
         impact: `Potential 20-40% improvement in cache efficiency`,
-        complexity: "moderate",
+        complexity: 'moderate',
         steps: [
-          "Enable route-based chunking for SPA applications",
-          "Implement component-based chunking for better cache granularity",
-          "Configure vendor CSS separation",
+          'Enable route-based chunking for SPA applications',
+          'Implement component-based chunking for better cache granularity',
+          'Configure vendor CSS separation',
         ],
       });
     }
@@ -567,17 +518,16 @@ export class CssReportGenerator {
     // Compression recommendations
     if (metrics.overallCompressionRatio > 0.7) {
       recommendations.push({
-        category: "compression",
-        priority: "medium",
-        title: "Enable Advanced Compression",
-        description:
-          "CSS could benefit from more aggressive compression settings.",
+        category: 'compression',
+        priority: 'medium',
+        title: 'Enable Advanced Compression',
+        description: 'CSS could benefit from more aggressive compression settings.',
         impact: `Potential 15-30% size reduction`,
-        complexity: "simple",
+        complexity: 'simple',
         steps: [
-          "Enable Brotli compression for modern browsers",
-          "Increase compression level for production builds",
-          "Remove unnecessary whitespace and comments",
+          'Enable Brotli compression for modern browsers',
+          'Increase compression level for production builds',
+          'Remove unnecessary whitespace and comments',
         ],
       });
     }
@@ -585,38 +535,36 @@ export class CssReportGenerator {
     // Critical CSS recommendations
     if (metrics.totalCriticalCssSize === 0) {
       recommendations.push({
-        category: "critical_css",
-        priority: "high",
-        title: "Implement Critical CSS Extraction",
+        category: 'critical_css',
+        priority: 'high',
+        title: 'Implement Critical CSS Extraction',
         description:
-          "No critical CSS detected. Implementing critical CSS can significantly improve perceived performance.",
+          'No critical CSS detected. Implementing critical CSS can significantly improve perceived performance.',
         impact: `30-50% faster first contentful paint`,
-        complexity: "moderate",
+        complexity: 'moderate',
         steps: [
-          "Configure critical CSS extraction for main routes",
-          "Inline critical CSS in HTML documents",
-          "Lazy load non-critical stylesheets",
+          'Configure critical CSS extraction for main routes',
+          'Inline critical CSS in HTML documents',
+          'Lazy load non-critical stylesheets',
         ],
       });
     }
 
     // Caching recommendations
     const avgCacheEfficiency =
-      metrics.bundles.reduce((sum, b) => sum + b.cacheEfficiency, 0) /
-      metrics.bundles.length;
+      metrics.bundles.reduce((sum, b) => sum + b.cacheEfficiency, 0) / metrics.bundles.length;
     if (avgCacheEfficiency < 70) {
       recommendations.push({
-        category: "caching",
-        priority: "medium",
-        title: "Optimize Caching Strategy",
-        description:
-          "Current chunking strategy may not be optimal for browser caching.",
+        category: 'caching',
+        priority: 'medium',
+        title: 'Optimize Caching Strategy',
+        description: 'Current chunking strategy may not be optimal for browser caching.',
         impact: `Improved cache hit rates for returning users`,
-        complexity: "moderate",
+        complexity: 'moderate',
         steps: [
-          "Separate vendor CSS from application CSS",
-          "Use content-based hashing for cache busting",
-          "Implement long-term caching headers",
+          'Separate vendor CSS from application CSS',
+          'Use content-based hashing for cache busting',
+          'Implement long-term caching headers',
         ],
       });
     }
@@ -624,17 +572,17 @@ export class CssReportGenerator {
     // Delivery recommendations
     if (metrics.averageLoadTime > 2000) {
       recommendations.push({
-        category: "delivery",
-        priority: "high",
-        title: "Optimize CSS Delivery",
+        category: 'delivery',
+        priority: 'high',
+        title: 'Optimize CSS Delivery',
         description:
-          "High load times detected. Optimize delivery mechanism for better performance.",
+          'High load times detected. Optimize delivery mechanism for better performance.',
         impact: `20-40% faster CSS loading`,
-        complexity: "simple",
+        complexity: 'simple',
         steps: [
-          "Enable resource hints (preload, prefetch)",
-          "Implement HTTP/2 server push for critical CSS",
-          "Use CDN for static CSS assets",
+          'Enable resource hints (preload, prefetch)',
+          'Implement HTTP/2 server push for critical CSS',
+          'Use CDN for static CSS assets',
         ],
       });
     }
@@ -655,8 +603,7 @@ export class CssReportGenerator {
       const usageScore = (chunk as any).usagePattern?.score || 50;
       const priority = this.determineChunkPriority(chunk);
       const cacheHitRatio = this.estimateCacheHitRatio(chunk);
-      const optimizationOpportunities =
-        this.identifyOptimizationOpportunities(chunk);
+      const optimizationOpportunities = this.identifyOptimizationOpportunities(chunk);
 
       return {
         chunkId: chunk.id,
@@ -693,9 +640,7 @@ export class CssReportGenerator {
     const usageConsistency = this.calculateUsageConsistency(chunks);
     const contentStability = this.estimateContentStability(chunks);
 
-    return Math.round(
-      (sizeVariation + usageConsistency + contentStability) / 3,
-    );
+    return Math.round((sizeVariation + usageConsistency + contentStability) / 3);
   }
 
   /**
@@ -714,11 +659,7 @@ export class CssReportGenerator {
     if (metrics.totalCompressedSize > 200 * 1024) score -= 20; // 200KB threshold
 
     // Critical CSS bonus
-    if (
-      metrics.totalCriticalCssSize > 0 &&
-      metrics.totalCriticalCssSize < 14 * 1024
-    )
-      score += 10;
+    if (metrics.totalCriticalCssSize > 0 && metrics.totalCriticalCssSize < 14 * 1024) score += 10;
 
     // Load time penalty
     if (metrics.averageLoadTime > 2000) score -= 15;
@@ -755,16 +696,12 @@ export class CssReportGenerator {
   /**
    * Helper methods for chunk analysis
    */
-  private determineChunkPriority(
-    chunk: CssChunk,
-  ): "critical" | "high" | "medium" | "low" {
-    if (chunk.type === "critical") return "critical";
+  private determineChunkPriority(chunk: CssChunk): 'critical' | 'high' | 'medium' | 'low' {
+    if (chunk.type === 'critical') return 'critical';
     const usageScore = (chunk as any).usagePattern?.score;
-    if (usageScore && usageScore > 80)
-      return "high";
-    if (usageScore && usageScore > 50)
-      return "medium";
-    return "low";
+    if (usageScore && usageScore > 80) return 'high';
+    if (usageScore && usageScore > 50) return 'medium';
+    return 'low';
   }
 
   private estimateCacheHitRatio(chunk: CssChunk): number {
@@ -781,20 +718,20 @@ export class CssReportGenerator {
     const opportunities: string[] = [];
 
     if (chunk.content.length > 50 * 1024) {
-      opportunities.push("Consider splitting large chunk");
+      opportunities.push('Consider splitting large chunk');
     }
 
-    if (chunk.content.includes("/* ")) {
-      opportunities.push("Remove comments in production");
+    if (chunk.content.includes('/* ')) {
+      opportunities.push('Remove comments in production');
     }
 
-    if (chunk.content.includes("  ")) {
-      opportunities.push("Minify whitespace");
+    if (chunk.content.includes('  ')) {
+      opportunities.push('Minify whitespace');
     }
 
     const usageScore = (chunk as any).usagePattern?.score || 0;
     if (usageScore < 30) {
-      opportunities.push("Low usage - consider lazy loading");
+      opportunities.push('Low usage - consider lazy loading');
     }
 
     return opportunities;
@@ -805,9 +742,7 @@ export class CssReportGenerator {
 
     const sizes = chunks.map((c) => c.content.length);
     const avg = sizes.reduce((a, b) => a + b, 0) / sizes.length;
-    const variance =
-      sizes.reduce((sum, size) => sum + Math.pow(size - avg, 2), 0) /
-      sizes.length;
+    const variance = sizes.reduce((sum, size) => sum + Math.pow(size - avg, 2), 0) / sizes.length;
     const standardDeviation = Math.sqrt(variance);
 
     // Lower variation = better caching (inverse relationship)
@@ -827,8 +762,8 @@ export class CssReportGenerator {
       chunks.reduce((avg, chunk) => {
         let stability = 70; // Base stability
 
-        if (chunk.type === "vendor") stability += 20; // Vendor CSS is more stable
-        if (chunk.type === "critical") stability += 10; // Critical CSS is fairly stable
+        if (chunk.type === 'vendor') stability += 20; // Vendor CSS is more stable
+        if (chunk.type === 'critical') stability += 10; // Critical CSS is fairly stable
         if (chunk.content.length < 5 * 1024) stability -= 10; // Small chunks may change more
 
         return avg + stability;
@@ -841,16 +776,16 @@ export class CssReportGenerator {
    */
   async exportReport(
     report: CssPerformanceReport,
-    format: "json" | "html" | "markdown",
+    format: 'json' | 'html' | 'markdown'
   ): Promise<string> {
     switch (format) {
-      case "json":
+      case 'json':
         return JSON.stringify(report, null, 2);
 
-      case "html":
+      case 'html':
         return this.generateHtmlReport(report);
 
-      case "markdown":
+      case 'markdown':
         return this.generateMarkdownReport(report);
 
       default:
@@ -872,7 +807,7 @@ export class CssReportGenerator {
         .metric { background: #f5f5f5; padding: 20px; margin: 10px 0; border-radius: 8px; }
         .violation { background: #ffebee; border-left: 4px solid #f44336; padding: 16px; margin: 8px 0; }
         .recommendation { background: #e8f5e8; border-left: 4px solid #4caf50; padding: 16px; margin: 8px 0; }
-        .score { font-size: 24px; font-weight: bold; color: ${report.metrics.performanceScore > 80 ? "#4caf50" : report.metrics.performanceScore > 60 ? "#ff9800" : "#f44336"}; }
+        .score { font-size: 24px; font-weight: bold; color: ${report.metrics.performanceScore > 80 ? '#4caf50' : report.metrics.performanceScore > 60 ? '#ff9800' : '#f44336'}; }
     </style>
 </head>
 <body>
@@ -893,19 +828,19 @@ export class CssReportGenerator {
     </div>
     
     <h2>Budget Analysis</h2>
-    <p><strong>Status:</strong> ${report.budgetAnalysis.passed ? "✅ PASSED" : "❌ FAILED"}</p>
+    <p><strong>Status:</strong> ${report.budgetAnalysis.passed ? '✅ PASSED' : '❌ FAILED'}</p>
     <p><strong>Score:</strong> ${report.budgetAnalysis.score}/100</p>
     
     ${report.budgetAnalysis.violations
       .map(
         (v) => `
         <div class="violation">
-            <strong>${v.type.replace("_", " ").toUpperCase()}</strong>: ${v.message}<br>
+            <strong>${v.type.replace('_', ' ').toUpperCase()}</strong>: ${v.message}<br>
             Actual: ${v.actual} | Limit: ${v.limit}
         </div>
-    `,
+    `
       )
-      .join("")}
+      .join('')}
     
     <h2>Recommendations</h2>
     ${report.recommendations
@@ -916,9 +851,9 @@ export class CssReportGenerator {
             <p>${r.description}</p>
             <p><strong>Impact:</strong> ${r.impact}</p>
         </div>
-    `,
+    `
       )
-      .join("")}
+      .join('')}
 </body>
 </html>`;
   }
@@ -948,19 +883,19 @@ export class CssReportGenerator {
 
 ## Budget Analysis
 
-**Status:** ${report.budgetAnalysis.passed ? "✅ PASSED" : "❌ FAILED"}  
+**Status:** ${report.budgetAnalysis.passed ? '✅ PASSED' : '❌ FAILED'}  
 **Score:** ${report.budgetAnalysis.score}/100
 
 ${
   report.budgetAnalysis.violations.length > 0
-    ? "### Violations\n" +
+    ? '### Violations\n' +
       report.budgetAnalysis.violations
         .map(
           (v) =>
-            `- **${v.type.replace("_", " ").toUpperCase()}**: ${v.message} (Actual: ${v.actual}, Limit: ${v.limit})`,
+            `- **${v.type.replace('_', ' ').toUpperCase()}**: ${v.message} (Actual: ${v.actual}, Limit: ${v.limit})`
         )
-        .join("\n")
-    : "No budget violations detected."
+        .join('\n')
+    : 'No budget violations detected.'
 }
 
 ## Optimization Recommendations
@@ -976,10 +911,10 @@ ${r.description}
 **Complexity:** ${r.complexity}
 
 **Steps:**
-${r.steps.map((step) => `- ${step}`).join("\n")}
-`,
+${r.steps.map((step) => `- ${step}`).join('\n')}
+`
   )
-  .join("\n")}
+  .join('\n')}
 
 ## Bundle Details
 
@@ -992,9 +927,9 @@ ${report.metrics.bundles
 - **Chunks:** ${b.chunkCount}
 - **Load Time:** ${Math.round(b.estimatedLoadTime)}ms
 - **Cache Efficiency:** ${b.cacheEfficiency}%
-`,
+`
   )
-  .join("\n")}
+  .join('\n')}
 `;
   }
 }
@@ -1004,7 +939,7 @@ ${report.metrics.bundles
  */
 export function createCssReportGenerator(
   config: CssOutputConfig,
-  performanceBudget?: PerformanceBudget,
+  performanceBudget?: PerformanceBudget
 ): CssReportGenerator {
   return new CssReportGenerator(config, performanceBudget);
 }

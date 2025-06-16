@@ -5,35 +5,29 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { z } from "zod";
-import type {
-  PatternFrequencyMap,
-  AggregatedClassData,
-} from "./patternAnalysis.ts";
+import { z } from 'zod';
+import type { PatternFrequencyMap, AggregatedClassData } from './patternAnalysis.ts';
 
 /**
  * Configuration options for name generation
  */
 export const NameGenerationOptionsSchema = z.object({
   // Base configuration
-  alphabet: z
-    .string()
-    .min(2)
-    .default("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"),
+  alphabet: z.string().min(2).default('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'),
   numericSuffix: z.boolean().default(true), // Allow 0-9 in names (but not at start)
 
   // Generation strategy
   strategy: z
-    .enum(["sequential", "frequency-optimized", "hybrid", "pretty"])
-    .default("frequency-optimized"),
+    .enum(['sequential', 'frequency-optimized', 'hybrid', 'pretty'])
+    .default('frequency-optimized'),
   startIndex: z.number().min(0).default(0),
 
   // Pretty name generation options
   prettyNameMaxLength: z.number().min(1).max(10).default(6), // Maximum length for pretty names
   prettyNamePreferShorter: z.boolean().default(true), // Prefer shorter names when possible
   prettyNameExhaustionStrategy: z
-    .enum(["fallback-sequential", "fallback-hybrid", "error"])
-    .default("fallback-hybrid"),
+    .enum(['fallback-sequential', 'fallback-hybrid', 'error'])
+    .default('fallback-hybrid'),
 
   // Frequency optimization
   enableFrequencyOptimization: z.boolean().default(true),
@@ -42,21 +36,21 @@ export const NameGenerationOptionsSchema = z.object({
   // Collision avoidance
   reservedNames: z.array(z.string()).default([
     // CSS keywords
-    "auto",
-    "inherit",
-    "initial",
-    "unset",
-    "revert",
-    "none",
-    "all",
+    'auto',
+    'inherit',
+    'initial',
+    'unset',
+    'revert',
+    'none',
+    'all',
     // Common framework classes that shouldn't be minified
-    "container",
-    "wrapper",
-    "main",
-    "header",
-    "footer",
-    "nav",
-    "aside",
+    'container',
+    'wrapper',
+    'main',
+    'header',
+    'footer',
+    'nav',
+    'aside',
   ]),
   avoidConflicts: z.boolean().default(true),
 
@@ -66,8 +60,8 @@ export const NameGenerationOptionsSchema = z.object({
   maxCacheSize: z.number().min(100).default(50000),
 
   // Output format
-  prefix: z.string().default(""),
-  suffix: z.string().default(""),
+  prefix: z.string().default(''),
+  suffix: z.string().default(''),
   ensureCssValid: z.boolean().default(true), // Ensure CSS identifier validity
 });
 
@@ -100,7 +94,7 @@ export interface NameGenerationResult {
     averageNameLength: number;
     collisionCount: number;
     generationTime: number;
-    strategy: NameGenerationOptions["strategy"];
+    strategy: NameGenerationOptions['strategy'];
     options: NameGenerationOptions;
   };
   statistics: {
@@ -142,7 +136,7 @@ export interface BaseConversionResult {
 export interface FrequencyBucket {
   range: [number, number]; // [min, max) frequency
   names: string[];
-  strategy: "shortest" | "short" | "medium" | "standard";
+  strategy: 'shortest' | 'short' | 'medium' | 'standard';
 }
 
 /**
@@ -166,7 +160,7 @@ export interface PrettyNameResult {
   aestheticScore: number; // 0-1, higher is more aesthetic
   isExhausted: boolean; // true if we've run out of permutations
   fallbackUsed: boolean; // true if fallback strategy was used
-  generationStrategy: "permutation" | "fallback-sequential" | "fallback-hybrid";
+  generationStrategy: 'permutation' | 'fallback-sequential' | 'fallback-hybrid';
 }
 
 /**
@@ -187,12 +181,9 @@ export interface PrettyNameStatistics {
 export class NameGenerationError extends Error {
   public cause?: Error;
 
-  constructor(
-    message: string,
-    cause?: Error,
-  ) {
+  constructor(message: string, cause?: Error) {
     super(message);
-    this.name = "NameGenerationError";
+    this.name = 'NameGenerationError';
     this.cause = cause;
   }
 }
@@ -201,45 +192,36 @@ export class CollisionError extends NameGenerationError {
   public conflictingName: string;
   public attemptedName: string;
 
-  constructor(
-    message: string,
-    conflictingName: string,
-    attemptedName: string,
-    cause?: Error,
-  ) {
+  constructor(message: string, conflictingName: string, attemptedName: string, cause?: Error) {
     super(message, cause);
-    this.name = "CollisionError";
+    this.name = 'CollisionError';
     this.conflictingName = conflictingName;
     this.attemptedName = attemptedName;
   }
 }
 
 export class CacheError extends NameGenerationError {
-  public operation: "read" | "write" | "clear" | "validate";
+  public operation: 'read' | 'write' | 'clear' | 'validate';
 
-  constructor(
-    message: string,
-    operation: "read" | "write" | "clear" | "validate",
-    cause?: Error,
-  ) {
+  constructor(message: string, operation: 'read' | 'write' | 'clear' | 'validate', cause?: Error) {
     super(message, cause);
-    this.name = "CacheError";
+    this.name = 'CacheError';
     this.operation = operation;
   }
 }
 
 export class InvalidNameError extends NameGenerationError {
   public invalidName: string;
-  public reason: "css-invalid" | "reserved" | "collision" | "format";
+  public reason: 'css-invalid' | 'reserved' | 'collision' | 'format';
 
   constructor(
     message: string,
     invalidName: string,
-    reason: "css-invalid" | "reserved" | "collision" | "format",
-    cause?: Error,
+    reason: 'css-invalid' | 'reserved' | 'collision' | 'format',
+    cause?: Error
   ) {
     super(message, cause);
-    this.name = "InvalidNameError";
+    this.name = 'InvalidNameError';
     this.invalidName = invalidName;
     this.reason = reason;
   }
@@ -255,10 +237,10 @@ export class PrettyNameExhaustionError extends NameGenerationError {
     maxLength: number,
     totalGenerated: number,
     availableStrategies: string[],
-    cause?: Error,
+    cause?: Error
   ) {
     super(message, cause);
-    this.name = "PrettyNameExhaustionError";
+    this.name = 'PrettyNameExhaustionError';
     this.maxLength = maxLength;
     this.totalGenerated = totalGenerated;
     this.availableStrategies = availableStrategies;
@@ -270,80 +252,80 @@ export class PrettyNameExhaustionError extends NameGenerationError {
  */
 export const CSS_RESERVED_KEYWORDS = new Set([
   // CSS property values
-  "auto",
-  "inherit",
-  "initial",
-  "unset",
-  "revert",
-  "none",
-  "all",
-  "normal",
-  "bold",
-  "italic",
-  "block",
-  "inline",
-  "hidden",
-  "visible",
-  "absolute",
-  "relative",
-  "fixed",
-  "static",
-  "sticky",
+  'auto',
+  'inherit',
+  'initial',
+  'unset',
+  'revert',
+  'none',
+  'all',
+  'normal',
+  'bold',
+  'italic',
+  'block',
+  'inline',
+  'hidden',
+  'visible',
+  'absolute',
+  'relative',
+  'fixed',
+  'static',
+  'sticky',
 
   // CSS units (shouldn't conflict but good to avoid)
-  "px",
-  "em",
-  "rem",
-  "vh",
-  "vw",
-  "vmin",
-  "vmax",
-  "ch",
-  "ex",
+  'px',
+  'em',
+  'rem',
+  'vh',
+  'vw',
+  'vmin',
+  'vmax',
+  'ch',
+  'ex',
 
   // Color keywords
-  "red",
-  "blue",
-  "green",
-  "white",
-  "black",
-  "gray",
-  "yellow",
-  "orange",
-  "purple",
-  "pink",
-  "transparent",
-  "currentcolor",
+  'red',
+  'blue',
+  'green',
+  'white',
+  'black',
+  'gray',
+  'yellow',
+  'orange',
+  'purple',
+  'pink',
+  'transparent',
+  'currentcolor',
 
   // Flexbox/Grid keywords
-  "flex",
-  "grid",
-  "start",
-  "end",
-  "center",
-  "stretch",
-  "baseline",
+  'flex',
+  'grid',
+  'start',
+  'end',
+  'center',
+  'stretch',
+  'baseline',
 
   // Common framework classes (preserve semantic meaning)
-  "container",
-  "wrapper",
-  "content",
-  "main",
-  "header",
-  "footer",
-  "nav",
-  "aside",
-  "section",
-  "article",
-  "div",
-  "span",
-  "p",
-  "h1",
-  "h2",
-  "h3",
-  "h4",
-  "h5",
-  "h6",
+  'container',
+  'wrapper',
+  'content',
+  'main',
+  'header',
+  'footer',
+  'nav',
+  'aside',
+  'section',
+  'article',
+  'div',
+  'span',
+  'p',
+  'h1',
+  'h2',
+  'h3',
+  'h4',
+  'h5',
+  'h6',
 ]);
 
 /**
@@ -351,16 +333,16 @@ export const CSS_RESERVED_KEYWORDS = new Set([
  */
 export const ALPHABET_CONFIGS = {
   // Shortest names: lowercase only
-  minimal: "abcdefghijklmnopqrstuvwxyz",
+  minimal: 'abcdefghijklmnopqrstuvwxyz',
 
   // Standard: lowercase + uppercase
-  standard: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
+  standard: 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ',
 
   // Full: letters + numbers (numbers not at start due to CSS rules)
-  full: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+  full: 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789',
 
   // CSS-safe: excludes potentially confusing characters
-  cssSafe: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
+  cssSafe: 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ',
 } as const;
 
 /**
@@ -384,25 +366,17 @@ export function isValidCssIdentifier(name: string): boolean {
   return CSS_IDENTIFIER_PATTERNS.valid.test(name);
 }
 
-export function isReservedName(
-  name: string,
-  additionalReserved: Set<string> = new Set(),
-): boolean {
-  return (
-    CSS_RESERVED_KEYWORDS.has(name.toLowerCase()) ||
-    additionalReserved.has(name)
-  );
+export function isReservedName(name: string, additionalReserved: Set<string> = new Set()): boolean {
+  return CSS_RESERVED_KEYWORDS.has(name.toLowerCase()) || additionalReserved.has(name);
 }
 
-export function validateNameGenerationOptions(
-  options: unknown,
-): NameGenerationOptions {
+export function validateNameGenerationOptions(options: unknown): NameGenerationOptions {
   try {
     return NameGenerationOptionsSchema.parse(options);
   } catch (error) {
     throw new NameGenerationError(
       `Invalid name generation options: ${error instanceof Error ? error.message : String(error)}`,
-      error instanceof Error ? error : undefined,
+      error instanceof Error ? error : undefined
     );
   }
 }
@@ -429,12 +403,12 @@ export function validateNameGenerationOptions(
 export function toBase26(num: number): string {
   if (num < 0) {
     throw new NameGenerationError(
-      `Invalid input for base-26 conversion: ${num}. Must be non-negative.`,
+      `Invalid input for base-26 conversion: ${num}. Must be non-negative.`
     );
   }
 
-  const alphabet = "abcdefghijklmnopqrstuvwxyz";
-  let result = "";
+  const alphabet = 'abcdefghijklmnopqrstuvwxyz';
+  let result = '';
 
   // Special case for single digit
   if (num < 26) {
@@ -461,12 +435,12 @@ export function toBase26(num: number): string {
 export function fromBase26(str: string): number {
   if (!str || !/^[a-z]+$/.test(str)) {
     throw new NameGenerationError(
-      `Invalid base-26 string: "${str}". Must contain only lowercase letters.`,
+      `Invalid base-26 string: "${str}". Must contain only lowercase letters.`
     );
   }
 
   let result = 0;
-  const alphabet = "abcdefghijklmnopqrstuvwxyz";
+  const alphabet = 'abcdefghijklmnopqrstuvwxyz';
 
   for (let i = 0; i < str.length; i++) {
     const charIndex = alphabet.indexOf(str[i]);
@@ -488,11 +462,11 @@ export function fromBase26(str: string): number {
 export function toBase36(num: number, useNumbers: boolean = true): string {
   if (num < 0) {
     throw new NameGenerationError(
-      `Invalid input for base-36 conversion: ${num}. Must be non-negative.`,
+      `Invalid input for base-36 conversion: ${num}. Must be non-negative.`
     );
   }
 
-  const letters = "abcdefghijklmnopqrstuvwxyz";
+  const letters = 'abcdefghijklmnopqrstuvwxyz';
 
   // Always start with letters for CSS validity, then allow numbers
   if (num < letters.length) {
@@ -501,11 +475,11 @@ export function toBase36(num: number, useNumbers: boolean = true): string {
 
   // For larger numbers, use base-26 for first char, then base-36 for rest
   let remaining = num - letters.length;
-  let result = "";
+  let result = '';
 
   // Generate with letters first, then append numbers if needed
   if (useNumbers) {
-    const numbers = "0123456789";
+    const numbers = '0123456789';
     const extendedAlphabet = letters + numbers;
 
     // Use simple bijective base conversion starting with letters
@@ -532,8 +506,8 @@ export function toBase36(num: number, useNumbers: boolean = true): string {
  * @returns The corresponding number (0-based)
  */
 export function fromBase36(str: string, _useNumbers: boolean = true): number {
-  const letters = "abcdefghijklmnopqrstuvwxyz";
-  const numbers = "0123456789";
+  const letters = 'abcdefghijklmnopqrstuvwxyz';
+  const numbers = '0123456789';
   const alphabet = _useNumbers ? letters + numbers : letters;
   const base = alphabet.length;
 
@@ -543,7 +517,7 @@ export function fromBase36(str: string, _useNumbers: boolean = true): number {
     (!_useNumbers && !/^[a-z]+$/.test(str))
   ) {
     throw new NameGenerationError(
-      `Invalid base-36 string: "${str}". Must start with letter and contain only valid characters.`,
+      `Invalid base-36 string: "${str}". Must start with letter and contain only valid characters.`
     );
   }
 
@@ -552,9 +526,7 @@ export function fromBase36(str: string, _useNumbers: boolean = true): number {
   for (let i = 0; i < str.length; i++) {
     const charIndex = alphabet.indexOf(str[i]);
     if (charIndex === -1) {
-      throw new NameGenerationError(
-        `Invalid character "${str[i]}" in base-36 string "${str}".`,
-      );
+      throw new NameGenerationError(`Invalid character "${str[i]}" in base-36 string "${str}".`);
     }
     result = result * base + charIndex + 1;
   }
@@ -573,17 +545,15 @@ export function fromBase36(str: string, _useNumbers: boolean = true): number {
 export function toCustomBase(
   num: number,
   alphabet: string,
-  ensureCssValid: boolean = true,
+  ensureCssValid: boolean = true
 ): string {
   if (num < 0) {
-    throw new NameGenerationError(
-      `Invalid input: ${num}. Must be non-negative.`,
-    );
+    throw new NameGenerationError(`Invalid input: ${num}. Must be non-negative.`);
   }
 
   if (!alphabet || alphabet.length < 2) {
     throw new NameGenerationError(
-      `Invalid alphabet: "${alphabet}". Must have at least 2 characters.`,
+      `Invalid alphabet: "${alphabet}". Must have at least 2 characters.`
     );
   }
 
@@ -600,13 +570,13 @@ export function toCustomBase(
         }
       }
       throw new NameGenerationError(
-        `No CSS-valid starting characters found in alphabet: "${alphabet}"`,
+        `No CSS-valid starting characters found in alphabet: "${alphabet}"`
       );
     }
     return char;
   }
 
-  let result = "";
+  let result = '';
   let n = num;
 
   while (n >= 0) {
@@ -614,7 +584,7 @@ export function toCustomBase(
     const char = alphabet[charIndex];
 
     // For first character, ensure CSS validity
-    if (result === "" && ensureCssValid && !cssValidStart.test(char)) {
+    if (result === '' && ensureCssValid && !cssValidStart.test(char)) {
       // Find a valid starting character
       let validIndex = -1;
       for (let i = 0; i < alphabet.length; i++) {
@@ -625,7 +595,7 @@ export function toCustomBase(
       }
       if (validIndex === -1) {
         throw new NameGenerationError(
-          `No CSS-valid starting characters in alphabet: "${alphabet}"`,
+          `No CSS-valid starting characters in alphabet: "${alphabet}"`
         );
       }
       result = alphabet[validIndex] + result;
@@ -649,7 +619,7 @@ export function toCustomBase(
  */
 export function calculateOptimalLength(
   count: number,
-  alphabet: string,
+  alphabet: string
 ): {
   minLength: number;
   capacity: number;
@@ -685,7 +655,7 @@ export function calculateOptimalLength(
     // Safety check to prevent infinite loops
     if (length > 10) {
       throw new NameGenerationError(
-        `Calculation exceeded maximum length of 10 for ${count} identifiers.`,
+        `Calculation exceeded maximum length of 10 for ${count} identifiers.`
       );
     }
   }
@@ -704,9 +674,7 @@ export function calculateOptimalLength(
  * @param testCount - Number of values to test
  * @returns Validation result with any errors found
  */
-export function validateBaseConversions(
-  testCount: number = 1000,
-): BaseConversionResult[] {
+export function validateBaseConversions(testCount: number = 1000): BaseConversionResult[] {
   const results: BaseConversionResult[] = [];
   const errors: string[] = [];
 
@@ -726,9 +694,7 @@ export function validateBaseConversions(
       });
 
       if (!valid26) {
-        errors.push(
-          `Base-26 conversion failed for ${i}: ${base26} -> ${back26}`,
-        );
+        errors.push(`Base-26 conversion failed for ${i}: ${base26} -> ${back26}`);
       }
 
       // Test base-36
@@ -737,20 +703,18 @@ export function validateBaseConversions(
       const valid36 = back36 === i && isValidCssIdentifier(base36);
 
       if (!valid36) {
-        errors.push(
-          `Base-36 conversion failed for ${i}: ${base36} -> ${back36}`,
-        );
+        errors.push(`Base-36 conversion failed for ${i}: ${base36} -> ${back36}`);
       }
     } catch (error) {
       errors.push(
-        `Error testing conversion for ${i}: ${error instanceof Error ? error.message : String(error)}`,
+        `Error testing conversion for ${i}: ${error instanceof Error ? error.message : String(error)}`
       );
     }
   }
 
   if (errors.length > 0) {
     throw new NameGenerationError(
-      `Base conversion validation failed with ${errors.length} errors: ${errors.slice(0, 5).join(", ")}${errors.length > 5 ? "..." : ""}`,
+      `Base conversion validation failed with ${errors.length} errors: ${errors.slice(0, 5).join(', ')}${errors.length > 5 ? '...' : ''}`
     );
   }
 
@@ -770,14 +734,9 @@ export function validateBaseConversions(
  * @param options - Name generation options
  * @returns Generated name string
  */
-export function generateSequentialName(
-  index: number,
-  options: NameGenerationOptions,
-): string {
+export function generateSequentialName(index: number, options: NameGenerationOptions): string {
   if (index < 0) {
-    throw new NameGenerationError(
-      `Invalid index: ${index}. Must be non-negative.`,
-    );
+    throw new NameGenerationError(`Invalid index: ${index}. Must be non-negative.`);
   }
 
   const { alphabet, numericSuffix, prefix, suffix, ensureCssValid } = options;
@@ -787,7 +746,7 @@ export function generateSequentialName(
   // Choose conversion method based on alphabet
   if (alphabet === ALPHABET_CONFIGS.minimal) {
     baseName = toBase26(index);
-  } else if (numericSuffix && alphabet.includes("0")) {
+  } else if (numericSuffix && alphabet.includes('0')) {
     baseName = toBase36(index, true);
   } else {
     baseName = toCustomBase(index, alphabet, ensureCssValid);
@@ -801,7 +760,7 @@ export function generateSequentialName(
     throw new InvalidNameError(
       `Generated name "${fullName}" is not a valid CSS identifier`,
       fullName,
-      "css-invalid",
+      'css-invalid'
     );
   }
 
@@ -819,7 +778,7 @@ export function generateSequentialName(
 export function generateSequentialNames(
   count: number,
   options: NameGenerationOptions,
-  startIndex: number = 0,
+  startIndex: number = 0
 ): string[] {
   if (count <= 0) {
     throw new NameGenerationError(`Invalid count: ${count}. Must be positive.`);
@@ -862,7 +821,7 @@ export function generateSequentialNames(
  */
 export function generatePermutationsWithoutRepetition(
   alphabet: string,
-  maxLength: number,
+  maxLength: number
 ): string[] {
   if (maxLength <= 0 || alphabet.length === 0) {
     return [];
@@ -893,11 +852,8 @@ export function generatePermutationsWithoutRepetition(
  * @param length - Target length for permutations
  * @returns Array of permutations of specified length
  */
-function generatePermutationsOfLength(
-  chars: string[],
-  length: number,
-): string[] {
-  if (length === 0) return [""];
+function generatePermutationsOfLength(chars: string[], length: number): string[] {
+  if (length === 0) return [''];
   if (length > chars.length) return [];
   if (length === 1) return chars.slice();
 
@@ -911,9 +867,7 @@ function generatePermutationsOfLength(
 
     for (const subPerm of subPermutations) {
       if (result.length >= maxResults) {
-        console.warn(
-          `Permutation generation limited to ${maxResults} results for performance`,
-        );
+        console.warn(`Permutation generation limited to ${maxResults} results for performance`);
         return result;
       }
       result.push(char + subPerm);
@@ -940,7 +894,7 @@ export function calculateAestheticScore(name: string): number {
   score += Math.max(0, (6 - name.length) * 0.05); // Reduced from 0.1
 
   // Vowel-consonant alternation bonus (more pronounceable)
-  const vowels = new Set(["a", "e", "i", "o", "u"]);
+  const vowels = new Set(['a', 'e', 'i', 'o', 'u']);
   let alternationBonus = 0;
   for (let i = 0; i < lower.length - 1; i++) {
     const isVowel = vowels.has(lower[i]);
@@ -952,7 +906,7 @@ export function calculateAestheticScore(name: string): number {
   score += Math.min(0.15, alternationBonus); // Reduced from 0.2
 
   // Avoid awkward letter combinations
-  const awkwardCombos = ["xz", "qw", "zx", "bk", "gk", "pk", "tk"];
+  const awkwardCombos = ['xz', 'qw', 'zx', 'bk', 'gk', 'pk', 'tk'];
   for (const combo of awkwardCombos) {
     if (lower.includes(combo)) {
       score -= 0.08; // Reduced from 0.1
@@ -981,7 +935,7 @@ export function calculateAestheticScore(name: string): number {
   score += startWeight;
 
   // Small bonus for lowercase start (CSS convention)
-  if (name[0] >= "a" && name[0] <= "z") {
+  if (name[0] >= 'a' && name[0] <= 'z') {
     score += 0.01; // Reduced from 0.02
   }
 
@@ -995,10 +949,7 @@ export function calculateAestheticScore(name: string): number {
  * @param maxLength - Maximum length for generated names
  * @returns Initialized pretty name cache
  */
-export function createPrettyNameCache(
-  alphabet: string,
-  maxLength: number,
-): PrettyNameCache {
+export function createPrettyNameCache(alphabet: string, maxLength: number): PrettyNameCache {
   const cache: PrettyNameCache = {
     permutations: new Map(),
     usedPermutations: new Set(),
@@ -1026,7 +977,7 @@ export function createPrettyNameCache(
 function getNextPermutation(
   cache: PrettyNameCache,
   length: number,
-  alphabet: string,
+  alphabet: string
 ): string | null {
   // Get or generate permutations for this length
   if (!cache.permutations.has(length)) {
@@ -1035,7 +986,7 @@ function getNextPermutation(
 
     const perms = generatePermutationsOfLength(chars, length);
     const sortedPerms = perms.sort(
-      (a, b) => calculateAestheticScore(b) - calculateAestheticScore(a),
+      (a, b) => calculateAestheticScore(b) - calculateAestheticScore(a)
     );
     cache.permutations.set(length, sortedPerms);
   }
@@ -1074,26 +1025,18 @@ const globalPrettyCache = new Map<string, PrettyNameCache>();
 
 export function generatePrettyName(
   index: number,
-  options: NameGenerationOptions,
+  options: NameGenerationOptions
 ): PrettyNameResult {
   if (index < 0) {
-    throw new NameGenerationError(
-      `Invalid index: ${index}. Must be non-negative.`,
-    );
+    throw new NameGenerationError(`Invalid index: ${index}. Must be non-negative.`);
   }
 
-  const {
-    alphabet,
-    prettyNameMaxLength,
-    prettyNamePreferShorter,
-  } = options;
+  const { alphabet, prettyNameMaxLength, prettyNamePreferShorter } = options;
   const maxLength = prettyNameMaxLength ?? 6; // Use nullish coalescing instead of || to handle 0 properly
 
   // Add validation for invalid options
   if (maxLength <= 0) {
-    throw new NameGenerationError(
-      `Invalid prettyNameMaxLength: ${maxLength}. Must be positive.`,
-    );
+    throw new NameGenerationError(`Invalid prettyNameMaxLength: ${maxLength}. Must be positive.`);
   }
 
   if (!alphabet || alphabet.length === 0) {
@@ -1126,7 +1069,7 @@ export function generatePrettyName(
         aestheticScore,
         isExhausted: false,
         fallbackUsed: false,
-        generationStrategy: "permutation",
+        generationStrategy: 'permutation',
       };
       break;
     }
@@ -1138,7 +1081,7 @@ export function generatePrettyName(
   }
 
   // Apply prefix/suffix
-  const finalName = `${options.prefix || ""}${result.name}${options.suffix || ""}`;
+  const finalName = `${options.prefix || ''}${result.name}${options.suffix || ''}`;
 
   // Validate CSS compliance
   if (options.ensureCssValid && !isValidCssIdentifier(finalName)) {
@@ -1149,7 +1092,7 @@ export function generatePrettyName(
     throw new InvalidNameError(
       `Generated pretty name "${finalName}" is not a valid CSS identifier`,
       finalName,
-      "css-invalid",
+      'css-invalid'
     );
   }
 
@@ -1170,20 +1113,20 @@ export function generatePrettyName(
 function handlePrettyNameExhaustion(
   index: number,
   options: NameGenerationOptions,
-  cache: PrettyNameCache,
+  cache: PrettyNameCache
 ): PrettyNameResult {
-  const strategy = options.prettyNameExhaustionStrategy || "fallback-hybrid";
+  const strategy = options.prettyNameExhaustionStrategy || 'fallback-hybrid';
 
   switch (strategy) {
-    case "error":
+    case 'error':
       throw new PrettyNameExhaustionError(
         `Pretty name generation exhausted after ${cache.totalGenerated} names`,
         options.prettyNameMaxLength || 6,
         cache.totalGenerated,
-        ["fallback-sequential", "fallback-hybrid"],
+        ['fallback-sequential', 'fallback-hybrid']
       );
 
-    case "fallback-sequential": {
+    case 'fallback-sequential': {
       // Handle single-character alphabets specially
       if (options.alphabet.length === 1) {
         const char = options.alphabet[0];
@@ -1194,7 +1137,7 @@ function handlePrettyNameExhaustion(
           aestheticScore: 0.1, // Low aesthetic score for fallback
           isExhausted: true,
           fallbackUsed: true,
-          generationStrategy: "fallback-sequential",
+          generationStrategy: 'fallback-sequential',
         };
       }
 
@@ -1205,11 +1148,11 @@ function handlePrettyNameExhaustion(
         aestheticScore: 0.1, // Low aesthetic score for fallback
         isExhausted: true,
         fallbackUsed: true,
-        generationStrategy: "fallback-sequential",
+        generationStrategy: 'fallback-sequential',
       };
     }
 
-    case "fallback-hybrid":
+    case 'fallback-hybrid':
     default: {
       // Handle single-character alphabets specially
       if (options.alphabet.length === 1) {
@@ -1221,7 +1164,7 @@ function handlePrettyNameExhaustion(
           aestheticScore: 0.15, // Slightly better than sequential
           isExhausted: true,
           fallbackUsed: true,
-          generationStrategy: "fallback-hybrid",
+          generationStrategy: 'fallback-hybrid',
         };
       }
 
@@ -1234,7 +1177,7 @@ function handlePrettyNameExhaustion(
         aestheticScore: calculateAestheticScore(enhancedName),
         isExhausted: true,
         fallbackUsed: true,
-        generationStrategy: "fallback-hybrid",
+        generationStrategy: 'fallback-hybrid',
       };
     }
   }
@@ -1247,42 +1190,39 @@ function handlePrettyNameExhaustion(
  * @param options - Generation options
  * @returns Enhanced name with better aesthetics
  */
-function enhanceNameAesthetics(
-  name: string,
-  _options: NameGenerationOptions,
-): string {
+function enhanceNameAesthetics(name: string, _options: NameGenerationOptions): string {
   // Simple enhancement: try to add vowels or replace awkward combinations
   // This is a fallback, so we keep it simple
   let enhanced = name.toLowerCase();
 
   // Replace awkward combinations with more aesthetic alternatives
   const replacements: Record<string, string> = {
-    aa: "ab",
-    bb: "ba",
-    cc: "ca",
-    dd: "da",
-    ff: "fa",
-    gg: "ga",
-    hh: "ha",
-    jj: "ja",
-    kk: "ka",
-    ll: "la",
-    mm: "ma",
-    nn: "na",
-    pp: "pa",
-    qq: "qa",
-    rr: "ra",
-    ss: "sa",
-    tt: "ta",
-    vv: "va",
-    ww: "wa",
-    xx: "xa",
-    yy: "ya",
-    zz: "za",
+    aa: 'ab',
+    bb: 'ba',
+    cc: 'ca',
+    dd: 'da',
+    ff: 'fa',
+    gg: 'ga',
+    hh: 'ha',
+    jj: 'ja',
+    kk: 'ka',
+    ll: 'la',
+    mm: 'ma',
+    nn: 'na',
+    pp: 'pa',
+    qq: 'qa',
+    rr: 'ra',
+    ss: 'sa',
+    tt: 'ta',
+    vv: 'va',
+    ww: 'wa',
+    xx: 'xa',
+    yy: 'ya',
+    zz: 'za',
   };
 
   for (const [awkward, better] of Object.entries(replacements)) {
-    enhanced = enhanced.replace(new RegExp(awkward, "g"), better);
+    enhanced = enhanced.replace(new RegExp(awkward, 'g'), better);
   }
 
   return enhanced;
@@ -1294,13 +1234,8 @@ function enhanceNameAesthetics(
  * @param options - Name generation options
  * @returns Initialized collision cache
  */
-export function createNameCollisionCache(
-  options: NameGenerationOptions,
-): NameCollisionCache {
-  const reservedNames = new Set([
-    ...CSS_RESERVED_KEYWORDS,
-    ...(options.reservedNames || []),
-  ]);
+export function createNameCollisionCache(options: NameGenerationOptions): NameCollisionCache {
+  const reservedNames = new Set([...CSS_RESERVED_KEYWORDS, ...(options.reservedNames || [])]);
 
   return {
     usedNames: new Set(),
@@ -1317,13 +1252,8 @@ export function createNameCollisionCache(
  * @param cache - Collision cache
  * @returns True if there's a conflict
  */
-export function hasNameCollision(
-  name: string,
-  cache: NameCollisionCache,
-): boolean {
-  return (
-    cache.usedNames.has(name) || cache.reservedNames.has(name.toLowerCase())
-  );
+export function hasNameCollision(name: string, cache: NameCollisionCache): boolean {
+  return cache.usedNames.has(name) || cache.reservedNames.has(name.toLowerCase());
 }
 
 /**
@@ -1335,7 +1265,7 @@ export function hasNameCollision(
  */
 export function generateNextAvailableName(
   cache: NameCollisionCache,
-  options: NameGenerationOptions,
+  options: NameGenerationOptions
 ): { name: string; index: number } {
   let attempts = 0;
   const maxAttempts = Math.min(10000, options.alphabet.length * 100); // More aggressive for small alphabets
@@ -1349,8 +1279,8 @@ export function generateNextAvailableName(
   if (reservedSize + usedSize >= alphabetSize && alphabetSize < 10) {
     throw new CollisionError(
       `Alphabet exhausted: ${alphabetSize} chars, ${reservedSize} reserved, ${usedSize} used`,
-      Array.from(cache.reservedNames).join(","),
-      "alphabet-exhausted",
+      Array.from(cache.reservedNames).join(','),
+      'alphabet-exhausted'
     );
   }
 
@@ -1373,8 +1303,8 @@ export function generateNextAvailableName(
 
   throw new CollisionError(
     `Failed to generate available name after ${maxAttempts} attempts`,
-    "unknown",
-    `index-${cache.nameIndex}`,
+    'unknown',
+    `index-${cache.nameIndex}`
   );
 }
 
@@ -1389,7 +1319,7 @@ export function generateNextAvailableName(
 export function batchGenerateAvailableNames(
   count: number,
   cache: NameCollisionCache,
-  options: NameGenerationOptions,
+  options: NameGenerationOptions
 ): Array<{ name: string; index: number }> {
   if (count <= 0) {
     throw new NameGenerationError(`Invalid count: ${count}. Must be positive.`);
@@ -1409,9 +1339,7 @@ export function batchGenerateAvailableNames(
 
       if (rate < 100) {
         // Less than 100 names/second indicates potential issues
-        console.warn(
-          `Name generation rate is low: ${rate.toFixed(1)} names/second`,
-        );
+        console.warn(`Name generation rate is low: ${rate.toFixed(1)} names/second`);
       }
     }
   }
@@ -1428,7 +1356,7 @@ export function batchGenerateAvailableNames(
  */
 export function calculateGenerationStatistics(
   count: number,
-  options: NameGenerationOptions,
+  options: NameGenerationOptions
 ): {
   expectedLength: number;
   minLength: number;
@@ -1443,12 +1371,10 @@ export function calculateGenerationStatistics(
   const prefixSuffixLength = prefix.length + suffix.length;
   const expectedLength = baseCapacity.minLength + prefixSuffixLength;
   const minLength = 1 + prefixSuffixLength;
-  const maxLength =
-    Math.min(baseCapacity.minLength + 2, 8) + prefixSuffixLength; // Reasonable max
+  const maxLength = Math.min(baseCapacity.minLength + 2, 8) + prefixSuffixLength; // Reasonable max
 
   // Estimate collision rate based on reserved names
-  const reservedCount =
-    CSS_RESERVED_KEYWORDS.size + (options.reservedNames?.length || 0);
+  const reservedCount = CSS_RESERVED_KEYWORDS.size + (options.reservedNames?.length || 0);
   const estimatedCollisions = Math.min(reservedCount, count * 0.01); // Assume max 1% collision rate
 
   return {
@@ -1470,7 +1396,7 @@ export function calculateGenerationStatistics(
  */
 export function validateGenerationSetup(
   options: NameGenerationOptions,
-  cache?: NameCollisionCache,
+  cache?: NameCollisionCache
 ): {
   valid: boolean;
   warnings: string[];
@@ -1481,66 +1407,50 @@ export function validateGenerationSetup(
 
   // Validate alphabet
   if (options.alphabet.length < 2) {
-    errors.push("Alphabet must have at least 2 characters");
+    errors.push('Alphabet must have at least 2 characters');
   }
 
   // Check for CSS validity of alphabet
-  const cssValidChars = options.alphabet
-    .split("")
-    .filter((char) => /^[a-zA-Z0-9_-]$/.test(char));
+  const cssValidChars = options.alphabet.split('').filter((char) => /^[a-zA-Z0-9_-]$/.test(char));
 
   if (cssValidChars.length !== options.alphabet.length) {
-    warnings.push(
-      "Alphabet contains non-CSS-safe characters that may cause issues",
-    );
+    warnings.push('Alphabet contains non-CSS-safe characters that may cause issues');
   }
 
   // Check for CSS-valid starting characters
-  const validStartChars = options.alphabet
-    .split("")
-    .filter((char) => /^[a-zA-Z_]$/.test(char));
+  const validStartChars = options.alphabet.split('').filter((char) => /^[a-zA-Z_]$/.test(char));
 
   if (validStartChars.length === 0 && options.ensureCssValid) {
-    errors.push(
-      "No CSS-valid starting characters in alphabet (letters or underscore)",
-    );
+    errors.push('No CSS-valid starting characters in alphabet (letters or underscore)');
   }
 
   // Validate prefix/suffix CSS compliance
-  if (options.prefix && !isValidCssIdentifier(options.prefix + "a")) {
-    errors.push(
-      `Prefix "${options.prefix}" would create invalid CSS identifiers`,
-    );
+  if (options.prefix && !isValidCssIdentifier(options.prefix + 'a')) {
+    errors.push(`Prefix "${options.prefix}" would create invalid CSS identifiers`);
   }
 
-  if (options.suffix && !isValidCssIdentifier("a" + options.suffix)) {
-    errors.push(
-      `Suffix "${options.suffix}" would create invalid CSS identifiers`,
-    );
+  if (options.suffix && !isValidCssIdentifier('a' + options.suffix)) {
+    errors.push(`Suffix "${options.suffix}" would create invalid CSS identifiers`);
   }
 
   // Check cache compatibility
   if (cache) {
     if (cache.nameIndex < options.startIndex) {
-      warnings.push(
-        "Cache index is behind options.startIndex, may cause duplicates",
-      );
+      warnings.push('Cache index is behind options.startIndex, may cause duplicates');
     }
 
     if (cache.reservedNames.size > options.maxCacheSize / 2) {
-      warnings.push(
-        "Reserved names set is large relative to cache size, may impact performance",
-      );
+      warnings.push('Reserved names set is large relative to cache size, may impact performance');
     }
   }
 
   // Performance warnings
   if (options.batchSize > 10000) {
-    warnings.push("Large batch size may cause memory issues");
+    warnings.push('Large batch size may cause memory issues');
   }
 
   if (options.reservedNames.length > 1000) {
-    warnings.push("Large reserved names list may impact performance");
+    warnings.push('Large reserved names list may impact performance');
   }
 
   return {
@@ -1565,7 +1475,7 @@ export function validateGenerationSetup(
  */
 export function sortByFrequency(
   frequencyMap: PatternFrequencyMap,
-  options: NameGenerationOptions,
+  options: NameGenerationOptions
 ): Array<{ name: string; frequency: number; data: AggregatedClassData }> {
   const entries = Array.from(frequencyMap.entries())
     .filter(([_, data]) => data.totalFrequency >= options.frequencyThreshold)
@@ -1592,7 +1502,7 @@ export function createFrequencyBuckets(
     frequency: number;
     data: AggregatedClassData;
   }>,
-  _options: NameGenerationOptions,
+  _options: NameGenerationOptions
 ): FrequencyBucket[] {
   if (sortedClasses.length === 0) {
     return [];
@@ -1612,7 +1522,7 @@ export function createFrequencyBuckets(
     buckets.push({
       range: [topClasses[topClasses.length - 1].frequency, maxFrequency],
       names: topClasses.map((c) => c.name),
-      strategy: "shortest",
+      strategy: 'shortest',
     });
   }
 
@@ -1626,7 +1536,7 @@ export function createFrequencyBuckets(
         topClasses[topClasses.length - 1].frequency - 1,
       ],
       names: shortClasses.map((c) => c.name),
-      strategy: "short",
+      strategy: 'short',
     });
   }
 
@@ -1642,7 +1552,7 @@ export function createFrequencyBuckets(
           : maxFrequency,
       ],
       names: mediumClasses.map((c) => c.name),
-      strategy: "medium",
+      strategy: 'medium',
     });
   }
 
@@ -1657,7 +1567,7 @@ export function createFrequencyBuckets(
           : maxFrequency,
       ],
       names: standardClasses.map((c) => c.name),
-      strategy: "standard",
+      strategy: 'standard',
     });
   }
 
@@ -1673,7 +1583,7 @@ export function createFrequencyBuckets(
  */
 export function optimizeByFrequency(
   frequencyMap: PatternFrequencyMap,
-  options: NameGenerationOptions,
+  options: NameGenerationOptions
 ): Map<string, string> {
   // Ensure options are properly validated with defaults applied
   const validatedOptions = validateNameGenerationOptions(options);
@@ -1693,10 +1603,7 @@ export function optimizeByFrequency(
 
   // Process each bucket with its specific strategy and separate index
   for (const bucket of buckets) {
-    const bucketOptions = createBucketOptions(
-      validatedOptions,
-      bucket.strategy,
-    );
+    const bucketOptions = createBucketOptions(validatedOptions, bucket.strategy);
     const bucketCache = createNameCollisionCache(bucketOptions);
 
     // Copy used names from global cache to avoid collisions
@@ -1726,30 +1633,30 @@ export function optimizeByFrequency(
  */
 function createBucketOptions(
   baseOptions: NameGenerationOptions,
-  strategy: FrequencyBucket["strategy"],
+  strategy: FrequencyBucket['strategy']
 ): NameGenerationOptions {
   const options = { ...baseOptions };
 
   switch (strategy) {
-    case "shortest":
+    case 'shortest':
       // Use minimal alphabet for shortest names
       options.alphabet = ALPHABET_CONFIGS.minimal;
       options.numericSuffix = false;
       break;
 
-    case "short":
+    case 'short':
       // Use standard alphabet, no numeric suffix
       options.alphabet = ALPHABET_CONFIGS.standard;
       options.numericSuffix = false;
       break;
 
-    case "medium":
+    case 'medium':
       // Use standard alphabet with numeric suffix
       options.alphabet = ALPHABET_CONFIGS.standard;
       options.numericSuffix = true;
       break;
 
-    case "standard":
+    case 'standard':
       // Use full alphabet for longer names
       options.alphabet = ALPHABET_CONFIGS.full;
       options.numericSuffix = true;
@@ -1768,7 +1675,7 @@ function createBucketOptions(
  */
 export function calculateCompressionStats(
   originalMap: Map<string, AggregatedClassData>,
-  optimizedMap: Map<string, string>,
+  optimizedMap: Map<string, string>
 ): {
   totalOriginalLength: number;
   totalOptimizedLength: number;
@@ -1812,13 +1719,10 @@ export function calculateCompressionStats(
   }
 
   // Sort by compression ratio for analysis
-  classCompressionRatios.sort(
-    (a, b) => b.compressionRatio - a.compressionRatio,
-  );
+  classCompressionRatios.sort((a, b) => b.compressionRatio - a.compressionRatio);
 
   const overallCompressionRatio = totalOriginalLength / totalOptimizedLength;
-  const frequencyWeightedCompression =
-    frequencyWeightedOriginal / frequencyWeightedOptimized;
+  const frequencyWeightedCompression = frequencyWeightedOriginal / frequencyWeightedOptimized;
 
   return {
     totalOriginalLength,
@@ -1837,9 +1741,7 @@ export function calculateCompressionStats(
  * @param frequencyMap - Pattern frequency data
  * @returns Analysis and recommendations
  */
-export function analyzeFrequencyDistribution(
-  frequencyMap: PatternFrequencyMap,
-): {
+export function analyzeFrequencyDistribution(frequencyMap: PatternFrequencyMap): {
   totalClasses: number;
   averageFrequency: number;
   medianFrequency: number;
@@ -1860,13 +1762,12 @@ export function analyzeFrequencyDistribution(
       averageFrequency: 0,
       medianFrequency: 0,
       frequencyRanges: [],
-      recommendations: ["No classes found for analysis"],
+      recommendations: ['No classes found for analysis'],
     };
   }
 
   const totalClasses = frequencies.length;
-  const averageFrequency =
-    frequencies.reduce((sum, freq) => sum + freq, 0) / totalClasses;
+  const averageFrequency = frequencies.reduce((sum, freq) => sum + freq, 0) / totalClasses;
   const medianFrequency = frequencies[Math.floor(totalClasses / 2)];
   const maxFrequency = frequencies[0];
 
@@ -1875,34 +1776,32 @@ export function analyzeFrequencyDistribution(
     {
       min: Math.floor(maxFrequency * 0.8),
       max: maxFrequency,
-      label: "Very High (80-100%)",
+      label: 'Very High (80-100%)',
     },
     {
       min: Math.floor(maxFrequency * 0.6),
       max: Math.floor(maxFrequency * 0.8) - 1,
-      label: "High (60-80%)",
+      label: 'High (60-80%)',
     },
     {
       min: Math.floor(maxFrequency * 0.4),
       max: Math.floor(maxFrequency * 0.6) - 1,
-      label: "Medium (40-60%)",
+      label: 'Medium (40-60%)',
     },
     {
       min: Math.floor(maxFrequency * 0.2),
       max: Math.floor(maxFrequency * 0.4) - 1,
-      label: "Low (20-40%)",
+      label: 'Low (20-40%)',
     },
     {
       min: 1,
       max: Math.floor(maxFrequency * 0.2) - 1,
-      label: "Very Low (1-20%)",
+      label: 'Very Low (1-20%)',
     },
   ];
 
   const frequencyRanges = ranges.map((range) => {
-    const count = frequencies.filter(
-      (freq) => freq >= range.min && freq <= range.max,
-    ).length;
+    const count = frequencies.filter((freq) => freq >= range.min && freq <= range.max).length;
     return {
       range: range.label,
       count,
@@ -1919,31 +1818,31 @@ export function analyzeFrequencyDistribution(
 
   if (veryHighCount > totalClasses * 0.1) {
     recommendations.push(
-      `${veryHighCount} classes have very high frequency - excellent candidates for single-character names`,
+      `${veryHighCount} classes have very high frequency - excellent candidates for single-character names`
     );
   }
 
   if (highCount > totalClasses * 0.15) {
     recommendations.push(
-      `${highCount} classes have high frequency - good candidates for 2-character names`,
+      `${highCount} classes have high frequency - good candidates for 2-character names`
     );
   }
 
   if (lowCombined > totalClasses * 0.5) {
     recommendations.push(
-      `${lowCombined} classes have low frequency - can use longer optimized names`,
+      `${lowCombined} classes have low frequency - can use longer optimized names`
     );
   }
 
   if (averageFrequency < 3) {
     recommendations.push(
-      "Many classes are used infrequently - focus optimization on top 20% by frequency",
+      'Many classes are used infrequently - focus optimization on top 20% by frequency'
     );
   }
 
   if (totalClasses > 10000) {
     recommendations.push(
-      "Large number of classes detected - consider using full alphabet with numeric suffixes",
+      'Large number of classes detected - consider using full alphabet with numeric suffixes'
     );
   }
 
@@ -1970,10 +1869,7 @@ export class NameCollisionManager {
   private options: NameGenerationOptions;
   private persistenceEnabled: boolean;
 
-  constructor(
-    options: NameGenerationOptions,
-    persistenceEnabled: boolean = false,
-  ) {
+  constructor(options: NameGenerationOptions, persistenceEnabled: boolean = false) {
     this.options = options;
     this.persistenceEnabled = persistenceEnabled;
     this.cache = createNameCollisionCache(options);
@@ -2038,8 +1934,7 @@ export class NameCollisionManager {
     return {
       usedNames: this.cache.usedNames.size,
       reservedNames: this.cache.reservedNames.size,
-      cacheHitRate:
-        totalAttempts > 0 ? (successfulGenerations / totalAttempts) * 100 : 0,
+      cacheHitRate: totalAttempts > 0 ? (successfulGenerations / totalAttempts) * 100 : 0,
       currentIndex: this.cache.nameIndex ?? this.options.startIndex,
     };
   }
@@ -2065,27 +1960,27 @@ export class NameCollisionManager {
 export async function generateOptimizedNames(
   frequencyMap: PatternFrequencyMap,
   options: Partial<NameGenerationOptions> = {},
-  existingCache?: Map<string, string>,
+  existingCache?: Map<string, string>
 ): Promise<NameGenerationResult> {
   const startTime = Date.now();
   const defaultOptions: NameGenerationOptions = {
-    strategy: "frequency-optimized",
+    strategy: 'frequency-optimized',
     batchSize: 1000,
-    alphabet: "abcdefghijklmnopqrstuvwxyz",
+    alphabet: 'abcdefghijklmnopqrstuvwxyz',
     numericSuffix: false,
     startIndex: 0,
     enableFrequencyOptimization: true,
     frequencyThreshold: 1,
     enableCaching: false,
-    reservedNames: ["a", "an", "and", "or", "not"],
+    reservedNames: ['a', 'an', 'and', 'or', 'not'],
     avoidConflicts: true,
     maxCacheSize: 50000,
-    prefix: "",
-    suffix: "",
+    prefix: '',
+    suffix: '',
     ensureCssValid: true,
     prettyNameMaxLength: 6,
     prettyNamePreferShorter: true,
-    prettyNameExhaustionStrategy: "fallback-hybrid",
+    prettyNameExhaustionStrategy: 'fallback-hybrid',
   };
   const validatedOptions = validateNameGenerationOptions({
     ...defaultOptions,
@@ -2095,15 +1990,13 @@ export async function generateOptimizedNames(
   // Validate setup
   const validation = validateGenerationSetup(validatedOptions);
   if (!validation.valid) {
-    throw new NameGenerationError(
-      `Setup validation failed: ${validation.errors.join(", ")}`,
-    );
+    throw new NameGenerationError(`Setup validation failed: ${validation.errors.join(', ')}`);
   }
 
   // Create collision manager
   const collisionManager = new NameCollisionManager(
     validatedOptions,
-    validatedOptions.enableCaching,
+    validatedOptions.enableCaching
   );
   await collisionManager.loadFromCache(existingCache);
 
@@ -2111,26 +2004,24 @@ export async function generateOptimizedNames(
   let nameMap: Map<string, string>;
 
   switch (validatedOptions.strategy) {
-    case "frequency-optimized":
+    case 'frequency-optimized':
       nameMap = optimizeByFrequency(frequencyMap, validatedOptions);
       break;
 
-    case "sequential":
+    case 'sequential':
       nameMap = generateSequentialMapping(frequencyMap, validatedOptions);
       break;
 
-    case "hybrid":
+    case 'hybrid':
       nameMap = generateHybridMapping(frequencyMap, validatedOptions);
       break;
 
-    case "pretty":
+    case 'pretty':
       nameMap = generatePrettyMapping(frequencyMap, validatedOptions);
       break;
 
     default:
-      throw new NameGenerationError(
-        `Unknown strategy: ${validatedOptions.strategy}`,
-      );
+      throw new NameGenerationError(`Unknown strategy: ${validatedOptions.strategy}`);
   }
 
   // Calculate statistics
@@ -2177,7 +2068,7 @@ export async function generateOptimizedNames(
  */
 function generateSequentialMapping(
   frequencyMap: PatternFrequencyMap,
-  options: NameGenerationOptions,
+  options: NameGenerationOptions
 ): Map<string, string> {
   const nameMap = new Map<string, string>();
   const classNames = Array.from(frequencyMap.keys()).sort(); // Alphabetical order
@@ -2196,7 +2087,7 @@ function generateSequentialMapping(
  */
 function generateHybridMapping(
   frequencyMap: PatternFrequencyMap,
-  options: NameGenerationOptions,
+  options: NameGenerationOptions
 ): Map<string, string> {
   const nameMap = new Map<string, string>();
   const sortedClasses = sortByFrequency(frequencyMap, options);
@@ -2207,9 +2098,7 @@ function generateHybridMapping(
   const lowFrequencyClasses = sortedClasses.slice(splitPoint);
 
   // Generate frequency-optimized names for high-frequency classes
-  const highFreqMap = new Map(
-    highFrequencyClasses.map((item) => [item.name, item.data]),
-  );
+  const highFreqMap = new Map(highFrequencyClasses.map((item) => [item.name, item.data]));
   const optimizedMap = optimizeByFrequency(highFreqMap, options);
 
   // Add to result
@@ -2237,16 +2126,13 @@ function generateHybridMapping(
  */
 function generatePrettyMapping(
   frequencyMap: PatternFrequencyMap,
-  options: NameGenerationOptions,
+  options: NameGenerationOptions
 ): Map<string, string> {
   const nameMap = new Map<string, string>();
   const sortedClasses = sortByFrequency(frequencyMap, options);
 
   // Create a shared pretty name cache for efficient permutation management
-  const prettyCache = createPrettyNameCache(
-    options.alphabet,
-    options.prettyNameMaxLength || 6,
-  );
+  const prettyCache = createPrettyNameCache(options.alphabet, options.prettyNameMaxLength || 6);
   const collisionCache = createNameCollisionCache(options);
 
   let index = 0;
@@ -2259,12 +2145,7 @@ function generatePrettyMapping(
   for (const classItem of sortedClasses) {
     try {
       // Generate pretty name for this class
-      const prettyResult = generatePrettyNameWithCache(
-        index,
-        options,
-        prettyCache,
-        collisionCache,
-      );
+      const prettyResult = generatePrettyNameWithCache(index, options, prettyCache, collisionCache);
 
       // Track statistics
       statistics.totalAestheticScore += prettyResult.aestheticScore;
@@ -2280,7 +2161,7 @@ function generatePrettyMapping(
       // If pretty name generation fails completely, fall back to sequential
       if (
         error instanceof PrettyNameExhaustionError &&
-        options.prettyNameExhaustionStrategy === "error"
+        options.prettyNameExhaustionStrategy === 'error'
       ) {
         throw error; // Re-throw if error strategy is selected
       }
@@ -2295,7 +2176,7 @@ function generatePrettyMapping(
 
   // Log statistics for debugging
   console.debug(
-    `Pretty name generation complete: ${statistics.permutationCount} permutations, ${statistics.fallbackCount} fallbacks, average aesthetic score: ${statistics.totalAestheticScore / sortedClasses.length}`,
+    `Pretty name generation complete: ${statistics.permutationCount} permutations, ${statistics.fallbackCount} fallbacks, average aesthetic score: ${statistics.totalAestheticScore / sortedClasses.length}`
   );
 
   return nameMap;
@@ -2308,17 +2189,13 @@ function generatePrettyNameWithCache(
   index: number,
   options: NameGenerationOptions,
   prettyCache: PrettyNameCache,
-  collisionCache: NameCollisionCache,
+  collisionCache: NameCollisionCache
 ): PrettyNameResult {
   const maxAttempts = 1000; // Prevent infinite loops
   let attempts = 0;
 
   while (attempts < maxAttempts) {
-    const result = generatePrettyNameFromCache(
-      index + attempts,
-      options,
-      prettyCache,
-    );
+    const result = generatePrettyNameFromCache(index + attempts, options, prettyCache);
 
     // Check for collisions with existing names
     if (!hasNameCollision(result.name, collisionCache)) {
@@ -2347,8 +2224,8 @@ function generatePrettyNameWithCache(
   // If we can't find a non-colliding name, throw an error
   throw new CollisionError(
     `Unable to generate non-colliding pretty name after ${maxAttempts} attempts`,
-    "multiple-collisions",
-    "pretty-name-generation",
+    'multiple-collisions',
+    'pretty-name-generation'
   );
 }
 
@@ -2358,13 +2235,9 @@ function generatePrettyNameWithCache(
 function generatePrettyNameFromCache(
   index: number,
   options: NameGenerationOptions,
-  cache: PrettyNameCache,
+  cache: PrettyNameCache
 ): PrettyNameResult {
-  const {
-    alphabet,
-    prettyNameMaxLength,
-    prettyNamePreferShorter,
-  } = options;
+  const { alphabet, prettyNameMaxLength, prettyNamePreferShorter } = options;
   const maxLength = prettyNameMaxLength || 6;
 
   // Try to generate a pretty name from permutations
@@ -2385,7 +2258,7 @@ function generatePrettyNameFromCache(
         aestheticScore,
         isExhausted: false,
         fallbackUsed: false,
-        generationStrategy: "permutation",
+        generationStrategy: 'permutation',
       };
       break;
     }
@@ -2397,7 +2270,7 @@ function generatePrettyNameFromCache(
   }
 
   // Apply prefix/suffix
-  const finalName = `${options.prefix || ""}${result.name}${options.suffix || ""}`;
+  const finalName = `${options.prefix || ''}${result.name}${options.suffix || ''}`;
 
   // Validate CSS compliance
   if (options.ensureCssValid && !isValidCssIdentifier(finalName)) {
@@ -2408,7 +2281,7 @@ function generatePrettyNameFromCache(
     throw new InvalidNameError(
       `Generated pretty name "${finalName}" is not a valid CSS identifier`,
       finalName,
-      "css-invalid",
+      'css-invalid'
     );
   }
 
@@ -2423,7 +2296,7 @@ function generatePrettyNameFromCache(
  */
 function createGeneratedNameArray(
   frequencyMap: PatternFrequencyMap,
-  nameMap: Map<string, string>,
+  nameMap: Map<string, string>
 ): GeneratedName[] {
   const generatedNames: GeneratedName[] = [];
   let index = 0;
@@ -2448,9 +2321,7 @@ function createGeneratedNameArray(
 /**
  * Calculate length distribution statistics
  */
-function calculateLengthDistribution(
-  generatedNames: GeneratedName[],
-): Map<number, number> {
+function calculateLengthDistribution(generatedNames: GeneratedName[]): Map<number, number> {
   const distribution = new Map<number, number>();
 
   for (const name of generatedNames) {
@@ -2471,29 +2342,26 @@ function calculateFrequencyBucketStats(generatedNames: GeneratedName[]): Array<{
 }> {
   if (generatedNames.length === 0) return [];
 
-  const sortedByFreq = [...generatedNames].sort(
-    (a, b) => b.frequency - a.frequency,
-  );
+  const sortedByFreq = [...generatedNames].sort((a, b) => b.frequency - a.frequency);
   const maxFreq = sortedByFreq[0].frequency;
   const minFreq = sortedByFreq[sortedByFreq.length - 1].frequency;
 
   const buckets = [
-    { min: maxFreq * 0.8, max: maxFreq, label: "Very High" },
-    { min: maxFreq * 0.6, max: maxFreq * 0.8, label: "High" },
-    { min: maxFreq * 0.4, max: maxFreq * 0.6, label: "Medium" },
-    { min: maxFreq * 0.2, max: maxFreq * 0.4, label: "Low" },
-    { min: minFreq, max: maxFreq * 0.2, label: "Very Low" },
+    { min: maxFreq * 0.8, max: maxFreq, label: 'Very High' },
+    { min: maxFreq * 0.6, max: maxFreq * 0.8, label: 'High' },
+    { min: maxFreq * 0.4, max: maxFreq * 0.6, label: 'Medium' },
+    { min: maxFreq * 0.2, max: maxFreq * 0.4, label: 'Low' },
+    { min: minFreq, max: maxFreq * 0.2, label: 'Very Low' },
   ];
 
   return buckets.map((bucket) => {
     const bucketNames = generatedNames.filter(
-      (name) => name.frequency >= bucket.min && name.frequency < bucket.max,
+      (name) => name.frequency >= bucket.min && name.frequency < bucket.max
     );
 
     const averageCompression =
       bucketNames.length > 0
-        ? bucketNames.reduce((sum, name) => sum + name.compressionRatio, 0) /
-          bucketNames.length
+        ? bucketNames.reduce((sum, name) => sum + name.compressionRatio, 0) / bucketNames.length
         : 0;
 
     return {
@@ -2513,10 +2381,10 @@ function calculateFrequencyBucketStats(generatedNames: GeneratedName[]): Array<{
 export function exportNameGenerationResult(result: NameGenerationResult): {
   nameMap: Record<string, string>;
   reverseMap: Record<string, string>;
-  metadata: NameGenerationResult["metadata"];
+  metadata: NameGenerationResult['metadata'];
   statistics: {
     lengthDistribution: Record<number, number>;
-    frequencyBuckets: NameGenerationResult["statistics"]["frequencyBuckets"];
+    frequencyBuckets: NameGenerationResult['statistics']['frequencyBuckets'];
     mostCompressed: GeneratedName[];
     leastCompressed: GeneratedName[];
   };
@@ -2526,9 +2394,7 @@ export function exportNameGenerationResult(result: NameGenerationResult): {
     reverseMap: Object.fromEntries(result.reverseMap),
     metadata: result.metadata,
     statistics: {
-      lengthDistribution: Object.fromEntries(
-        result.statistics.lengthDistribution,
-      ),
+      lengthDistribution: Object.fromEntries(result.statistics.lengthDistribution),
       frequencyBuckets: result.statistics.frequencyBuckets,
       mostCompressed: result.statistics.mostCompressed,
       leastCompressed: result.statistics.leastCompressed,
@@ -2545,26 +2411,26 @@ export function exportNameGenerationResult(result: NameGenerationResult): {
  */
 export async function generateSimpleNames(
   classNames: string[],
-  options: Partial<NameGenerationOptions> = {},
+  options: Partial<NameGenerationOptions> = {}
 ): Promise<Map<string, string>> {
   const defaultOptions: NameGenerationOptions = {
-    strategy: "sequential",
+    strategy: 'sequential',
     batchSize: 1000,
-    alphabet: "abcdefghijklmnopqrstuvwxyz",
+    alphabet: 'abcdefghijklmnopqrstuvwxyz',
     numericSuffix: false,
     startIndex: 0,
     enableFrequencyOptimization: false,
     frequencyThreshold: 1,
     enableCaching: false,
-    reservedNames: ["a", "an", "and", "or", "not"],
+    reservedNames: ['a', 'an', 'and', 'or', 'not'],
     avoidConflicts: true,
     maxCacheSize: 50000,
-    prefix: "",
-    suffix: "",
+    prefix: '',
+    suffix: '',
     ensureCssValid: true,
     prettyNameMaxLength: 6,
     prettyNamePreferShorter: true,
-    prettyNameExhaustionStrategy: "fallback-hybrid",
+    prettyNameExhaustionStrategy: 'fallback-hybrid',
   };
   const validatedOptions = validateNameGenerationOptions({
     ...defaultOptions,

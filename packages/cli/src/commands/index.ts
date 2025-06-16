@@ -1,6 +1,6 @@
 /**
  * Command Registration System
- * 
+ *
  * Centralized registration of all CLI commands for the enigma CLI.
  */
 
@@ -15,7 +15,7 @@ export function registerCommands(program: Command): void {
   // Configuration commands
   program.addCommand(createInitConfigCommand());
   program.addCommand(createCssConfigCommand());
-  
+
   // TODO: Add remaining commands as they are migrated
   // program.addCommand(createCssOptimizeCommand());
   // program.addCommand(createCssAnalyzeCommand());
@@ -32,4 +32,4 @@ export {
   // createCssOptimizeCommand,
   // createCssAnalyzeCommand,
   // createPluginCommand,
-}; 
+};

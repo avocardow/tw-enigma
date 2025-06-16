@@ -10,11 +10,11 @@
  * Optimizes Tailwind CSS classes by extracting patterns and applying frequency-based optimizations
  */
 
-import type { Plugin, Root, Rule, Declaration } from "postcss";
-import postcss from "postcss";
-import { z } from "zod";
-import { BaseEnigmaPlugin } from "../postcssPlugin";
-import type { PluginContext } from "../../types/plugins";
+import type { Plugin, Root, Rule, Declaration } from 'postcss';
+import postcss from 'postcss';
+import { z } from 'zod';
+import { BaseEnigmaPlugin } from '../postcssPlugin';
+import type { PluginContext } from '../../types/plugins';
 
 /**
  * Configuration schema for Tailwind Optimizer
@@ -25,7 +25,7 @@ const TailwindOptimizerConfigSchema = z.object({
   minFrequency: z.number().min(1).optional().default(2),
   preserveComments: z.boolean().optional().default(false),
   generateUtilityClasses: z.boolean().optional().default(true),
-  prefixOptimized: z.string().optional().default("tw-opt-"),
+  prefixOptimized: z.string().optional().default('tw-opt-'),
 });
 
 type TailwindOptimizerConfig = z.infer<typeof TailwindOptimizerConfigSchema>;
@@ -35,11 +35,11 @@ type TailwindOptimizerConfig = z.infer<typeof TailwindOptimizerConfigSchema>;
  */
 export class TailwindOptimizer extends BaseEnigmaPlugin {
   readonly meta = {
-    name: "tailwind-optimizer",
-    version: "1.0.0",
+    name: 'tailwind-optimizer',
+    version: '1.0.0',
     description:
-      "Optimizes Tailwind CSS by extracting and consolidating frequently used class patterns",
-    author: "Enigma Core Team",
+      'Optimizes Tailwind CSS by extracting and consolidating frequently used class patterns',
+    author: 'Enigma Core Team',
   };
 
   readonly configSchema = TailwindOptimizerConfigSchema;
@@ -48,49 +48,46 @@ export class TailwindOptimizer extends BaseEnigmaPlugin {
     return {
       postcssPlugin: 'enigma-tailwind-optimizer',
       Once: async (root: Root) => {
-      const config = context.config.options as TailwindOptimizerConfig;
-      const startMemory = this.getMemoryUsage();
+        const config = context.config.options as TailwindOptimizerConfig;
+        const startMemory = this.getMemoryUsage();
 
-      this.logger.debug("Starting Tailwind optimization", { config });
+        this.logger.debug('Starting Tailwind optimization', { config });
 
-      try {
-        // Extract utility classes from frequency data
-        if (config.extractUtilities && context.frequencyData) {
-          await this.extractUtilityClasses(root, context);
+        try {
+          // Extract utility classes from frequency data
+          if (config.extractUtilities && context.frequencyData) {
+            await this.extractUtilityClasses(root, context);
+          }
+
+          // Optimize frequent class combinations
+          if (config.optimizeFrequentClasses && context.frequencyData) {
+            await this.optimizeFrequentClasses(root, context);
+          }
+
+          // Generate optimized utility classes
+          if (config.generateUtilityClasses) {
+            await this.generateOptimizedUtilities(root, context);
+          }
+
+          const endMemory = this.getMemoryUsage();
+          context.metrics.recordMemory(Math.max(0, endMemory - startMemory));
+
+          this.logger.debug('Tailwind optimization completed');
+        } catch (error) {
+          this.addWarning(
+            context,
+            `Tailwind optimization failed: ${error instanceof Error ? error.message : String(error)}`
+          );
+          throw error;
         }
-
-        // Optimize frequent class combinations
-        if (config.optimizeFrequentClasses && context.frequencyData) {
-          await this.optimizeFrequentClasses(root, context);
-        }
-
-        // Generate optimized utility classes
-        if (config.generateUtilityClasses) {
-          await this.generateOptimizedUtilities(root, context);
-        }
-
-        const endMemory = this.getMemoryUsage();
-        context.metrics.recordMemory(Math.max(0, endMemory - startMemory));
-
-        this.logger.debug("Tailwind optimization completed");
-      } catch (error) {
-        this.addWarning(
-          context,
-          `Tailwind optimization failed: ${error instanceof Error ? error.message : String(error)}`,
-        );
-        throw error;
-      }
-    }
+      },
     };
   }
 
   /**
    * Extract utility classes from CSS
    */
-  private async extractUtilityClasses(
-    root: Root,
-    context: PluginContext,
-  ): Promise<void> {
+  private async extractUtilityClasses(root: Root, context: PluginContext): Promise<void> {
     // const _config = context.config.options as TailwindOptimizerConfig;
     const frequencyData = context.frequencyData;
 
@@ -117,7 +114,7 @@ export class TailwindOptimizer extends BaseEnigmaPlugin {
 
     // Log extracted utilities
     if (extractedUtilities.size > 0) {
-      this.logger.debug("Extracted utility classes", {
+      this.logger.debug('Extracted utility classes', {
         count: extractedUtilities.size,
         utilities: Array.from(extractedUtilities.keys()).slice(0, 10), // Log first 10
       });
@@ -127,10 +124,7 @@ export class TailwindOptimizer extends BaseEnigmaPlugin {
   /**
    * Optimize frequently used class combinations
    */
-  private async optimizeFrequentClasses(
-    root: Root,
-    context: PluginContext,
-  ): Promise<void> {
+  private async optimizeFrequentClasses(root: Root, context: PluginContext): Promise<void> {
     const config = context.config.options as TailwindOptimizerConfig;
     const frequencyData = context.frequencyData;
 
@@ -154,7 +148,7 @@ export class TailwindOptimizer extends BaseEnigmaPlugin {
               // Add comment for debugging if enabled
               if (config.preserveComments) {
                 const comment = postcss.comment({
-                  text: ` Optimized from frequent pattern: ${className} (frequency: ${data.jsxFrequency}) `
+                  text: ` Optimized from frequent pattern: ${className} (frequency: ${data.jsxFrequency}) `,
                 });
                 rule.parent?.insertBefore(rule, comment);
               }
@@ -167,7 +161,7 @@ export class TailwindOptimizer extends BaseEnigmaPlugin {
       }
     }
 
-    this.logger.debug("Optimized frequent classes", {
+    this.logger.debug('Optimized frequent classes', {
       count: optimizedClasses.size,
       optimizations: Array.from(optimizedClasses.entries()).slice(0, 5),
     });
@@ -176,10 +170,7 @@ export class TailwindOptimizer extends BaseEnigmaPlugin {
   /**
    * Generate optimized utility classes
    */
-  private async generateOptimizedUtilities(
-    root: Root,
-    context: PluginContext,
-  ): Promise<void> {
+  private async generateOptimizedUtilities(root: Root, context: PluginContext): Promise<void> {
     const config = context.config.options as TailwindOptimizerConfig;
     const patternData = context.patternData;
 
@@ -200,15 +191,15 @@ export class TailwindOptimizer extends BaseEnigmaPlugin {
           // Add declarations based on pattern
           // Note: PatternGroup doesn't have properties, so we'll create a basic utility
           utilityRule.append({
-            prop: "display",
-            value: "block",
+            prop: 'display',
+            value: 'block',
             source: root.source,
           });
 
           // Add comment for debugging
           if (config.preserveComments) {
             const comment = postcss.comment({
-              text: ` Generated utility for pattern: ${pattern.classes.join(" ")} `
+              text: ` Generated utility for pattern: ${pattern.classes.join(' ')} `,
             });
             root.insertBefore(utilityRule, comment);
           }
@@ -218,13 +209,13 @@ export class TailwindOptimizer extends BaseEnigmaPlugin {
         } catch {
           this.addWarning(
             context,
-            `Failed to generate utility for pattern: ${pattern.classes.join(" ")}`,
+            `Failed to generate utility for pattern: ${pattern.classes.join(' ')}`
           );
         }
       }
     }
 
-    this.logger.debug("Generated optimized utilities", {
+    this.logger.debug('Generated optimized utilities', {
       count: generatedCount,
     });
   }
@@ -237,14 +228,14 @@ export class TailwindOptimizer extends BaseEnigmaPlugin {
     const selector = rule.selector.trim();
 
     // Must be a class selector
-    if (!selector.startsWith(".")) return false;
+    if (!selector.startsWith('.')) return false;
 
     // Should be a simple class (no spaces, combinators, etc.)
     if (
-      selector.includes(" ") ||
-      selector.includes(">") ||
-      selector.includes("+") ||
-      selector.includes("~")
+      selector.includes(' ') ||
+      selector.includes('>') ||
+      selector.includes('+') ||
+      selector.includes('~')
     ) {
       return false;
     }

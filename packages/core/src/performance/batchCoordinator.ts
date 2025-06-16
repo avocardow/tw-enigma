@@ -12,18 +12,18 @@
  * resource management, and performance optimization strategies.
  */
 
-import { EventEmitter } from "events";
-import { performance } from "perf_hooks";
-import { cpus } from "os";
-import { createLogger } from "../utils/logger";
+import { EventEmitter } from 'events';
+import { performance } from 'perf_hooks';
+import { cpus } from 'os';
+import { createLogger } from '../utils/logger';
 import type {
   BatchConfig,
   // PerformanceMetrics - removed, not used
   // WorkerConfig - removed, not used
   // CacheConfig - removed, not used
-} from "./config";
+} from './config';
 
-const logger = createLogger("BatchCoordinator");
+const logger = createLogger('BatchCoordinator');
 
 /**
  * Batch job definition
@@ -32,7 +32,7 @@ interface BatchJob<T = unknown> {
   id: string;
   type: string;
   input: T;
-  priority: "low" | "medium" | "high" | "critical";
+  priority: 'low' | 'medium' | 'high' | 'critical';
   estimatedDuration?: number;
   dependencies?: string[];
   retryCount?: number;
@@ -83,23 +83,20 @@ interface BatchExecutionOptions {
   maxConcurrency?: number;
   batchSize?: number;
   timeout?: number;
-  retryStrategy?: "none" | "linear" | "exponential";
+  retryStrategy?: 'none' | 'linear' | 'exponential';
   priorityQueue?: boolean;
   enableDependencies?: boolean;
   resourceLimits?: {
     maxMemory?: number;
     maxCpu?: number;
   };
-  groupingStrategy?: "type" | "priority" | "size" | "mixed";
+  groupingStrategy?: 'type' | 'priority' | 'size' | 'mixed';
 }
 
 /**
  * Job processor function type
  */
-type JobProcessor<T = unknown, R = unknown> = (
-  input: T,
-  job: BatchJob<T>,
-) => Promise<R> | R;
+type JobProcessor<T = unknown, R = unknown> = (input: T, job: BatchJob<T>) => Promise<R> | R;
 
 /**
  * Batch processing coordinator that efficiently manages multiple optimization tasks
@@ -132,7 +129,7 @@ export class BatchCoordinator extends EventEmitter {
       queueTimeout: 30000,
       retryAttempts: 3,
       retryDelay: 1000,
-      priorityLevels: ["critical", "high", "medium", "low"],
+      priorityLevels: ['critical', 'high', 'medium', 'low'],
       enableDependencies: true,
       resourceLimits: {
         maxMemoryUsage: 0.8, // 80% of available memory
@@ -167,7 +164,7 @@ export class BatchCoordinator extends EventEmitter {
 
     this.setupResourceMonitoring();
 
-    logger.info("BatchCoordinator initialized", {
+    logger.info('BatchCoordinator initialized', {
       maxConcurrency: this.config.maxConcurrency,
       batchSize: this.config.batchSize,
       priorityLevels: this.config.priorityLevels,
@@ -177,12 +174,9 @@ export class BatchCoordinator extends EventEmitter {
   /**
    * Register a job processor for a specific job type
    */
-  registerProcessor<T, R>(
-    jobType: string,
-    processor: JobProcessor<T, R>,
-  ): void {
+  registerProcessor<T, R>(jobType: string, processor: JobProcessor<T, R>): void {
     this.processors.set(jobType, processor as JobProcessor);
-    logger.debug("Registered processor for job type", { jobType });
+    logger.debug('Registered processor for job type', { jobType });
   }
 
   /**
@@ -214,14 +208,14 @@ export class BatchCoordinator extends EventEmitter {
     this.stats.totalJobs++;
     this.stats.queueLength = this.jobQueue.size;
 
-    logger.debug("Job added to queue", {
+    logger.debug('Job added to queue', {
       jobId: job.id,
       type: job.type,
       priority: job.priority,
       dependencies: job.dependencies?.length || 0,
     });
 
-    this.emit("jobAdded", { job });
+    this.emit('jobAdded', { job });
 
     // Start processing if not already running
     if (!this.isProcessing) {
@@ -234,7 +228,7 @@ export class BatchCoordinator extends EventEmitter {
   /**
    * Add multiple jobs to the batch queue
    */
-  addBatch<T>(jobs: Array<Omit<BatchJob<T>, "id">>): string[] {
+  addBatch<T>(jobs: Array<Omit<BatchJob<T>, 'id'>>): string[] {
     const jobIds: string[] = [];
 
     for (const jobData of jobs) {
@@ -245,7 +239,7 @@ export class BatchCoordinator extends EventEmitter {
       jobIds.push(this.addJob(job));
     }
 
-    logger.info("Batch of jobs added", {
+    logger.info('Batch of jobs added', {
       batchSize: jobs.length,
       jobIds: jobIds.slice(0, 5), // Log first 5 IDs
     });
@@ -256,22 +250,20 @@ export class BatchCoordinator extends EventEmitter {
   /**
    * Execute all jobs in the queue with optimal batching and concurrency
    */
-  async executeBatch(
-    options: BatchExecutionOptions = {},
-  ): Promise<BatchResult[]> {
+  async executeBatch(options: BatchExecutionOptions = {}): Promise<BatchResult[]> {
     const startTime = performance.now();
     const executionOptions = {
       maxConcurrency: this.config.maxConcurrency,
       batchSize: this.config.batchSize,
       timeout: this.config.queueTimeout,
-      retryStrategy: "exponential" as const,
+      retryStrategy: 'exponential' as const,
       priorityQueue: true,
       enableDependencies: this.config.enableDependencies,
-      groupingStrategy: "mixed" as const,
+      groupingStrategy: 'mixed' as const,
       ...options,
     };
 
-    logger.info("Starting batch execution", {
+    logger.info('Starting batch execution', {
       totalJobs: this.stats.totalJobs,
       queueLength: this.stats.queueLength,
       maxConcurrency: executionOptions.maxConcurrency,
@@ -287,14 +279,11 @@ export class BatchCoordinator extends EventEmitter {
 
       // Process groups with concurrency control
       for (const group of jobGroups) {
-        const groupResults = await this.processJobGroup(
-          group,
-          executionOptions,
-        );
+        const groupResults = await this.processJobGroup(group, executionOptions);
         results.push(...groupResults);
 
         // Emit progress
-        this.emit("batchProgress", {
+        this.emit('batchProgress', {
           completed: results.length,
           total: this.stats.totalJobs,
           percentage: (results.length / this.stats.totalJobs) * 100,
@@ -307,7 +296,7 @@ export class BatchCoordinator extends EventEmitter {
 
       this.updateFinalStats(results, totalDuration);
 
-      logger.info("Batch execution completed", {
+      logger.info('Batch execution completed', {
         totalJobs: results.length,
         successfulJobs: results.filter((r) => r.success).length,
         failedJobs: results.filter((r) => !r.success).length,
@@ -316,7 +305,7 @@ export class BatchCoordinator extends EventEmitter {
         successRate: this.stats.successRate,
       });
 
-      this.emit("batchCompleted", {
+      this.emit('batchCompleted', {
         results,
         stats: this.stats,
         duration: totalDuration,
@@ -324,13 +313,13 @@ export class BatchCoordinator extends EventEmitter {
 
       return results;
     } catch (error) {
-      logger.error("Batch execution failed", {
+      logger.error('Batch execution failed', {
         error: error instanceof Error ? error.message : String(error),
         processedJobs: results.length,
         totalJobs: this.stats.totalJobs,
       });
 
-      this.emit("batchFailed", { error, results });
+      this.emit('batchFailed', { error, results });
       throw error;
     } finally {
       this.isProcessing = false;
@@ -362,8 +351,8 @@ export class BatchCoordinator extends EventEmitter {
       this.removeFromPriorityQueues(jobId);
       this.stats.queueLength = this.jobQueue.size;
 
-      logger.debug("Job cancelled", { jobId });
-      this.emit("jobCancelled", { jobId });
+      logger.debug('Job cancelled', { jobId });
+      this.emit('jobCancelled', { jobId });
 
       return true;
     }
@@ -380,15 +369,15 @@ export class BatchCoordinator extends EventEmitter {
     this.dependencyGraph.clear();
     this.stats.queueLength = 0;
 
-    logger.info("Job queue cleared", { cancelledJobs: cancelledCount });
-    this.emit("queueCleared", { cancelledJobs: cancelledCount });
+    logger.info('Job queue cleared', { cancelledJobs: cancelledCount });
+    this.emit('queueCleared', { cancelledJobs: cancelledCount });
   }
 
   /**
    * Shutdown the batch coordinator gracefully
    */
   async shutdown(timeout = 30000): Promise<void> {
-    logger.info("Shutting down BatchCoordinator", { timeout });
+    logger.info('Shutting down BatchCoordinator', { timeout });
 
     if (this.resourceMonitor) {
       clearInterval(this.resourceMonitor);
@@ -402,9 +391,9 @@ export class BatchCoordinator extends EventEmitter {
 
     // Force cleanup
     this.cleanup();
-    this.emit("shutdown");
+    this.emit('shutdown');
 
-    logger.info("BatchCoordinator shutdown complete");
+    logger.info('BatchCoordinator shutdown complete');
   }
 
   /**
@@ -419,8 +408,7 @@ export class BatchCoordinator extends EventEmitter {
 
     try {
       while (this.jobQueue.size > 0 && this.isProcessing) {
-        const availableSlots =
-          this.config.maxConcurrency - this.processingJobs.size;
+        const availableSlots = this.config.maxConcurrency - this.processingJobs.size;
 
         if (availableSlots <= 0) {
           // Wait for a job to complete
@@ -443,7 +431,7 @@ export class BatchCoordinator extends EventEmitter {
         }
       }
     } catch (error) {
-      logger.error("Processing loop error", {
+      logger.error('Processing loop error', {
         error: error instanceof Error ? error.message : String(error),
       });
     } finally {
@@ -478,7 +466,7 @@ export class BatchCoordinator extends EventEmitter {
       // Handle retry logic
       if ((job.retryCount || 0) < (job.maxRetries || 0)) {
         job.retryCount = (job.retryCount || 0) + 1;
-        logger.warn("Job failed, retrying", {
+        logger.warn('Job failed, retrying', {
           jobId: job.id,
           retryCount: job.retryCount,
           maxRetries: job.maxRetries,
@@ -499,7 +487,7 @@ export class BatchCoordinator extends EventEmitter {
   private async executeJobWithTimeout<T, R>(
     job: BatchJob<T>,
     processor: JobProcessor<T, R>,
-    startTime: number,
+    startTime: number
   ): Promise<BatchResult<R>> {
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
@@ -528,10 +516,7 @@ export class BatchCoordinator extends EventEmitter {
   /**
    * Handle job completion result
    */
-  private handleJobResult<R>(
-    job: BatchJob,
-    result: Partial<BatchResult<R>>,
-  ): void {
+  private handleJobResult<R>(job: BatchJob, result: Partial<BatchResult<R>>): void {
     const finalResult: BatchResult<R> = {
       jobId: job.id,
       success: false,
@@ -545,14 +530,11 @@ export class BatchCoordinator extends EventEmitter {
       job.retryCount = (job.retryCount || 0) + 1;
 
       // Exponential backoff delay
-      const delay = Math.min(
-        this.config.retryDelay * Math.pow(2, job.retryCount - 1),
-        30000,
-      );
+      const delay = Math.min(this.config.retryDelay * Math.pow(2, job.retryCount - 1), 30000);
 
       setTimeout(() => {
         this.addToPriorityQueue(job, true);
-        logger.debug("Job scheduled for retry", {
+        logger.debug('Job scheduled for retry', {
           jobId: job.id,
           retryCount: job.retryCount,
           delay,
@@ -567,23 +549,21 @@ export class BatchCoordinator extends EventEmitter {
 
     if (finalResult.success) {
       this.stats.completedJobs++;
-      this.emit("jobCompleted", { job, result: finalResult });
+      this.emit('jobCompleted', { job, result: finalResult });
     } else {
       this.stats.failedJobs++;
-      this.emit("jobFailed", { job, result: finalResult });
+      this.emit('jobFailed', { job, result: finalResult });
     }
 
     // Update statistics
     this.stats.totalDuration += finalResult.duration;
     this.stats.averageDuration =
-      this.stats.totalDuration /
-      (this.stats.completedJobs + this.stats.failedJobs);
+      this.stats.totalDuration / (this.stats.completedJobs + this.stats.failedJobs);
     this.stats.successRate =
-      this.stats.completedJobs /
-      (this.stats.completedJobs + this.stats.failedJobs);
+      this.stats.completedJobs / (this.stats.completedJobs + this.stats.failedJobs);
     this.stats.errorRate = 1 - this.stats.successRate;
 
-    logger.debug("Job result processed", {
+    logger.debug('Job result processed', {
       jobId: job.id,
       success: finalResult.success,
       duration: finalResult.duration,
@@ -601,13 +581,13 @@ export class BatchCoordinator extends EventEmitter {
     const jobs = Array.from(this.jobQueue.values());
 
     switch (strategy) {
-      case "type":
+      case 'type':
         return this.groupByType(jobs);
-      case "priority":
+      case 'priority':
         return this.groupByPriority(jobs);
-      case "size":
+      case 'size':
         return this.groupBySize(jobs);
-      case "mixed":
+      case 'mixed':
       default:
         return this.groupMixed(jobs);
     }
@@ -654,14 +634,11 @@ export class BatchCoordinator extends EventEmitter {
   private groupBySize(jobs: BatchJob[]): BatchJob[][] {
     const smallJobs = jobs.filter((j) => (j.estimatedDuration || 0) < 1000);
     const mediumJobs = jobs.filter(
-      (j) =>
-        (j.estimatedDuration || 0) >= 1000 && (j.estimatedDuration || 0) < 5000,
+      (j) => (j.estimatedDuration || 0) >= 1000 && (j.estimatedDuration || 0) < 5000
     );
     const largeJobs = jobs.filter((j) => (j.estimatedDuration || 0) >= 5000);
 
-    return [smallJobs, mediumJobs, largeJobs].filter(
-      (group) => group.length > 0,
-    );
+    return [smallJobs, mediumJobs, largeJobs].filter((group) => group.length > 0);
   }
 
   /**
@@ -691,7 +668,7 @@ export class BatchCoordinator extends EventEmitter {
    */
   private async processJobGroup(
     jobs: BatchJob[],
-    options: BatchExecutionOptions,
+    options: BatchExecutionOptions
   ): Promise<BatchResult[]> {
     const results: BatchResult[] = [];
     const processing: Promise<BatchResult>[] = [];
@@ -703,15 +680,12 @@ export class BatchCoordinator extends EventEmitter {
       }
 
       // Check concurrency limit
-      if (
-        processing.length >=
-        (options.maxConcurrency || this.config.maxConcurrency)
-      ) {
+      if (processing.length >= (options.maxConcurrency || this.config.maxConcurrency)) {
         const result = await Promise.race(processing);
         results.push(result);
         processing.splice(
           processing.findIndex((p) => p === Promise.resolve(result)),
-          1,
+          1
         );
       }
 
@@ -719,7 +693,7 @@ export class BatchCoordinator extends EventEmitter {
       const processingPromise = this.executeJobWithTimeout(
         job,
         this.processors.get(job.type)!,
-        performance.now(),
+        performance.now()
       );
       processing.push(processingPromise);
     }
@@ -745,10 +719,7 @@ export class BatchCoordinator extends EventEmitter {
         if (jobs.length >= maxJobs) break;
 
         // Check dependencies
-        if (
-          this.config.enableDependencies &&
-          !this.areDependenciesSatisfied(job)
-        ) {
+        if (this.config.enableDependencies && !this.areDependenciesSatisfied(job)) {
           continue;
         }
 
@@ -825,7 +796,7 @@ export class BatchCoordinator extends EventEmitter {
       const job = this.jobQueue.get(jobId);
       if (job && this.areDependenciesSatisfied(job)) {
         // Job is now ready to process
-        this.emit("jobReady", { job });
+        this.emit('jobReady', { job });
       }
     }
   }
@@ -865,10 +836,7 @@ export class BatchCoordinator extends EventEmitter {
   /**
    * Update final batch statistics
    */
-  private updateFinalStats(
-    results: BatchResult[],
-    totalDuration: number,
-  ): void {
+  private updateFinalStats(results: BatchResult[], totalDuration: number): void {
     const successful = results.filter((r) => r.success).length;
     const failed = results.filter((r) => !r.success).length;
 
@@ -878,8 +846,7 @@ export class BatchCoordinator extends EventEmitter {
     this.stats.throughput = results.length / totalDuration;
     this.stats.successRate = successful / results.length;
     this.stats.errorRate = failed / results.length;
-    this.stats.averageDuration =
-      results.reduce((sum, r) => sum + r.duration, 0) / results.length;
+    this.stats.averageDuration = results.reduce((sum, r) => sum + r.duration, 0) / results.length;
   }
 
   /**

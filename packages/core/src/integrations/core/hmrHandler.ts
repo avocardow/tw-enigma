@@ -10,20 +10,16 @@
  * Manages live reloading and hot updates for Tailwind CSS changes during development
  */
 
-import { EventEmitter } from "events";
-import { createLogger } from "../../utils/logger";
-import type {
-  BuildToolContext,
-  BuildToolType,
-  OptimizationResult,
-} from "./buildToolPlugin.ts";
+import { EventEmitter } from 'events';
+import { createLogger } from '../../utils/logger';
+import type { BuildToolContext, BuildToolType, OptimizationResult } from './buildToolPlugin.ts';
 
-const logger = createLogger("hmr-handler");
+const logger = createLogger('hmr-handler');
 
 /**
  * HMR update types
  */
-export type HMRUpdateType = "css" | "js" | "asset" | "full-reload";
+export type HMRUpdateType = 'css' | 'js' | 'asset' | 'full-reload';
 
 /**
  * HMR configuration options
@@ -125,22 +121,13 @@ export class HMRHandler extends EventEmitter {
       delay: 100,
       liveReload: true,
       sourceMaps: true,
-      watchExtensions: [
-        ".css",
-        ".html",
-        ".js",
-        ".ts",
-        ".jsx",
-        ".tsx",
-        ".vue",
-        ".svelte",
-      ],
-      watchDirectories: ["src", "public", "app", "pages"],
-      ignore: ["node_modules/**", "dist/**", "build/**", ".git/**"],
+      watchExtensions: ['.css', '.html', '.js', '.ts', '.jsx', '.tsx', '.vue', '.svelte'],
+      watchDirectories: ['src', 'public', 'app', 'pages'],
+      ignore: ['node_modules/**', 'dist/**', 'build/**', '.git/**'],
       ...config,
     };
 
-    logger.debug("HMR handler initialized", { config: this.config });
+    logger.debug('HMR handler initialized', { config: this.config });
   }
 
   /**
@@ -148,7 +135,7 @@ export class HMRHandler extends EventEmitter {
    */
   async initialize(buildTool: BuildToolType, server: HMRServer): Promise<void> {
     if (!this.config.enabled) {
-      logger.debug("HMR disabled, skipping initialization");
+      logger.debug('HMR disabled, skipping initialization');
       return;
     }
 
@@ -161,7 +148,7 @@ export class HMRHandler extends EventEmitter {
         watchExtensions: this.config.watchExtensions,
       });
 
-      this.emit("initialized", { buildTool });
+      this.emit('initialized', { buildTool });
     } catch (error) {
       logger.error(`Failed to initialize HMR for ${buildTool}`, { error });
       throw error;
@@ -175,14 +162,14 @@ export class HMRHandler extends EventEmitter {
     filePath: string,
     css: string,
     context: BuildToolContext,
-    optimization?: OptimizationResult,
+    optimization?: OptimizationResult
   ): Promise<void> {
     if (!this.config.enabled) {
       return;
     }
 
     const payload: HMRUpdatePayload = {
-      type: "css",
+      type: 'css',
       filePath,
       css,
       optimization,
@@ -200,14 +187,14 @@ export class HMRHandler extends EventEmitter {
   async handleAssetUpdate(
     filePath: string,
     content: string,
-    context: BuildToolContext,
+    context: BuildToolContext
   ): Promise<void> {
     if (!this.config.enabled) {
       return;
     }
 
     const payload: HMRUpdatePayload = {
-      type: "asset",
+      type: 'asset',
       filePath,
       css: content,
       timestamp: Date.now(),
@@ -220,22 +207,19 @@ export class HMRHandler extends EventEmitter {
   /**
    * Trigger full page reload
    */
-  async triggerReload(
-    context: BuildToolContext,
-    reason?: string,
-  ): Promise<void> {
+  async triggerReload(context: BuildToolContext, reason?: string): Promise<void> {
     if (!this.config.enabled) {
       return;
     }
 
     const payload: HMRUpdatePayload = {
-      type: "full-reload",
-      filePath: "",
+      type: 'full-reload',
+      filePath: '',
       timestamp: Date.now(),
       buildTool: context.buildTool,
     };
 
-    logger.info("Triggering full page reload", {
+    logger.info('Triggering full page reload', {
       buildTool: context.buildTool,
       reason,
     });
@@ -276,7 +260,7 @@ export class HMRHandler extends EventEmitter {
       const timeSinceLastUpdate = Date.now() - this.lastUpdate;
       if (timeSinceLastUpdate < this.config.delay) {
         await new Promise((resolve) =>
-          setTimeout(resolve, this.config.delay - timeSinceLastUpdate),
+          setTimeout(resolve, this.config.delay - timeSinceLastUpdate)
         );
       }
 
@@ -284,9 +268,9 @@ export class HMRHandler extends EventEmitter {
         await this.processUpdate(entry);
         this.lastUpdate = Date.now();
 
-        this.emit("update", entry.payload);
+        this.emit('update', entry.payload);
       } catch (error) {
-        logger.error("Failed to process HMR update", {
+        logger.error('Failed to process HMR update', {
           error,
           payload: entry.payload,
           retries: entry.retries,
@@ -297,15 +281,13 @@ export class HMRHandler extends EventEmitter {
           entry.retries++;
           this.updateQueue.unshift(entry);
         } else {
-          logger.error(
-            "HMR update failed after 3 retries, triggering full reload",
-          );
+          logger.error('HMR update failed after 3 retries, triggering full reload');
           await this.triggerReload(
             {
               buildTool: entry.payload.buildTool,
-              phase: "development",
+              phase: 'development',
             } as BuildToolContext,
-            "HMR update failed",
+            'HMR update failed'
           );
         }
       }
@@ -322,9 +304,7 @@ export class HMRHandler extends EventEmitter {
     const server = this.servers.get(payload.buildTool);
 
     if (!server) {
-      throw new Error(
-        `No HMR server found for build tool: ${payload.buildTool}`,
-      );
+      throw new Error(`No HMR server found for build tool: ${payload.buildTool}`);
     }
 
     if (!server.isRunning()) {
@@ -334,7 +314,7 @@ export class HMRHandler extends EventEmitter {
     // Broadcast update to all connected clients
     server.broadcast(payload);
 
-    logger.debug("HMR update sent", {
+    logger.debug('HMR update sent', {
       type: payload.type,
       filePath: payload.filePath,
       buildTool: payload.buildTool,
@@ -352,13 +332,13 @@ export class HMRHandler extends EventEmitter {
 
     // Implementation would use chokidar or similar file watcher
     // For now, just log the intention
-    logger.info("Starting file watching for HMR", {
+    logger.info('Starting file watching for HMR', {
       projectRoot,
       watchDirectories: this.config.watchDirectories,
       watchExtensions: this.config.watchExtensions,
     });
 
-    this.emit("watching-started", { projectRoot });
+    this.emit('watching-started', { projectRoot });
   }
 
   /**
@@ -366,22 +346,22 @@ export class HMRHandler extends EventEmitter {
    */
   async stopWatching(): Promise<void> {
     for (const [, watcher] of Array.from(this.fileWatchers)) {
-      if (watcher && typeof watcher.close === "function") {
+      if (watcher && typeof watcher.close === 'function') {
         await watcher.close();
       }
     }
 
     this.fileWatchers.clear();
-    logger.info("File watching stopped");
+    logger.info('File watching stopped');
 
-    this.emit("watching-stopped");
+    this.emit('watching-stopped');
   }
 
   /**
    * Shutdown HMR handler
    */
   async shutdown(): Promise<void> {
-    logger.info("Shutting down HMR handler");
+    logger.info('Shutting down HMR handler');
 
     // Stop file watching
     await this.stopWatching();
@@ -400,7 +380,7 @@ export class HMRHandler extends EventEmitter {
     this.updateQueue.length = 0;
     this.isProcessing = false;
 
-    this.emit("shutdown");
+    this.emit('shutdown');
   }
 
   /**
@@ -415,7 +395,7 @@ export class HMRHandler extends EventEmitter {
       connectedServers: Array.from(this.servers.keys()),
       totalClients: Array.from(this.servers.values()).reduce(
         (total, server) => total + server.getClients().length,
-        0,
+        0
       ),
     };
   }
@@ -425,9 +405,9 @@ export class HMRHandler extends EventEmitter {
    */
   updateConfig(newConfig: Partial<HMRConfig>): void {
     this.config = { ...this.config, ...newConfig };
-    logger.debug("HMR configuration updated", { config: this.config });
+    logger.debug('HMR configuration updated', { config: this.config });
 
-    this.emit("config-updated", this.config);
+    this.emit('config-updated', this.config);
   }
 }
 
@@ -446,16 +426,7 @@ export const defaultHMRConfig: HMRConfig = {
   delay: 100,
   liveReload: true,
   sourceMaps: true,
-  watchExtensions: [
-    ".css",
-    ".html",
-    ".js",
-    ".ts",
-    ".jsx",
-    ".tsx",
-    ".vue",
-    ".svelte",
-  ],
-  watchDirectories: ["src", "public", "app", "pages"],
-  ignore: ["node_modules/**", "dist/**", "build/**", ".git/**"],
+  watchExtensions: ['.css', '.html', '.js', '.ts', '.jsx', '.tsx', '.vue', '.svelte'],
+  watchDirectories: ['src', 'public', 'app', 'pages'],
+  ignore: ['node_modules/**', 'dist/**', 'build/**', '.git/**'],
 };

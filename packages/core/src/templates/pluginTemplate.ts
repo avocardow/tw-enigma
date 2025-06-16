@@ -1,9 +1,5 @@
-import {
-  BaseEnigmaPlugin,
-  EnigmaPluginContext,
-  PluginConfig,
-} from "../types/plugins";
-import { createLogger } from "../utils/logger";
+import { BaseEnigmaPlugin, EnigmaPluginContext, PluginConfig } from '../types/plugins';
+import { createLogger } from '../utils/logger';
 
 /**
  * Basic Plugin Template
@@ -21,23 +17,23 @@ interface MyCustomPluginOptions extends Record<string, unknown> {
 
 export class MyCustomPlugin extends BaseEnigmaPlugin {
   readonly meta = {
-    name: "my-custom-plugin",
-    version: "1.0.0",
-    description: "A custom plugin for CSS optimization",
-    author: "Your Name",
-    tags: ["css", "optimization", "custom"],
+    name: 'my-custom-plugin',
+    version: '1.0.0',
+    description: 'A custom plugin for CSS optimization',
+    author: 'Your Name',
+    tags: ['css', 'optimization', 'custom'],
   };
 
   private options: MyCustomPluginOptions;
   private logger = createLogger(`plugin:${this.meta.name}`);
 
-  constructor(config: PluginConfig = { name: "my-custom-plugin" }) {
+  constructor(config: PluginConfig = { name: 'my-custom-plugin' }) {
     super(config);
 
     // Merge default options with provided config
     this.options = {
       enabled: true,
-      customOption: "default-value",
+      customOption: 'default-value',
       threshold: 100,
       ...config.options,
     };
@@ -48,7 +44,7 @@ export class MyCustomPlugin extends BaseEnigmaPlugin {
    * This method is called when the plugin is loaded
    */
   async initialize(context: EnigmaPluginContext): Promise<void> {
-    this.logger.info("Initializing custom plugin", {
+    this.logger.info('Initializing custom plugin', {
       options: this.options,
       projectPath: context.projectPath,
     });
@@ -57,13 +53,13 @@ export class MyCustomPlugin extends BaseEnigmaPlugin {
     // e.g., validate configuration, set up resources, etc.
 
     if (!this.options.enabled) {
-      this.logger.warn("Plugin is disabled");
+      this.logger.warn('Plugin is disabled');
       return;
     }
 
     // Example: validate required options
     if (!this.options.customOption) {
-      throw new Error("customOption is required");
+      throw new Error('customOption is required');
     }
   }
 
@@ -72,7 +68,7 @@ export class MyCustomPlugin extends BaseEnigmaPlugin {
    * This is the main processing method for CSS optimization
    */
   async processCss(css: string, context: EnigmaPluginContext): Promise<string> {
-    this.logger.debug("Processing CSS", {
+    this.logger.debug('Processing CSS', {
       inputLength: css.length,
       filePath: context.filePath,
     });
@@ -83,9 +79,9 @@ export class MyCustomPlugin extends BaseEnigmaPlugin {
 
     if (this.options.enabled) {
       // Remove single-line comments (example processing)
-      processedCss = css.replace(/\/\*.*?\*\//g, "");
+      processedCss = css.replace(/\/\*.*?\*\//g, '');
 
-      this.logger.debug("CSS processing completed", {
+      this.logger.debug('CSS processing completed', {
         originalLength: css.length,
         processedLength: processedCss.length,
         reduction: css.length - processedCss.length,
@@ -100,28 +96,25 @@ export class MyCustomPlugin extends BaseEnigmaPlugin {
    * This method is called to ensure the plugin is properly configured
    */
   async validate(_context: EnigmaPluginContext): Promise<boolean> {
-    this.logger.debug("Validating plugin configuration");
+    this.logger.debug('Validating plugin configuration');
 
     // Implement validation logic here
     try {
       // Example validations
       if (this.options.threshold && this.options.threshold < 0) {
-        this.logger.error("Threshold must be non-negative");
+        this.logger.error('Threshold must be non-negative');
         return false;
       }
 
-      if (
-        this.options.customOption &&
-        typeof this.options.customOption !== "string"
-      ) {
-        this.logger.error("customOption must be a string");
+      if (this.options.customOption && typeof this.options.customOption !== 'string') {
+        this.logger.error('customOption must be a string');
         return false;
       }
 
-      this.logger.debug("Plugin validation passed");
+      this.logger.debug('Plugin validation passed');
       return true;
     } catch (error) {
-      this.logger.error("Plugin validation failed", { error });
+      this.logger.error('Plugin validation failed', { error });
       return false;
     }
   }
@@ -137,7 +130,7 @@ export class MyCustomPlugin extends BaseEnigmaPlugin {
       enabled: this.options.enabled,
       lastProcessed: new Date().toISOString(),
       options: this.options,
-      status: this.options.enabled ? "active" : "disabled",
+      status: this.options.enabled ? 'active' : 'disabled',
     };
   }
 
@@ -146,7 +139,7 @@ export class MyCustomPlugin extends BaseEnigmaPlugin {
    * This method is called when the plugin is being unloaded
    */
   async cleanup(): Promise<void> {
-    this.logger.info("Cleaning up custom plugin");
+    this.logger.info('Cleaning up custom plugin');
 
     // Implement cleanup logic here
     // e.g., close file handles, clear caches, etc.
@@ -163,10 +156,8 @@ export default MyCustomPlugin;
  * Plugin factory function (alternative export method)
  * This allows for more complex initialization if needed
  */
-export function createMyCustomPlugin(
-  options: MyCustomPluginOptions = {},
-): MyCustomPlugin {
-  return new MyCustomPlugin({ name: "my-custom-plugin", options });
+export function createMyCustomPlugin(options: MyCustomPluginOptions = {}): MyCustomPlugin {
+  return new MyCustomPlugin({ name: 'my-custom-plugin', options });
 }
 
 /**
@@ -174,11 +165,11 @@ export function createMyCustomPlugin(
  * This helps the plugin system identify and categorize the plugin
  */
 export const pluginInfo = {
-  name: "my-custom-plugin",
-  version: "1.0.0",
-  description: "A template for creating custom Enigma plugins",
-  author: "Enigma Team",
-  tags: ["template", "example"],
+  name: 'my-custom-plugin',
+  version: '1.0.0',
+  description: 'A template for creating custom Enigma plugins',
+  author: 'Enigma Team',
+  tags: ['template', 'example'],
   requiresConfig: false,
   defaultEnabled: true,
 };

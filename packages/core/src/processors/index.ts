@@ -1,6 +1,6 @@
 /**
  * Processors Module - File Processing Systems
- * 
+ *
  * This module contains file processors for extracting and rewriting
  * CSS classes in HTML, JavaScript, and other file formats.
  */
@@ -18,4 +18,4 @@ export * from './patternAnalysis';
 export * from './nameGeneration';
 
 // Version export for processors module
-export const processorsVersion = '0.1.0'; 
+export const processorsVersion = '0.1.0';
