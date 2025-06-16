@@ -5,10 +5,10 @@
  */
 
 // Logger configuration utilities
-export * from './logger-config';
+export * from './logger-config.ts';
 
 // CLI helper utilities
-export * from './cli-helpers';
+export * from './cli-helpers.ts';
 
 // Error handling utilities
-export * from './error-handling';
+export * from './error-handling.ts';

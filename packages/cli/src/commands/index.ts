@@ -5,8 +5,8 @@
  */
 
 import { Command } from 'commander';
-import { createInitConfigCommand } from './init-config';
-import { createCssConfigCommand } from './css-config';
+import { createCssConfigCommand } from './css-config.ts';
+import { createInitConfigCommand } from './init-config.ts';
 
 /**
  * Register all commands with the main program
@@ -25,11 +25,4 @@ export function registerCommands(program: Command): void {
 /**
  * Export command creators for individual use
  */
-export {
-  createInitConfigCommand,
-  createCssConfigCommand,
-  // TODO: Export remaining commands as they are migrated
-  // createCssOptimizeCommand,
-  // createCssAnalyzeCommand,
-  // createPluginCommand,
-};
+export { createCssConfigCommand, createInitConfigCommand };
