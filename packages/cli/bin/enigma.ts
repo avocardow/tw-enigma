@@ -7,17 +7,6 @@
  * providing a command-line interface for tw-enigma CSS optimization.
  */
 
-// Add error handling for unhandled rejections and exceptions
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-  process.exit(1);
-});
-
-process.on('uncaughtException', (error) => {
-  console.error('Uncaught Exception:', error);
-  process.exit(1);
-});
-
 import chalk from 'chalk';
 import { Command } from 'commander';
 import { registerCommands } from '../src/commands';
@@ -72,7 +61,22 @@ program
   .option('--source-maps', 'generate source maps')
   .option('--exclude-patterns <patterns...>', 'patterns to exclude from processing');
 
-// Add default action to handle global options
+// Register all commands
+registerCommands(program);
+
+// Add info command for version and environment information
+program
+  .command('info')
+  .description('display version and environment information')
+  .action(() => {
+    console.log(chalk.blue('tw-enigma CLI Information'));
+    console.log(`CLI Version: ${cliVersion}`);
+    console.log(`Core Version: ${coreVersion}`);
+    console.log(`Node.js: ${process.version}`);
+    console.log(`Platform: ${process.platform} ${process.arch}`);
+  });
+
+// Add default action to handle when no subcommand is provided
 program.action(async (options) => {
   // Handle pretty mode
   if (options.pretty) {
@@ -135,27 +139,5 @@ program.action(async (options) => {
   }
 });
 
-// Register all commands
-registerCommands(program);
-
-// Add info command for version and environment information
-program
-  .command('info')
-  .description('display version and environment information')
-  .action(() => {
-    console.log(chalk.blue('tw-enigma CLI Information'));
-    console.log(`CLI Version: ${cliVersion}`);
-    console.log(`Core Version: ${coreVersion}`);
-    console.log(`Node.js: ${process.version}`);
-    console.log(`Platform: ${process.platform} ${process.arch}`);
-  });
-
-// Parse command line arguments with error handling
-try {
-  program.parse(process.argv);
-} catch (error) {
-  console.error('CLI Error:', error);
-  process.exit(1);
-}
-
-// Handle case when no command is specified - the action will handle it
+// Parse command line arguments
+program.parse(process.argv);

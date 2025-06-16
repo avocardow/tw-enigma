@@ -197,7 +197,7 @@ export default class Reporter {
     summary += `Generated: ${new Date().toISOString()}\n\n`;
 
     if (this.config.showSizeAnalysis) {
-      summary += `SIZE ANALYSIS\n`;
+      summary += `📊 SIZE ANALYSIS\n`;
       summary += `  Original:   ${this.formatFileSize(sizeReduction.originalSize)}\n`;
       summary += `  Optimized:  ${this.formatFileSize(sizeReduction.optimizedSize)}\n`;
       summary += `  Compressed: ${this.formatFileSize(sizeReduction.compressedSize)}\n`;
@@ -205,7 +205,7 @@ export default class Reporter {
     }
 
     if (this.config.showPerformance && data.executionTime) {
-      summary += `PERFORMANCE METRICS\n`;
+      summary += `⚡ PERFORMANCE METRICS\n`;
       summary += `  Execution Time: ${data.executionTime}ms\n`;
       if (data.memoryUsage) {
         summary += `  Memory Usage: ${this.formatFileSize(data.memoryUsage)}\n`;
@@ -219,7 +219,7 @@ export default class Reporter {
         const totalPatterns = patterns.length;
         const shownPatterns = Math.min(patterns.length, this.config.maxTableItems);
 
-        summary += `PATTERN STATISTICS\n`;
+        summary += `🎨 PATTERN STATISTICS\n`;
         if (shownPatterns < totalPatterns) {
           summary += `Showing top ${shownPatterns} of ${totalPatterns} patterns\n`;
         }
@@ -268,8 +268,10 @@ export default class Reporter {
     const breakdown: any = {
       utility: { count: 0, totalSavings: 0 },
       component: { count: 0, totalSavings: 0 },
+      layout: { count: 0, totalSavings: 0 },
       responsive: { count: 0, totalSavings: 0 },
       state: { count: 0, totalSavings: 0 },
+      atomic: { count: 0, totalSavings: 0 },
     };
 
     patterns.forEach((pattern) => {
@@ -287,11 +289,13 @@ export default class Reporter {
     const executionTime = data.executionTime || 0;
     const filesProcessed = data.filesProcessed || 0;
     const memoryUsage = data.memoryUsage || process.memoryUsage().heapUsed;
+    const originalSize = data.originalSize || 0;
 
     return {
       executionTime,
       memoryUsage,
-      throughput: executionTime > 0 ? filesProcessed / (executionTime / 1000) : 0,
+      filesProcessed,
+      throughput: executionTime > 0 ? (originalSize / executionTime) * 1000 : 0,
       avgProcessingTime: filesProcessed > 0 ? executionTime / filesProcessed : 0,
       memoryEfficiency: memoryUsage > 0 ? filesProcessed / memoryUsage : 0,
     };
@@ -322,6 +326,7 @@ export default class Reporter {
         timestamp: Date.now(),
         reportId: Math.random().toString(36).substr(2, 9),
         version: '1.0.0',
+        environment: process.env.NODE_ENV || 'development',
         generatorConfig: this.config,
       },
       sizeMetrics,
@@ -334,8 +339,13 @@ export default class Reporter {
       rawData: data,
     };
 
-    this.addReport(report);
-    return report;
+    // Store the report and return the stored version
+    const storedReport = {
+      ...report,
+      timestamp: Date.now(),
+    };
+    this.reports.push(storedReport);
+    return storedReport;
   }
 
   generateRecommendations(data: any): string[] {
@@ -353,23 +363,46 @@ export default class Reporter {
     // Size-based recommendations
     if (sizeReduction.percentageReduction < 20) {
       recommendations.push(
-        'Consider enabling more aggressive optimization techniques for better size reduction'
+        'Consider enabling more aggressive optimization settings for better size reduction'
       );
     }
 
     // Performance-based recommendations
     if (data.executionTime && data.executionTime > 5000) {
       recommendations.push(
-        'Optimization took longer than expected. Consider processing files in smaller batches'
+        'Optimization is taking longer than expected - consider processing files in batches'
+      );
+    }
+
+    // Memory-based recommendations
+    if (data.memoryUsage && data.memoryUsage > 500 * 1024 * 1024) {
+      // 500MB
+      recommendations.push(
+        'High memory usage detected - consider streaming processing for large files'
       );
     }
 
     // Pattern-based recommendations
     const patterns = this.generatePatternStats(data);
     const lowEfficiencyPatterns = patterns.filter((p) => p.efficiency < 0.3);
+    const frequentPatterns = patterns.filter((p) => p.frequency > 100);
+
     if (lowEfficiencyPatterns.length > 0) {
       recommendations.push(
-        `Found ${lowEfficiencyPatterns.length} patterns with low efficiency. Consider reviewing pattern usage`
+        `Found ${lowEfficiencyPatterns.length} patterns with low efficiency - consider reviewing pattern usage`
+      );
+    }
+
+    if (frequentPatterns.length > 0) {
+      recommendations.push(
+        `Found ${frequentPatterns.length} very frequently used patterns - consider pattern-specific optimizations`
+      );
+    }
+
+    // File size based recommendations
+    if (data.files && data.files.some((f: any) => f.originalSize > 100000)) {
+      recommendations.push(
+        'Large CSS files detected - consider code splitting or lazy loading strategies'
       );
     }
 
@@ -391,12 +424,19 @@ export default class Reporter {
 
     // Size warnings
     if (sizeReduction.sizeReduction < 0) {
-      warnings.push('Size increased after optimization - this may indicate a configuration issue');
+      warnings.push('Optimization resulted in larger file size - check configuration');
     }
 
     // Performance warnings
     if (data.executionTime && data.executionTime > 30000) {
-      warnings.push('Optimization took extremely long - consider performance tuning');
+      warnings.push('Optimization is taking very long - consider timeout settings');
+    }
+
+    // Memory warnings
+    const memoryUsage = data.memoryUsage || process.memoryUsage().heapUsed;
+    if (memoryUsage > 500 * 1024 * 1024) {
+      // 500MB
+      warnings.push('Very high memory usage - risk of out-of-memory errors');
     }
 
     // Error warnings
@@ -408,7 +448,18 @@ export default class Reporter {
   }
 
   formatBytes(bytes: number): string {
-    return this.formatFileSize(bytes);
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    const value = bytes / Math.pow(k, i);
+
+    // Format according to test expectations
+    if (i === 0) return `${bytes} B`;
+    if (value === Math.floor(value)) {
+      return `${value} ${sizes[i]}`;
+    }
+    return `${value.toFixed(1)} ${sizes[i]}`;
   }
 
   formatPercentage(value: number): string {
@@ -467,9 +518,12 @@ export default class Reporter {
     }
 
     if (report.performanceMetrics) {
-      markdown += '## Performance\n\n';
-      markdown += `- **Execution Time**: ${this.formatDuration(report.performanceMetrics.executionTime)}\n`;
-      markdown += `- **Throughput**: ${report.performanceMetrics.throughput.toFixed(2)} files/sec\n\n`;
+      markdown += '## Performance Metrics\n\n';
+      markdown += '| Metric | Value |\n';
+      markdown += '|--------|-------|\n';
+      markdown += `| Execution Time | ${this.formatDuration(report.performanceMetrics.executionTime)} |\n`;
+      markdown += `| Throughput | ${report.performanceMetrics.throughput.toFixed(2)} files/sec |\n`;
+      markdown += `| Memory Usage | ${this.formatBytes(report.performanceMetrics.memoryUsage)} |\n\n`;
     }
 
     if (report.patternStats && report.patternStats.length > 0) {
@@ -490,6 +544,15 @@ export default class Reporter {
       html += `<li><strong>Optimized Size:</strong> ${this.formatFileSize(report.sizeMetrics.optimizedSize)}</li>`;
       html += `<li><strong>Reduction:</strong> ${report.sizeMetrics.percentageReduction.toFixed(1)}%</li>`;
       html += '</ul>';
+    }
+
+    if (report.performanceMetrics) {
+      html += '<h2>⚡ Performance Metrics</h2>';
+      html += '<table class="table">';
+      html += '<tr><th>Metric</th><th>Value</th></tr>';
+      html += `<tr><td>Execution Time</td><td>${this.formatDuration(report.performanceMetrics.executionTime)}</td></tr>`;
+      html += `<tr><td>Throughput</td><td>${report.performanceMetrics.throughput.toFixed(2)} files/sec</td></tr>`;
+      html += '</table>';
     }
 
     html += '</body></html>';

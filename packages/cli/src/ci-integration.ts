@@ -17,6 +17,28 @@ export interface CiEnvironment {
   env: Record<string, string | undefined>;
 }
 
+export interface CiProcessResult {
+  success: boolean;
+  exitCode: number;
+  summary: string;
+  comparison?: {
+    delta: {
+      scoreChange: number;
+      sizeChange: number;
+      loadTimeChange?: number;
+    };
+    regressions: Array<{
+      type: string;
+      severity: string;
+      description: string;
+    }>;
+    improvements: Array<{
+      type: string;
+      description: string;
+    }>;
+  };
+}
+
 export class CiIntegration {
   constructor(private config: CssOutputConfig) {}
 
@@ -98,13 +120,8 @@ export class CiIntegration {
     };
   }
 
-  processReport(report: CssPerformanceReport): void {
+  async processReport(report: CssPerformanceReport): Promise<CiProcessResult> {
     const ciEnv = this.getCiEnvironment();
-
-    if (!ciEnv.isCI) {
-      console.log('Running in non-CI environment');
-      return;
-    }
 
     console.log(`CI Provider: ${ciEnv.provider}`);
     if (ciEnv.buildId) console.log(`Build ID: ${ciEnv.buildId}`);
@@ -119,13 +136,41 @@ export class CiIntegration {
     console.log(`Compression Ratio: ${(metrics.overallCompressionRatio * 100).toFixed(1)}%`);
     console.log(`Budget Analysis: ${budgetAnalysis.passed ? 'PASSED' : 'FAILED'}`);
 
+    // Build result object
+    const result: CiProcessResult = {
+      success: budgetAnalysis.passed,
+      exitCode: budgetAnalysis.passed ? 0 : 1,
+      summary: budgetAnalysis.passed
+        ? `✅ Performance score: ${metrics.performanceScore}/100, Budget: PASSED`
+        : `❌ Performance score: ${metrics.performanceScore}/100, Budget: FAILED`,
+      comparison: {
+        delta: {
+          scoreChange: 0, // Would be calculated from baseline
+          sizeChange: 0, // Would be calculated from baseline
+        },
+        regressions: [],
+        improvements: [],
+      },
+    };
+
+    // Handle budget violations
     if (!budgetAnalysis.passed) {
       console.error('Performance budget violations detected!');
       budgetAnalysis.violations.forEach((violation) => {
         console.error(`- ${violation}`);
       });
-      process.exit(1);
+
+      // Add regressions for violations
+      budgetAnalysis.violations.forEach((violation) => {
+        result.comparison!.regressions.push({
+          type: 'budget_violation',
+          severity: 'high',
+          description: violation.toString(),
+        });
+      });
     }
+
+    return result;
   }
 
   generateComment(report: CssPerformanceReport): string {
