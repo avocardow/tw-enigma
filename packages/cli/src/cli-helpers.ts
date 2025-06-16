@@ -14,7 +14,7 @@ export const CLIUtils = {
   /**
    * Format output for display based on format preference
    */
-  formatOutput(data: any, format: 'json' | 'text' = 'text'): string {
+  formatOutput<T>(data: T, format: 'json' | 'text' = 'text'): string {
     if (format === 'json') {
       return JSON.stringify(data, null, 2);
     }
@@ -26,14 +26,14 @@ export const CLIUtils = {
   /**
    * Log a message to stdout
    */
-  log(message: string, ...args: any[]): void {
+  log(message: string, ...args: unknown[]): void {
     console.log(message, ...args);
   },
 
   /**
    * Log an error to stderr
    */
-  error(message: string, ...args: any[]): void {
+  error(message: string, ...args: unknown[]): void {
     console.error(message, ...args);
   },
 

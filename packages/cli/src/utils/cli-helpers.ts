@@ -26,7 +26,7 @@ export function getPackageInfo(): { version: string; name: string } {
 export function displayBanner(): void {
   try {
     console.log(chalk.blue('🔵 Tailwind Enigma'));
-  } catch (error) {
+  } catch {
     // Fallback for CI environments where chalk might not work
     console.log('🔵 Tailwind Enigma');
   }
@@ -83,7 +83,7 @@ export const commonOptions = {
 /**
  * Add common options to a commander.js command
  */
-export function addCommonOptions(command: any): any {
+export function addCommonOptions(command: Command): Command {
   return command
     .option(commonOptions.verbose.flags, commonOptions.verbose.description)
     .option(commonOptions.veryVerbose.flags, commonOptions.veryVerbose.description)
@@ -145,7 +145,7 @@ export const CLIUtils = {
   /**
    * Format output for different display modes
    */
-  formatOutput(data: any, format: 'json' | 'css' = 'css'): string {
+  formatOutput<T>(data: T, format: 'json' | 'css' = 'css'): string {
     if (format === 'json') {
       return JSON.stringify(data, null, 2);
     }
