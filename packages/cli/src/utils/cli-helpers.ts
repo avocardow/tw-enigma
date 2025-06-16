@@ -21,9 +21,15 @@ export function getPackageInfo(): { version: string; name: string } {
 
 /**
  * Display CLI banner with branding
+ * Safe for CI environments - fallback to plain text if chalk fails
  */
 export function displayBanner(): void {
-  console.log(chalk.blue('🔵 Tailwind Enigma'));
+  try {
+    console.log(chalk.blue('🔵 Tailwind Enigma'));
+  } catch (error) {
+    // Fallback for CI environments where chalk might not work
+    console.log('🔵 Tailwind Enigma');
+  }
 }
 
 /**

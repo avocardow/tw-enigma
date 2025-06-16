@@ -11,7 +11,7 @@ import chalk from 'chalk';
 import { Command } from 'commander';
 import { registerCommands } from '../src/commands/index.js';
 import { cliVersion } from '../src/index.js';
-import { displayBanner, getPackageInfo } from '../src/utils/index.js';
+import { getPackageInfo } from '../src/utils/index.js';
 
 // Import core version with fallback (synchronous)
 let coreVersion: string = 'unknown';
@@ -34,11 +34,18 @@ try {
 const program = new Command();
 const packageInfo = getPackageInfo();
 
-// Display banner for all CLI invocations
-displayBanner();
-
-// Configure main program
+// Configure main program with error handling
 program.name('enigma').description('tw-enigma CSS optimization tool').helpOption(false); // Disable built-in help to handle it manually
+
+// Override Commander.js error handling to show banner before errors
+program.exitOverride((err) => {
+  displayBanner();
+  if (err.code === 'commander.unknownOption') {
+    console.error(chalk.red(`error: unknown option '${err.message.split("'")[1]}'`));
+    process.exit(1);
+  }
+  throw err;
+});
 
 // Global options
 program
@@ -75,6 +82,7 @@ program
   .command('info')
   .description('display version and environment information')
   .action(() => {
+    displayBanner();
     console.log(chalk.blue('tw-enigma CLI Information'));
     console.log(`CLI Version: ${cliVersion}`);
     console.log(`Core Version: ${coreVersion}`);
@@ -85,6 +93,9 @@ program
 
 // Add default action to handle when no subcommand is provided
 program.action((options) => {
+  // Display banner for all successful CLI invocations
+  displayBanner();
+
   // Handle version flag first
   if (options.version) {
     console.log(packageInfo.version);
