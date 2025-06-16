@@ -87,8 +87,8 @@ importers:
         specifier: ^16.3.1
         version: 16.5.0
       fastmcp:
-        specifier: ^1.20.5
-        version: 1.27.7
+        specifier: ^3.3.0
+        version: 3.3.0
       figlet:
         specifier: ^1.8.0
         version: 1.8.1
@@ -1506,6 +1506,10 @@ packages:
     resolution: {integrity: sha512-BSeNnyus75C4//NQ9gQt1/csTXyo/8Sb+afLAkzAptFuMsod9HFokGNudZpi/oQV73hnVK+sR+5PVRMd+Dr7YQ==}
     engines: {node: '>=12'}
 
+  cliui@9.0.1:
+    resolution: {integrity: sha512-k7ndgKhwoQveBL+/1tqGJYNz097I7WOvwbmmU2AR5+magtbjPWQTS1C5vzGkBC8Ym8UWRzfKUzUUqFLypY4Q+w==}
+    engines: {node: '>=20'}
+
   clone-response@1.0.3:
     resolution: {integrity: sha512-ROoL94jJH2dUVML2Y/5PEDNaSHgeOdSDicUyS7izcF63G6sTc/FTjLub4b8Il9S8S0beOfYt0TaA5qvFK+w0wA==}
 
@@ -2066,8 +2070,8 @@ packages:
   fast-levenshtein@2.0.6:
     resolution: {integrity: sha512-DCXu6Ifhqcks7TZKY3Hxp3y6qphY5SJZmrWMDrKcERSOXWQdMhU9Ig/PYrzyw/ul9jOIyh0N4M0tbC5hodg8dw==}
 
-  fastmcp@1.27.7:
-    resolution: {integrity: sha512-ozMJl5mTIWd2WMR6/hxBNEeSnFLUS9+PzzfLxQmejHOVg3A6IfRdCPVLGeNnXBhGjsK80JB2GPd4HDqd/szqLA==}
+  fastmcp@3.3.0:
+    resolution: {integrity: sha512-sk8H8S1rMDMJTbzlP8GcqDgXNjBsfyPfCUmwAQZGtWtZD3BQAy6pT6NgHZEAc/1j5Gai4CZjdYiXLQmRTcDBFA==}
     hasBin: true
 
   fastq@1.19.1:
@@ -2103,9 +2107,9 @@ packages:
     resolution: {integrity: sha512-XXTUwCvisa5oacNGRP9SfNtYBNAMi+RPwBFmblZEF7N7swHYQS6/Zfk7SRwx4D5j3CH211YNRco1DEMNVfZCnQ==}
     engines: {node: '>=16.0.0'}
 
-  file-type@20.5.0:
-    resolution: {integrity: sha512-BfHZtG/l9iMm4Ecianu7P8HRD2tBHLtjXinm4X62XBOYzi7CYA7jyqfJzOvXHqzVrVPYqBo2/GvbARMaaJkKVg==}
-    engines: {node: '>=18'}
+  file-type@21.0.0:
+    resolution: {integrity: sha512-ek5xNX2YBYlXhiUXui3D/BXa3LdqPmoLJ7rqEx2bKJ7EAUEfmXgW0Das7Dc6Nr9MvqaOnIqiPV0mZk/r/UpNAg==}
+    engines: {node: '>=20'}
 
   filesize@10.1.6:
     resolution: {integrity: sha512-sJslQKU2uM33qH5nqewAwVB2QgR6w1aMNsYUp3aN5rMRyXEwJGmZvaWzeJFNTOXWlHQyBFCWrdj3fV/fsTOX8w==}
@@ -2807,8 +2811,8 @@ packages:
     resolution: {integrity: sha512-/IXtbwEk5HTPyEwyKX6hGkYXxM9nbj64B+ilVJnC/R6B0pH5G4V3b0pVbL7DBj4tkhBAppbQUlf6F6Xl9LHu1g==}
     engines: {node: '>= 0.4'}
 
-  mcp-proxy@2.14.3:
-    resolution: {integrity: sha512-2jmpBclH72z5ViXhdVWopKDLAyhnFGyIhR7MrjE3BLzgYv3pZwVMHKLOogu1aIWZN/J4OrlZp0jraHKjEPD1RQ==}
+  mcp-proxy@5.1.0:
+    resolution: {integrity: sha512-6pfAdXFOvfpqse9dMLuQo8WTSFdD0al8vhr0Nx5EWv+dR6aTAHphdQj9NUP2xej2bhaWzJ5p8BRwbvXufOjJHA==}
     hasBin: true
 
   mdn-data@1.1.4:
@@ -4561,12 +4565,14 @@ packages:
   xmlchars@2.2.0:
     resolution: {integrity: sha512-JZnDKK8B0RCDw84FNdDAIpZK+JuJw+s7Lz8nksI7SIuU3UXJJslUthsi+uWBUYOwPFwW7W7PRLRfUKpxjtjFCw==}
 
-  xsschema@0.2.0-beta.3:
-    resolution: {integrity: sha512-ViOZ1a1kAPHvFjDJp4ITeutdlbnEs56lx/NotlvcitwN04eHnU3DhR+P5GvXT7A+69qKrXAx0YrccvmfwGnUGw==}
+  xsschema@0.3.0-beta.3:
+    resolution: {integrity: sha512-8fKI0Kqxs7npz3ElebNCeGdS0HDuS2qL3IqHK5O53yCdh419hcr3GQillwN39TNFasHjbMLQ+DjSwpY0NONdnQ==}
     peerDependencies:
       '@valibot/to-json-schema': ^1.0.0
       arktype: ^2.1.16
       effect: ^3.14.5
+      sury: ^10.0.0-rc
+      zod: ^3.25.0
       zod-to-json-schema: ^3.24.5
     peerDependenciesMeta:
       '@valibot/to-json-schema':
@@ -4574,6 +4580,10 @@ packages:
       arktype:
         optional: true
       effect:
+        optional: true
+      sury:
+        optional: true
+      zod:
         optional: true
       zod-to-json-schema:
         optional: true
@@ -4601,9 +4611,17 @@ packages:
     resolution: {integrity: sha512-tVpsJW7DdjecAiFpbIB1e3qxIQsE6NoPc5/eTdrbbIC4h0LVsWhnoa3g+m2HclBIujHzsxZ4VJVA+GUuc2/LBw==}
     engines: {node: '>=12'}
 
+  yargs-parser@22.0.0:
+    resolution: {integrity: sha512-rwu/ClNdSMpkSrUb+d6BRsSkLUq1fmfsY6TOpYzTwvwkg1/NRG85KBy3kq++A8LKQwX6lsu+aWad+2khvuXrqw==}
+    engines: {node: ^20.19.0 || ^22.12.0 || >=23}
+
   yargs@17.7.2:
     resolution: {integrity: sha512-7dSzzRQ++CKnNI/krKnYRV7JKKPUXMEh61soaHKg9mrWEhzFWhFnxPxGl+69cD1Ou63C13NUPCnmIcrvqCuM6w==}
     engines: {node: '>=12'}
+
+  yargs@18.0.0:
+    resolution: {integrity: sha512-4UEqdc2RYGHZc7Doyqkrqiln3p9X2DZVxaGbwhn2pi7MrRagKaOcIKe8L3OxYcbhXLgLFUS3zAYuQjKBQgmuNg==}
+    engines: {node: ^20.19.0 || ^22.12.0 || >=23}
 
   yauzl@2.10.0:
     resolution: {integrity: sha512-p4a9I6X6nu6IhoGmBqAcbJy1mlC4j27vEPZX9F4L4/vZT3Lyq1VkFHw/V/PUcB9Buo+DG3iHkT0x3Qya58zc3g==}
@@ -6020,6 +6038,12 @@ snapshots:
       strip-ansi: 6.0.1
       wrap-ansi: 7.0.0
 
+  cliui@9.0.1:
+    dependencies:
+      string-width: 7.2.0
+      strip-ansi: 7.1.0
+      wrap-ansi: 9.0.0
+
   clone-response@1.0.3:
     dependencies:
       mimic-response: 1.0.1
@@ -6690,19 +6714,19 @@ snapshots:
 
   fast-levenshtein@2.0.6: {}
 
-  fastmcp@1.27.7:
+  fastmcp@3.3.0:
     dependencies:
       '@modelcontextprotocol/sdk': 1.12.3
       '@standard-schema/spec': 1.0.0
       execa: 9.6.0
-      file-type: 20.5.0
+      file-type: 21.0.0
       fuse.js: 7.1.0
-      mcp-proxy: 2.14.3
+      mcp-proxy: 5.1.0
       strict-event-emitter-types: 2.0.0
       undici: 7.10.0
       uri-templates: 0.2.0
-      xsschema: 0.2.0-beta.3(zod-to-json-schema@3.24.5(zod@3.25.64))
-      yargs: 17.7.2
+      xsschema: 0.3.0-beta.3(zod-to-json-schema@3.24.5(zod@3.25.64))(zod@3.25.64)
+      yargs: 18.0.0
       zod: 3.25.64
       zod-to-json-schema: 3.24.5(zod@3.25.64)
     transitivePeerDependencies:
@@ -6710,6 +6734,7 @@ snapshots:
       - arktype
       - effect
       - supports-color
+      - sury
 
   fastq@1.19.1:
     dependencies:
@@ -6737,7 +6762,7 @@ snapshots:
     dependencies:
       flat-cache: 4.0.1
 
-  file-type@20.5.0:
+  file-type@21.0.0:
     dependencies:
       '@tokenizer/inflate': 0.2.7
       strtok3: 10.3.1
@@ -7493,11 +7518,11 @@ snapshots:
 
   math-intrinsics@1.1.0: {}
 
-  mcp-proxy@2.14.3:
+  mcp-proxy@5.1.0:
     dependencies:
       '@modelcontextprotocol/sdk': 1.12.3
       eventsource: 4.0.0
-      yargs: 17.7.2
+      yargs: 18.0.0
     transitivePeerDependencies:
       - supports-color
 
@@ -9250,8 +9275,9 @@ snapshots:
 
   xmlchars@2.2.0: {}
 
-  xsschema@0.2.0-beta.3(zod-to-json-schema@3.24.5(zod@3.25.64)):
+  xsschema@0.3.0-beta.3(zod-to-json-schema@3.24.5(zod@3.25.64))(zod@3.25.64):
     optionalDependencies:
+      zod: 3.25.64
       zod-to-json-schema: 3.24.5(zod@3.25.64)
 
   xxhash-wasm@1.1.0: {}
@@ -9271,6 +9297,8 @@ snapshots:
 
   yargs-parser@21.1.1: {}
 
+  yargs-parser@22.0.0: {}
+
   yargs@17.7.2:
     dependencies:
       cliui: 8.0.1
@@ -9280,6 +9308,15 @@ snapshots:
       string-width: 4.2.3
       y18n: 5.0.8
       yargs-parser: 21.1.1
+
+  yargs@18.0.0:
+    dependencies:
+      cliui: 9.0.1
+      escalade: 3.2.0
+      get-caller-file: 2.0.5
+      string-width: 7.2.0
+      y18n: 5.0.8
+      yargs-parser: 22.0.0
 
   yauzl@2.10.0:
     dependencies:
