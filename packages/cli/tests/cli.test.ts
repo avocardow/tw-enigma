@@ -1,4 +1,5 @@
 import { spawn } from 'child_process';
+import { existsSync } from 'fs';
 import { join } from 'path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
@@ -10,9 +11,17 @@ function runCLI(args: string[]): Promise<{
   stderr: string;
   exitCode: number;
 }> {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
+    // Verify CLI file exists before running
+    if (!existsSync(CLI_PATH)) {
+      reject(new Error(`CLI file does not exist: ${CLI_PATH}. Run 'npm run build' first.`));
+      return;
+    }
+
     const child = spawn('node', [CLI_PATH, ...args], {
       stdio: ['pipe', 'pipe', 'pipe'],
+      cwd: process.cwd(),
+      env: { ...process.env, NODE_ENV: 'test' },
     });
 
     let stdout = '';
@@ -26,19 +35,35 @@ function runCLI(args: string[]): Promise<{
       stderr += data.toString();
     });
 
-    child.on('close', (code) => {
+    child.on('error', (error) => {
+      reject(error);
+    });
+
+    child.on('close', (code, signal) => {
       resolve({
         stdout,
         stderr,
         exitCode: code || 0,
       });
     });
+
+    // Add timeout protection for CI
+    setTimeout(() => {
+      child.kill('SIGTERM');
+      setTimeout(() => {
+        child.kill('SIGKILL');
+      }, 5000);
+      reject(new Error('CLI command timed out after 30 seconds'));
+    }, 30000);
   });
 }
 
 describe('Enhanced CLI Tests', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     // Ensure CLI is built before tests
+    if (!existsSync(CLI_PATH)) {
+      throw new Error(`CLI not built: ${CLI_PATH} does not exist. Run 'npm run build' first.`);
+    }
   });
 
   afterEach(() => {

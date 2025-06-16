@@ -16,7 +16,7 @@
       ]
     },
     "test": {
-      "dependsOn": ["@tw-enigma/core#build"],
+      "dependsOn": ["build", "@tw-enigma/core#build"],
       "inputs": [
         "$TURBO_DEFAULT$",
         "src/**/*.ts",
@@ -48,4 +48,4 @@
       ]
     }
   }
-} 
+}
