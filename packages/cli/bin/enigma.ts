@@ -7,42 +7,44 @@
  * providing a command-line interface for tw-enigma CSS optimization.
  */
 
-// Global error handler to prevent crashes
+// Global error handlers with CI-specific logging
 process.on('uncaughtException', (error) => {
   console.error('🔵 Tailwind Enigma');
   console.error('Fatal error:', error.message);
+  if (process.env.CI) {
+    console.error('Stack trace:', error.stack);
+  }
   process.exit(1);
 });
 
 process.on('unhandledRejection', (reason) => {
   console.error('🔵 Tailwind Enigma');
   console.error('Unhandled promise rejection:', reason);
+  if (process.env.CI) {
+    console.error('Promise rejection details:', reason);
+  }
   process.exit(1);
 });
 
-// Wrap entire CLI execution in try-catch
+// Main CLI function to handle async imports
 async function main() {
   try {
-    // Dynamic imports to handle ESM compatibility issues
+    // External dependencies (chalk needs dynamic import for ESM compatibility)
     const { default: chalk } = await import('chalk');
-    const { Command } = await import('commander');
+    const { Command } = require('commander');
 
-    // Import our modules
-    const { registerCommands } = await import('../src/commands/index.js');
-    const { cliVersion } = await import('../src/index.js');
-    const { displayBanner, getPackageInfo } = await import('../src/utils/index.js');
+    // Internal modules (use require with explicit paths)
+    const { registerCommands } = require('../dist/index.js');
+    const { cliVersion } = require('../dist/index.js');
+    const { displayBanner, getPackageInfo } = require('../dist/index.js');
 
-    // Import core version with fallback (synchronous)
+    // Import core version with fallback
     let coreVersion: string = 'unknown';
     try {
-      // Use dynamic import for better ESM compatibility
-      const coreModule = await import('@tw-enigma/core');
+      const coreModule = require('@tw-enigma/core');
       coreVersion = coreModule.version || 'unknown';
     } catch (error) {
-      // Silent fallback if core package can't be loaded
-      // This can happen in CI environments with Node.js version differences
       coreVersion = 'unavailable';
-      // For debugging in CI: log the error if environment variable is set
       if (process.env.DEBUG_CLI) {
         console.error('Core module load error:', error);
       }
@@ -52,12 +54,15 @@ async function main() {
     const program = new Command();
     const packageInfo = getPackageInfo();
 
-    // Display banner early but safely
+    // Display banner early with error handling
     try {
       displayBanner();
-    } catch {
+    } catch (bannerError) {
       // Fallback for any banner display issues
       console.log('🔵 Tailwind Enigma');
+      if (process.env.CI || process.env.DEBUG_CLI) {
+        console.error('Banner display error:', bannerError);
+      }
     }
 
     // Configure main program
@@ -89,9 +94,14 @@ async function main() {
       .option('-h, --help', 'display help for command');
 
     // Register all commands
-    registerCommands(program);
-
-    // Version and help are now handled manually in the default action
+    try {
+      registerCommands(program);
+    } catch (commandError) {
+      console.error('Failed to register commands:', commandError);
+      if (process.env.CI) {
+        console.error('Command registration error details:', commandError);
+      }
+    }
 
     // Add info command for version and environment information
     program
@@ -107,7 +117,7 @@ async function main() {
       });
 
     // Add default action to handle when no subcommand is provided
-    program.action((options) => {
+    program.action((options: any) => {
       // Handle version flag first
       if (options.version) {
         console.log(packageInfo.version);
@@ -119,6 +129,7 @@ async function main() {
         program.outputHelp();
         process.exit(0);
       }
+
       // Handle pretty mode
       if (options.pretty) {
         console.log(
@@ -188,9 +199,15 @@ async function main() {
     // Parse command line arguments
     program.parse(process.argv);
   } catch (error) {
-    // Handle any remaining errors
+    // Handle any initialization errors
     console.error('🔵 Tailwind Enigma');
     console.error('CLI initialization failed:', error instanceof Error ? error.message : error);
+    if (process.env.CI) {
+      console.error(
+        'Initialization error stack:',
+        error instanceof Error ? error.stack : 'No stack available'
+      );
+    }
     process.exit(1);
   }
 }
