@@ -20,10 +20,14 @@ try {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const coreModule = require('@tw-enigma/core');
   coreVersion = coreModule.version || 'unknown';
-} catch {
+} catch (error) {
   // Silent fallback if core package can't be loaded
   // This can happen in CI environments with Node.js version differences
   coreVersion = 'unavailable';
+  // For debugging in CI: log the error if environment variable is set
+  if (process.env.DEBUG_CLI) {
+    console.error('Core module load error:', error);
+  }
 }
 
 // Initialize CLI
@@ -34,10 +38,7 @@ const packageInfo = getPackageInfo();
 displayBanner();
 
 // Configure main program
-program
-  .name('enigma')
-  .description('tw-enigma CSS optimization tool')
-  .version(packageInfo.version, '-v, --version', 'output the current version');
+program.name('enigma').description('tw-enigma CSS optimization tool');
 
 // Global options
 program
@@ -65,6 +66,11 @@ program
 // Register all commands
 registerCommands(program);
 
+// Add custom version command to ensure exit code 0
+program
+  .option('-v, --version', 'output the current version')
+  .option('-h, --help', 'display help for command');
+
 // Add info command for version and environment information
 program
   .command('info')
@@ -80,6 +86,18 @@ program
 
 // Add default action to handle when no subcommand is provided
 program.action((options) => {
+  // Handle version flag
+  if (options.version) {
+    console.log(packageInfo.version);
+    process.exit(0);
+  }
+
+  // Handle help flag
+  if (options.help) {
+    program.outputHelp();
+    process.exit(0);
+  }
+
   // Handle pretty mode
   if (options.pretty) {
     console.log(chalk.green('✅ Pretty mode enabled - output will be formatted for readability'));
