@@ -16,6 +16,7 @@ export function createInitConfigCommand(): Command {
   const command = new Command('init-config')
     .description('Create a sample configuration file')
     .action(async (options, cmd) => {
+      displayBanner();
       const logger = createLoggerFromArgv(cmd.optsWithGlobals());
 
       try {
