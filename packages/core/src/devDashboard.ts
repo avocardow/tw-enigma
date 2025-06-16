@@ -5,14 +5,14 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { EventEmitter } from "events";
-import { createServer, Server } from "http";
-import { createLogger, Logger } from "./utils/logger";
-import { EnigmaConfig } from "./config";
-import { DevDiagnostics, DevPerformanceMetrics } from "./devDiagnostics";
-import { DevPreview } from "./devPreview";
-import { DebugUtils } from "./debugUtils";
-import { SourceMapGenerator } from "./sourceMapGenerator";
+import { EventEmitter } from 'events';
+import { createServer, Server } from 'http';
+import { EnigmaConfig } from './config';
+import { DevDiagnostics, DevPerformanceMetrics } from './devDiagnostics';
+import { DevPreview } from './devPreview';
+import { SourceMapGenerator } from './sourceMapGenerator';
+import { DebugUtils } from './utils/debugUtils';
+import { createLogger, Logger } from './utils/logger';
 
 /**
  * Dashboard configuration
@@ -71,7 +71,7 @@ export interface DashboardEvents {
   'log-entry': (entry: DashboardLogEntry) => void;
   'client-connected': (clientId: string) => void;
   'client-disconnected': (clientId: string) => void;
-  'error': (error: Error) => void;
+  error: (error: Error) => void;
 }
 
 /**
@@ -101,7 +101,7 @@ export class DevDashboard extends EventEmitter {
     sourceMapGenerator?: SourceMapGenerator
   ) {
     super();
-    
+
     this.config = {
       enabled: true,
       port: 3000,
@@ -117,7 +117,7 @@ export class DevDashboard extends EventEmitter {
       ...config,
     };
 
-    this.logger = createLogger("DevDashboard");
+    this.logger = createLogger('DevDashboard');
     this.diagnostics = diagnostics;
     this.preview = preview;
     this.debugUtils = debugUtils;
@@ -126,7 +126,7 @@ export class DevDashboard extends EventEmitter {
 
     this.setupEventListeners();
 
-    this.logger.debug("Developer dashboard initialized", {
+    this.logger.debug('Developer dashboard initialized', {
       config: this.config,
     });
   }
@@ -136,17 +136,17 @@ export class DevDashboard extends EventEmitter {
    */
   async start(): Promise<void> {
     if (this.isRunning) {
-      this.logger.warn("Developer dashboard already running");
+      this.logger.warn('Developer dashboard already running');
       return;
     }
 
     if (!this.config.enabled) {
-      this.logger.info("Developer dashboard disabled");
+      this.logger.info('Developer dashboard disabled');
       return;
     }
 
     this.isRunning = true;
-    this.logger.info("Starting developer dashboard", {
+    this.logger.info('Starting developer dashboard', {
       host: this.config.host,
       port: this.config.port,
     });
@@ -159,14 +159,14 @@ export class DevDashboard extends EventEmitter {
     // Start server
     await new Promise<void>((resolve, reject) => {
       this.server!.listen(this.config.port, this.config.host, () => {
-        this.logger.info("Developer dashboard started", {
+        this.logger.info('Developer dashboard started', {
           url: `http://${this.config.host}:${this.config.port}`,
         });
         resolve();
       });
 
       this.server!.on('error', (error) => {
-        this.logger.error("Failed to start dashboard server", { error });
+        this.logger.error('Failed to start dashboard server', { error });
         reject(error);
       });
     });
@@ -174,7 +174,7 @@ export class DevDashboard extends EventEmitter {
     // Start metrics collection
     this.startMetricsCollection();
 
-    this.logger.info("Developer dashboard ready");
+    this.logger.info('Developer dashboard ready');
   }
 
   /**
@@ -182,12 +182,12 @@ export class DevDashboard extends EventEmitter {
    */
   async stop(): Promise<void> {
     if (!this.isRunning) {
-      this.logger.warn("Developer dashboard not running");
+      this.logger.warn('Developer dashboard not running');
       return;
     }
 
     this.isRunning = false;
-    this.logger.info("Stopping developer dashboard");
+    this.logger.info('Stopping developer dashboard');
 
     // Stop metrics collection
     if (this.metricsInterval) {
@@ -199,7 +199,7 @@ export class DevDashboard extends EventEmitter {
     if (this.server) {
       await new Promise<void>((resolve) => {
         this.server!.close(() => {
-          this.logger.info("Developer dashboard stopped");
+          this.logger.info('Developer dashboard stopped');
           resolve();
         });
       });
@@ -213,7 +213,12 @@ export class DevDashboard extends EventEmitter {
   /**
    * Add a log entry
    */
-  addLogEntry(level: DashboardLogEntry['level'], message: string, module: string, data?: any): void {
+  addLogEntry(
+    level: DashboardLogEntry['level'],
+    message: string,
+    module: string,
+    data?: any
+  ): void {
     const entry: DashboardLogEntry = {
       timestamp: new Date(),
       level,
@@ -223,7 +228,7 @@ export class DevDashboard extends EventEmitter {
     };
 
     this.logEntries.push(entry);
-    
+
     // Limit log entries
     if (this.logEntries.length > this.config.maxLogEntries) {
       this.logEntries.shift();
@@ -259,7 +264,7 @@ export class DevDashboard extends EventEmitter {
    */
   updateConfig(newConfig: Partial<DashboardConfig>): void {
     this.config = { ...this.config, ...newConfig };
-    this.logger.debug("Dashboard configuration updated", {
+    this.logger.debug('Dashboard configuration updated', {
       newConfig,
       fullConfig: this.config,
     });
@@ -272,7 +277,7 @@ export class DevDashboard extends EventEmitter {
    */
   private handleRequest(req: any, res: any): void {
     const url = req.url || '/';
-    
+
     // Set CORS headers
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -304,7 +309,7 @@ export class DevDashboard extends EventEmitter {
         res.end('Not Found');
       }
     } catch (error) {
-      this.logger.error("Request handling error", { url, error });
+      this.logger.error('Request handling error', { url, error });
       res.writeHead(500, { 'Content-Type': 'text/plain' });
       res.end('Internal Server Error');
     }
@@ -391,7 +396,7 @@ export class DevDashboard extends EventEmitter {
     <title>Tailwind Enigma - Developer Dashboard</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
+
         .light-theme {
             --bg-primary: #ffffff;
             --bg-secondary: #f8f9fa;
@@ -400,7 +405,7 @@ export class DevDashboard extends EventEmitter {
             --border: #dee2e6;
             --accent: #0d6efd;
         }
-        
+
         .dark-theme {
             --bg-primary: #1e1e1e;
             --bg-secondary: #2d2d30;
@@ -409,14 +414,14 @@ export class DevDashboard extends EventEmitter {
             --border: #3e3e42;
             --accent: #4ec9b0;
         }
-        
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: var(--bg-primary);
             color: var(--text-primary);
             line-height: 1.6;
         }
-        
+
         .header {
             background: var(--bg-secondary);
             border-bottom: 1px solid var(--border);
@@ -425,32 +430,32 @@ export class DevDashboard extends EventEmitter {
             justify-content: space-between;
             align-items: center;
         }
-        
+
         .header h1 {
             color: var(--accent);
             font-size: 1.5rem;
         }
-        
+
         .status {
             display: flex;
             gap: 1rem;
             align-items: center;
         }
-        
+
         .status-item {
             display: flex;
             align-items: center;
             gap: 0.5rem;
             font-size: 0.9rem;
         }
-        
+
         .status-dot {
             width: 8px;
             height: 8px;
             border-radius: 50%;
             background: #28a745;
         }
-        
+
         .main {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -459,7 +464,7 @@ export class DevDashboard extends EventEmitter {
             padding: 1rem 2rem;
             height: calc(100vh - 80px);
         }
-        
+
         .panel {
             background: var(--bg-secondary);
             border: 1px solid var(--border);
@@ -469,20 +474,20 @@ export class DevDashboard extends EventEmitter {
             display: flex;
             flex-direction: column;
         }
-        
+
         .panel h2 {
             color: var(--accent);
             margin-bottom: 1rem;
             font-size: 1.2rem;
         }
-        
+
         .metrics-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 1rem;
             margin-bottom: 1rem;
         }
-        
+
         .metric {
             background: var(--bg-primary);
             border: 1px solid var(--border);
@@ -490,19 +495,19 @@ export class DevDashboard extends EventEmitter {
             padding: 0.75rem;
             text-align: center;
         }
-        
+
         .metric-value {
             font-size: 1.5rem;
             font-weight: bold;
             color: var(--accent);
         }
-        
+
         .metric-label {
             font-size: 0.8rem;
             color: var(--text-secondary);
             margin-top: 0.25rem;
         }
-        
+
         .logs {
             flex: 1;
             overflow-y: auto;
@@ -513,30 +518,30 @@ export class DevDashboard extends EventEmitter {
             font-family: 'Monaco', 'Menlo', monospace;
             font-size: 0.8rem;
         }
-        
+
         .log-entry {
             padding: 0.25rem 0;
             border-bottom: 1px solid var(--border);
         }
-        
+
         .log-entry:last-child {
             border-bottom: none;
         }
-        
+
         .log-timestamp {
             color: var(--text-secondary);
         }
-        
+
         .log-level {
             font-weight: bold;
             margin: 0 0.5rem;
         }
-        
+
         .log-level.info { color: #17a2b8; }
         .log-level.warn { color: #ffc107; }
         .log-level.error { color: #dc3545; }
         .log-level.debug { color: var(--text-secondary); }
-        
+
         .chart-placeholder {
             flex: 1;
             background: var(--bg-primary);
@@ -547,7 +552,7 @@ export class DevDashboard extends EventEmitter {
             justify-content: center;
             color: var(--text-secondary);
         }
-        
+
         .refresh-btn {
             background: var(--accent);
             color: white;
@@ -557,7 +562,7 @@ export class DevDashboard extends EventEmitter {
             cursor: pointer;
             font-size: 0.9rem;
         }
-        
+
         .refresh-btn:hover {
             opacity: 0.8;
         }
@@ -580,7 +585,7 @@ export class DevDashboard extends EventEmitter {
             <button class="refresh-btn" onclick="location.reload()">Refresh</button>
         </div>
     </div>
-    
+
     <div class="main">
         <div class="panel">
             <h2>📊 Performance Metrics</h2>
@@ -607,7 +612,7 @@ export class DevDashboard extends EventEmitter {
                 <small>Real-time metrics visualization</small>
             </div>
         </div>
-        
+
         <div class="panel">
             <h2>🔍 Optimization Status</h2>
             <div class="metrics-grid">
@@ -633,21 +638,26 @@ export class DevDashboard extends EventEmitter {
                 <small>Optimization statistics</small>
             </div>
         </div>
-        
+
         <div class="panel">
             <h2>📝 System Logs</h2>
             <div class="logs">
-                ${state.logs.slice(-20).map(log => `
+                ${state.logs
+                  .slice(-20)
+                  .map(
+                    (log) => `
                     <div class="log-entry">
                         <span class="log-timestamp">${log.timestamp.toLocaleTimeString()}</span>
                         <span class="log-level ${log.level}">[${log.level.toUpperCase()}]</span>
                         <span class="log-module">[${log.module}]</span>
                         <span class="log-message">${log.message}</span>
                     </div>
-                `).join('')}
+                `
+                  )
+                  .join('')}
             </div>
         </div>
-        
+
         <div class="panel">
             <h2>🛠️ Development Tools</h2>
             <div class="metrics-grid">
@@ -674,7 +684,7 @@ export class DevDashboard extends EventEmitter {
             </div>
         </div>
     </div>
-    
+
     <script>
         // Auto-refresh every 5 seconds
         if (${this.config.autoRefresh}) {
@@ -682,7 +692,7 @@ export class DevDashboard extends EventEmitter {
                 location.reload();
             }, 5000);
         }
-        
+
         console.log('Tailwind Enigma Dashboard loaded');
     </script>
 </body>
@@ -696,24 +706,33 @@ export class DevDashboard extends EventEmitter {
     // Listen to diagnostics events
     if (this.diagnostics) {
       this.diagnostics.on('performance-update', (metrics) => {
-        this.addLogEntry('info', 'Performance metrics updated', 'Diagnostics', { 
+        this.addLogEntry('info', 'Performance metrics updated', 'Diagnostics', {
           memoryMB: Math.round(metrics.memoryUsage.heapUsed / 1024 / 1024),
-          eventLoopDelay: metrics.eventLoopDelay 
+          eventLoopDelay: metrics.eventLoopDelay,
         });
       });
 
       this.diagnostics.on('threshold-exceeded', (type, value, threshold) => {
-        this.addLogEntry('warn', `${type} threshold exceeded: ${value} > ${threshold}`, 'Diagnostics');
+        this.addLogEntry(
+          'warn',
+          `${type} threshold exceeded: ${value} > ${threshold}`,
+          'Diagnostics'
+        );
       });
     }
 
     // Listen to preview events
     if (this.preview) {
       this.preview.on('update', (update) => {
-        this.addLogEntry('info', `Preview updated: ${update.files.length} files processed`, 'Preview', {
-          totalChanges: update.summary.totalChanges,
-          totalSavings: update.summary.totalSavings
-        });
+        this.addLogEntry(
+          'info',
+          `Preview updated: ${update.files.length} files processed`,
+          'Preview',
+          {
+            totalChanges: update.summary.totalChanges,
+            totalSavings: update.summary.totalSavings,
+          }
+        );
       });
 
       this.preview.on('error', (error) => {
@@ -729,7 +748,7 @@ export class DevDashboard extends EventEmitter {
     this.metricsInterval = setInterval(() => {
       const metrics = this.collectMetrics();
       this.metricsHistory.push(metrics);
-      
+
       // Limit metrics history
       if (this.metricsHistory.length > 100) {
         this.metricsHistory.shift();
@@ -778,7 +797,7 @@ export class DevDashboard extends EventEmitter {
    */
   private broadcastToClients(event: string, _data: any): void {
     // In a real implementation, this would send WebSocket messages
-    this.logger.debug("Broadcasting to clients", { event, clientCount: this.clients.size });
+    this.logger.debug('Broadcasting to clients', { event, clientCount: this.clients.size });
   }
 
   /**
@@ -788,7 +807,7 @@ export class DevDashboard extends EventEmitter {
     const seconds = Math.floor(uptime / 1000);
     const minutes = Math.floor(seconds / 60);
     const hours = Math.floor(minutes / 60);
-    
+
     if (hours > 0) {
       return `${hours}h ${minutes % 60}m`;
     } else if (minutes > 0) {
@@ -844,4 +863,4 @@ export function createDevDashboard(
 interface DevDashboardEventEmitter {
   on<K extends keyof DashboardEvents>(event: K, listener: DashboardEvents[K]): this;
   emit<K extends keyof DashboardEvents>(event: K, ...args: Parameters<DashboardEvents[K]>): boolean;
-} 
+}

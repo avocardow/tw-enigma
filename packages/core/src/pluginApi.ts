@@ -10,30 +10,25 @@
  * Provides the main API contract, hooks, and validation for the PostCSS plugin system
  */
 
-import { z } from "zod";
-import { createLogger } from "./utils/logger";
-import { EnigmaPostCSSProcessor } from "./postcssIntegration";
-import {
-  createPluginManager,
-  createDefaultDiscoveryOptions,
-} from "./core/pluginManager";
-import { createTailwindOptimizer } from "./core/plugins/tailwindOptimizer";
-import { createCssMinifier } from "./core/plugins/cssMinifier";
-import { createSourceMapper } from "./core/plugins/sourceMapper";
+import { z } from 'zod';
+import type { EnigmaConfig } from './config';
+import { createDefaultDiscoveryOptions, createPluginManager } from './core/pluginManager';
+import { createCssMinifier } from './core/plugins/cssMinifier';
+import { createSourceMapper } from './core/plugins/sourceMapper';
+import { createTailwindOptimizer } from './core/plugins/tailwindOptimizer';
+import { EnigmaPostCSSProcessor } from './postcssIntegration';
+import type { FrequencyAnalysisResult } from './processors/patternAnalysis';
 import type {
-  PluginManager,
   EnigmaPlugin,
   PluginConfig,
-  ProcessorConfig,
+  PluginManager,
   ProcessingResult,
+  ProcessorConfig,
   ValidationResult,
-} from "./types/plugins";
-import type { EnigmaConfig } from "./config";
-import type {
-  FrequencyAnalysisResult,
-} from "./patternAnalysis";
+} from './types/plugins';
+import { createLogger } from './utils/logger';
 
-const logger = createLogger("plugin-api");
+const logger = createLogger('plugin-api');
 
 /**
  * Plugin API configuration schema
@@ -45,14 +40,14 @@ export const PluginApiConfigSchema = z.object({
         name: z.string(),
         enabled: z.boolean().optional().default(true),
         options: z.record(z.unknown()).optional().default({}),
-      }),
+      })
     )
     .optional()
     .default([]),
   discovery: z
     .object({
       autoDiscover: z.boolean().optional().default(true),
-      searchPaths: z.array(z.string()).optional().default(["./plugins"]),
+      searchPaths: z.array(z.string()).optional().default(['./plugins']),
       includeBuiltins: z.boolean().optional().default(true),
     })
     .optional(),
@@ -90,9 +85,9 @@ export class EnigmaPluginApi {
 
   constructor(config?: EnigmaConfig) {
     this.manager = createPluginManager();
-    this.processor = new EnigmaPostCSSProcessor(this.manager, config || {} as EnigmaConfig);
+    this.processor = new EnigmaPostCSSProcessor(this.manager, config || ({} as EnigmaConfig));
 
-    logger.debug("Plugin API initialized");
+    logger.debug('Plugin API initialized');
   }
 
   /**
@@ -100,12 +95,12 @@ export class EnigmaPluginApi {
    */
   async initialize(config: PluginApiConfig = { plugins: [] }): Promise<void> {
     if (this.isInitialized) {
-      logger.warn("Plugin API already initialized");
+      logger.warn('Plugin API already initialized');
       return;
     }
 
     try {
-      logger.info("Initializing plugin API", { config });
+      logger.info('Initializing plugin API', { config });
 
       // Validate configuration
       const validatedConfig = PluginApiConfigSchema.parse({
@@ -135,11 +130,11 @@ export class EnigmaPluginApi {
       await this.manager.initializePlugins(validatedConfig.plugins);
 
       this.isInitialized = true;
-      logger.info("Plugin API initialization completed");
+      logger.info('Plugin API initialization completed');
     } catch (error) {
-      logger.error("Plugin API initialization failed", { error });
+      logger.error('Plugin API initialization failed', { error });
       throw new Error(
-        `Plugin API initialization failed: ${error instanceof Error ? error.message : String(error)}`,
+        `Plugin API initialization failed: ${error instanceof Error ? error.message : String(error)}`
       );
     }
   }
@@ -206,10 +201,10 @@ export class EnigmaPluginApi {
       frequencyData?: FrequencyAnalysisResult;
       patternData?: any;
       sourceMap?: boolean;
-    } = {},
+    } = {}
   ): Promise<ProcessingResult> {
     if (!this.isInitialized) {
-      throw new Error("Plugin API not initialized. Call initialize() first.");
+      throw new Error('Plugin API not initialized. Call initialize() first.');
     }
 
     try {
@@ -225,14 +220,19 @@ export class EnigmaPluginApi {
       }
 
       // Process through PostCSS pipeline
-      const result = await this.processor.processCss(css, processorConfig, options.frequencyData, options.patternData);
+      const result = await this.processor.processCss(
+        css,
+        processorConfig,
+        options.frequencyData,
+        options.patternData
+      );
 
       // Trigger completion hook
       if (this.hooks.onProcessingComplete) {
         this.hooks.onProcessingComplete(result);
       }
 
-      logger.debug("CSS processing completed via API", {
+      logger.debug('CSS processing completed via API', {
         inputSize: css.length,
         outputSize: result.css.length,
         duration: result.totalTime,
@@ -240,14 +240,11 @@ export class EnigmaPluginApi {
 
       return result;
     } catch (error) {
-      logger.error("CSS processing failed via API", { error });
+      logger.error('CSS processing failed via API', { error });
 
       // Trigger error hook
       if (this.hooks.onError) {
-        this.hooks.onError(
-          error instanceof Error ? error : new Error(String(error)),
-          "processCss",
-        );
+        this.hooks.onError(error instanceof Error ? error : new Error(String(error)), 'processCss');
       }
 
       throw error;
@@ -283,7 +280,7 @@ export class EnigmaPluginApi {
    */
   setHooks(hooks: Partial<ApiHooks>): void {
     this.hooks = { ...this.hooks, ...hooks };
-    logger.debug("API hooks updated", {
+    logger.debug('API hooks updated', {
       hookCount: Object.keys(this.hooks).length,
     });
   }
@@ -308,9 +305,9 @@ export class EnigmaPluginApi {
       this.isInitialized = false;
       this.hooks = {};
 
-      logger.info("Plugin API cleanup completed");
+      logger.info('Plugin API cleanup completed');
     } catch (error) {
-      logger.error("Plugin API cleanup failed", { error });
+      logger.error('Plugin API cleanup failed', { error });
       throw error;
     }
   }
@@ -319,11 +316,7 @@ export class EnigmaPluginApi {
    * Register built-in plugins
    */
   private async registerBuiltinPlugins(): Promise<void> {
-    const builtinPlugins = [
-      createTailwindOptimizer(),
-      createCssMinifier(),
-      createSourceMapper(),
-    ];
+    const builtinPlugins = [createTailwindOptimizer(), createCssMinifier(), createSourceMapper()];
 
     for (const plugin of builtinPlugins) {
       try {
@@ -347,8 +340,7 @@ export class EnigmaPluginApi {
         ...discoveryConfig,
       };
 
-      const discoveredPlugins =
-        await this.manager.discoverPlugins(discoveryOptions);
+      const discoveredPlugins = await this.manager.discoverPlugins(discoveryOptions);
 
       for (const plugin of discoveredPlugins) {
         if (!this.manager.hasPlugin(plugin.meta.name)) {
@@ -358,7 +350,7 @@ export class EnigmaPluginApi {
 
       logger.debug(`Discovered ${discoveredPlugins.length} plugins`);
     } catch (error) {
-      logger.warn("Plugin discovery failed", { error });
+      logger.warn('Plugin discovery failed', { error });
     }
   }
 
@@ -367,7 +359,7 @@ export class EnigmaPluginApi {
    */
   private async configurePlugin(
     pluginName: string,
-    options: Record<string, unknown>,
+    options: Record<string, unknown>
   ): Promise<void> {
     const plugin = this.manager.getPlugin(pluginName);
     if (!plugin) {
@@ -393,13 +385,13 @@ export function createPluginApi(config?: EnigmaConfig): EnigmaPluginApi {
 export function createDefaultPluginConfig(): PluginApiConfig {
   return {
     plugins: [
-      { name: "tailwind-optimizer", enabled: true, options: {} },
-      { name: "css-minifier", enabled: true, options: {} },
-      { name: "source-mapper", enabled: true, options: {} },
+      { name: 'tailwind-optimizer', enabled: true, options: {} },
+      { name: 'css-minifier', enabled: true, options: {} },
+      { name: 'source-mapper', enabled: true, options: {} },
     ],
     discovery: {
       autoDiscover: true,
-      searchPaths: ["./plugins"],
+      searchPaths: ['./plugins'],
       includeBuiltins: true,
     },
     processing: {
@@ -413,11 +405,11 @@ export function createDefaultPluginConfig(): PluginApiConfig {
 
 // Export types for external use
 export type {
-  PluginApiConfig,
   EnigmaPlugin,
+  PluginApiConfig,
   PluginConfig,
-  ProcessorConfig,
   ProcessingResult,
+  ProcessorConfig,
   ValidationResult,
 };
 

@@ -5,23 +5,23 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { EventEmitter } from "events";
-import { dirname } from "path";
-import { existsSync } from "fs";
-import { logger } from "./utils/logger";
-import { ValidationError } from "./utils/errors";
-import type { EnigmaConfig } from "./config";
-import type { ValidationResult } from "./configValidator";
+import { EventEmitter } from 'events';
+import { existsSync } from 'fs';
+import { dirname } from 'path';
+import type { EnigmaConfig } from './config';
+import type { ValidationResult } from './config/configValidator';
+import { ValidationError } from './utils/errors';
+import { logger } from './utils/logger';
 
 /**
  * Runtime validation events
  */
 export interface RuntimeValidationEvents {
-  "validation-warning": (warning: RuntimeValidationWarning) => void;
-  "validation-error": (error: RuntimeValidationError) => void;
-  "resource-threshold": (alert: ResourceAlert) => void;
-  "performance-degradation": (alert: PerformanceAlert) => void;
-  "security-violation": (alert: SecurityAlert) => void;
+  'validation-warning': (warning: RuntimeValidationWarning) => void;
+  'validation-error': (error: RuntimeValidationError) => void;
+  'resource-threshold': (alert: ResourceAlert) => void;
+  'performance-degradation': (alert: PerformanceAlert) => void;
+  'security-violation': (alert: SecurityAlert) => void;
 }
 
 /**
@@ -29,13 +29,13 @@ export interface RuntimeValidationEvents {
  */
 export interface RuntimeValidationWarning {
   timestamp: Date;
-  type: "resource" | "performance" | "security" | "configuration";
+  type: 'resource' | 'performance' | 'security' | 'configuration';
   message: string;
   field?: string;
   currentValue?: unknown;
   recommendedValue?: unknown;
   suggestions: string[];
-  severity: "low" | "medium" | "high";
+  severity: 'low' | 'medium' | 'high';
 }
 
 /**
@@ -43,12 +43,12 @@ export interface RuntimeValidationWarning {
  */
 export interface RuntimeValidationError {
   timestamp: Date;
-  type: "constraint" | "security" | "resource" | "configuration";
+  type: 'constraint' | 'security' | 'resource' | 'configuration';
   message: string;
   field?: string;
   currentValue?: unknown;
   expectedValue?: unknown;
-  action: "block" | "fallback" | "warn";
+  action: 'block' | 'fallback' | 'warn';
   fallbackValue?: unknown;
 }
 
@@ -57,11 +57,11 @@ export interface RuntimeValidationError {
  */
 export interface ResourceAlert {
   timestamp: Date;
-  resource: "memory" | "cpu" | "disk" | "network" | "handles";
+  resource: 'memory' | 'cpu' | 'disk' | 'network' | 'handles';
   currentUsage: number;
   threshold: number;
   unit: string;
-  trend: "increasing" | "decreasing" | "stable";
+  trend: 'increasing' | 'decreasing' | 'stable';
   suggestions: string[];
 }
 
@@ -70,11 +70,11 @@ export interface ResourceAlert {
  */
 export interface PerformanceAlert {
   timestamp: Date;
-  metric: "processing-time" | "memory-usage" | "file-operations" | "concurrency";
+  metric: 'processing-time' | 'memory-usage' | 'file-operations' | 'concurrency';
   baseline: number;
   current: number;
   degradation: number; // percentage
-  impact: "low" | "medium" | "high";
+  impact: 'low' | 'medium' | 'high';
   suggestions: string[];
 }
 
@@ -83,10 +83,14 @@ export interface PerformanceAlert {
  */
 export interface SecurityAlert {
   timestamp: Date;
-  violation: "path-traversal" | "permission-escalation" | "unsafe-operation" | "resource-exhaustion";
+  violation:
+    | 'path-traversal'
+    | 'permission-escalation'
+    | 'unsafe-operation'
+    | 'resource-exhaustion';
   message: string;
   details: Record<string, unknown>;
-  severity: "low" | "medium" | "high" | "critical";
+  severity: 'low' | 'medium' | 'high' | 'critical';
   blocked: boolean;
 }
 
@@ -169,16 +173,16 @@ export class RuntimeValidator extends EventEmitter {
    */
   public start(): void {
     if (this.isRunning) {
-      logger.warn("Runtime validator is already running");
+      logger.warn('Runtime validator is already running');
       return;
     }
 
     if (!this.validatorConfig.enabled) {
-      logger.info("Runtime validator is disabled");
+      logger.info('Runtime validator is disabled');
       return;
     }
 
-    logger.info("Starting runtime configuration validator", {
+    logger.info('Starting runtime configuration validator', {
       checkInterval: this.validatorConfig.checkInterval,
       resourceThresholds: this.validatorConfig.resourceThresholds,
     });
@@ -200,7 +204,7 @@ export class RuntimeValidator extends EventEmitter {
       return;
     }
 
-    logger.info("Stopping runtime configuration validator");
+    logger.info('Stopping runtime configuration validator');
 
     this.isRunning = false;
     if (this.checkInterval) {
@@ -213,7 +217,7 @@ export class RuntimeValidator extends EventEmitter {
    * Update configuration and re-validate
    */
   public updateConfig(newConfig: EnigmaConfig): ValidationResult {
-    logger.debug("Updating runtime validator configuration");
+    logger.debug('Updating runtime validator configuration');
 
     const oldConfig = this.config;
     this.config = newConfig;
@@ -224,7 +228,7 @@ export class RuntimeValidator extends EventEmitter {
     if (!validationResult.isValid) {
       // Revert to old configuration if validation fails
       this.config = oldConfig;
-      logger.warn("Configuration update failed validation, reverting to previous configuration");
+      logger.warn('Configuration update failed validation, reverting to previous configuration');
     }
 
     return validationResult;
@@ -233,7 +237,11 @@ export class RuntimeValidator extends EventEmitter {
   /**
    * Validate a specific configuration value at runtime
    */
-  public validateValue(field: string, value: unknown, constraints?: Record<string, unknown>): ValidationResult {
+  public validateValue(
+    field: string,
+    value: unknown,
+    constraints?: Record<string, unknown>
+  ): ValidationResult {
     const errors: ValidationError[] = [];
     const warnings: string[] = [];
     const suggestions: string[] = [];
@@ -241,15 +249,15 @@ export class RuntimeValidator extends EventEmitter {
     try {
       // Perform field-specific validation
       switch (field) {
-        case "maxConcurrency":
+        case 'maxConcurrency':
           this.validateConcurrency(value as number, errors, warnings, suggestions);
           break;
-        case "input":
-        case "output":
+        case 'input':
+        case 'output':
           this.validatePath(field, value as string, errors, warnings, suggestions);
           break;
-        case "htmlExtractor.maxFileSize":
-        case "jsExtractor.maxFileSize":
+        case 'htmlExtractor.maxFileSize':
+        case 'jsExtractor.maxFileSize':
           this.validateFileSize(value as number, errors, warnings, suggestions);
           break;
         default:
@@ -265,14 +273,14 @@ export class RuntimeValidator extends EventEmitter {
         performance: { validationTime: 0, rulesApplied: 1 },
       };
     } catch (error) {
-      logger.error("Runtime validation failed", { field, error });
-      
+      logger.error('Runtime validation failed', { field, error });
+
       const validationError = new ValidationError(
         `Runtime validation failed for field '${field}': ${error instanceof Error ? error.message : String(error)}`,
         field,
         value,
         error as Error,
-        { operation: "runtimeValidation", field }
+        { operation: 'runtimeValidation', field }
       );
 
       return {
@@ -288,14 +296,18 @@ export class RuntimeValidator extends EventEmitter {
   /**
    * Validate file paths and directories
    */
-  public async validatePaths(): Promise<{ isValid: boolean; errors: string[]; warnings: string[] }> {
+  public async validatePaths(): Promise<{
+    isValid: boolean;
+    errors: string[];
+    warnings: string[];
+  }> {
     const errors: string[] = [];
     const warnings: string[] = [];
 
     try {
       // Validate input path
       if (this.config.input && !existsSync(this.config.input)) {
-        if (typeof this.config.input === "string") {
+        if (typeof this.config.input === 'string') {
           errors.push(`Input path does not exist: ${this.config.input}`);
         }
       }
@@ -303,9 +315,8 @@ export class RuntimeValidator extends EventEmitter {
       // Validate output path
       if (this.config.output) {
         // Handle union type: string | object
-        const outputPath = typeof this.config.output === 'string' 
-          ? this.config.output 
-          : this.config.output.filename;
+        const outputPath =
+          typeof this.config.output === 'string' ? this.config.output : this.config.output.filename;
         const outputDir = dirname(outputPath);
         if (!existsSync(outputDir)) {
           warnings.push(`Output directory does not exist and will be created: ${outputDir}`);
@@ -315,14 +326,16 @@ export class RuntimeValidator extends EventEmitter {
       return {
         isValid: errors.length === 0,
         errors,
-        warnings
+        warnings,
       };
     } catch (error) {
-      errors.push(`Path validation failed: ${error instanceof Error ? error.message : String(error)}`);
+      errors.push(
+        `Path validation failed: ${error instanceof Error ? error.message : String(error)}`
+      );
       return {
         isValid: false,
         errors,
-        warnings
+        warnings,
       };
     }
   }
@@ -330,7 +343,11 @@ export class RuntimeValidator extends EventEmitter {
   /**
    * Validate resource constraints (expected by tests)
    */
-  public async validateConstraints(): Promise<{ isValid: boolean; errors: string[]; warnings: string[] }> {
+  public async validateConstraints(): Promise<{
+    isValid: boolean;
+    errors: string[];
+    warnings: string[];
+  }> {
     const errors: string[] = [];
     const warnings: string[] = [];
 
@@ -341,10 +358,16 @@ export class RuntimeValidator extends EventEmitter {
 
       // Memory
       if (usage.memoryHeapUsed > thresholds.memory) {
-        errors.push(`Resource constraint: Memory usage exceeds threshold: ${Math.round(usage.memoryHeapUsed / 1024 / 1024)}MB > ${Math.round(thresholds.memory / 1024 / 1024)}MB`);
-        warnings.push(`Memory usage exceeded resource threshold: ${Math.round(usage.memoryHeapUsed / 1024 / 1024)}MB > ${Math.round(thresholds.memory / 1024 / 1024)}MB`);
+        errors.push(
+          `Resource constraint: Memory usage exceeds threshold: ${Math.round(usage.memoryHeapUsed / 1024 / 1024)}MB > ${Math.round(thresholds.memory / 1024 / 1024)}MB`
+        );
+        warnings.push(
+          `Memory usage exceeded resource threshold: ${Math.round(usage.memoryHeapUsed / 1024 / 1024)}MB > ${Math.round(thresholds.memory / 1024 / 1024)}MB`
+        );
       } else if (usage.memoryHeapUsed > thresholds.memory * 0.8) {
-        warnings.push(`Memory usage is approaching threshold: ${Math.round(usage.memoryHeapUsed / 1024 / 1024)}MB`);
+        warnings.push(
+          `Memory usage is approaching threshold: ${Math.round(usage.memoryHeapUsed / 1024 / 1024)}MB`
+        );
       }
 
       // CPU (simulate as always under for now, as process.cpuUsage() is not percentage-based)
@@ -352,8 +375,12 @@ export class RuntimeValidator extends EventEmitter {
 
       // File handles
       if (usage.activeHandles > thresholds.fileHandles) {
-        errors.push(`Resource constraint: Active file handles exceed threshold: ${usage.activeHandles} > ${thresholds.fileHandles}`);
-        warnings.push(`File handles exceeded resource threshold: ${usage.activeHandles} > ${thresholds.fileHandles}`);
+        errors.push(
+          `Resource constraint: Active file handles exceed threshold: ${usage.activeHandles} > ${thresholds.fileHandles}`
+        );
+        warnings.push(
+          `File handles exceeded resource threshold: ${usage.activeHandles} > ${thresholds.fileHandles}`
+        );
       } else if (usage.activeHandles > thresholds.fileHandles * 0.8) {
         warnings.push(`Active file handles approaching threshold: ${usage.activeHandles}`);
       }
@@ -363,21 +390,25 @@ export class RuntimeValidator extends EventEmitter {
 
       // Concurrency limits
       if (this.config.maxConcurrency > 8) {
-        warnings.push(`High concurrency setting may impact performance: ${this.config.maxConcurrency}`);
+        warnings.push(
+          `High concurrency setting may impact performance: ${this.config.maxConcurrency}`
+        );
       }
 
       // If any errors, isValid must be false
       return {
         isValid: errors.length === 0,
         errors,
-        warnings
+        warnings,
       };
     } catch (error) {
-      errors.push(`Constraint validation failed: ${error instanceof Error ? error.message : String(error)}`);
+      errors.push(
+        `Constraint validation failed: ${error instanceof Error ? error.message : String(error)}`
+      );
       return {
         isValid: false,
         errors,
-        warnings
+        warnings,
       };
     }
   }
@@ -407,13 +438,13 @@ export class RuntimeValidator extends EventEmitter {
    */
   private initializeBaselines(): void {
     const initialUsage = this.getResourceUsage();
-    
-    this.resourceBaselines.set("memory", initialUsage.memoryHeapUsed);
-    this.resourceBaselines.set("cpu", 0);
-    this.resourceBaselines.set("handles", initialUsage.activeHandles);
-    this.resourceBaselines.set("requests", initialUsage.activeRequests);
 
-    logger.debug("Initialized runtime validation baselines", {
+    this.resourceBaselines.set('memory', initialUsage.memoryHeapUsed);
+    this.resourceBaselines.set('cpu', 0);
+    this.resourceBaselines.set('handles', initialUsage.activeHandles);
+    this.resourceBaselines.set('requests', initialUsage.activeRequests);
+
+    logger.debug('Initialized runtime validation baselines', {
       baselines: Object.fromEntries(this.resourceBaselines),
     });
   }
@@ -438,7 +469,7 @@ export class RuntimeValidator extends EventEmitter {
       // Update performance history
       this.updatePerformanceHistory();
     } catch (error) {
-      logger.error("Runtime validation check failed", { error });
+      logger.error('Runtime validation check failed', { error });
     }
   }
 
@@ -451,19 +482,19 @@ export class RuntimeValidator extends EventEmitter {
 
     // Memory check
     if (usage.memoryHeapUsed > thresholds.memory) {
-      this.emitResourceAlert("memory", usage.memoryHeapUsed, thresholds.memory, "bytes", [
-        "Consider reducing maxConcurrency",
-        "Reduce file size limits",
-        "Enable garbage collection optimization",
+      this.emitResourceAlert('memory', usage.memoryHeapUsed, thresholds.memory, 'bytes', [
+        'Consider reducing maxConcurrency',
+        'Reduce file size limits',
+        'Enable garbage collection optimization',
       ]);
     }
 
     // File handles check
     if (usage.activeHandles > thresholds.fileHandles) {
-      this.emitResourceAlert("handles", usage.activeHandles, thresholds.fileHandles, "handles", [
-        "Reduce concurrent file operations",
-        "Check for file handle leaks",
-        "Implement file handle pooling",
+      this.emitResourceAlert('handles', usage.activeHandles, thresholds.fileHandles, 'handles', [
+        'Reduce concurrent file operations',
+        'Check for file handle leaks',
+        'Implement file handle pooling',
       ]);
     }
   }
@@ -473,17 +504,24 @@ export class RuntimeValidator extends EventEmitter {
    */
   private checkPerformanceMetrics(): void {
     const currentUsage = this.getResourceUsage();
-    const baseline = this.resourceBaselines.get("memory") || 0;
-    
+    const baseline = this.resourceBaselines.get('memory') || 0;
+
     if (baseline > 0) {
       const memoryIncrease = ((currentUsage.memoryHeapUsed - baseline) / baseline) * 100;
-      
-      if (memoryIncrease > 50) { // 50% increase
-        this.emitPerformanceAlert("memory-usage", baseline, currentUsage.memoryHeapUsed, memoryIncrease, [
-          "Memory usage has increased significantly",
-          "Consider restarting the process",
-          "Review recent configuration changes",
-        ]);
+
+      if (memoryIncrease > 50) {
+        // 50% increase
+        this.emitPerformanceAlert(
+          'memory-usage',
+          baseline,
+          currentUsage.memoryHeapUsed,
+          memoryIncrease,
+          [
+            'Memory usage has increased significantly',
+            'Consider restarting the process',
+            'Review recent configuration changes',
+          ]
+        );
       }
     }
   }
@@ -506,12 +544,18 @@ export class RuntimeValidator extends EventEmitter {
       } else if (path && typeof path === 'object' && 'filename' in path) {
         pathString = (path as any).filename;
       }
-      
-      if (pathString && (pathString.includes("../") || pathString.includes("..\\"))) {
-        this.emitSecurityAlert("path-traversal", "Path traversal detected in runtime configuration", {
-          path: pathString,
-          field: path === this.config.input ? "input" : "output",
-        }, "high", true);
+
+      if (pathString && (pathString.includes('../') || pathString.includes('..\\'))) {
+        this.emitSecurityAlert(
+          'path-traversal',
+          'Path traversal detected in runtime configuration',
+          {
+            path: pathString,
+            field: path === this.config.input ? 'input' : 'output',
+          },
+          'high',
+          true
+        );
       }
     }
   }
@@ -522,20 +566,23 @@ export class RuntimeValidator extends EventEmitter {
   private checkConfigurationConsistency(): void {
     // Check for conflicting settings
     if (this.config.dev?.enabled && this.config.minify) {
-      this.emitValidationWarning("configuration", "Development mode enabled with minification", {
-        suggestions: ["Disable minification in development mode", "Use separate configurations for dev/prod"],
-        severity: "medium" as const,
+      this.emitValidationWarning('configuration', 'Development mode enabled with minification', {
+        suggestions: [
+          'Disable minification in development mode',
+          'Use separate configurations for dev/prod',
+        ],
+        severity: 'medium' as const,
       });
     }
 
     // Check for performance-impacting settings
     if (this.config.maxConcurrency > 8) {
-      this.emitValidationWarning("performance", "High concurrency setting detected", {
-        field: "maxConcurrency",
+      this.emitValidationWarning('performance', 'High concurrency setting detected', {
+        field: 'maxConcurrency',
         currentValue: this.config.maxConcurrency,
         recommendedValue: 4,
-        suggestions: ["Consider reducing maxConcurrency for better stability"],
-        severity: "low" as const,
+        suggestions: ['Consider reducing maxConcurrency for better stability'],
+        severity: 'low' as const,
       });
     }
   }
@@ -545,7 +592,7 @@ export class RuntimeValidator extends EventEmitter {
    */
   private updatePerformanceHistory(): void {
     const metrics = this.getResourceUsage();
-    
+
     this.performanceHistory.push({
       timestamp: new Date(),
       metrics,
@@ -560,24 +607,27 @@ export class RuntimeValidator extends EventEmitter {
   /**
    * Validate configuration change
    */
-  private validateConfigurationChange(oldConfig: EnigmaConfig, newConfig: EnigmaConfig): ValidationResult {
+  private validateConfigurationChange(
+    oldConfig: EnigmaConfig,
+    newConfig: EnigmaConfig
+  ): ValidationResult {
     const errors: ValidationError[] = [];
     const warnings: string[] = [];
     const suggestions: string[] = [];
 
     // Check for breaking changes
     if (oldConfig.input !== newConfig.input) {
-      warnings.push("Input path changed - ensure all dependent processes are updated");
+      warnings.push('Input path changed - ensure all dependent processes are updated');
     }
 
     if (oldConfig.output !== newConfig.output) {
-      warnings.push("Output path changed - previous output files may become orphaned");
+      warnings.push('Output path changed - previous output files may become orphaned');
     }
 
     // Check for performance impact
     if (newConfig.maxConcurrency > oldConfig.maxConcurrency * 2) {
-      warnings.push("Significant concurrency increase may impact system performance");
-      suggestions.push("Monitor resource usage after this change");
+      warnings.push('Significant concurrency increase may impact system performance');
+      suggestions.push('Monitor resource usage after this change');
     }
 
     return {
@@ -590,80 +640,124 @@ export class RuntimeValidator extends EventEmitter {
   }
 
   // Field-specific validation methods
-  private validateConcurrency(value: number, errors: ValidationError[], warnings: string[], suggestions: string[]): void {
+  private validateConcurrency(
+    value: number,
+    errors: ValidationError[],
+    warnings: string[],
+    suggestions: string[]
+  ): void {
     if (value > 16) {
-      warnings.push("Very high concurrency setting may cause system instability");
-      suggestions.push("Consider using a lower value (2-8) for optimal performance");
+      warnings.push('Very high concurrency setting may cause system instability');
+      suggestions.push('Consider using a lower value (2-8) for optimal performance');
     }
   }
 
-  private validatePath(field: string, value: string, errors: ValidationError[], _warnings: string[], _suggestions: string[]): void {
-    if (value.includes("../") || value.includes("..\\")) {
-      errors.push(new ValidationError(
-        "Path traversal detected",
-        field,
-        value,
-        undefined,
-        { operation: "runtimeValidation", field }
-      ));
+  private validatePath(
+    field: string,
+    value: string,
+    errors: ValidationError[],
+    _warnings: string[],
+    _suggestions: string[]
+  ): void {
+    if (value.includes('../') || value.includes('..\\')) {
+      errors.push(
+        new ValidationError('Path traversal detected', field, value, undefined, {
+          operation: 'runtimeValidation',
+          field,
+        })
+      );
     }
   }
 
-  private validateFileSize(value: number, errors: ValidationError[], warnings: string[], suggestions: string[]): void {
-    if (value > 50 * 1024 * 1024) { // 50MB
-      warnings.push("Large file size limit may impact memory usage");
-      suggestions.push("Consider implementing streaming for large files");
+  private validateFileSize(
+    value: number,
+    errors: ValidationError[],
+    warnings: string[],
+    suggestions: string[]
+  ): void {
+    if (value > 50 * 1024 * 1024) {
+      // 50MB
+      warnings.push('Large file size limit may impact memory usage');
+      suggestions.push('Consider implementing streaming for large files');
     }
   }
 
-  private validateGenericField(field: string, value: unknown, constraints: Record<string, unknown> | undefined, errors: ValidationError[], _warnings: string[], _suggestions: string[]): void {
+  private validateGenericField(
+    field: string,
+    value: unknown,
+    constraints: Record<string, unknown> | undefined,
+    errors: ValidationError[],
+    _warnings: string[],
+    _suggestions: string[]
+  ): void {
     // Generic validation logic
     if (constraints) {
       // Apply constraints if provided
-      if (constraints.min !== undefined && typeof value === "number" && value < (constraints.min as number)) {
-        errors.push(new ValidationError(
-          `Value below minimum constraint`,
-          field,
-          value,
-          undefined,
-          { operation: "runtimeValidation", field }
-        ));
+      if (
+        constraints.min !== undefined &&
+        typeof value === 'number' &&
+        value < (constraints.min as number)
+      ) {
+        errors.push(
+          new ValidationError(`Value below minimum constraint`, field, value, undefined, {
+            operation: 'runtimeValidation',
+            field,
+          })
+        );
       }
     }
   }
 
   // Event emission helpers
-  private emitResourceAlert(resource: ResourceAlert["resource"], current: number, threshold: number, unit: string, suggestions: string[]): void {
+  private emitResourceAlert(
+    resource: ResourceAlert['resource'],
+    current: number,
+    threshold: number,
+    unit: string,
+    suggestions: string[]
+  ): void {
     const alert: ResourceAlert = {
       timestamp: new Date(),
       resource,
       currentUsage: current,
       threshold,
       unit,
-      trend: "increasing", // Simplified for now
+      trend: 'increasing', // Simplified for now
       suggestions,
     };
 
-    this.emit("resource-threshold", alert);
-    logger.warn("Resource threshold exceeded", alert as any);
+    this.emit('resource-threshold', alert);
+    logger.warn('Resource threshold exceeded', alert as any);
   }
 
-  private emitPerformanceAlert(metric: PerformanceAlert["metric"], baseline: number, current: number, degradation: number, suggestions: string[]): void {
+  private emitPerformanceAlert(
+    metric: PerformanceAlert['metric'],
+    baseline: number,
+    current: number,
+    degradation: number,
+    suggestions: string[]
+  ): void {
     const alert: PerformanceAlert = {
       timestamp: new Date(),
       metric,
       baseline,
       current,
       degradation,
-      impact: degradation > 100 ? "high" : degradation > 50 ? "medium" : "low",
+      impact: degradation > 100 ? 'high' : degradation > 50 ? 'medium' : 'low',
       suggestions,
     };
 
-    this.emit("performance-degradation", alert);
-    logger.warn("Performance degradation detected", alert as any);
+    this.emit('performance-degradation', alert);
+    logger.warn('Performance degradation detected', alert as any);
   }
 
-  private emitSecurityAlert(violation: SecurityAlert["violation"], message: string, details: Record<string, unknown>, severity: SecurityAlert["severity"], blocked: boolean): void {
+  private emitSecurityAlert(
+    violation: SecurityAlert['violation'],
+    message: string,
+    details: Record<string, unknown>,
+    severity: SecurityAlert['severity'],
+    blocked: boolean
+  ): void {
     const alert: SecurityAlert = {
       timestamp: new Date(),
       violation,
@@ -673,29 +767,36 @@ export class RuntimeValidator extends EventEmitter {
       blocked,
     };
 
-    this.emit("security-violation", alert);
-    logger.error("Security violation detected", alert as any);
+    this.emit('security-violation', alert);
+    logger.error('Security violation detected', alert as any);
   }
 
-  private emitValidationWarning(type: RuntimeValidationWarning["type"], message: string, options: Partial<RuntimeValidationWarning>): void {
+  private emitValidationWarning(
+    type: RuntimeValidationWarning['type'],
+    message: string,
+    options: Partial<RuntimeValidationWarning>
+  ): void {
     const warning: RuntimeValidationWarning = {
       timestamp: new Date(),
       type,
       message,
       suggestions: [],
-      severity: "medium",
+      severity: 'medium',
       ...options,
     };
 
-    this.emit("validation-warning", warning);
-    logger.warn("Runtime validation warning", warning as any);
+    this.emit('validation-warning', warning);
+    logger.warn('Runtime validation warning', warning as any);
   }
 }
 
 /**
  * Factory function for creating runtime validator
  */
-export function createRuntimeValidator(config: EnigmaConfig, validatorConfig?: Partial<RuntimeValidatorConfig>): RuntimeValidator {
+export function createRuntimeValidator(
+  config: EnigmaConfig,
+  validatorConfig?: Partial<RuntimeValidatorConfig>
+): RuntimeValidator {
   // If config.runtime exists, merge its properties into validatorConfig
   let mergedConfig: Partial<RuntimeValidatorConfig> = { ...validatorConfig };
   if (config.runtime) {
@@ -704,12 +805,12 @@ export function createRuntimeValidator(config: EnigmaConfig, validatorConfig?: P
       ...config.runtime,
       resourceThresholds: {
         ...((validatorConfig && validatorConfig.resourceThresholds) || {}),
-        ...(config.runtime.resourceThresholds || {})
+        ...(config.runtime.resourceThresholds || {}),
       },
       autoCorrection: {
         ...((validatorConfig && validatorConfig.autoCorrection) || {}),
-        ...(config.runtime.autoCorrection || {})
-      }
+        ...(config.runtime.autoCorrection || {}),
+      },
     };
   }
   return new RuntimeValidator(config, mergedConfig);
@@ -718,16 +819,18 @@ export function createRuntimeValidator(config: EnigmaConfig, validatorConfig?: P
 /**
  * Validate configuration at runtime (expected by tests)
  */
-export async function validateConfigRuntime(config: EnigmaConfig): Promise<{ isValid: boolean; errors: string[]; warnings: string[] }> {
+export async function validateConfigRuntime(
+  config: EnigmaConfig
+): Promise<{ isValid: boolean; errors: string[]; warnings: string[] }> {
   const validator = createRuntimeValidator(config);
-  
+
   // Perform basic runtime validation
   const pathResult = await validator.validatePaths();
   const constraintResult = await validator.validateConstraints();
-  
+
   return {
     isValid: pathResult.isValid && constraintResult.isValid,
     errors: [...pathResult.errors, ...constraintResult.errors],
-    warnings: [...pathResult.warnings, ...constraintResult.warnings]
+    warnings: [...pathResult.warnings, ...constraintResult.warnings],
   };
-} 
+}

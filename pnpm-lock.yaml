@@ -196,6 +196,12 @@ importers:
       '@types/babel__traverse':
         specifier: ^7.20.7
         version: 7.20.7
+      '@types/write-file-atomic':
+        specifier: ^4.0.3
+        version: 4.0.3
+      '@types/ws':
+        specifier: ^8.18.1
+        version: 8.18.1
       memfs:
         specifier: ^4.17.2
         version: 4.17.2

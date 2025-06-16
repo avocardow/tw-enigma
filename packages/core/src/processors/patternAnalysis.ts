@@ -5,13 +5,10 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { z } from "zod";
-import type { HtmlClassExtractionResult } from "./htmlExtractor";
-import type {
-  JsClassExtractionResult,
-  SupportedFramework,
-} from "./jsExtractor";
-import type { ValidationResult } from "./patternValidator";
+import { z } from 'zod';
+import type { ValidationResult } from '../patternValidator';
+import type { HtmlClassExtractionResult } from './htmlExtractor';
+import type { JsClassExtractionResult, SupportedFramework } from './jsExtractor';
 
 /**
  * Configuration options for pattern analysis
@@ -23,25 +20,23 @@ export const PatternAnalysisOptionsSchema = z.object({
   enableCoOccurrenceAnalysis: z.boolean().default(true),
   maxCoOccurrenceDistance: z.number().min(1).default(5),
   includeFrameworkAnalysis: z.boolean().default(true),
-  sortBy: z.enum(["frequency", "alphabetical", "source"]).default("frequency"),
-  sortDirection: z.enum(["asc", "desc"]).default("desc"),
-  outputFormat: z.enum(["map", "array", "json"]).default("map"),
+  sortBy: z.enum(['frequency', 'alphabetical', 'source']).default('frequency'),
+  sortDirection: z.enum(['asc', 'desc']).default('desc'),
+  outputFormat: z.enum(['map', 'array', 'json']).default('map'),
   enableValidation: z.boolean().default(false),
   validationOptions: z.object({}).passthrough().optional(),
 });
 
-export type PatternAnalysisOptions = z.infer<
-  typeof PatternAnalysisOptionsSchema
->;
+export type PatternAnalysisOptions = z.infer<typeof PatternAnalysisOptionsSchema>;
 
 /**
  * Source attribution for class patterns
  */
 export interface SourceAttribution {
-  sourceType: "html" | "jsx" | "mixed";
+  sourceType: 'html' | 'jsx' | 'mixed';
   filePaths: string[];
   frameworks: Set<SupportedFramework>;
-  extractionTypes: Set<"static" | "dynamic" | "template" | "utility">;
+  extractionTypes: Set<'static' | 'dynamic' | 'template' | 'utility'>;
 }
 
 /**
@@ -64,7 +59,7 @@ export interface AggregatedClassData {
       pattern: string;
       lineNumber: number;
       framework?: SupportedFramework;
-      extractionType: "static" | "dynamic" | "template" | "utility";
+      extractionType: 'static' | 'dynamic' | 'template' | 'utility';
       filePath: string;
     }>;
   };
@@ -99,7 +94,7 @@ export interface CoOccurrencePattern {
   frequency: number;
   strength: number; // 0-1 indicating how often these classes appear together
   contexts: Array<{
-    sourceType: "html" | "jsx";
+    sourceType: 'html' | 'jsx';
     filePath: string;
     framework?: SupportedFramework;
   }>;
@@ -166,16 +161,13 @@ export interface PatternAnalysisInput {
  */
 export type SortFunction = (
   a: [string, AggregatedClassData],
-  b: [string, AggregatedClassData],
+  b: [string, AggregatedClassData]
 ) => number;
 
 /**
  * Filter function type for custom filtering
  */
-export type FilterFunction = (
-  className: string,
-  data: AggregatedClassData,
-) => boolean;
+export type FilterFunction = (className: string, data: AggregatedClassData) => boolean;
 
 /**
  * Export format types
@@ -196,7 +188,7 @@ export interface JsonExportFormat {
       };
     }
   >;
-  metadata: FrequencyAnalysisResult["metadata"];
+  metadata: FrequencyAnalysisResult['metadata'];
   summary: {
     totalClasses: number;
     uniqueClasses: number;
@@ -211,26 +203,19 @@ export interface JsonExportFormat {
 export class PatternAnalysisError extends Error {
   public cause?: Error;
 
-  constructor(
-    message: string,
-    cause?: Error,
-  ) {
+  constructor(message: string, cause?: Error) {
     super(message);
-    this.name = "PatternAnalysisError";
+    this.name = 'PatternAnalysisError';
     this.cause = cause;
   }
 }
 
 export class DataAggregationError extends PatternAnalysisError {
-  public sourceType?: "html" | "jsx";
+  public sourceType?: 'html' | 'jsx';
 
-  constructor(
-    message: string,
-    sourceType?: "html" | "jsx",
-    cause?: Error,
-  ) {
+  constructor(message: string, sourceType?: 'html' | 'jsx', cause?: Error) {
     super(message, cause);
-    this.name = "DataAggregationError";
+    this.name = 'DataAggregationError';
     this.sourceType = sourceType;
   }
 }
@@ -238,13 +223,9 @@ export class DataAggregationError extends PatternAnalysisError {
 export class FrequencyCalculationError extends PatternAnalysisError {
   public className?: string;
 
-  constructor(
-    message: string,
-    className?: string,
-    cause?: Error,
-  ) {
+  constructor(message: string, className?: string, cause?: Error) {
     super(message, cause);
-    this.name = "FrequencyCalculationError";
+    this.name = 'FrequencyCalculationError';
     this.className = className;
   }
 }
@@ -253,15 +234,15 @@ export class FrequencyCalculationError extends PatternAnalysisError {
  * Utility type guards
  */
 export function isHtmlResult(
-  result: HtmlClassExtractionResult | JsClassExtractionResult,
+  result: HtmlClassExtractionResult | JsClassExtractionResult
 ): result is HtmlClassExtractionResult {
-  return "totalElements" in result;
+  return 'totalElements' in result;
 }
 
 export function isJsxResult(
-  result: HtmlClassExtractionResult | JsClassExtractionResult,
+  result: HtmlClassExtractionResult | JsClassExtractionResult
 ): result is JsClassExtractionResult {
-  return "totalMatches" in result;
+  return 'totalMatches' in result;
 }
 
 /**
@@ -275,8 +256,7 @@ export const COMMON_TAILWIND_PATTERNS = {
   typography: /^(font|text|leading|tracking|antialiased)/,
   borders: /^(border|rounded|divide)-/,
   effects: /^(shadow|opacity|backdrop|filter)-/,
-  positioning:
-    /^(static|fixed|absolute|relative|sticky|top|right|bottom|left|inset)-/,
+  positioning: /^(static|fixed|absolute|relative|sticky|top|right|bottom|left|inset)-/,
   flexbox: /^(flex|justify|items|content|self|order|grow|shrink)-/,
   grid: /^(grid|col|row|gap|place)-/,
   transforms: /^(transform|rotate|scale|translate|skew|origin)-/,
@@ -301,19 +281,19 @@ export type TailwindPatternType = keyof typeof COMMON_TAILWIND_PATTERNS;
  */
 export function aggregateExtractionResults(
   input: PatternAnalysisInput,
-  options: Partial<PatternAnalysisOptions> = {},
+  options: Partial<PatternAnalysisOptions> = {}
 ): Map<string, AggregatedClassData> {
   const defaultOptions: PatternAnalysisOptions = {
     caseSensitive: false,
-    outputFormat: "map",
+    outputFormat: 'map',
     enableValidation: false,
     minimumFrequency: 1,
     enablePatternGrouping: false,
     enableCoOccurrenceAnalysis: false,
     maxCoOccurrenceDistance: 5,
     includeFrameworkAnalysis: false,
-    sortBy: "frequency",
-    sortDirection: "desc",
+    sortBy: 'frequency',
+    sortDirection: 'desc',
   };
   const validatedOptions = PatternAnalysisOptionsSchema.parse({
     ...defaultOptions,
@@ -344,9 +324,9 @@ export function aggregateExtractionResults(
     return aggregatedData;
   } catch (error) {
     throw new DataAggregationError(
-      `Failed to aggregate extraction results: ${error instanceof Error ? error.message : "Unknown error"}`,
+      `Failed to aggregate extraction results: ${error instanceof Error ? error.message : 'Unknown error'}`,
       undefined,
-      error instanceof Error ? error : undefined,
+      error instanceof Error ? error : undefined
     );
   }
 }
@@ -357,13 +337,11 @@ export function aggregateExtractionResults(
 function processHtmlResult(
   htmlResult: HtmlClassExtractionResult,
   aggregatedData: Map<string, AggregatedClassData>,
-  options: PatternAnalysisOptions,
+  options: PatternAnalysisOptions
 ): void {
   try {
     for (const [className, classData] of htmlResult.classes) {
-      const processedClassName = options.caseSensitive
-        ? className
-        : className.toLowerCase();
+      const processedClassName = options.caseSensitive ? className : className.toLowerCase();
 
       if (aggregatedData.has(processedClassName)) {
         // Update existing entry
@@ -371,8 +349,7 @@ function processHtmlResult(
         existing.totalFrequency += classData.frequency;
         existing.htmlFrequency += classData.frequency;
         existing.sources.filePaths.push(htmlResult.metadata.source);
-        existing.sources.sourceType =
-          existing.sources.sourceType === "jsx" ? "mixed" : "html";
+        existing.sources.sourceType = existing.sources.sourceType === 'jsx' ? 'mixed' : 'html';
 
         // Add HTML contexts
         existing.contexts.html.push(
@@ -381,7 +358,7 @@ function processHtmlResult(
             attributes: el.attributes,
             depth: el.depth,
             filePath: htmlResult.metadata.source,
-          })),
+          }))
         );
       } else {
         // Create new entry
@@ -391,7 +368,7 @@ function processHtmlResult(
           htmlFrequency: classData.frequency,
           jsxFrequency: 0,
           sources: {
-            sourceType: "html",
+            sourceType: 'html',
             filePaths: [htmlResult.metadata.source],
             frameworks: new Set(),
             extractionTypes: new Set(),
@@ -413,9 +390,9 @@ function processHtmlResult(
     }
   } catch (error) {
     throw new DataAggregationError(
-      `Failed to process HTML result from ${htmlResult.metadata?.source || "unknown"}: ${error instanceof Error ? error.message : "Unknown error"}`,
-      "html",
-      error instanceof Error ? error : undefined,
+      `Failed to process HTML result from ${htmlResult.metadata?.source || 'unknown'}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      'html',
+      error instanceof Error ? error : undefined
     );
   }
 }
@@ -426,13 +403,11 @@ function processHtmlResult(
 function processJsxResult(
   jsxResult: JsClassExtractionResult,
   aggregatedData: Map<string, AggregatedClassData>,
-  options: PatternAnalysisOptions,
+  options: PatternAnalysisOptions
 ): void {
   try {
     for (const [className, classData] of jsxResult.classes) {
-      const processedClassName = options.caseSensitive
-        ? className
-        : className.toLowerCase();
+      const processedClassName = options.caseSensitive ? className : className.toLowerCase();
 
       if (aggregatedData.has(processedClassName)) {
         // Update existing entry
@@ -440,8 +415,7 @@ function processJsxResult(
         existing.totalFrequency += classData.frequency;
         existing.jsxFrequency += classData.frequency;
         existing.sources.filePaths.push(jsxResult.metadata.source);
-        existing.sources.sourceType =
-          existing.sources.sourceType === "html" ? "mixed" : "jsx";
+        existing.sources.sourceType = existing.sources.sourceType === 'html' ? 'mixed' : 'jsx';
 
         // Add frameworks and extraction types
         classData.contexts.forEach((pattern: any) => {
@@ -459,14 +433,12 @@ function processJsxResult(
             framework: pattern.framework,
             extractionType: pattern.extractionType,
             filePath: jsxResult.metadata.source,
-          })),
+          }))
         );
       } else {
         // Create new entry
         const frameworks = new Set<SupportedFramework>();
-        const extractionTypes = new Set<
-          "static" | "dynamic" | "template" | "utility"
-        >();
+        const extractionTypes = new Set<'static' | 'dynamic' | 'template' | 'utility'>();
 
         classData.contexts.forEach((pattern: any) => {
           if (pattern.framework) {
@@ -481,7 +453,7 @@ function processJsxResult(
           htmlFrequency: 0,
           jsxFrequency: classData.frequency,
           sources: {
-            sourceType: "jsx",
+            sourceType: 'jsx',
             filePaths: [jsxResult.metadata.source],
             frameworks,
             extractionTypes,
@@ -504,9 +476,9 @@ function processJsxResult(
     }
   } catch (error) {
     throw new DataAggregationError(
-      `Failed to process JSX result from ${jsxResult.metadata?.source || "unknown"}: ${error instanceof Error ? error.message : "Unknown error"}`,
-      "jsx",
-      error instanceof Error ? error : undefined,
+      `Failed to process JSX result from ${jsxResult.metadata?.source || 'unknown'}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      'jsx',
+      error instanceof Error ? error : undefined
     );
   }
 }
@@ -514,17 +486,13 @@ function processJsxResult(
 /**
  * Deduplicate file paths and clean up aggregated data
  */
-export function cleanupAggregatedData(
-  data: Map<string, AggregatedClassData>,
-): void {
+export function cleanupAggregatedData(data: Map<string, AggregatedClassData>): void {
   for (const [, classData] of data) {
     // Deduplicate file paths
     classData.sources.filePaths = [...new Set(classData.sources.filePaths)];
 
     // Sort contexts by file path for consistency
-    classData.contexts.html.sort((a, b) =>
-      a.filePath.localeCompare(b.filePath),
-    );
+    classData.contexts.html.sort((a, b) => a.filePath.localeCompare(b.filePath));
     classData.contexts.jsx.sort((a, b) => a.filePath.localeCompare(b.filePath));
   }
 }
@@ -538,19 +506,19 @@ export function cleanupAggregatedData(
  */
 export function generateFrequencyMap(
   input: PatternAnalysisInput,
-  options: Partial<PatternAnalysisOptions> = {},
+  options: Partial<PatternAnalysisOptions> = {}
 ): PatternFrequencyMap {
   const defaultOptions: PatternAnalysisOptions = {
     caseSensitive: false,
-    outputFormat: "map",
+    outputFormat: 'map',
     enableValidation: false,
     minimumFrequency: 1,
     enablePatternGrouping: false,
     enableCoOccurrenceAnalysis: false,
     maxCoOccurrenceDistance: 5,
     includeFrameworkAnalysis: false,
-    sortBy: "frequency",
-    sortDirection: "desc",
+    sortBy: 'frequency',
+    sortDirection: 'desc',
   };
   const validatedOptions = PatternAnalysisOptionsSchema.parse({
     ...defaultOptions,
@@ -572,9 +540,9 @@ export function generateFrequencyMap(
     return aggregatedData;
   } catch (error) {
     throw new FrequencyCalculationError(
-      `Failed to generate frequency map: ${error instanceof Error ? error.message : "Unknown error"}`,
+      `Failed to generate frequency map: ${error instanceof Error ? error.message : 'Unknown error'}`,
       undefined,
-      error instanceof Error ? error : undefined,
+      error instanceof Error ? error : undefined
     );
   }
 }
@@ -584,19 +552,19 @@ export function generateFrequencyMap(
  */
 export function generatePatternGroups(
   frequencyMap: PatternFrequencyMap,
-  options: Partial<PatternAnalysisOptions> = {},
+  options: Partial<PatternAnalysisOptions> = {}
 ): PatternGroup[] {
   const defaultOptions: PatternAnalysisOptions = {
     caseSensitive: false,
-    outputFormat: "map",
+    outputFormat: 'map',
     enableValidation: false,
     minimumFrequency: 1,
     enablePatternGrouping: false,
     enableCoOccurrenceAnalysis: false,
     maxCoOccurrenceDistance: 5,
     includeFrameworkAnalysis: false,
-    sortBy: "frequency",
-    sortDirection: "desc",
+    sortBy: 'frequency',
+    sortDirection: 'desc',
   };
   const validatedOptions = PatternAnalysisOptionsSchema.parse({
     ...defaultOptions,
@@ -611,9 +579,7 @@ export function generatePatternGroups(
 
   try {
     // Group classes by Tailwind patterns
-    for (const [patternName, regex] of Object.entries(
-      COMMON_TAILWIND_PATTERNS,
-    )) {
+    for (const [patternName, regex] of Object.entries(COMMON_TAILWIND_PATTERNS)) {
       const matchingClasses: string[] = [];
       let totalFrequency = 0;
 
@@ -643,8 +609,8 @@ export function generatePatternGroups(
     return patternGroups.sort((a, b) => b.totalFrequency - a.totalFrequency);
   } catch (error) {
     throw new PatternAnalysisError(
-      `Failed to generate pattern groups: ${error instanceof Error ? error.message : "Unknown error"}`,
-      error instanceof Error ? error : undefined,
+      `Failed to generate pattern groups: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      error instanceof Error ? error : undefined
     );
   }
 }
@@ -654,7 +620,7 @@ export function generatePatternGroups(
  */
 function generateCoOccurrencePatterns(
   frequencyMap: PatternFrequencyMap,
-  _options: PatternAnalysisOptions,
+  _options: PatternAnalysisOptions
 ): void {
   try {
     // Analyze HTML contexts for co-occurrences
@@ -664,16 +630,11 @@ function generateCoOccurrencePatterns(
       // Check HTML contexts
       for (const htmlContext of classData.contexts.html) {
         // Find other classes in the same element
-        const elementClasses = extractClassesFromAttributes(
-          htmlContext.attributes,
-        );
+        const elementClasses = extractClassesFromAttributes(htmlContext.attributes);
 
         for (const otherClass of elementClasses) {
           if (otherClass !== className && frequencyMap.has(otherClass)) {
-            coOccurrences.set(
-              otherClass,
-              (coOccurrences.get(otherClass) || 0) + 1,
-            );
+            coOccurrences.set(otherClass, (coOccurrences.get(otherClass) || 0) + 1);
           }
         }
       }
@@ -685,10 +646,7 @@ function generateCoOccurrencePatterns(
 
         for (const otherClass of patternClasses) {
           if (otherClass !== className && frequencyMap.has(otherClass)) {
-            coOccurrences.set(
-              otherClass,
-              (coOccurrences.get(otherClass) || 0) + 1,
-            );
+            coOccurrences.set(otherClass, (coOccurrences.get(otherClass) || 0) + 1);
           }
         }
       }
@@ -698,8 +656,8 @@ function generateCoOccurrencePatterns(
     }
   } catch (error) {
     throw new PatternAnalysisError(
-      `Failed to generate co-occurrence patterns: ${error instanceof Error ? error.message : "Unknown error"}`,
-      error instanceof Error ? error : undefined,
+      `Failed to generate co-occurrence patterns: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      error instanceof Error ? error : undefined
     );
   }
 }
@@ -707,10 +665,8 @@ function generateCoOccurrencePatterns(
 /**
  * Extract class names from HTML attributes
  */
-function extractClassesFromAttributes(
-  attributes: Record<string, string>,
-): string[] {
-  const classAttr = attributes.class || attributes.className || "";
+function extractClassesFromAttributes(attributes: Record<string, string>): string[] {
+  const classAttr = attributes.class || attributes.className || '';
   return classAttr.split(/\s+/).filter(Boolean);
 }
 
@@ -730,10 +686,7 @@ function extractClassesFromJsxPattern(pattern: string): string[] {
       .split(/\s+/)
       .filter(
         (cls) =>
-          cls.length > 0 &&
-          /^[a-zA-Z0-9_-]+$/.test(cls) &&
-          !cls.includes("(") &&
-          !cls.includes(")"),
+          cls.length > 0 && /^[a-zA-Z0-9_-]+$/.test(cls) && !cls.includes('(') && !cls.includes(')')
       );
     classes.push(...potentialClasses);
   }
@@ -746,19 +699,19 @@ function extractClassesFromJsxPattern(pattern: string): string[] {
  */
 export function calculateFrequencyStatistics(
   frequencyMap: PatternFrequencyMap,
-  options: Partial<PatternAnalysisOptions> = {},
-): FrequencyAnalysisResult["metadata"]["statistics"] {
+  options: Partial<PatternAnalysisOptions> = {}
+): FrequencyAnalysisResult['metadata']['statistics'] {
   const defaultOptions: PatternAnalysisOptions = {
     caseSensitive: false,
-    outputFormat: "map",
+    outputFormat: 'map',
     enableValidation: false,
     minimumFrequency: 1,
     enablePatternGrouping: false,
     enableCoOccurrenceAnalysis: false,
     maxCoOccurrenceDistance: 5,
     includeFrameworkAnalysis: false,
-    sortBy: "frequency",
-    sortDirection: "desc",
+    sortBy: 'frequency',
+    sortDirection: 'desc',
   };
   const validatedOptions = PatternAnalysisOptionsSchema.parse({
     ...defaultOptions,
@@ -766,9 +719,7 @@ export function calculateFrequencyStatistics(
   });
 
   try {
-    const frequencies = Array.from(frequencyMap.values()).map(
-      (data) => data.totalFrequency,
-    );
+    const frequencies = Array.from(frequencyMap.values()).map((data) => data.totalFrequency);
 
     if (frequencies.length === 0) {
       return {
@@ -787,9 +738,7 @@ export function calculateFrequencyStatistics(
     const average = total / frequencies.length;
     const median =
       frequencies.length % 2 === 0
-        ? (frequencies[frequencies.length / 2 - 1] +
-            frequencies[frequencies.length / 2]) /
-          2
+        ? (frequencies[frequencies.length / 2 - 1] + frequencies[frequencies.length / 2]) / 2
         : frequencies[Math.floor(frequencies.length / 2)];
 
     // Find most and least frequent classes
@@ -797,16 +746,10 @@ export function calculateFrequencyStatistics(
     let leastFrequentClass: { name: string; frequency: number } | null = null;
 
     for (const [className, data] of frequencyMap) {
-      if (
-        !mostFrequentClass ||
-        data.totalFrequency > mostFrequentClass.frequency
-      ) {
+      if (!mostFrequentClass || data.totalFrequency > mostFrequentClass.frequency) {
         mostFrequentClass = { name: className, frequency: data.totalFrequency };
       }
-      if (
-        !leastFrequentClass ||
-        data.totalFrequency < leastFrequentClass.frequency
-      ) {
+      if (!leastFrequentClass || data.totalFrequency < leastFrequentClass.frequency) {
         leastFrequentClass = {
           name: className,
           frequency: data.totalFrequency,
@@ -837,9 +780,9 @@ export function calculateFrequencyStatistics(
     };
   } catch (error) {
     throw new FrequencyCalculationError(
-      `Failed to calculate frequency statistics: ${error instanceof Error ? error.message : "Unknown error"}`,
+      `Failed to calculate frequency statistics: ${error instanceof Error ? error.message : 'Unknown error'}`,
       undefined,
-      error instanceof Error ? error : undefined,
+      error instanceof Error ? error : undefined
     );
   }
 }
@@ -853,19 +796,19 @@ export function calculateFrequencyStatistics(
  */
 export function generateCoOccurrenceAnalysis(
   frequencyMap: PatternFrequencyMap,
-  options: Partial<PatternAnalysisOptions> = {},
+  options: Partial<PatternAnalysisOptions> = {}
 ): CoOccurrencePattern[] {
   const defaultOptions: PatternAnalysisOptions = {
     caseSensitive: false,
-    outputFormat: "map",
+    outputFormat: 'map',
     enableValidation: false,
     minimumFrequency: 1,
     enablePatternGrouping: false,
     enableCoOccurrenceAnalysis: false,
     maxCoOccurrenceDistance: 5,
     includeFrameworkAnalysis: false,
-    sortBy: "frequency",
-    sortDirection: "desc",
+    sortBy: 'frequency',
+    sortDirection: 'desc',
   };
   const validatedOptions = PatternAnalysisOptionsSchema.parse({
     ...defaultOptions,
@@ -882,33 +825,27 @@ export function generateCoOccurrenceAnalysis(
   try {
     for (const [className, classData] of frequencyMap) {
       for (const [coClass, frequency] of classData.coOccurrences) {
-        const pairKey = [className, coClass].sort().join("|");
+        const pairKey = [className, coClass].sort().join('|');
 
-        if (
-          !processedPairs.has(pairKey) &&
-          frequency >= validatedOptions.minimumFrequency
-        ) {
+        if (!processedPairs.has(pairKey) && frequency >= validatedOptions.minimumFrequency) {
           processedPairs.add(pairKey);
 
           const coClassData = frequencyMap.get(coClass);
           if (!coClassData) continue;
 
           // Calculate strength based on how often they appear together vs separately
-          const totalAppearances =
-            classData.totalFrequency + coClassData.totalFrequency;
+          const totalAppearances = classData.totalFrequency + coClassData.totalFrequency;
           const strength = (frequency * 2) / totalAppearances;
 
           // Collect contexts where these classes appear together
-          const contexts: CoOccurrencePattern["contexts"] = [];
+          const contexts: CoOccurrencePattern['contexts'] = [];
 
           // Add HTML contexts
           for (const htmlContext of classData.contexts.html) {
-            const elementClasses = extractClassesFromAttributes(
-              htmlContext.attributes,
-            );
+            const elementClasses = extractClassesFromAttributes(htmlContext.attributes);
             if (elementClasses.includes(coClass)) {
               contexts.push({
-                sourceType: "html",
+                sourceType: 'html',
                 filePath: htmlContext.filePath,
               });
             }
@@ -916,12 +853,10 @@ export function generateCoOccurrenceAnalysis(
 
           // Add JSX contexts
           for (const jsxContext of classData.contexts.jsx) {
-            const patternClasses = extractClassesFromJsxPattern(
-              jsxContext.pattern,
-            );
+            const patternClasses = extractClassesFromJsxPattern(jsxContext.pattern);
             if (patternClasses.includes(coClass)) {
               contexts.push({
-                sourceType: "jsx",
+                sourceType: 'jsx',
                 filePath: jsxContext.filePath,
                 framework: jsxContext.framework,
               });
@@ -942,8 +877,8 @@ export function generateCoOccurrenceAnalysis(
     return coOccurrencePatterns.sort((a, b) => b.strength - a.strength);
   } catch (error) {
     throw new PatternAnalysisError(
-      `Failed to generate co-occurrence analysis: ${error instanceof Error ? error.message : "Unknown error"}`,
-      error instanceof Error ? error : undefined,
+      `Failed to generate co-occurrence analysis: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      error instanceof Error ? error : undefined
     );
   }
 }
@@ -953,19 +888,19 @@ export function generateCoOccurrenceAnalysis(
  */
 export function generateFrameworkAnalysis(
   frequencyMap: PatternFrequencyMap,
-  options: Partial<PatternAnalysisOptions> = {},
+  options: Partial<PatternAnalysisOptions> = {}
 ): FrameworkAnalysis[] {
   const defaultOptions: PatternAnalysisOptions = {
     caseSensitive: false,
-    outputFormat: "map",
+    outputFormat: 'map',
     enableValidation: false,
     minimumFrequency: 1,
     enablePatternGrouping: false,
     enableCoOccurrenceAnalysis: false,
     maxCoOccurrenceDistance: 5,
     includeFrameworkAnalysis: false,
-    sortBy: "frequency",
-    sortDirection: "desc",
+    sortBy: 'frequency',
+    sortDirection: 'desc',
   };
   const validatedOptions = PatternAnalysisOptionsSchema.parse({
     ...defaultOptions,
@@ -1009,7 +944,7 @@ export function generateFrameworkAnalysis(
         stats.uniqueClasses.add(className);
         stats.classFrequencies.set(
           className,
-          (stats.classFrequencies.get(className) || 0) + classData.jsxFrequency,
+          (stats.classFrequencies.get(className) || 0) + classData.jsxFrequency
         );
 
         // Count extraction types
@@ -1043,8 +978,8 @@ export function generateFrameworkAnalysis(
     return analyses.sort((a, b) => b.totalClasses - a.totalClasses);
   } catch (error) {
     throw new PatternAnalysisError(
-      `Failed to generate framework analysis: ${error instanceof Error ? error.message : "Unknown error"}`,
-      error instanceof Error ? error : undefined,
+      `Failed to generate framework analysis: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      error instanceof Error ? error : undefined
     );
   }
 }
@@ -1058,19 +993,19 @@ export function generateFrameworkAnalysis(
  */
 export function sortFrequencyMap(
   frequencyMap: PatternFrequencyMap,
-  options: Partial<PatternAnalysisOptions> = {},
+  options: Partial<PatternAnalysisOptions> = {}
 ): Array<[string, AggregatedClassData]> {
   const defaultOptions: PatternAnalysisOptions = {
     caseSensitive: false,
-    outputFormat: "map",
+    outputFormat: 'map',
     enableValidation: false,
     minimumFrequency: 1,
     enablePatternGrouping: false,
     enableCoOccurrenceAnalysis: false,
     maxCoOccurrenceDistance: 5,
     includeFrameworkAnalysis: false,
-    sortBy: "frequency",
-    sortDirection: "desc",
+    sortBy: 'frequency',
+    sortDirection: 'desc',
   };
   const validatedOptions = PatternAnalysisOptionsSchema.parse({
     ...defaultOptions,
@@ -1078,28 +1013,23 @@ export function sortFrequencyMap(
   });
   const entries = Array.from(frequencyMap.entries());
 
-  const sortFunctions: Record<PatternAnalysisOptions["sortBy"], SortFunction> =
-    {
-      frequency: (a, b) =>
-        validatedOptions.sortDirection === "asc"
-          ? a[1].totalFrequency - b[1].totalFrequency
-          : b[1].totalFrequency - a[1].totalFrequency,
+  const sortFunctions: Record<PatternAnalysisOptions['sortBy'], SortFunction> = {
+    frequency: (a, b) =>
+      validatedOptions.sortDirection === 'asc'
+        ? a[1].totalFrequency - b[1].totalFrequency
+        : b[1].totalFrequency - a[1].totalFrequency,
 
-      alphabetical: (a, b) =>
-        validatedOptions.sortDirection === "asc"
-          ? a[0].localeCompare(b[0])
-          : b[0].localeCompare(a[0]),
+    alphabetical: (a, b) =>
+      validatedOptions.sortDirection === 'asc'
+        ? a[0].localeCompare(b[0])
+        : b[0].localeCompare(a[0]),
 
-      source: (a, b) => {
-        const aScore =
-          (a[1].htmlFrequency > 0 ? 1 : 0) + (a[1].jsxFrequency > 0 ? 2 : 0);
-        const bScore =
-          (b[1].htmlFrequency > 0 ? 1 : 0) + (b[1].jsxFrequency > 0 ? 2 : 0);
-        return validatedOptions.sortDirection === "asc"
-          ? aScore - bScore
-          : bScore - aScore;
-      },
-    };
+    source: (a, b) => {
+      const aScore = (a[1].htmlFrequency > 0 ? 1 : 0) + (a[1].jsxFrequency > 0 ? 2 : 0);
+      const bScore = (b[1].htmlFrequency > 0 ? 1 : 0) + (b[1].jsxFrequency > 0 ? 2 : 0);
+      return validatedOptions.sortDirection === 'asc' ? aScore - bScore : bScore - aScore;
+    },
+  };
 
   return entries.sort(sortFunctions[validatedOptions.sortBy]);
 }
@@ -1109,7 +1039,7 @@ export function sortFrequencyMap(
  */
 export function filterFrequencyMap(
   frequencyMap: PatternFrequencyMap,
-  filterFn: FilterFunction,
+  filterFn: FilterFunction
 ): PatternFrequencyMap {
   const filtered = new Map<string, AggregatedClassData>();
 
@@ -1137,7 +1067,7 @@ export const CommonFilters = {
       data.totalFrequency <= threshold,
 
   sourceType:
-    (sourceType: "html" | "jsx" | "mixed"): FilterFunction =>
+    (sourceType: 'html' | 'jsx' | 'mixed'): FilterFunction =>
     (_, data) =>
       data.sources.sourceType === sourceType,
 
@@ -1166,26 +1096,26 @@ export const CommonFilters = {
  */
 export function exportToJson(
   analysisResult: FrequencyAnalysisResult,
-  options: Partial<PatternAnalysisOptions> = {},
+  options: Partial<PatternAnalysisOptions> = {}
 ): JsonExportFormat {
   const defaultOptions: PatternAnalysisOptions = {
     caseSensitive: false,
-    outputFormat: "map",
+    outputFormat: 'map',
     enableValidation: false,
     minimumFrequency: 1,
     enablePatternGrouping: false,
     enableCoOccurrenceAnalysis: false,
     maxCoOccurrenceDistance: 5,
     includeFrameworkAnalysis: false,
-    sortBy: "frequency",
-    sortDirection: "desc",
+    sortBy: 'frequency',
+    sortDirection: 'desc',
   };
   const validatedOptions = PatternAnalysisOptionsSchema.parse({
     ...defaultOptions,
     ...options,
   });
 
-  const frequencyMapJson: JsonExportFormat["frequencyMap"] = {};
+  const frequencyMapJson: JsonExportFormat['frequencyMap'] = {};
 
   for (const [className, data] of analysisResult.frequencyMap) {
     frequencyMapJson[className] = {
@@ -1202,10 +1132,7 @@ export function exportToJson(
     };
   }
 
-  const sortedEntries = sortFrequencyMap(
-    analysisResult.frequencyMap,
-    validatedOptions,
-  );
+  const sortedEntries = sortFrequencyMap(analysisResult.frequencyMap, validatedOptions);
   const topClasses = sortedEntries.slice(0, 20).map(([name, data]) => ({
     name,
     frequency: data.totalFrequency,
@@ -1228,19 +1155,19 @@ export function exportToJson(
  */
 export async function analyzePatterns(
   input: PatternAnalysisInput,
-  options: Partial<PatternAnalysisOptions> = {},
+  options: Partial<PatternAnalysisOptions> = {}
 ): Promise<FrequencyAnalysisResult> {
   const startTime = Date.now();
   const defaultOptions: PatternAnalysisOptions = {
     caseSensitive: false,
-    outputFormat: "map",
+    outputFormat: 'map',
     minimumFrequency: 1,
     enablePatternGrouping: false,
     enableCoOccurrenceAnalysis: false,
     maxCoOccurrenceDistance: 5,
     includeFrameworkAnalysis: false,
-    sortBy: "frequency",
-    sortDirection: "desc",
+    sortBy: 'frequency',
+    sortDirection: 'desc',
     enableValidation: false,
     validationOptions: undefined,
   };
@@ -1256,40 +1183,24 @@ export async function analyzePatterns(
 
     // Add validation if enabled
     if (validatedOptions.enableValidation) {
-      await addValidationToFrequencyMap(
-        frequencyMap,
-        validatedOptions.validationOptions,
-      );
+      await addValidationToFrequencyMap(frequencyMap, validatedOptions.validationOptions);
     }
 
     // Generate pattern groups
     const patternGroups = generatePatternGroups(frequencyMap, validatedOptions);
 
     // Generate co-occurrence patterns
-    const coOccurrencePatterns = generateCoOccurrenceAnalysis(
-      frequencyMap,
-      validatedOptions,
-    );
+    const coOccurrencePatterns = generateCoOccurrenceAnalysis(frequencyMap, validatedOptions);
 
     // Generate framework analysis
-    const frameworkAnalysis = generateFrameworkAnalysis(
-      frequencyMap,
-      validatedOptions,
-    );
+    const frameworkAnalysis = generateFrameworkAnalysis(frequencyMap, validatedOptions);
 
     // Calculate statistics
-    const statistics = calculateFrequencyStatistics(
-      frequencyMap,
-      validatedOptions,
-    );
+    const statistics = calculateFrequencyStatistics(frequencyMap, validatedOptions);
 
     // Gather metadata
-    const htmlFiles = new Set(
-      input.htmlResults.map((r) => r.metadata?.source || "unknown"),
-    ).size;
-    const jsxFiles = new Set(
-      input.jsxResults.map((r) => r.metadata?.source || "unknown"),
-    ).size;
+    const htmlFiles = new Set(input.htmlResults.map((r) => r.metadata?.source || 'unknown')).size;
+    const jsxFiles = new Set(input.jsxResults.map((r) => r.metadata?.source || 'unknown')).size;
 
     const result: FrequencyAnalysisResult = {
       frequencyMap,
@@ -1306,8 +1217,7 @@ export async function analyzePatterns(
         sources: {
           htmlFiles,
           jsxFiles,
-          totalExtractionResults:
-            input.htmlResults.length + input.jsxResults.length,
+          totalExtractionResults: input.htmlResults.length + input.jsxResults.length,
         },
         statistics,
         errors,
@@ -1317,8 +1227,8 @@ export async function analyzePatterns(
     return result;
   } catch (error) {
     throw new PatternAnalysisError(
-      `Pattern analysis failed: ${error instanceof Error ? error.message : "Unknown error"}`,
-      error instanceof Error ? error : undefined,
+      `Pattern analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      error instanceof Error ? error : undefined
     );
   }
 }
@@ -1328,11 +1238,11 @@ export async function analyzePatterns(
  */
 async function addValidationToFrequencyMap(
   frequencyMap: PatternFrequencyMap,
-  validationOptions?: Record<string, any>,
+  validationOptions?: Record<string, any>
 ): Promise<void> {
   try {
     // Import SimplePatternValidator dynamically to avoid circular dependencies
-    const { SimplePatternValidator } = await import("./patternValidator.js");
+    const { SimplePatternValidator } = await import('../patternValidator.js');
 
     // Create validator instance
     const validator = new SimplePatternValidator(validationOptions);
@@ -1348,7 +1258,7 @@ async function addValidationToFrequencyMap(
       }
     }
   } catch (error) {
-    console.warn("Failed to initialize simple pattern validator:", error);
+    console.warn('Failed to initialize simple pattern validator:', error);
   }
 }
 
@@ -1357,18 +1267,18 @@ async function addValidationToFrequencyMap(
  */
 export function quickFrequencyAnalysis(
   input: PatternAnalysisInput,
-  minimumFrequency: number = 1,
+  minimumFrequency: number = 1
 ): Map<string, number> {
   const options: PatternAnalysisOptions = {
     caseSensitive: false,
-    outputFormat: "map",
+    outputFormat: 'map',
     minimumFrequency,
     enablePatternGrouping: false,
     enableCoOccurrenceAnalysis: false,
     maxCoOccurrenceDistance: 5,
     includeFrameworkAnalysis: false,
-    sortBy: "frequency",
-    sortDirection: "desc",
+    sortBy: 'frequency',
+    sortDirection: 'desc',
     enableValidation: false,
     validationOptions: undefined,
   };

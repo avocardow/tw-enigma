@@ -5,10 +5,10 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { createLogger, Logger } from "./logger";
-import { EnigmaConfig } from "./config";
-import { readFile, writeFile } from "fs/promises";
-import { join, extname } from "path";
+import { readFile, writeFile } from 'fs/promises';
+import { extname, join } from 'path';
+import { EnigmaConfig } from '../config/config';
+import { createLogger, Logger } from './logger';
 
 /**
  * CSS class pattern information
@@ -122,19 +122,19 @@ export class DebugUtils {
       enabled: true,
       verbose: false,
       saveSession: true,
-      outputPath: "debug-sessions",
+      outputPath: 'debug-sessions',
       includeSourceMaps: true,
       trackPerformance: true,
       analyzePatterns: true,
       generateRecommendations: true,
       maxFileSize: 1024 * 1024, // 1MB
-      excludePatterns: ["node_modules/**", "dist/**", "build/**"],
+      excludePatterns: ['node_modules/**', 'dist/**', 'build/**'],
       ...config,
     };
 
-    this.logger = createLogger("DebugUtils");
+    this.logger = createLogger('DebugUtils');
 
-    this.logger.debug("Debug utilities initialized", {
+    this.logger.debug('Debug utilities initialized', {
       config: this.config,
     });
   }
@@ -144,13 +144,13 @@ export class DebugUtils {
    */
   async startSession(files: string[], enigmaConfig: EnigmaConfig): Promise<string> {
     if (!this.config.enabled) {
-      throw new Error("Debug utilities are disabled");
+      throw new Error('Debug utilities are disabled');
     }
 
     const sessionId = this.generateSessionId();
     const startTime = Date.now();
 
-    this.logger.info("Starting debug session", {
+    this.logger.info('Starting debug session', {
       sessionId,
       filesCount: files.length,
     });
@@ -173,7 +173,7 @@ export class DebugUtils {
       },
     };
 
-    this.logger.info("Debug session started", {
+    this.logger.info('Debug session started', {
       sessionId,
       totalClasses: analysis.totalClasses,
       uniqueClasses: analysis.uniqueClasses,
@@ -188,14 +188,14 @@ export class DebugUtils {
    */
   async endSession(): Promise<DebugSession | null> {
     if (!this.currentSession) {
-      this.logger.warn("No active debug session to end");
+      this.logger.warn('No active debug session to end');
       return null;
     }
 
     const session = this.currentSession;
     session.performance.totalTime = Date.now() - session.timestamp.getTime();
 
-    this.logger.info("Ending debug session", {
+    this.logger.info('Ending debug session', {
       sessionId: session.id,
       totalTime: session.performance.totalTime,
       optimizationSteps: session.optimizationSteps.length,
@@ -214,14 +214,17 @@ export class DebugUtils {
    * Analyze CSS classes in files
    */
   async analyzeClasses(files: string[]): Promise<ClassAnalysisResult> {
-    this.logger.debug("Analyzing CSS classes", {
+    this.logger.debug('Analyzing CSS classes', {
       filesCount: files.length,
     });
 
     const patterns: ClassPattern[] = [];
     const classFrequency: Map<string, number> = new Map();
     const classFiles: Map<string, Set<string>> = new Map();
-    const classExamples: Map<string, Array<{ file: string; line: number; context: string; usage: string }>> = new Map();
+    const classExamples: Map<
+      string,
+      Array<{ file: string; line: number; context: string; usage: string }>
+    > = new Map();
 
     let totalClasses = 0;
 
@@ -229,10 +232,10 @@ export class DebugUtils {
     for (const file of files) {
       try {
         const content = await readFile(file, 'utf-8');
-        
+
         // Check file size
         if (content.length > this.config.maxFileSize) {
-          this.logger.warn("File too large for analysis", {
+          this.logger.warn('File too large for analysis', {
             file,
             size: content.length,
             maxSize: this.config.maxFileSize,
@@ -246,7 +249,7 @@ export class DebugUtils {
         // Update frequency and file tracking
         fileClasses.forEach(({ className, line, context, usage }) => {
           classFrequency.set(className, (classFrequency.get(className) || 0) + 1);
-          
+
           if (!classFiles.has(className)) {
             classFiles.set(className, new Set());
           }
@@ -256,12 +259,13 @@ export class DebugUtils {
             classExamples.set(className, []);
           }
           const examples = classExamples.get(className)!;
-          if (examples.length < 5) { // Limit examples per class
+          if (examples.length < 5) {
+            // Limit examples per class
             examples.push({ file, line, context, usage });
           }
         });
       } catch (error) {
-        this.logger.error("Failed to analyze file", {
+        this.logger.error('Failed to analyze file', {
           file,
           error: error instanceof Error ? error.message : String(error),
         });
@@ -301,7 +305,7 @@ export class DebugUtils {
       recommendations,
     };
 
-    this.logger.info("Class analysis completed", {
+    this.logger.info('Class analysis completed', {
       totalClasses,
       uniqueClasses,
       duplicateClasses,
@@ -323,7 +327,7 @@ export class DebugUtils {
     impact: { sizeReduction: number; classesAffected: number; filesModified: number }
   ): void {
     if (!this.currentSession) {
-      this.logger.warn("No active debug session for optimization step");
+      this.logger.warn('No active debug session for optimization step');
       return;
     }
 
@@ -335,7 +339,7 @@ export class DebugUtils {
       impact,
     });
 
-    this.logger.debug("Optimization step added", {
+    this.logger.debug('Optimization step added', {
       step,
       impact,
     });
@@ -353,7 +357,7 @@ export class DebugUtils {
       return null;
     }
 
-    const pattern = this.currentSession.analysis.patterns.find(p => p.pattern === className);
+    const pattern = this.currentSession.analysis.patterns.find((p) => p.pattern === className);
     if (pattern) {
       this.patternCache.set(className, pattern);
     }
@@ -366,7 +370,7 @@ export class DebugUtils {
    */
   generateDebugReport(): string {
     if (!this.currentSession) {
-      return "No active debug session";
+      return 'No active debug session';
     }
 
     const session = this.currentSession;
@@ -408,9 +412,7 @@ export class DebugUtils {
     report += `\n`;
 
     // Top patterns by frequency
-    const topPatterns = analysis.patterns
-      .sort((a, b) => b.frequency - a.frequency)
-      .slice(0, 10);
+    const topPatterns = analysis.patterns.sort((a, b) => b.frequency - a.frequency).slice(0, 10);
 
     report += `## Top 10 Most Frequent Patterns\n\n`;
     topPatterns.forEach((pattern, index) => {
@@ -472,7 +474,7 @@ export class DebugUtils {
    */
   updateConfig(newConfig: Partial<DebugConfig>): void {
     this.config = { ...this.config, ...newConfig };
-    this.logger.debug("Debug configuration updated", {
+    this.logger.debug('Debug configuration updated', {
       newConfig,
       fullConfig: this.config,
     });
@@ -481,7 +483,10 @@ export class DebugUtils {
   /**
    * Extract classes from file content
    */
-  private extractClassesFromFile(content: string, filePath: string): Array<{
+  private extractClassesFromFile(
+    content: string,
+    filePath: string
+  ): Array<{
     className: string;
     line: number;
     context: string;
@@ -493,7 +498,7 @@ export class DebugUtils {
 
     // Different extraction patterns based on file type
     let classRegex: RegExp;
-    
+
     if (['.html', '.htm', '.jsx', '.tsx'].includes(ext)) {
       // HTML/JSX class attributes
       classRegex = /class(?:Name)?=["']([^"']+)["']/g;
@@ -514,11 +519,11 @@ export class DebugUtils {
         const classString = match?.[1] || match?.[2];
         if (classString && match) {
           // Split multiple classes
-          const individualClasses = classString.split(/\s+/).filter(cls => cls.trim());
-          
+          const individualClasses = classString.split(/\s+/).filter((cls) => cls.trim());
+
           // Store match[0] for use in forEach to avoid null reference
           const matchUsage = match[0];
-          individualClasses.forEach(className => {
+          individualClasses.forEach((className) => {
             if (className && this.isValidClassName(className)) {
               classes.push({
                 className: className.trim(),
@@ -549,7 +554,11 @@ export class DebugUtils {
     const variants = this.extractVariants(className);
     const complexity = this.calculateClassComplexity(className);
     const optimizable = this.isOptimizable(className, frequency);
-    const optimizationSuggestions = this.generateOptimizationSuggestions(className, frequency, type);
+    const optimizationSuggestions = this.generateOptimizationSuggestions(
+      className,
+      frequency,
+      type
+    );
 
     return {
       pattern: className,
@@ -602,17 +611,31 @@ export class DebugUtils {
    */
   private classifyFramework(className: string): ClassPattern['framework'] {
     // Tailwind patterns
-    if (/^(p|m|w|h|text|bg|border|flex|grid|space|gap|justify|items|self|place|content|order|col|row|auto|static|fixed|absolute|relative|sticky|inset|top|right|bottom|left|z|opacity|shadow|ring|blur|brightness|contrast|drop|grayscale|hue|invert|saturate|sepia|backdrop|divide|sr|not-sr|pointer|select|resize|scroll|snap|touch|will|appearance|cursor|outline|accent|caret|decoration|underline|overline|line|list|whitespace|break|hyphens|content|table|caption|border|empty|only|first|last|odd|even|target|default|checked|indeterminate|placeholder|autofill|required|valid|invalid|in|out|read|motion|print|dark|portrait|landscape|contrast|prefers|supports|aria|data)-/.test(className)) {
+    if (
+      /^(p|m|w|h|text|bg|border|flex|grid|space|gap|justify|items|self|place|content|order|col|row|auto|static|fixed|absolute|relative|sticky|inset|top|right|bottom|left|z|opacity|shadow|ring|blur|brightness|contrast|drop|grayscale|hue|invert|saturate|sepia|backdrop|divide|sr|not-sr|pointer|select|resize|scroll|snap|touch|will|appearance|cursor|outline|accent|caret|decoration|underline|overline|line|list|whitespace|break|hyphens|content|table|caption|border|empty|only|first|last|odd|even|target|default|checked|indeterminate|placeholder|autofill|required|valid|invalid|in|out|read|motion|print|dark|portrait|landscape|contrast|prefers|supports|aria|data)-/.test(
+        className
+      )
+    ) {
       return 'tailwind';
     }
 
     // Bootstrap patterns
-    if (/^(btn|card|nav|navbar|modal|alert|badge|breadcrumb|carousel|collapse|dropdown|form|input|list|pagination|progress|spinner|toast|tooltip|popover|container|row|col|d-|flex-|justify-|align-|text-|bg-|border-|p-|m-|w-|h-)-/.test(className)) {
+    if (
+      /^(btn|card|nav|navbar|modal|alert|badge|breadcrumb|carousel|collapse|dropdown|form|input|list|pagination|progress|spinner|toast|tooltip|popover|container|row|col|d-|flex-|justify-|align-|text-|bg-|border-|p-|m-|w-|h-)-/.test(
+        className
+      )
+    ) {
       return 'bootstrap';
     }
 
     // Check for common framework prefixes
-    if (className.includes(':') || className.includes('[') || /^(sm|md|lg|xl|2xl|hover|focus|active|disabled|visited|first|last|odd|even|group|peer):/.test(className)) {
+    if (
+      className.includes(':') ||
+      className.includes('[') ||
+      /^(sm|md|lg|xl|2xl|hover|focus|active|disabled|visited|first|last|odd|even|group|peer):/.test(
+        className
+      )
+    ) {
       return 'tailwind';
     }
 
@@ -625,7 +648,7 @@ export class DebugUtils {
   private extractVariants(className: string): string[] {
     const variants: string[] = [];
     const parts = className.split(':');
-    
+
     if (parts.length > 1) {
       // All parts except the last are variants
       variants.push(...parts.slice(0, -1));
@@ -685,23 +708,27 @@ export class DebugUtils {
   /**
    * Generate optimization suggestions
    */
-  private generateOptimizationSuggestions(className: string, frequency: number, type: ClassPattern['type']): string[] {
+  private generateOptimizationSuggestions(
+    className: string,
+    frequency: number,
+    type: ClassPattern['type']
+  ): string[] {
     const suggestions: string[] = [];
 
     if (frequency > 10) {
-      suggestions.push("Consider extracting to a component class due to high frequency");
+      suggestions.push('Consider extracting to a component class due to high frequency');
     }
 
     if (className.length > 20) {
-      suggestions.push("Class name is long, consider shortening or using CSS custom properties");
+      suggestions.push('Class name is long, consider shortening or using CSS custom properties');
     }
 
     if (type === 'arbitrary') {
-      suggestions.push("Arbitrary value detected, consider adding to theme configuration");
+      suggestions.push('Arbitrary value detected, consider adding to theme configuration');
     }
 
     if (className.split(':').length > 3) {
-      suggestions.push("Multiple variants detected, consider simplifying or using CSS nesting");
+      suggestions.push('Multiple variants detected, consider simplifying or using CSS nesting');
     }
 
     if (frequency === 1) {
@@ -714,10 +741,12 @@ export class DebugUtils {
   /**
    * Calculate framework breakdown
    */
-  private calculateFrameworkBreakdown(patterns: ClassPattern[]): ClassAnalysisResult['frameworkBreakdown'] {
+  private calculateFrameworkBreakdown(
+    patterns: ClassPattern[]
+  ): ClassAnalysisResult['frameworkBreakdown'] {
     const breakdown = { tailwind: 0, bootstrap: 0, custom: 0, unknown: 0 };
-    
-    patterns.forEach(pattern => {
+
+    patterns.forEach((pattern) => {
       breakdown[pattern.framework]++;
     });
 
@@ -728,9 +757,16 @@ export class DebugUtils {
    * Calculate type breakdown
    */
   private calculateTypeBreakdown(patterns: ClassPattern[]): ClassAnalysisResult['typeBreakdown'] {
-    const breakdown = { utility: 0, component: 0, responsive: 0, state: 0, arbitrary: 0, custom: 0 };
-    
-    patterns.forEach(pattern => {
+    const breakdown = {
+      utility: 0,
+      component: 0,
+      responsive: 0,
+      state: 0,
+      arbitrary: 0,
+      custom: 0,
+    };
+
+    patterns.forEach((pattern) => {
       breakdown[pattern.type]++;
     });
 
@@ -740,7 +776,9 @@ export class DebugUtils {
   /**
    * Calculate optimization opportunities
    */
-  private calculateOptimizationOpportunities(patterns: ClassPattern[]): ClassAnalysisResult['optimizationOpportunities'] {
+  private calculateOptimizationOpportunities(
+    patterns: ClassPattern[]
+  ): ClassAnalysisResult['optimizationOpportunities'] {
     const opportunities = {
       duplicateRemoval: 0,
       classShortening: 0,
@@ -748,19 +786,19 @@ export class DebugUtils {
       unusedClasses: 0,
     };
 
-    patterns.forEach(pattern => {
+    patterns.forEach((pattern) => {
       if (pattern.frequency > 1) {
         opportunities.duplicateRemoval++;
       }
-      
+
       if (pattern.pattern.length > 15) {
         opportunities.classShortening++;
       }
-      
+
       if (pattern.frequency > 5 && pattern.type === 'utility') {
         opportunities.patternConsolidation++;
       }
-      
+
       if (pattern.frequency === 1 && pattern.files.length === 1) {
         opportunities.unusedClasses++;
       }
@@ -775,44 +813,60 @@ export class DebugUtils {
   private calculateComplexityScore(patterns: ClassPattern[]): number {
     if (patterns.length === 0) return 0;
 
-    const avgComplexity = patterns.reduce((sum, pattern) => sum + pattern.complexity, 0) / patterns.length;
-    const variantComplexity = patterns.filter(p => p.variants.length > 0).length / patterns.length;
-    const arbitraryComplexity = patterns.filter(p => p.type === 'arbitrary').length / patterns.length;
+    const avgComplexity =
+      patterns.reduce((sum, pattern) => sum + pattern.complexity, 0) / patterns.length;
+    const variantComplexity =
+      patterns.filter((p) => p.variants.length > 0).length / patterns.length;
+    const arbitraryComplexity =
+      patterns.filter((p) => p.type === 'arbitrary').length / patterns.length;
 
-    const score = (avgComplexity * 0.5) + (variantComplexity * 3) + (arbitraryComplexity * 2);
+    const score = avgComplexity * 0.5 + variantComplexity * 3 + arbitraryComplexity * 2;
     return Math.min(Math.round(score * 10) / 10, 10);
   }
 
   /**
    * Generate recommendations
    */
-  private generateRecommendations(patterns: ClassPattern[], opportunities: ClassAnalysisResult['optimizationOpportunities']): string[] {
+  private generateRecommendations(
+    patterns: ClassPattern[],
+    opportunities: ClassAnalysisResult['optimizationOpportunities']
+  ): string[] {
     const recommendations: string[] = [];
 
     if (opportunities.duplicateRemoval > 10) {
-      recommendations.push("Consider extracting frequently used class combinations into component classes");
+      recommendations.push(
+        'Consider extracting frequently used class combinations into component classes'
+      );
     }
 
     if (opportunities.classShortening > 5) {
-      recommendations.push("Many long class names detected, consider using CSS custom properties or shorter aliases");
+      recommendations.push(
+        'Many long class names detected, consider using CSS custom properties or shorter aliases'
+      );
     }
 
     if (opportunities.patternConsolidation > 3) {
-      recommendations.push("High-frequency utility classes could be consolidated into design tokens");
+      recommendations.push(
+        'High-frequency utility classes could be consolidated into design tokens'
+      );
     }
 
     if (opportunities.unusedClasses > 20) {
-      recommendations.push("Many single-use classes detected, consider removing unused styles");
+      recommendations.push('Many single-use classes detected, consider removing unused styles');
     }
 
-    const arbitraryCount = patterns.filter(p => p.type === 'arbitrary').length;
+    const arbitraryCount = patterns.filter((p) => p.type === 'arbitrary').length;
     if (arbitraryCount > 5) {
-      recommendations.push("Consider adding frequently used arbitrary values to your theme configuration");
+      recommendations.push(
+        'Consider adding frequently used arbitrary values to your theme configuration'
+      );
     }
 
-    const responsiveCount = patterns.filter(p => p.type === 'responsive').length;
+    const responsiveCount = patterns.filter((p) => p.type === 'responsive').length;
     if (responsiveCount > patterns.length * 0.3) {
-      recommendations.push("High responsive class usage, ensure mobile-first approach is being followed");
+      recommendations.push(
+        'High responsive class usage, ensure mobile-first approach is being followed'
+      );
     }
 
     return recommendations;
@@ -843,16 +897,16 @@ export class DebugUtils {
       const filename = `${session.id}.json`;
       const filepath = join(this.config.outputPath, filename);
       const content = JSON.stringify(session, null, 2);
-      
+
       await writeFile(filepath, content, 'utf-8');
-      
-      this.logger.info("Debug session saved", {
+
+      this.logger.info('Debug session saved', {
         sessionId: session.id,
         filepath,
         size: content.length,
       });
     } catch (error) {
-      this.logger.error("Failed to save debug session", {
+      this.logger.error('Failed to save debug session', {
         sessionId: session.id,
         error: error instanceof Error ? error.message : String(error),
       });
@@ -872,14 +926,14 @@ export function createDebugUtils(config: EnigmaConfig): DebugUtils | null {
     enabled: config.debug,
     verbose: config.verbose ?? false,
     saveSession: true,
-    outputPath: "debug-sessions",
+    outputPath: 'debug-sessions',
     includeSourceMaps: config.sourceMaps ?? false,
     trackPerformance: true,
     analyzePatterns: true,
     generateRecommendations: true,
     maxFileSize: 1024 * 1024, // 1MB
-    excludePatterns: ["node_modules/**", "dist/**", "build/**"],
+    excludePatterns: ['node_modules/**', 'dist/**', 'build/**'],
   };
 
   return new DebugUtils(debugConfig);
-} 
+}

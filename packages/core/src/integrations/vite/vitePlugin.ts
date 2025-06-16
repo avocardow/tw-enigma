@@ -10,30 +10,31 @@
  * Integrates CSS optimization into the Vite build process with HMR support
  */
 
-import type { Plugin, ViteDevServer, ResolvedConfig } from "vite";
-import type { Plugin as PostCSSPlugin } from "postcss";
-import { z } from "zod";
-import { createLogger } from "../../utils/logger";
-import { createHMRHandler } from "../core/hmrHandler";
-import type { PluginContext } from "../../types/plugins";
+import type { Plugin as PostCSSPlugin } from 'postcss';
+import type { Plugin, ResolvedConfig, ViteDevServer } from 'vite';
+import { z } from 'zod';
+
+import type { PluginContext } from '../../types/plugins';
+import { createLogger } from '../../utils/logger';
 import type {
+  BuildToolContext,
+  BuildToolHooks,
   BuildToolPlugin,
   BuildToolPluginConfig,
-  BuildToolContext,
   BuildToolResult,
-  BuildToolHooks,
   HMRUpdate,
   OptimizationResult,
-} from "../core/buildToolPlugin.ts";
+} from '../core/buildToolPlugin.ts';
+import { createHMRHandler } from '../core/hmrHandler';
 
-const logger = createLogger("vite-plugin");
+const logger = createLogger('vite-plugin');
 
 /**
  * Vite-specific configuration
  */
 export interface VitePluginConfig extends BuildToolPluginConfig {
-  buildTool: BuildToolPluginConfig["buildTool"] & {
-    type: "vite";
+  buildTool: BuildToolPluginConfig['buildTool'] & {
+    type: 'vite';
     vite?: {
       /** Enable Vite dev server integration */
       devServer?: boolean;
@@ -68,7 +69,7 @@ export const vitePluginConfigSchema = z
     enabled: z.boolean().default(true),
     priority: z.number().default(10),
     buildTool: z.object({
-      type: z.literal("vite"),
+      type: z.literal('vite'),
       autoDetect: z.boolean().default(true),
       configPath: z.string().optional(),
       development: z
@@ -90,16 +91,16 @@ export const vitePluginConfigSchema = z
           enabledPhases: z
             .array(
               z.enum([
-                "beforeBuild",
-                "buildStart",
-                "compilation",
-                "transform",
-                "generateBundle",
-                "emit",
-                "afterBuild",
-                "development",
-                "production",
-              ]),
+                'beforeBuild',
+                'buildStart',
+                'compilation',
+                'transform',
+                'generateBundle',
+                'emit',
+                'afterBuild',
+                'development',
+                'production',
+              ])
             )
             .optional(),
           priority: z.number().default(10),
@@ -117,7 +118,7 @@ export const vitePluginConfigSchema = z
             .optional(),
           build: z
             .object({
-              outDir: z.string().default("dist"),
+              outDir: z.string().default('dist'),
               cssCodeSplit: z.boolean().default(true),
               rollupOptions: z.record(z.any()).optional(),
             })
@@ -141,23 +142,23 @@ class ViteHMRServer {
 
   async start(port?: number): Promise<void> {
     this._isRunning = true;
-    logger.debug("Vite HMR server started", { port });
+    logger.debug('Vite HMR server started', { port });
   }
 
   async stop(): Promise<void> {
     this._isRunning = false;
-    logger.debug("Vite HMR server stopped");
+    logger.debug('Vite HMR server stopped');
   }
 
   broadcast(payload: any): void {
     if (this.devServer?.ws) {
       this.devServer.ws.send({
-        type: "custom",
-        event: "enigma:css-update",
+        type: 'custom',
+        event: 'enigma:css-update',
         data: payload,
       });
 
-      logger.debug("HMR update sent via Vite WebSocket", {
+      logger.debug('HMR update sent via Vite WebSocket', {
         type: payload.type,
         filePath: payload.filePath,
       });
@@ -182,14 +183,14 @@ class ViteHMRServer {
  * Vite Plugin for Tailwind Enigma CSS Optimization
  */
 export class EnigmaVitePlugin implements BuildToolPlugin {
-  readonly pluginType = "build-tool" as const;
-  readonly supportedBuildTools = ["vite"] as const;
+  readonly pluginType = 'build-tool' as const;
+  readonly supportedBuildTools = ['vite'] as const;
   readonly buildToolConfigSchema = vitePluginConfigSchema;
   readonly name: string;
   readonly meta = {
-    name: "EnigmaVitePlugin",
-    version: "1.0.0",
-    description: "Vite plugin for Tailwind Enigma CSS optimization",
+    name: 'EnigmaVitePlugin',
+    version: '1.0.0',
+    description: 'Vite plugin for Tailwind Enigma CSS optimization',
   };
   readonly configSchema = vitePluginConfigSchema;
 
@@ -206,7 +207,7 @@ export class EnigmaVitePlugin implements BuildToolPlugin {
         // The actual CSS processing happens through vite lifecycle hooks
         // Just mark that this plugin was executed
         result.messages.push({
-          type: "dependency",
+          type: 'dependency',
           plugin: this.name,
           file: this.name,
         });
@@ -225,11 +226,11 @@ export class EnigmaVitePlugin implements BuildToolPlugin {
   constructor(config: Partial<VitePluginConfig> = {}) {
     // Set default configuration
     const defaultConfig: VitePluginConfig = {
-      name: "enigma-vite-plugin",
+      name: 'enigma-vite-plugin',
       enabled: true,
       priority: 10,
       buildTool: {
-        type: "vite",
+        type: 'vite',
         autoDetect: true,
         development: {
           hmr: true,
@@ -247,7 +248,7 @@ export class EnigmaVitePlugin implements BuildToolPlugin {
             modules: false,
           },
           build: {
-            outDir: "dist",
+            outDir: 'dist',
             cssCodeSplit: true,
           },
         },
@@ -260,13 +261,13 @@ export class EnigmaVitePlugin implements BuildToolPlugin {
     // Validate configuration
     const validation = vitePluginConfigSchema.safeParse(this.config);
     if (!validation.success) {
-      logger.error("Invalid vite plugin configuration", {
+      logger.error('Invalid vite plugin configuration', {
         errors: validation.error.errors,
       });
       throw new Error(`Invalid configuration: ${validation.error.message}`);
     }
 
-    logger.debug("Enigma Vite plugin initialized", {
+    logger.debug('Enigma Vite plugin initialized', {
       config: this.config.name,
       enabled: this.config.enabled,
     });
@@ -282,17 +283,13 @@ export class EnigmaVitePlugin implements BuildToolPlugin {
       configResolved: (config: ResolvedConfig) => {
         this.viteConfig = config;
 
-        const isDevelopment = config.command === "serve";
-        const isProduction = config.command === "build";
+        const isDevelopment = config.command === 'serve';
+        const isProduction = config.command === 'build';
 
         // Initialize build context
-        this.context = this.createViteContext(
-          config,
-          isDevelopment,
-          isProduction,
-        );
+        this.context = this.createViteContext(config, isDevelopment, isProduction);
 
-        logger.info("Vite config resolved", {
+        logger.info('Vite config resolved', {
           command: config.command,
           mode: config.mode,
           hmr: isDevelopment && this.config.buildTool.development?.hmr,
@@ -306,20 +303,20 @@ export class EnigmaVitePlugin implements BuildToolPlugin {
 
         // Setup HMR server
         this.hmrServer.setDevServer(server);
-        this.hmrHandler.initialize("vite", this.hmrServer);
+        this.hmrHandler.initialize('vite', this.hmrServer);
 
-        logger.debug("Vite dev server configured with Enigma HMR");
+        logger.debug('Vite dev server configured with Enigma HMR');
 
         // Add HMR client code injection
-        server.middlewares.use("/enigma-hmr-client.js", (req, res) => {
-          res.setHeader("Content-Type", "application/javascript");
+        server.middlewares.use('/enigma-hmr-client.js', (req: any, res: any) => {
+          res.setHeader('Content-Type', 'application/javascript');
           res.end(this.getHMRClientCode());
         });
       },
 
       buildStart: async () => {
         if (this.context) {
-          this.context.phase = "buildStart";
+          this.context.phase = 'buildStart';
           await this.hooks.buildStart?.(this.context);
         }
       },
@@ -330,12 +327,8 @@ export class EnigmaVitePlugin implements BuildToolPlugin {
         }
 
         if (this.context) {
-          this.context.phase = "transform";
-          const transformedCode = await this.hooks.transform?.(
-            this.context,
-            code,
-            id,
-          );
+          this.context.phase = 'transform';
+          const transformedCode = await this.hooks.transform?.(this.context, code, id);
           return transformedCode || null;
         }
 
@@ -344,7 +337,7 @@ export class EnigmaVitePlugin implements BuildToolPlugin {
 
       generateBundle: async () => {
         if (this.context) {
-          this.context.phase = "generateBundle";
+          this.context.phase = 'generateBundle';
           await this.hooks.generateBundle?.(this.context);
         }
       },
@@ -352,7 +345,7 @@ export class EnigmaVitePlugin implements BuildToolPlugin {
       writeBundle: async (options, bundle) => {
         if (!this.context) return;
 
-        this.context.phase = "afterBuild";
+        this.context.phase = 'afterBuild';
         this.context.metrics.endTime = Date.now();
 
         // Process CSS assets in the bundle
@@ -360,10 +353,9 @@ export class EnigmaVitePlugin implements BuildToolPlugin {
 
         await this.hooks.afterBuild?.(this.context);
 
-        logger.info("Vite bundle written", {
+        logger.info('Vite bundle written', {
           assetsCount: Object.keys(bundle).length,
-          duration:
-            this.context.metrics.endTime - this.context.metrics.startTime,
+          duration: this.context.metrics.endTime - this.context.metrics.startTime,
         });
       },
 
@@ -381,21 +373,16 @@ export class EnigmaVitePlugin implements BuildToolPlugin {
             const optimized = await this.optimizeCSS(cssContent, file);
 
             if (optimized) {
-              await this.hmrHandler.handleCSSUpdate(
-                file,
-                optimized.css,
-                this.context,
-                optimized,
-              );
+              await this.hmrHandler.handleCSSUpdate(file, optimized.css, this.context, optimized);
 
-              logger.debug("CSS HMR update processed", {
+              logger.debug('CSS HMR update processed', {
                 file,
                 originalSize: optimized.originalSize,
                 optimizedSize: optimized.optimizedSize,
               });
             }
           } catch (error) {
-            logger.error("Error processing CSS HMR update", { file, error });
+            logger.error('Error processing CSS HMR update', { file, error });
           }
         }
 
@@ -411,11 +398,11 @@ export class EnigmaVitePlugin implements BuildToolPlugin {
   private createViteContext(
     config: ResolvedConfig,
     isDevelopment: boolean,
-    isProduction: boolean,
+    isProduction: boolean
   ): BuildToolContext {
     return {
-      buildTool: "vite",
-      phase: "beforeBuild",
+      buildTool: 'vite',
+      phase: 'beforeBuild',
       isDevelopment,
       isProduction,
       projectRoot: config.root,
@@ -458,12 +445,7 @@ export class EnigmaVitePlugin implements BuildToolPlugin {
     if (!this.context) return;
 
     for (const [fileName, asset] of Object.entries(bundle)) {
-      if (
-        this.isCSSFile(fileName) &&
-        asset &&
-        typeof asset === "object" &&
-        "source" in asset
-      ) {
+      if (this.isCSSFile(fileName) && asset && typeof asset === 'object' && 'source' in asset) {
         try {
           const cssContent = asset.source as string;
           const optimized = await this.optimizeCSS(cssContent, fileName);
@@ -474,7 +456,7 @@ export class EnigmaVitePlugin implements BuildToolPlugin {
             this.context.assets.set(fileName, optimized.css);
             this.context.optimizationResults = optimized;
 
-            logger.debug("Bundle CSS asset optimized", {
+            logger.debug('Bundle CSS asset optimized', {
               asset: fileName,
               originalSize: optimized.originalSize,
               optimizedSize: optimized.optimizedSize,
@@ -493,10 +475,7 @@ export class EnigmaVitePlugin implements BuildToolPlugin {
   /**
    * Optimize CSS content (placeholder implementation)
    */
-  private async optimizeCSS(
-    css: string,
-    _fileName: string,
-  ): Promise<OptimizationResult> {
+  private async optimizeCSS(css: string, _fileName: string): Promise<OptimizationResult> {
     const startTime = performance.now();
 
     // This is a placeholder - in the real implementation, this would call
@@ -504,16 +483,15 @@ export class EnigmaVitePlugin implements BuildToolPlugin {
     const optimizedCSS = css; // No actual optimization for now
 
     const endTime = performance.now();
-    const originalSize = Buffer.byteLength(css, "utf-8");
-    const optimizedSize = Buffer.byteLength(optimizedCSS, "utf-8");
+    const originalSize = Buffer.byteLength(css, 'utf-8');
+    const optimizedSize = Buffer.byteLength(optimizedCSS, 'utf-8');
 
     return {
       originalSize,
       optimizedSize,
-      reductionPercentage:
-        ((originalSize - optimizedSize) / originalSize) * 100,
-      classesProcessed: 0, // Would be calculated by the optimization engine
-      classesRemoved: 0, // Would be calculated by the optimization engine
+      reductionPercentage: ((originalSize - optimizedSize) / originalSize) * 100,
+      classesProcessed: 0,
+      classesRemoved: 0,
       processingTime: endTime - startTime,
       css: optimizedCSS,
     };
@@ -528,7 +506,7 @@ export class EnigmaVitePlugin implements BuildToolPlugin {
 if (import.meta.hot) {
   import.meta.hot.on('enigma:css-update', (data) => {
     console.log('[Enigma] CSS updated:', data.filePath);
-    
+
     // Update CSS in the browser
     if (data.css) {
       const styleElements = document.querySelectorAll('style[data-vite-dev-id]');
@@ -538,7 +516,7 @@ if (import.meta.hot) {
         }
       });
     }
-    
+
     // Log optimization results
     if (data.optimization) {
       console.log('[Enigma] Optimization:', {
@@ -557,20 +535,16 @@ if (import.meta.hot) {
    */
   readonly hooks: BuildToolHooks = {
     buildStart: async (context: BuildToolContext) => {
-      logger.debug("Vite buildStart hook", { phase: context.phase });
+      logger.debug('Vite buildStart hook', { phase: context.phase });
       context.metrics.phaseTimings.buildStart = performance.now();
     },
 
-    transform: async (
-      context: BuildToolContext,
-      code: string,
-      filePath: string,
-    ) => {
+    transform: async (context: BuildToolContext, code: string, filePath: string) => {
       if (!this.isCSSFile(filePath)) {
         return code;
       }
 
-      logger.debug("Vite transform hook for CSS", { filePath });
+      logger.debug('Vite transform hook for CSS', { filePath });
       context.metrics.phaseTimings.transform = performance.now();
 
       // Optimize CSS during transform
@@ -579,18 +553,17 @@ if (import.meta.hot) {
     },
 
     generateBundle: async (context: BuildToolContext) => {
-      logger.debug("Vite generateBundle hook", { phase: context.phase });
+      logger.debug('Vite generateBundle hook', { phase: context.phase });
       context.metrics.phaseTimings.generateBundle = performance.now();
     },
 
     afterBuild: (context: BuildToolContext) => {
-      logger.debug("Vite afterBuild hook", { phase: context.phase });
+      logger.debug('Vite afterBuild hook', { phase: context.phase });
       context.metrics.phaseTimings.afterBuild = performance.now();
 
       // Log build metrics
-      const duration =
-        (context.metrics.endTime || Date.now()) - context.metrics.startTime;
-      logger.info("Vite build metrics", {
+      const duration = (context.metrics.endTime || Date.now()) - context.metrics.startTime;
+      logger.info('Vite build metrics', {
         duration,
         phases: context.metrics.phaseTimings,
         assets: context.assets.size,
@@ -598,12 +571,12 @@ if (import.meta.hot) {
     },
 
     development: async (context: BuildToolContext) => {
-      logger.debug("Vite development hook", { phase: context.phase });
+      logger.debug('Vite development hook', { phase: context.phase });
       context.metrics.phaseTimings.development = performance.now();
     },
 
     onHMRUpdate: async (update: HMRUpdate, _context: BuildToolContext) => {
-      logger.debug("Vite HMR update", {
+      logger.debug('Vite HMR update', {
         type: update.type,
         filePath: update.filePath,
       });
@@ -615,12 +588,12 @@ if (import.meta.hot) {
    */
   async initializeBuildTool(
     context: BuildToolContext,
-    config: BuildToolPluginConfig,
+    config: BuildToolPluginConfig
   ): Promise<void> {
     this.context = context;
     this.config = config as VitePluginConfig;
 
-    logger.info("Vite plugin initialized", {
+    logger.info('Vite plugin initialized', {
       projectRoot: context.projectRoot,
       isDevelopment: context.isDevelopment,
       hmr: this.config.buildTool.development?.hmr,
@@ -649,14 +622,14 @@ if (import.meta.hot) {
       };
 
       const endTime = performance.now();
-      logger.info("Vite build processed", {
+      logger.info('Vite build processed', {
         duration: endTime - startTime,
         assetsCount: context.assets.size,
       });
 
       return result;
     } catch (error) {
-      logger.error("Vite build processing failed", { error });
+      logger.error('Vite build processing failed', { error });
 
       return {
         success: false,
@@ -698,9 +671,7 @@ export function enigmaVite(config?: Partial<VitePluginConfig>): Plugin {
 /**
  * Create Enigma Vite plugin instance
  */
-export function createVitePlugin(
-  config?: Partial<VitePluginConfig>,
-): EnigmaVitePlugin {
+export function createVitePlugin(config?: Partial<VitePluginConfig>): EnigmaVitePlugin {
   return new EnigmaVitePlugin(config);
 }
 
@@ -708,11 +679,11 @@ export function createVitePlugin(
  * Default Vite plugin configuration
  */
 export const defaultViteConfig: VitePluginConfig = {
-  name: "enigma-vite-plugin",
+  name: 'enigma-vite-plugin',
   enabled: true,
   priority: 10,
   buildTool: {
-    type: "vite",
+    type: 'vite',
     autoDetect: true,
     development: {
       hmr: true,
@@ -730,7 +701,7 @@ export const defaultViteConfig: VitePluginConfig = {
         modules: false,
       },
       build: {
-        outDir: "dist",
+        outDir: 'dist',
         cssCodeSplit: true,
       },
     },

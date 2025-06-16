@@ -5,20 +5,20 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { EventEmitter } from "events";
-import { createLogger, Logger } from "./utils/logger";
-import { EnigmaConfig } from "./config";
-import { DevDiagnostics, DevPerformanceMetrics } from "./devDiagnostics";
-import { DevDashboard } from "./devDashboard";
-import { DevPreview } from "./devPreview";
-import { DebugUtils, DebugSession } from "./debugUtils";
-import { SourceMapGenerator } from "./sourceMapGenerator";
-import { readFile, writeFile, mkdir } from "fs/promises";
-import { join, dirname } from "path";
-import { existsSync } from "fs";
-import { DevDashboardEnhanced } from "./devDashboardEnhanced";
-import { DevHotReload } from "./devHotReload";
-import { DevIdeIntegration } from "./devIdeIntegration";
+import { EventEmitter } from 'events';
+import { existsSync } from 'fs';
+import { mkdir, readFile, writeFile } from 'fs/promises';
+import { dirname, join } from 'path';
+import { EnigmaConfig } from './config';
+import { DevDashboard } from './devDashboard';
+import { DevDashboardEnhanced } from './devDashboardEnhanced';
+import { DevDiagnostics, DevPerformanceMetrics } from './devDiagnostics';
+import { DevHotReload } from './devHotReload';
+import { DevIdeIntegration } from './devIdeIntegration';
+import { DevPreview } from './devPreview';
+import { SourceMapGenerator } from './sourceMapGenerator';
+import { DebugSession, DebugUtils } from './utils/debugUtils';
+import { createLogger, Logger } from './utils/logger';
 
 /**
  * Development experience configuration
@@ -96,7 +96,7 @@ export interface DevExperienceEvents {
   'file-changed': (path: string, type: string) => void;
   'session-started': (sessionId: string) => void;
   'session-ended': (sessionId: string, results: any) => void;
-  'notification': (level: string, message: string, data?: any) => void;
+  notification: (level: string, message: string, data?: any) => void;
 }
 
 /**
@@ -126,7 +126,7 @@ export class DevExperienceManager extends EventEmitter {
     private enigmaConfig: EnigmaConfig
   ) {
     super();
-    
+
     this.config = {
       enabled: true,
       autoStart: false,
@@ -160,10 +160,10 @@ export class DevExperienceManager extends EventEmitter {
       ...config,
     };
 
-    this.logger = createLogger("DevExperienceManager");
+    this.logger = createLogger('DevExperienceManager');
     this.startTime = Date.now();
     this.stateFile = join(process.cwd(), '.enigma', 'dev-state.json');
-    
+
     this.state = {
       isActive: false,
       tools: {
@@ -189,7 +189,7 @@ export class DevExperienceManager extends EventEmitter {
     };
 
     this.setupEventHandlers();
-    this.logger.debug("Development experience manager initialized", { config: this.config });
+    this.logger.debug('Development experience manager initialized', { config: this.config });
   }
 
   /**
@@ -197,18 +197,18 @@ export class DevExperienceManager extends EventEmitter {
    */
   async start(): Promise<void> {
     if (this.isActive) {
-      this.logger.warn("Development experience already running");
+      this.logger.warn('Development experience already running');
       return;
     }
 
     if (!this.config.enabled) {
-      this.logger.info("Development experience disabled");
+      this.logger.info('Development experience disabled');
       return;
     }
 
     this.isActive = true;
     this.state.isActive = true;
-    this.logger.info("Starting comprehensive development experience");
+    this.logger.info('Starting comprehensive development experience');
 
     try {
       // Load previous state if available
@@ -222,64 +222,69 @@ export class DevExperienceManager extends EventEmitter {
 
       // Initialize tools in coordinated manner
       await this.initializeTools();
-      
+
       // Start tools based on configuration
       const startedTools: string[] = [];
 
       if (this.config.enablePerformanceMonitoring && this.tools.diagnostics) {
         await this.tools.diagnostics.start();
         this.state.tools.diagnostics = true;
-        startedTools.push("diagnostics");
+        startedTools.push('diagnostics');
       }
 
       if (this.config.enableDebugConsole && this.tools.debugUtils) {
         // Debug utils don't need explicit start, just initialize
         this.state.tools.debugUtils = true;
-        startedTools.push("debugUtils");
+        startedTools.push('debugUtils');
       }
 
       if (this.config.enableSourceMaps && this.tools.sourceMap) {
         // Source map generator doesn't need explicit start
         this.state.tools.sourceMap = true;
-        startedTools.push("sourceMap");
+        startedTools.push('sourceMap');
       }
 
       if (this.config.enableRealTimePreview && this.tools.preview) {
         await this.tools.preview.start();
         this.state.tools.preview = true;
-        startedTools.push("preview");
+        startedTools.push('preview');
       }
 
       // Start dashboard last to coordinate all other tools
       if (this.tools.dashboard) {
         await this.tools.dashboard.start();
         this.state.tools.dashboard = true;
-        startedTools.push("dashboard");
+        startedTools.push('dashboard');
       }
 
       this.emit('tools-started', startedTools);
-      
+
       if (this.config.persistState) {
         await this.saveState();
       }
 
-      this.logger.info("Development experience started", {
+      this.logger.info('Development experience started', {
         tools: startedTools,
-        dashboardUrl: this.tools.dashboard && this.enigmaConfig.dev?.dashboard ? `http://${this.enigmaConfig.dev.dashboard.host}:${this.enigmaConfig.dev.dashboard.port}` : undefined,
+        dashboardUrl:
+          this.tools.dashboard && this.enigmaConfig.dev?.dashboard
+            ? `http://${this.enigmaConfig.dev.dashboard.host}:${this.enigmaConfig.dev.dashboard.port}`
+            : undefined,
       });
 
       // Send notification
       this.sendNotification('info', 'Development experience started', {
         tools: startedTools,
-        url: this.tools.dashboard && this.enigmaConfig.dev?.dashboard ? `http://${this.enigmaConfig.dev.dashboard.host}:${this.enigmaConfig.dev.dashboard.port}` : undefined,
+        url:
+          this.tools.dashboard && this.enigmaConfig.dev?.dashboard
+            ? `http://${this.enigmaConfig.dev.dashboard.host}:${this.enigmaConfig.dev.dashboard.port}`
+            : undefined,
       });
-
     } catch (error) {
       // Reset state on failure
       this.isActive = false;
       this.state.isActive = false;
-      
-      this.logger.error("Failed to start development experience", { error });
+
+      this.logger.error('Failed to start development experience', { error });
       this.emit('error-detected', error as Error, 'startup');
       throw error;
     }
@@ -290,13 +295,13 @@ export class DevExperienceManager extends EventEmitter {
    */
   async stop(): Promise<void> {
     if (!this.isActive) {
-      this.logger.warn("Development experience not running");
+      this.logger.warn('Development experience not running');
       return;
     }
 
     this.isActive = false;
     this.state.isActive = false;
-    this.logger.info("Stopping development experience");
+    this.logger.info('Stopping development experience');
 
     const stoppedTools: string[] = [];
 
@@ -305,25 +310,25 @@ export class DevExperienceManager extends EventEmitter {
       if (this.tools.dashboard && this.state.tools.dashboard) {
         await this.tools.dashboard.stop();
         this.state.tools.dashboard = false;
-        stoppedTools.push("dashboard");
+        stoppedTools.push('dashboard');
       }
 
       if (this.tools.preview && this.state.tools.preview) {
         await this.tools.preview.stop();
         this.state.tools.preview = false;
-        stoppedTools.push("preview");
+        stoppedTools.push('preview');
       }
 
       if (this.tools.diagnostics && this.state.tools.diagnostics) {
         await this.tools.diagnostics.stop();
         this.state.tools.diagnostics = false;
-        stoppedTools.push("diagnostics");
+        stoppedTools.push('diagnostics');
       }
 
       this.state.tools.debugUtils = false;
       this.state.tools.sourceMap = false;
       if (stoppedTools.length > 0) {
-        stoppedTools.push("debugUtils", "sourceMap");
+        stoppedTools.push('debugUtils', 'sourceMap');
       }
 
       this.emit('tools-stopped', stoppedTools);
@@ -332,10 +337,9 @@ export class DevExperienceManager extends EventEmitter {
         await this.saveState();
       }
 
-      this.logger.info("Development experience stopped", { tools: stoppedTools });
-
+      this.logger.info('Development experience stopped', { tools: stoppedTools });
     } catch (error) {
-      this.logger.error("Error stopping development experience", { error });
+      this.logger.error('Error stopping development experience', { error });
       throw error;
     }
   }
@@ -345,11 +349,11 @@ export class DevExperienceManager extends EventEmitter {
    */
   async startSession(files: string[]): Promise<string> {
     if (!this.isActive) {
-      throw new Error("Development experience not active");
+      throw new Error('Development experience not active');
     }
 
     if (!this.tools.debugUtils) {
-      throw new Error("Debug utils not available");
+      throw new Error('Debug utils not available');
     }
 
     const sessionId = await this.tools.debugUtils.startSession(files, this.enigmaConfig);
@@ -429,7 +433,7 @@ export class DevExperienceManager extends EventEmitter {
    */
   updateConfig(newConfig: Partial<DevExperienceConfig>): void {
     this.config = { ...this.config, ...newConfig };
-    this.logger.debug("Configuration updated", { config: this.config });
+    this.logger.debug('Configuration updated', { config: this.config });
   }
 
   /**
@@ -486,7 +490,7 @@ export class DevExperienceManager extends EventEmitter {
    */
   private async initializeTools(): Promise<void> {
     const config = this.enigmaConfig;
-    
+
     // Initialize tools with safe configuration defaults
     const dashboardConfig = config.dev?.dashboard || {
       enabled: true,
@@ -553,94 +557,85 @@ export class DevExperienceManager extends EventEmitter {
         this.tools.sourceMap = new SourceMapGenerator();
       }
     } catch (error) {
-      this.logger.warn("Some tools failed to initialize", { error });
+      this.logger.warn('Some tools failed to initialize', { error });
     }
 
     // Initialize Enhanced Dashboard (only if base dashboard exists)
     if (this.tools.dashboard) {
       try {
-        this.dashboardEnhanced = new DevDashboardEnhanced(
-          this.tools.dashboard,
-          {
-            ...dashboardConfig,
-            enhanced: {
+        this.dashboardEnhanced = new DevDashboardEnhanced(this.tools.dashboard, {
+          ...dashboardConfig,
+          enhanced: {
+            enabled: true,
+            analytics: {
               enabled: true,
-              analytics: {
-                enabled: true,
-                retentionDays: 30,
-                trackOptimizations: true,
-                trackPerformance: true,
-                trackFileChanges: true,
-                trackClassUsage: true,
+              retentionDays: 30,
+              trackOptimizations: true,
+              trackPerformance: true,
+              trackFileChanges: true,
+              trackClassUsage: true,
+            },
+            visualizations: {
+              enabled: true,
+              charts: {
+                performance: true,
+                optimization: true,
+                fileChanges: true,
+                classUsage: true,
               },
-              visualizations: {
+              realTime: true,
+            },
+            alerts: {
+              enabled: true,
+              performance: {
                 enabled: true,
-                charts: {
-                  performance: true,
-                  optimization: true,
-                  fileChanges: true,
-                  classUsage: true,
-                },
-                realTime: true,
+                buildTimeThreshold: 5000,
+                memoryThreshold: 512,
+                cpuThreshold: 80,
               },
-              alerts: {
+              optimization: {
                 enabled: true,
-                performance: {
-                  enabled: true,
-                  buildTimeThreshold: 5000,
-                  memoryThreshold: 512,
-                  cpuThreshold: 80,
-                },
-                optimization: {
-                  enabled: true,
-                  savingsThreshold: 10,
-                  errorThreshold: 5,
-                },
-              },
-              reports: {
-                enabled: true,
-                formats: ['html', 'json', 'csv'],
-                schedule: 'daily',
-                email: false,
+                savingsThreshold: 10,
+                errorThreshold: 5,
               },
             },
-          } as any
-        );
+            reports: {
+              enabled: true,
+              formats: ['html', 'json', 'csv'],
+              schedule: 'daily',
+              email: false,
+            },
+          },
+        } as any);
       } catch (error) {
-        this.logger.warn("Enhanced dashboard failed to initialize", { error });
+        this.logger.warn('Enhanced dashboard failed to initialize', { error });
       }
     }
 
     // Initialize Hot Reload (with error handling for missing ws dependency)
     try {
-      this.hotReload = new DevHotReload(
-        {},
-        {
-          ...config,
-          dev: {
-            ...(config.dev as any),
-            hotReload: hotReloadConfig,
-          },
-        } as any
-      );
+      this.hotReload = new DevHotReload({}, {
+        ...config,
+        dev: {
+          ...(config.dev as any),
+          hotReload: hotReloadConfig,
+        },
+      } as any);
     } catch (error) {
-      this.logger.warn("Hot reload failed to initialize", { error });
+      this.logger.warn('Hot reload failed to initialize', { error });
     }
 
     // Initialize IDE Integration
     try {
-      this.ideIntegration = new DevIdeIntegration(
-        {},
-        {
-          ...config,
-          dev: {
-            ...(config.dev as any),
-            ide: ideConfig,
-          },
-        } as any
-      );
+      this.ideIntegration = new DevIdeIntegration({}, {
+        ...config,
+        dev: {
+          ...(config.dev as any),
+          ide: ideConfig,
+        },
+      } as any);
     } catch (error) {
-      this.logger.warn("IDE integration failed to initialize", { error });
+      this.logger.warn('IDE integration failed to initialize', { error });
     }
 
     // Setup event coordination
@@ -681,7 +676,7 @@ export class DevExperienceManager extends EventEmitter {
     this.on('file-changed', (path, type) => {
       this.state.files.modified++;
       this.state.files.lastChange = new Date();
-      
+
       if (this.config.enableHotReload) {
         // Trigger hot reload if supported
         this.sendNotification('debug', `File changed: ${path} (${type})`);
@@ -698,10 +693,10 @@ export class DevExperienceManager extends EventEmitter {
         const content = await readFile(this.stateFile, 'utf-8');
         const savedState = JSON.parse(content);
         this.state = { ...this.state, ...savedState };
-        this.logger.debug("Previous state loaded", { stateFile: this.stateFile });
+        this.logger.debug('Previous state loaded', { stateFile: this.stateFile });
       }
     } catch (error) {
-      this.logger.warn("Failed to load previous state", { error, stateFile: this.stateFile });
+      this.logger.warn('Failed to load previous state', { error, stateFile: this.stateFile });
     }
   }
 
@@ -712,9 +707,9 @@ export class DevExperienceManager extends EventEmitter {
     try {
       await mkdir(dirname(this.stateFile), { recursive: true });
       await writeFile(this.stateFile, JSON.stringify(this.state, null, 2));
-      this.logger.debug("State saved", { stateFile: this.stateFile });
+      this.logger.debug('State saved', { stateFile: this.stateFile });
     } catch (error) {
-      this.logger.warn("Failed to save state", { error, stateFile: this.stateFile });
+      this.logger.warn('Failed to save state', { error, stateFile: this.stateFile });
     }
   }
 }
@@ -736,4 +731,4 @@ export function createDevExperienceManager(
 /**
  * Type-safe event emitter interface
  */
-// Interface declaration moved to class definition 
+// Interface declaration moved to class definition

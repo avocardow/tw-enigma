@@ -1,5 +1,5 @@
-import { createLogger } from "../utils/logger";
-import { normalizePath } from "../pathUtils";
+import { createLogger } from '../logger';
+import { normalizePath } from '../pathUtils';
 
 /**
  * Utility interface for plugin developers
@@ -33,11 +33,8 @@ export const pluginUtils: PluginUtils = {
     normalize: normalizePath,
   },
   validation: {
-    isValidClassName: (className: string) =>
-      /^[a-zA-Z_][\w-]*$/.test(className),
+    isValidClassName: (className: string) => /^[a-zA-Z_][\w-]*$/.test(className),
     isTailwindClass: (className: string) =>
-      /^(sm:|md:|lg:|xl:|2xl:)?(hover:|focus:|active:|disabled:)?[\w-]+$/.test(
-        className,
-      ),
+      /^(sm:|md:|lg:|xl:|2xl:)?(hover:|focus:|active:|disabled:)?[\w-]+$/.test(className),
   },
 };

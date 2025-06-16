@@ -5,44 +5,36 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { cosmiconfig, cosmiconfigSync } from "cosmiconfig";
-import { z } from "zod";
+import { cosmiconfig, cosmiconfigSync } from 'cosmiconfig';
+import { z } from 'zod';
+import { SimpleValidatorConfigSchema, type SimpleValidatorConfig } from '../patternValidator';
+import {
+  createPerformanceValidator,
+  type PerformanceMetrics,
+  type PerformanceRecommendation,
+} from '../performanceValidator';
+import { CssInjectionOptionsSchema, type CssInjectionOptions } from '../processors/cssInjector';
 import {
   HtmlExtractionOptionsSchema,
   type HtmlExtractionOptions,
-} from "../processors/htmlExtractor";
-import {
-  JsExtractionOptionsSchema,
-  type JsExtractionOptions,
-} from "../processors/jsExtractor";
-import {
-  CssInjectionOptionsSchema,
-  type CssInjectionOptions,
-} from "../processors/cssInjector";
-import {
-  FileIntegrityOptionsSchema,
-  type FileIntegrityOptions,
-} from "../utils/fileIntegrity";
-import {
-  SimpleValidatorConfigSchema,
-  type SimpleValidatorConfig,
-} from "../patternValidator";
-import { ConfigError, ValidationError } from "../utils/errors";
-import { createLogger } from "../utils/logger";
+} from '../processors/htmlExtractor';
+import { JsExtractionOptionsSchema, type JsExtractionOptions } from '../processors/jsExtractor';
+import type { RuntimeValidator } from '../runtimeValidator';
+import { createRuntimeValidator } from '../runtimeValidator';
+import { ConfigError, ValidationError } from '../utils/errors';
+import { FileIntegrityOptionsSchema, type FileIntegrityOptions } from '../utils/fileIntegrity';
+import { createLogger } from '../utils/logger';
+import { createConfigBackup, type ConfigBackup } from './configBackup';
+import { createConfigDefaults, type Environment } from './configDefaults';
+import { createConfigMigration, type ConfigMigration } from './configMigration';
+import type { ConfigSafeUpdater } from './configSafeUpdater';
+import type { ValidationResult } from './configValidator';
+import { createConfigValidator } from './configValidator';
+import type { ConfigWatcher } from './configWatcher';
+import { createConfigWatcher } from './configWatcher';
 
 // Create a logger instance for this module
 const logger = createLogger('config');
-import { createRuntimeValidator } from "../runtimeValidator";
-import { createConfigWatcher } from "./configWatcher";
-import type { ValidationResult } from "./configValidator";
-import type { RuntimeValidator } from "../runtimeValidator";
-import type { ConfigWatcher } from "./configWatcher";
-import type { ConfigSafeUpdater } from "./configSafeUpdater";
-import { createConfigValidator } from './configValidator';
-import { createConfigMigration, type ConfigMigration } from './configMigration';
-import { createPerformanceValidator, type PerformanceMetrics } from './performanceValidator';
-import { createConfigBackup, type ConfigBackup } from './configBackup';
-import { createConfigDefaults, type Environment } from './configDefaults';
 
 // Re-export ConfigError for backward compatibility
 export { ConfigError };
@@ -53,46 +45,37 @@ export { ConfigError };
  */
 export const EnigmaConfigSchema = z.object({
   // Output settings
-  pretty: z
-    .boolean()
-    .default(false)
-    .describe("Enable pretty output formatting"),
+  pretty: z.boolean().default(false).describe('Enable pretty output formatting'),
 
   // File processing
-  input: z.string().default('./src').describe("Input file or directory to process"),
-  output: z.union([
-    z.string(),
-    z.object({
-      format: z.string().default("css"),
-      filename: z.string().default("optimized.css"),
-      preserveOriginal: z.boolean().default(true),
-    })
-  ]).default('./dist').describe("Output file or directory or output settings"),
+  input: z.string().default('./src').describe('Input file or directory to process'),
+  output: z
+    .union([
+      z.string(),
+      z.object({
+        format: z.string().default('css'),
+        filename: z.string().default('optimized.css'),
+        preserveOriginal: z.boolean().default(true),
+      }),
+    ])
+    .default('./dist')
+    .describe('Output file or directory or output settings'),
 
   // Processing options
-  minify: z.boolean().default(true).describe("Minify the output CSS"),
-  removeUnused: z.boolean().default(true).describe("Remove unused CSS classes"),
+  minify: z.boolean().default(true).describe('Minify the output CSS'),
+  removeUnused: z.boolean().default(true).describe('Remove unused CSS classes'),
 
   // Debug and logging
-  verbose: z.boolean().default(false).describe("Enable verbose logging"),
-  veryVerbose: z
-    .boolean()
-    .default(false)
-    .describe("Enable very verbose logging"),
-  quiet: z
-    .boolean()
-    .default(false)
-    .describe("Quiet mode (only warnings and errors)"),
-  debug: z.boolean().default(false).describe("Enable debug mode"),
+  verbose: z.boolean().default(false).describe('Enable verbose logging'),
+  veryVerbose: z.boolean().default(false).describe('Enable very verbose logging'),
+  quiet: z.boolean().default(false).describe('Quiet mode (only warnings and errors)'),
+  debug: z.boolean().default(false).describe('Enable debug mode'),
   logLevel: z
-    .enum(["trace", "debug", "info", "warn", "error", "fatal"])
+    .enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal'])
     .optional()
-    .describe("Set the minimum log level"),
-  logFile: z.string().optional().describe("Write logs to file"),
-  logFormat: z
-    .enum(["human", "json", "csv"])
-    .optional()
-    .describe("Format for file logging"),
+    .describe('Set the minimum log level'),
+  logFile: z.string().optional().describe('Write logs to file'),
+  logFormat: z.enum(['human', 'json', 'csv']).optional().describe('Format for file logging'),
 
   // Performance settings
   maxConcurrency: z
@@ -100,209 +83,228 @@ export const EnigmaConfigSchema = z.object({
     .min(1)
     .max(10)
     .default(4)
-    .describe("Maximum concurrent file processing"),
+    .describe('Maximum concurrent file processing'),
 
   // Output customization
-  classPrefix: z
-    .string()
-    .default("")
-    .describe("Prefix for generated class names"),
-  excludePatterns: z
-    .array(z.string())
-    .default([])
-    .describe("Patterns to exclude from processing"),
+  classPrefix: z.string().default('').describe('Prefix for generated class names'),
+  excludePatterns: z.array(z.string()).default([]).describe('Patterns to exclude from processing'),
 
   // File Discovery Options
   followSymlinks: z
     .boolean()
     .default(false)
-    .describe("Follow symbolic links during file discovery"),
-  maxFiles: z
-    .number()
-    .int()
-    .min(1)
-    .optional()
-    .describe("Maximum number of files to process"),
+    .describe('Follow symbolic links during file discovery'),
+  maxFiles: z.number().int().min(1).optional().describe('Maximum number of files to process'),
   includeFileTypes: z
-    .array(z.enum(["HTML", "JAVASCRIPT", "CSS", "TEMPLATE"]))
+    .array(z.enum(['HTML', 'JAVASCRIPT', 'CSS', 'TEMPLATE']))
     .optional()
-    .describe("Specific file types to include"),
-  excludeExtensions: z
-    .array(z.string())
-    .default([])
-    .describe("File extensions to exclude"),
+    .describe('Specific file types to include'),
+  excludeExtensions: z.array(z.string()).default([]).describe('File extensions to exclude'),
 
   // Advanced options
-  preserveComments: z
-    .boolean()
-    .default(false)
-    .describe("Preserve CSS comments in output"),
-  sourceMaps: z.boolean().default(false).describe("Generate source maps"),
+  preserveComments: z.boolean().default(false).describe('Preserve CSS comments in output'),
+  sourceMaps: z.boolean().default(false).describe('Generate source maps'),
 
   // Development Experience Options
   dev: z
     .object({
-      enabled: z.boolean().default(false).describe("Enable development mode"),
-      watch: z.boolean().default(false).describe("Watch files for changes"),
+      enabled: z.boolean().default(false).describe('Enable development mode'),
+      watch: z.boolean().default(false).describe('Watch files for changes'),
       server: z
         .object({
-          enabled: z.boolean().default(false).describe("Enable development server"),
-          port: z.number().min(1024).max(65535).default(3000).describe("Server port"),
-          host: z.string().default("localhost").describe("Server host"),
-          open: z.boolean().default(false).describe("Open browser automatically"),
+          enabled: z.boolean().default(false).describe('Enable development server'),
+          port: z.number().min(1024).max(65535).default(3000).describe('Server port'),
+          host: z.string().default('localhost').describe('Server host'),
+          open: z.boolean().default(false).describe('Open browser automatically'),
         })
         .default({})
-        .describe("Development server configuration"),
+        .describe('Development server configuration'),
       diagnostics: z
         .object({
-          enabled: z.boolean().default(true).describe("Enable diagnostics"),
-          performance: z.boolean().default(true).describe("Track performance metrics"),
-          memory: z.boolean().default(true).describe("Monitor memory usage"),
-          fileWatcher: z.boolean().default(true).describe("Monitor file changes"),
-          classAnalysis: z.boolean().default(true).describe("Analyze class patterns"),
+          enabled: z.boolean().default(true).describe('Enable diagnostics'),
+          performance: z.boolean().default(true).describe('Track performance metrics'),
+          memory: z.boolean().default(true).describe('Monitor memory usage'),
+          fileWatcher: z.boolean().default(true).describe('Monitor file changes'),
+          classAnalysis: z.boolean().default(true).describe('Analyze class patterns'),
           thresholds: z
             .object({
-              memoryWarning: z.number().default(512).describe("Memory warning threshold (MB)"),
-              memoryError: z.number().default(1024).describe("Memory error threshold (MB)"),
-              cpuWarning: z.number().default(80).describe("CPU warning threshold (%)"),
-              cpuError: z.number().default(95).describe("CPU error threshold (%)"),
+              memoryWarning: z.number().default(512).describe('Memory warning threshold (MB)'),
+              memoryError: z.number().default(1024).describe('Memory error threshold (MB)'),
+              cpuWarning: z.number().default(80).describe('CPU warning threshold (%)'),
+              cpuError: z.number().default(95).describe('CPU error threshold (%)'),
             })
             .default({})
-            .describe("Performance threshold configuration"),
+            .describe('Performance threshold configuration'),
         })
         .default({})
-        .describe("Development diagnostics configuration"),
+        .describe('Development diagnostics configuration'),
       preview: z
         .object({
-          enabled: z.boolean().default(false).describe("Enable real-time preview"),
-          autoRefresh: z.boolean().default(true).describe("Auto-refresh on changes"),
-          showDiff: z.boolean().default(true).describe("Show optimization diff"),
-          highlightChanges: z.boolean().default(true).describe("Highlight changed classes"),
+          enabled: z.boolean().default(false).describe('Enable real-time preview'),
+          autoRefresh: z.boolean().default(true).describe('Auto-refresh on changes'),
+          showDiff: z.boolean().default(true).describe('Show optimization diff'),
+          highlightChanges: z.boolean().default(true).describe('Highlight changed classes'),
         })
         .default({})
-        .describe("Real-time preview configuration"),
+        .describe('Real-time preview configuration'),
       dashboard: z
         .object({
-          enabled: z.boolean().default(false).describe("Enable developer dashboard"),
-          port: z.number().min(1024).max(65535).default(3001).describe("Dashboard server port"),
-          host: z.string().default("localhost").describe("Dashboard server host"),
-          updateInterval: z.number().min(100).default(1000).describe("Update interval in ms"),
-          showMetrics: z.boolean().default(true).describe("Show performance metrics"),
-          showLogs: z.boolean().default(true).describe("Show recent logs"),
-          maxLogEntries: z.number().min(10).max(1000).default(100).describe("Max log entries to keep"),
+          enabled: z.boolean().default(false).describe('Enable developer dashboard'),
+          port: z.number().min(1024).max(65535).default(3001).describe('Dashboard server port'),
+          host: z.string().default('localhost').describe('Dashboard server host'),
+          updateInterval: z.number().min(100).default(1000).describe('Update interval in ms'),
+          showMetrics: z.boolean().default(true).describe('Show performance metrics'),
+          showLogs: z.boolean().default(true).describe('Show recent logs'),
+          maxLogEntries: z
+            .number()
+            .min(10)
+            .max(1000)
+            .default(100)
+            .describe('Max log entries to keep'),
         })
         .default({})
-        .describe("Developer dashboard configuration"),
+        .describe('Developer dashboard configuration'),
     })
     .default({})
-    .describe("Development mode configuration"),
+    .describe('Development mode configuration'),
 
   // HTML Class Extractor Configuration
   htmlExtractor: HtmlExtractionOptionsSchema.optional().describe(
-    "HTML class extraction configuration options",
+    'HTML class extraction configuration options'
   ),
 
   // JavaScript/JSX Class Extractor Configuration
   jsExtractor: JsExtractionOptionsSchema.optional().describe(
-    "JavaScript/JSX class extraction configuration options",
+    'JavaScript/JSX class extraction configuration options'
   ),
 
   // CSS Injection Configuration
-  cssInjector: CssInjectionOptionsSchema.optional().describe(
-    "CSS injection configuration options",
-  ),
+  cssInjector: CssInjectionOptionsSchema.optional().describe('CSS injection configuration options'),
 
   // File Integrity Validation Configuration
   fileIntegrity: FileIntegrityOptionsSchema.optional().describe(
-    "File integrity validation configuration options",
+    'File integrity validation configuration options'
   ),
 
   // Pattern Validator Configuration
   patternValidator: SimpleValidatorConfigSchema.optional().describe(
-    "Pattern validation configuration options",
+    'Pattern validation configuration options'
   ),
 
   // Enhanced Configuration Validation and Safety System
   validation: z
     .object({
-      enabled: z.boolean().default(true).describe("Enable enhanced configuration validation"),
-      validateOnLoad: z.boolean().default(true).describe("Validate configuration when loading"),
-      validateOnChange: z.boolean().default(true).describe("Validate configuration on file changes"),
-      strictMode: z.boolean().default(false).describe("Enable strict validation mode"),
-      warnOnDeprecated: z.boolean().default(true).describe("Warn about deprecated configuration options"),
-      failOnInvalid: z.boolean().default(true).describe("Fail on invalid configuration"),
-      crossFieldValidation: z.boolean().default(true).describe("Enable cross-field validation"),
-      securityValidation: z.boolean().default(true).describe("Enable security validation"),
-      performanceValidation: z.boolean().default(true).describe("Enable performance validation"),
-      customRules: z.array(z.string()).default([]).describe("Custom validation rule files"),
+      enabled: z.boolean().default(true).describe('Enable enhanced configuration validation'),
+      validateOnLoad: z.boolean().default(true).describe('Validate configuration when loading'),
+      validateOnChange: z
+        .boolean()
+        .default(true)
+        .describe('Validate configuration on file changes'),
+      strictMode: z.boolean().default(false).describe('Enable strict validation mode'),
+      warnOnDeprecated: z
+        .boolean()
+        .default(true)
+        .describe('Warn about deprecated configuration options'),
+      failOnInvalid: z.boolean().default(true).describe('Fail on invalid configuration'),
+      crossFieldValidation: z.boolean().default(true).describe('Enable cross-field validation'),
+      securityValidation: z.boolean().default(true).describe('Enable security validation'),
+      performanceValidation: z.boolean().default(true).describe('Enable performance validation'),
+      customRules: z.array(z.string()).default([]).describe('Custom validation rule files'),
     })
     .default({})
-    .describe("Enhanced configuration validation settings"),
+    .describe('Enhanced configuration validation settings'),
 
   // Runtime Validation Configuration
   runtime: z
     .object({
-      enabled: z.boolean().default(false).describe("Enable runtime configuration monitoring"),
-      checkInterval: z.number().min(1000).default(5000).describe("Runtime check interval in milliseconds"),
+      enabled: z.boolean().default(false).describe('Enable runtime configuration monitoring'),
+      checkInterval: z
+        .number()
+        .min(1000)
+        .default(5000)
+        .describe('Runtime check interval in milliseconds'),
       resourceThresholds: z
         .object({
-          memory: z.number().default(1024 * 1024 * 1024).describe("Memory threshold in bytes"),
-          cpu: z.number().min(0).max(100).default(80).describe("CPU threshold percentage"),
-          fileHandles: z.number().default(1000).describe("File handle threshold"),
-          diskSpace: z.number().default(100 * 1024 * 1024).describe("Disk space threshold in bytes"),
+          memory: z
+            .number()
+            .default(1024 * 1024 * 1024)
+            .describe('Memory threshold in bytes'),
+          cpu: z.number().min(0).max(100).default(80).describe('CPU threshold percentage'),
+          fileHandles: z.number().default(1000).describe('File handle threshold'),
+          diskSpace: z
+            .number()
+            .default(100 * 1024 * 1024)
+            .describe('Disk space threshold in bytes'),
         })
         .default({})
-        .describe("Resource usage thresholds"),
+        .describe('Resource usage thresholds'),
       autoCorrection: z
         .object({
-          enabled: z.boolean().default(false).describe("Enable automatic configuration correction"),
-          maxAttempts: z.number().min(1).default(3).describe("Maximum correction attempts"),
-          fallbackToDefaults: z.boolean().default(true).describe("Fallback to default values on failure"),
+          enabled: z.boolean().default(false).describe('Enable automatic configuration correction'),
+          maxAttempts: z.number().min(1).default(3).describe('Maximum correction attempts'),
+          fallbackToDefaults: z
+            .boolean()
+            .default(true)
+            .describe('Fallback to default values on failure'),
         })
         .default({})
-        .describe("Automatic correction settings"),
+        .describe('Automatic correction settings'),
     })
     .default({})
-    .describe("Runtime validation configuration"),
+    .describe('Runtime validation configuration'),
 
   // File Watching Configuration
   watcher: z
     .object({
-      enabled: z.boolean().default(false).describe("Enable configuration file watching"),
-      debounceMs: z.number().min(100).default(300).describe("File change debounce time in milliseconds"),
-      followSymlinks: z.boolean().default(false).describe("Follow symbolic links when watching"),
-      ignoreInitial: z.boolean().default(true).describe("Ignore initial file events"),
-      validateOnChange: z.boolean().default(true).describe("Validate configuration on file changes"),
-      backupOnChange: z.boolean().default(true).describe("Create backup before applying changes"),
-      maxBackups: z.number().min(1).default(10).describe("Maximum number of backups to keep"),
+      enabled: z.boolean().default(false).describe('Enable configuration file watching'),
+      debounceMs: z
+        .number()
+        .min(100)
+        .default(300)
+        .describe('File change debounce time in milliseconds'),
+      followSymlinks: z.boolean().default(false).describe('Follow symbolic links when watching'),
+      ignoreInitial: z.boolean().default(true).describe('Ignore initial file events'),
+      validateOnChange: z
+        .boolean()
+        .default(true)
+        .describe('Validate configuration on file changes'),
+      backupOnChange: z.boolean().default(true).describe('Create backup before applying changes'),
+      maxBackups: z.number().min(1).default(10).describe('Maximum number of backups to keep'),
       watchPatterns: z
         .array(z.string())
-        .default(["**/.enigmarc*", "**/enigma.config.*", "**/package.json"])
-        .describe("File patterns to watch"),
+        .default(['**/.enigmarc*', '**/enigma.config.*', '**/package.json'])
+        .describe('File patterns to watch'),
       ignorePatterns: z
         .array(z.string())
-        .default(["**/node_modules/**", "**/.git/**", "**/dist/**"])
-        .describe("File patterns to ignore"),
+        .default(['**/node_modules/**', '**/.git/**', '**/dist/**'])
+        .describe('File patterns to ignore'),
     })
     .default({})
-    .describe("Configuration file watching settings"),
+    .describe('Configuration file watching settings'),
 
   // Safe Update Configuration
   safeUpdates: z
     .object({
-      enabled: z.boolean().default(true).describe("Enable safe configuration updates"),
-      validateBeforeWrite: z.boolean().default(true).describe("Validate configuration before writing"),
-      createBackup: z.boolean().default(true).describe("Create backup before updating"),
-      atomicWrite: z.boolean().default(true).describe("Use atomic write operations"),
-      verifyAfterWrite: z.boolean().default(true).describe("Verify configuration after writing"),
-      rollbackOnFailure: z.boolean().default(true).describe("Rollback on update failure"),
-      maxBackups: z.number().min(1).default(10).describe("Maximum number of backups to keep"),
-      backupDirectory: z.string().optional().describe("Custom backup directory"),
-      retryAttempts: z.number().min(0).default(3).describe("Number of retry attempts on failure"),
-      retryDelay: z.number().min(0).default(100).describe("Delay between retry attempts in milliseconds"),
+      enabled: z.boolean().default(true).describe('Enable safe configuration updates'),
+      validateBeforeWrite: z
+        .boolean()
+        .default(true)
+        .describe('Validate configuration before writing'),
+      createBackup: z.boolean().default(true).describe('Create backup before updating'),
+      atomicWrite: z.boolean().default(true).describe('Use atomic write operations'),
+      verifyAfterWrite: z.boolean().default(true).describe('Verify configuration after writing'),
+      rollbackOnFailure: z.boolean().default(true).describe('Rollback on update failure'),
+      maxBackups: z.number().min(1).default(10).describe('Maximum number of backups to keep'),
+      backupDirectory: z.string().optional().describe('Custom backup directory'),
+      retryAttempts: z.number().min(0).default(3).describe('Number of retry attempts on failure'),
+      retryDelay: z
+        .number()
+        .min(0)
+        .default(100)
+        .describe('Delay between retry attempts in milliseconds'),
     })
-         .default({})
-     .describe("Safe configuration update settings"),
+    .default({})
+    .describe('Safe configuration update settings'),
 });
 
 /**
@@ -320,9 +322,9 @@ export interface CliArguments {
   veryVerbose?: boolean;
   quiet?: boolean;
   debug?: boolean;
-  logLevel?: "trace" | "debug" | "info" | "warn" | "error" | "fatal";
+  logLevel?: 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal';
   logFile?: string;
-  logFormat?: "human" | "json" | "csv";
+  logFormat?: 'human' | 'json' | 'csv';
   input?: string;
   output?: string;
   minify?: boolean;
@@ -332,7 +334,7 @@ export interface CliArguments {
   excludePatterns?: string[];
   followSymlinks?: boolean;
   maxFiles?: number;
-  includeFileTypes?: ("HTML" | "JAVASCRIPT" | "CSS" | "TEMPLATE")[];
+  includeFileTypes?: ('HTML' | 'JAVASCRIPT' | 'CSS' | 'TEMPLATE')[];
   excludeExtensions?: string[];
   preserveComments?: boolean;
   sourceMaps?: boolean;
@@ -355,12 +357,12 @@ export interface CliArguments {
   htmlPath?: string;
   cssUseRelativePaths?: boolean;
   cssPreventDuplicates?: boolean;
-  cssInsertPosition?: "first" | "last" | "before-existing" | "after-meta";
+  cssInsertPosition?: 'first' | 'last' | 'before-existing' | 'after-meta';
   cssCreateBackup?: boolean;
   cssMaxFileSize?: number;
   cssTimeout?: number;
   // File integrity CLI options
-  integrityAlgorithm?: "md5" | "sha1" | "sha256" | "sha512";
+  integrityAlgorithm?: 'md5' | 'sha1' | 'sha256' | 'sha512';
   integrityCreateBackups?: boolean;
   integrityBackupDirectory?: string;
   integrityBackupRetentionDays?: number;
@@ -372,25 +374,25 @@ export interface CliArguments {
   integrityCacheSize?: number;
   // File integrity compression options
   integrityEnableCompression?: boolean;
-  integrityCompressionAlgorithm?: "gzip" | "deflate" | "brotli";
+  integrityCompressionAlgorithm?: 'gzip' | 'deflate' | 'brotli';
   integrityCompressionLevel?: number;
   integrityCompressionThreshold?: number;
   // File integrity deduplication options
   integrityEnableDeduplication?: boolean;
   integrityDeduplicationDirectory?: string;
-  integrityDeduplicationAlgorithm?: "md5" | "sha1" | "sha256" | "sha512";
+  integrityDeduplicationAlgorithm?: 'md5' | 'sha1' | 'sha256' | 'sha512';
   integrityDeduplicationThreshold?: number;
   integrityUseHardLinks?: boolean;
   // File integrity incremental backup options
   integrityEnableIncrementalBackup?: boolean;
-  integrityBackupStrategy?: "full" | "incremental" | "auto";
-  integrityChangeDetectionMethod?: "mtime" | "checksum" | "hybrid";
+  integrityBackupStrategy?: 'full' | 'incremental' | 'auto';
+  integrityChangeDetectionMethod?: 'mtime' | 'checksum' | 'hybrid';
   integrityMaxIncrementalChain?: number;
   integrityFullBackupInterval?: number;
   integrityIncrementalDirectory?: string;
   // File integrity differential backup options
   integrityEnableDifferentialBackup?: boolean;
-  integrityDifferentialStrategy?: "auto" | "manual" | "threshold-based";
+  integrityDifferentialStrategy?: 'auto' | 'manual' | 'threshold-based';
   integrityDifferentialFullBackupThreshold?: number;
   integrityDifferentialFullBackupInterval?: number;
   integrityDifferentialDirectory?: string;
@@ -403,7 +405,7 @@ export interface CliArguments {
   integrityMemoryThreshold?: number;
   integrityCpuThreshold?: number;
   integrityEventLoopLagThreshold?: number;
-  integrityBatchProcessingStrategy?: "sequential" | "parallel" | "adaptive";
+  integrityBatchProcessingStrategy?: 'sequential' | 'parallel' | 'adaptive';
   integrityEnableProgressTracking?: boolean;
   integrityProgressUpdateInterval?: number;
   // Pattern Validator CLI options (simplified)
@@ -451,18 +453,13 @@ export interface ConfigResult {
 }
 
 // Create a logger instance for configuration operations
-const configLogger = createLogger("Config");
-
-
+const configLogger = createLogger('Config');
 
 /**
  * Deep merge utility for configuration objects
  * Later values take precedence over earlier ones
  */
-function deepMerge<T extends Record<string, unknown>>(
-  target: T,
-  ...sources: Array<Partial<T>>
-): T {
+function deepMerge<T extends Record<string, unknown>>(target: T, ...sources: Array<Partial<T>>): T {
   if (!sources.length) return target;
   const source = sources.shift();
 
@@ -470,10 +467,7 @@ function deepMerge<T extends Record<string, unknown>>(
     for (const key in source) {
       if (isObject(source[key])) {
         if (!target[key]) Object.assign(target, { [key]: {} });
-        deepMerge(
-          target[key] as Record<string, unknown>,
-          source[key] as Record<string, unknown>,
-        );
+        deepMerge(target[key] as Record<string, unknown>, source[key] as Record<string, unknown>);
       } else {
         Object.assign(target, { [key]: source[key] });
       }
@@ -487,7 +481,7 @@ function deepMerge<T extends Record<string, unknown>>(
  * Check if value is a plain object
  */
 function isObject(item: unknown): item is Record<string, unknown> {
-  return item !== null && typeof item === "object" && !Array.isArray(item);
+  return item !== null && typeof item === 'object' && !Array.isArray(item);
 }
 
 /**
@@ -509,54 +503,40 @@ function normalizeCliArguments(args: CliArguments): Partial<EnigmaConfig> {
   if (args.output !== undefined) config.output = args.output;
   if (args.minify !== undefined) config.minify = args.minify;
   if (args.removeUnused !== undefined) config.removeUnused = args.removeUnused;
-  if (args.maxConcurrency !== undefined)
-    config.maxConcurrency = args.maxConcurrency;
+  if (args.maxConcurrency !== undefined) config.maxConcurrency = args.maxConcurrency;
   if (args.classPrefix !== undefined) config.classPrefix = args.classPrefix;
-  if (args.excludePatterns !== undefined)
-    config.excludePatterns = args.excludePatterns;
-  if (args.followSymlinks !== undefined)
-    config.followSymlinks = args.followSymlinks;
+  if (args.excludePatterns !== undefined) config.excludePatterns = args.excludePatterns;
+  if (args.followSymlinks !== undefined) config.followSymlinks = args.followSymlinks;
   if (args.maxFiles !== undefined) config.maxFiles = args.maxFiles;
-  if (args.includeFileTypes !== undefined)
-    config.includeFileTypes = args.includeFileTypes;
-  if (args.excludeExtensions !== undefined)
-    config.excludeExtensions = args.excludeExtensions;
-  if (args.preserveComments !== undefined)
-    config.preserveComments = args.preserveComments;
+  if (args.includeFileTypes !== undefined) config.includeFileTypes = args.includeFileTypes;
+  if (args.excludeExtensions !== undefined) config.excludeExtensions = args.excludeExtensions;
+  if (args.preserveComments !== undefined) config.preserveComments = args.preserveComments;
   if (args.sourceMaps !== undefined) config.sourceMaps = args.sourceMaps;
 
   // HTML extractor options
   const htmlExtractorConfig: Partial<HtmlExtractionOptions> = {};
   if (args.htmlCaseSensitive !== undefined)
     htmlExtractorConfig.caseSensitive = args.htmlCaseSensitive;
-  if (args.htmlIgnoreEmpty !== undefined)
-    htmlExtractorConfig.ignoreEmpty = args.htmlIgnoreEmpty;
-  if (args.htmlMaxFileSize !== undefined)
-    htmlExtractorConfig.maxFileSize = args.htmlMaxFileSize;
-  if (args.htmlTimeout !== undefined)
-    htmlExtractorConfig.timeout = args.htmlTimeout;
+  if (args.htmlIgnoreEmpty !== undefined) htmlExtractorConfig.ignoreEmpty = args.htmlIgnoreEmpty;
+  if (args.htmlMaxFileSize !== undefined) htmlExtractorConfig.maxFileSize = args.htmlMaxFileSize;
+  if (args.htmlTimeout !== undefined) htmlExtractorConfig.timeout = args.htmlTimeout;
   if (args.htmlPreserveWhitespace !== undefined)
     htmlExtractorConfig.preserveWhitespace = args.htmlPreserveWhitespace;
 
   if (Object.keys(htmlExtractorConfig).length > 0) {
     // Apply defaults using the schema to ensure all fields have proper values
-    config.htmlExtractor =
-      HtmlExtractionOptionsSchema.parse(htmlExtractorConfig);
+    config.htmlExtractor = HtmlExtractionOptionsSchema.parse(htmlExtractorConfig);
   }
 
   // JavaScript/JSX extractor options
   const jsExtractorConfig: Partial<JsExtractionOptions> = {};
   if (args.jsEnableFrameworkDetection !== undefined)
-    jsExtractorConfig.enableFrameworkDetection =
-      args.jsEnableFrameworkDetection;
+    jsExtractorConfig.enableFrameworkDetection = args.jsEnableFrameworkDetection;
   if (args.jsIncludeDynamicClasses !== undefined)
     jsExtractorConfig.includeDynamicClasses = args.jsIncludeDynamicClasses;
-  if (args.jsCaseSensitive !== undefined)
-    jsExtractorConfig.caseSensitive = args.jsCaseSensitive;
-  if (args.jsIgnoreEmpty !== undefined)
-    jsExtractorConfig.ignoreEmpty = args.jsIgnoreEmpty;
-  if (args.jsMaxFileSize !== undefined)
-    jsExtractorConfig.maxFileSize = args.jsMaxFileSize;
+  if (args.jsCaseSensitive !== undefined) jsExtractorConfig.caseSensitive = args.jsCaseSensitive;
+  if (args.jsIgnoreEmpty !== undefined) jsExtractorConfig.ignoreEmpty = args.jsIgnoreEmpty;
+  if (args.jsMaxFileSize !== undefined) jsExtractorConfig.maxFileSize = args.jsMaxFileSize;
   if (args.jsTimeout !== undefined) jsExtractorConfig.timeout = args.jsTimeout;
   if (args.jsSupportedFrameworks !== undefined)
     jsExtractorConfig.supportedFrameworks = args.jsSupportedFrameworks;
@@ -576,12 +556,9 @@ function normalizeCliArguments(args: CliArguments): Partial<EnigmaConfig> {
     cssInjectorConfig.preventDuplicates = args.cssPreventDuplicates;
   if (args.cssInsertPosition !== undefined)
     cssInjectorConfig.insertPosition = args.cssInsertPosition;
-  if (args.cssCreateBackup !== undefined)
-    cssInjectorConfig.createBackup = args.cssCreateBackup;
-  if (args.cssMaxFileSize !== undefined)
-    cssInjectorConfig.maxFileSize = args.cssMaxFileSize;
-  if (args.cssTimeout !== undefined)
-    cssInjectorConfig.timeout = args.cssTimeout;
+  if (args.cssCreateBackup !== undefined) cssInjectorConfig.createBackup = args.cssCreateBackup;
+  if (args.cssMaxFileSize !== undefined) cssInjectorConfig.maxFileSize = args.cssMaxFileSize;
+  if (args.cssTimeout !== undefined) cssInjectorConfig.timeout = args.cssTimeout;
 
   if (Object.keys(cssInjectorConfig).length > 0) {
     // Apply defaults using the schema to ensure all fields have proper values
@@ -600,8 +577,7 @@ function normalizeCliArguments(args: CliArguments): Partial<EnigmaConfig> {
     fileIntegrityConfig.backupRetentionDays = args.integrityBackupRetentionDays;
   if (args.integrityMaxFileSize !== undefined)
     fileIntegrityConfig.maxFileSize = args.integrityMaxFileSize;
-  if (args.integrityTimeout !== undefined)
-    fileIntegrityConfig.timeout = args.integrityTimeout;
+  if (args.integrityTimeout !== undefined) fileIntegrityConfig.timeout = args.integrityTimeout;
   if (args.integrityVerifyAfterRollback !== undefined)
     fileIntegrityConfig.verifyAfterRollback = args.integrityVerifyAfterRollback;
   if (args.integrityBatchSize !== undefined)
@@ -614,51 +590,41 @@ function normalizeCliArguments(args: CliArguments): Partial<EnigmaConfig> {
   if (args.integrityEnableCompression !== undefined)
     fileIntegrityConfig.enableCompression = args.integrityEnableCompression;
   if (args.integrityCompressionAlgorithm !== undefined)
-    fileIntegrityConfig.compressionAlgorithm =
-      args.integrityCompressionAlgorithm;
+    fileIntegrityConfig.compressionAlgorithm = args.integrityCompressionAlgorithm;
   if (args.integrityCompressionLevel !== undefined)
     fileIntegrityConfig.compressionLevel = args.integrityCompressionLevel;
   if (args.integrityCompressionThreshold !== undefined)
-    fileIntegrityConfig.compressionThreshold =
-      args.integrityCompressionThreshold;
+    fileIntegrityConfig.compressionThreshold = args.integrityCompressionThreshold;
   // Deduplication options
   if (args.integrityEnableDeduplication !== undefined)
     fileIntegrityConfig.enableDeduplication = args.integrityEnableDeduplication;
   if (args.integrityDeduplicationDirectory !== undefined)
-    fileIntegrityConfig.deduplicationDirectory =
-      args.integrityDeduplicationDirectory;
+    fileIntegrityConfig.deduplicationDirectory = args.integrityDeduplicationDirectory;
   if (args.integrityDeduplicationAlgorithm !== undefined)
-    fileIntegrityConfig.deduplicationAlgorithm =
-      args.integrityDeduplicationAlgorithm;
+    fileIntegrityConfig.deduplicationAlgorithm = args.integrityDeduplicationAlgorithm;
   if (args.integrityDeduplicationThreshold !== undefined)
-    fileIntegrityConfig.deduplicationThreshold =
-      args.integrityDeduplicationThreshold;
+    fileIntegrityConfig.deduplicationThreshold = args.integrityDeduplicationThreshold;
   if (args.integrityUseHardLinks !== undefined)
     fileIntegrityConfig.useHardLinks = args.integrityUseHardLinks;
   // Incremental backup options
   if (args.integrityEnableIncrementalBackup !== undefined)
-    fileIntegrityConfig.enableIncrementalBackup =
-      args.integrityEnableIncrementalBackup;
+    fileIntegrityConfig.enableIncrementalBackup = args.integrityEnableIncrementalBackup;
   if (args.integrityBackupStrategy !== undefined)
     fileIntegrityConfig.backupStrategy = args.integrityBackupStrategy;
   if (args.integrityChangeDetectionMethod !== undefined)
-    fileIntegrityConfig.changeDetectionMethod =
-      args.integrityChangeDetectionMethod;
+    fileIntegrityConfig.changeDetectionMethod = args.integrityChangeDetectionMethod;
   if (args.integrityMaxIncrementalChain !== undefined)
     fileIntegrityConfig.maxIncrementalChain = args.integrityMaxIncrementalChain;
   if (args.integrityFullBackupInterval !== undefined)
     fileIntegrityConfig.fullBackupInterval = args.integrityFullBackupInterval;
   if (args.integrityIncrementalDirectory !== undefined)
-    fileIntegrityConfig.incrementalDirectory =
-      args.integrityIncrementalDirectory;
+    fileIntegrityConfig.incrementalDirectory = args.integrityIncrementalDirectory;
 
   // Differential backup options
   if (args.integrityEnableDifferentialBackup !== undefined)
-    fileIntegrityConfig.enableDifferentialBackup =
-      args.integrityEnableDifferentialBackup;
+    fileIntegrityConfig.enableDifferentialBackup = args.integrityEnableDifferentialBackup;
   if (args.integrityDifferentialStrategy !== undefined)
-    fileIntegrityConfig.differentialStrategy =
-      args.integrityDifferentialStrategy;
+    fileIntegrityConfig.differentialStrategy = args.integrityDifferentialStrategy;
   if (args.integrityDifferentialFullBackupThreshold !== undefined)
     fileIntegrityConfig.differentialFullBackupThreshold =
       args.integrityDifferentialFullBackupThreshold;
@@ -666,16 +632,13 @@ function normalizeCliArguments(args: CliArguments): Partial<EnigmaConfig> {
     fileIntegrityConfig.differentialFullBackupInterval =
       args.integrityDifferentialFullBackupInterval;
   if (args.integrityDifferentialDirectory !== undefined)
-    fileIntegrityConfig.differentialDirectory =
-      args.integrityDifferentialDirectory;
+    fileIntegrityConfig.differentialDirectory = args.integrityDifferentialDirectory;
   if (args.integrityDifferentialSizeMultiplier !== undefined)
-    fileIntegrityConfig.differentialSizeMultiplier =
-      args.integrityDifferentialSizeMultiplier;
+    fileIntegrityConfig.differentialSizeMultiplier = args.integrityDifferentialSizeMultiplier;
 
   // Batch processing options
   if (args.integrityEnableBatchProcessing !== undefined)
-    fileIntegrityConfig.enableBatchProcessing =
-      args.integrityEnableBatchProcessing;
+    fileIntegrityConfig.enableBatchProcessing = args.integrityEnableBatchProcessing;
   if (args.integrityMinBatchSize !== undefined)
     fileIntegrityConfig.minBatchSize = args.integrityMinBatchSize;
   if (args.integrityMaxBatchSize !== undefined)
@@ -687,22 +650,17 @@ function normalizeCliArguments(args: CliArguments): Partial<EnigmaConfig> {
   if (args.integrityCpuThreshold !== undefined)
     fileIntegrityConfig.cpuThreshold = args.integrityCpuThreshold;
   if (args.integrityEventLoopLagThreshold !== undefined)
-    fileIntegrityConfig.eventLoopLagThreshold =
-      args.integrityEventLoopLagThreshold;
+    fileIntegrityConfig.eventLoopLagThreshold = args.integrityEventLoopLagThreshold;
   if (args.integrityBatchProcessingStrategy !== undefined)
-    fileIntegrityConfig.batchProcessingStrategy =
-      args.integrityBatchProcessingStrategy;
+    fileIntegrityConfig.batchProcessingStrategy = args.integrityBatchProcessingStrategy;
   if (args.integrityEnableProgressTracking !== undefined)
-    fileIntegrityConfig.enableProgressTracking =
-      args.integrityEnableProgressTracking;
+    fileIntegrityConfig.enableProgressTracking = args.integrityEnableProgressTracking;
   if (args.integrityProgressUpdateInterval !== undefined)
-    fileIntegrityConfig.progressUpdateInterval =
-      args.integrityProgressUpdateInterval;
+    fileIntegrityConfig.progressUpdateInterval = args.integrityProgressUpdateInterval;
 
   if (Object.keys(fileIntegrityConfig).length > 0) {
     // Apply defaults using the schema to ensure all fields have proper values
-    config.fileIntegrity =
-      FileIntegrityOptionsSchema.parse(fileIntegrityConfig);
+    config.fileIntegrity = FileIntegrityOptionsSchema.parse(fileIntegrityConfig);
   }
 
   // Pattern validator options (simplified)
@@ -710,19 +668,15 @@ function normalizeCliArguments(args: CliArguments): Partial<EnigmaConfig> {
   if (args.patternValidatorEnable !== undefined)
     patternValidatorConfig.enableValidation = args.patternValidatorEnable;
   if (args.patternValidatorSkipInvalid !== undefined)
-    patternValidatorConfig.skipInvalidClasses =
-      args.patternValidatorSkipInvalid;
+    patternValidatorConfig.skipInvalidClasses = args.patternValidatorSkipInvalid;
   if (args.patternValidatorWarnOnInvalid !== undefined)
-    patternValidatorConfig.warnOnInvalidClasses =
-      args.patternValidatorWarnOnInvalid;
+    patternValidatorConfig.warnOnInvalidClasses = args.patternValidatorWarnOnInvalid;
   if (args.patternValidatorCustomClasses !== undefined)
     patternValidatorConfig.customClasses = args.patternValidatorCustomClasses;
 
   if (Object.keys(patternValidatorConfig).length > 0) {
     // Apply defaults using the schema to ensure all fields have proper values
-    config.patternValidator = SimpleValidatorConfigSchema.parse(
-      patternValidatorConfig,
-    );
+    config.patternValidator = SimpleValidatorConfigSchema.parse(patternValidatorConfig);
   }
 
   // Development mode options
@@ -741,27 +695,35 @@ function normalizeCliArguments(args: CliArguments): Partial<EnigmaConfig> {
   // Development diagnostics options
   const diagnosticsConfig: any = {};
   if (args.devDiagnostics !== undefined) diagnosticsConfig.enabled = args.devDiagnostics;
-  if (args.devDiagnosticsPerformance !== undefined) diagnosticsConfig.performance = args.devDiagnosticsPerformance;
+  if (args.devDiagnosticsPerformance !== undefined)
+    diagnosticsConfig.performance = args.devDiagnosticsPerformance;
   if (args.devDiagnosticsMemory !== undefined) diagnosticsConfig.memory = args.devDiagnosticsMemory;
-  if (args.devDiagnosticsFileWatcher !== undefined) diagnosticsConfig.fileWatcher = args.devDiagnosticsFileWatcher;
-  if (args.devDiagnosticsClassAnalysis !== undefined) diagnosticsConfig.classAnalysis = args.devDiagnosticsClassAnalysis;
+  if (args.devDiagnosticsFileWatcher !== undefined)
+    diagnosticsConfig.fileWatcher = args.devDiagnosticsFileWatcher;
+  if (args.devDiagnosticsClassAnalysis !== undefined)
+    diagnosticsConfig.classAnalysis = args.devDiagnosticsClassAnalysis;
   if (Object.keys(diagnosticsConfig).length > 0) devConfig.diagnostics = diagnosticsConfig;
 
   // Development preview options
   const previewConfig: any = {};
   if (args.devPreview !== undefined) previewConfig.enabled = args.devPreview;
-  if (args.devPreviewAutoRefresh !== undefined) previewConfig.autoRefresh = args.devPreviewAutoRefresh;
+  if (args.devPreviewAutoRefresh !== undefined)
+    previewConfig.autoRefresh = args.devPreviewAutoRefresh;
   if (args.devPreviewShowDiff !== undefined) previewConfig.showDiff = args.devPreviewShowDiff;
-  if (args.devPreviewHighlightChanges !== undefined) previewConfig.highlightChanges = args.devPreviewHighlightChanges;
+  if (args.devPreviewHighlightChanges !== undefined)
+    previewConfig.highlightChanges = args.devPreviewHighlightChanges;
   if (Object.keys(previewConfig).length > 0) devConfig.preview = previewConfig;
 
   // Development dashboard options
   const dashboardConfig: any = {};
   if (args.devDashboard !== undefined) dashboardConfig.enabled = args.devDashboard;
-  if (args.devDashboardUpdateInterval !== undefined) dashboardConfig.updateInterval = args.devDashboardUpdateInterval;
-  if (args.devDashboardShowMetrics !== undefined) dashboardConfig.showMetrics = args.devDashboardShowMetrics;
+  if (args.devDashboardUpdateInterval !== undefined)
+    dashboardConfig.updateInterval = args.devDashboardUpdateInterval;
+  if (args.devDashboardShowMetrics !== undefined)
+    dashboardConfig.showMetrics = args.devDashboardShowMetrics;
   if (args.devDashboardShowLogs !== undefined) dashboardConfig.showLogs = args.devDashboardShowLogs;
-  if (args.devDashboardMaxLogEntries !== undefined) dashboardConfig.maxLogEntries = args.devDashboardMaxLogEntries;
+  if (args.devDashboardMaxLogEntries !== undefined)
+    dashboardConfig.maxLogEntries = args.devDashboardMaxLogEntries;
   if (Object.keys(dashboardConfig).length > 0) devConfig.dashboard = dashboardConfig;
 
   if (Object.keys(devConfig).length > 0) {
@@ -788,14 +750,14 @@ function validateConfig(config: unknown, filepath?: string): EnigmaConfig {
         `Invalid configuration${filepath ? ` in ${filepath}` : ''}:\n${issues}`,
         filepath,
         error as Error,
-        { operation: 'validateConfig', issueCount: error.issues.length },
+        { operation: 'validateConfig', issueCount: error.issues.length }
       );
     }
     throw new ConfigError(
       `Configuration validation failed${filepath ? ` for ${filepath}` : ''}`,
       filepath,
       error as Error,
-      { operation: 'validateConfig' },
+      { operation: 'validateConfig' }
     );
   }
 }
@@ -805,37 +767,37 @@ function validateConfig(config: unknown, filepath?: string): EnigmaConfig {
  */
 async function loadConfigFromFile(
   searchFrom?: string,
-  configFile?: string,
+  configFile?: string
 ): Promise<{
   config: Partial<EnigmaConfig>;
   filepath?: string;
   isEmpty?: boolean;
 }> {
-  configLogger.debug("Loading configuration from file", {
+  configLogger.debug('Loading configuration from file', {
     searchFrom,
     configFile,
-    operation: "loadConfigFromFile",
+    operation: 'loadConfigFromFile',
   });
 
-  const explorer = cosmiconfig("enigma");
+  const explorer = cosmiconfig('enigma');
 
   try {
     let result;
 
     if (configFile) {
-      configLogger.debug("Loading specific config file", { configFile });
+      configLogger.debug('Loading specific config file', { configFile });
       result = await explorer.load(configFile);
     } else {
-      configLogger.debug("Searching for config file", { searchFrom });
+      configLogger.debug('Searching for config file', { searchFrom });
       result = await explorer.search(searchFrom);
     }
 
     if (!result) {
-      configLogger.info("No configuration file found, using defaults");
+      configLogger.info('No configuration file found, using defaults');
       return { config: {} };
     }
 
-    configLogger.info("Configuration file loaded successfully", {
+    configLogger.info('Configuration file loaded successfully', {
       filepath: result.filepath,
       isEmpty: result.isEmpty,
       hasConfig: !!result.config,
@@ -847,17 +809,17 @@ async function loadConfigFromFile(
       isEmpty: result.isEmpty,
     };
   } catch (error) {
-    configLogger.error("Failed to load configuration file", {
+    configLogger.error('Failed to load configuration file', {
       configFile,
       searchFrom,
       errorMessage: error instanceof Error ? error.message : String(error),
     });
 
     throw new ConfigError(
-      `Failed to load configuration${configFile ? ` from ${configFile}` : ""}`,
+      `Failed to load configuration${configFile ? ` from ${configFile}` : ''}`,
       configFile,
       error as Error,
-      { operation: "loadConfigFromFile", searchFrom },
+      { operation: 'loadConfigFromFile', searchFrom }
     );
   }
 }
@@ -867,37 +829,37 @@ async function loadConfigFromFile(
  */
 function loadConfigFromFileSync(
   searchFrom?: string,
-  configFile?: string,
+  configFile?: string
 ): {
   config: Partial<EnigmaConfig>;
   filepath?: string;
   isEmpty?: boolean;
 } {
-  configLogger.debug("Loading configuration from file (sync)", {
+  configLogger.debug('Loading configuration from file (sync)', {
     searchFrom,
     configFile,
-    operation: "loadConfigFromFileSync",
+    operation: 'loadConfigFromFileSync',
   });
 
-  const explorer = cosmiconfigSync("enigma");
+  const explorer = cosmiconfigSync('enigma');
 
   try {
     let result;
 
     if (configFile) {
-      configLogger.debug("Loading specific config file (sync)", { configFile });
+      configLogger.debug('Loading specific config file (sync)', { configFile });
       result = explorer.load(configFile);
     } else {
-      configLogger.debug("Searching for config file (sync)", { searchFrom });
+      configLogger.debug('Searching for config file (sync)', { searchFrom });
       result = explorer.search(searchFrom);
     }
 
     if (!result) {
-      configLogger.info("No configuration file found (sync), using defaults");
+      configLogger.info('No configuration file found (sync), using defaults');
       return { config: {} };
     }
 
-    configLogger.info("Configuration file loaded successfully (sync)", {
+    configLogger.info('Configuration file loaded successfully (sync)', {
       filepath: result.filepath,
       isEmpty: result.isEmpty,
       hasConfig: !!result.config,
@@ -909,17 +871,17 @@ function loadConfigFromFileSync(
       isEmpty: result.isEmpty,
     };
   } catch (error) {
-    configLogger.error("Failed to load configuration file (sync)", {
+    configLogger.error('Failed to load configuration file (sync)', {
       configFile,
       searchFrom,
       errorMessage: error instanceof Error ? error.message : String(error),
     });
 
     throw new ConfigError(
-      `Failed to load configuration${configFile ? ` from ${configFile}` : ""}`,
+      `Failed to load configuration${configFile ? ` from ${configFile}` : ''}`,
       configFile,
       error as Error,
-      { operation: "loadConfigFromFileSync", searchFrom },
+      { operation: 'loadConfigFromFileSync', searchFrom }
     );
   }
 }
@@ -966,7 +928,7 @@ export class EnhancedConfigManager {
       enableMigration: true,
       validateOnLoad: true,
       createBackupOnLoad: false,
-      ...options
+      ...options,
     };
   }
 
@@ -1015,7 +977,9 @@ export class EnhancedConfigManager {
       const validation = await this.validateSchema(configWithDefaults);
 
       if (!validation.isValid) {
-        throw new Error(`Configuration validation failed: ${validation.errors.map(e => e.message || e).join(', ')}`);
+        throw new Error(
+          `Configuration validation failed: ${validation.errors.map((e) => e.message || e).join(', ')}`
+        );
       }
 
       this.config = configWithDefaults;
@@ -1038,7 +1002,7 @@ export class EnhancedConfigManager {
       if (this.options.enableBackup && this.options.createBackupOnLoad && this.backup) {
         const backup = await this.backup.createBackup({
           description: 'Configuration loaded',
-          tags: ['auto', 'load']
+          tags: ['auto', 'load'],
         });
         backupId = backup.id;
         logger.info(`Configuration backup created: ${backupId}`);
@@ -1057,11 +1021,12 @@ export class EnhancedConfigManager {
         runtimeValidation,
         performanceMetrics,
         migrationResult,
-        backupId
+        backupId,
       };
-
     } catch (error) {
-      logger.error('Failed to load configuration', { error: error instanceof Error ? error.message : String(error) });
+      logger.error('Failed to load configuration', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       throw error;
     }
   }
@@ -1079,7 +1044,7 @@ export class EnhancedConfigManager {
   ): Promise<{
     success: boolean;
     backupId?: string;
-          validation?: ValidationResult;
+    validation?: ValidationResult;
     error?: string;
   }> {
     try {
@@ -1090,7 +1055,7 @@ export class EnhancedConfigManager {
       const {
         createBackup = true,
         validateBeforeUpdate = true,
-        description = 'Configuration update'
+        description = 'Configuration update',
       } = options;
 
       // 1. Create backup if requested
@@ -1098,7 +1063,7 @@ export class EnhancedConfigManager {
       if (createBackup && this.backup) {
         const backup = await this.backup.createBackup({
           description,
-          tags: ['manual', 'update']
+          tags: ['manual', 'update'],
         });
         backupId = backup.id;
       }
@@ -1113,15 +1078,17 @@ export class EnhancedConfigManager {
         if (!validation.isValid) {
           return {
             success: false,
-            error: `Validation failed: ${validation.errors.map(e => e.message || e).join(', ')}`,
-            validation
+            error: `Validation failed: ${validation.errors.map((e) => e.message || e).join(', ')}`,
+            validation,
           };
         }
 
         // Runtime validation
         const runtimeValidation = await this.validateRuntime(updatedConfig);
         if (!runtimeValidation.isValid) {
-          logger.warn('Runtime validation warnings for update', { warnings: runtimeValidation.warnings });
+          logger.warn('Runtime validation warnings for update', {
+            warnings: runtimeValidation.warnings,
+          });
         }
       }
 
@@ -1133,14 +1100,15 @@ export class EnhancedConfigManager {
       return {
         success: true,
         backupId,
-        validation
+        validation,
       };
-
     } catch (error) {
-      logger.error('Failed to update configuration', { error: error instanceof Error ? error.message : String(error) });
+      logger.error('Failed to update configuration', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
   }
@@ -1166,11 +1134,7 @@ export class EnhancedConfigManager {
   /**
    * List available backups
    */
-  listBackups(filters?: {
-    tags?: string[];
-    isAutomatic?: boolean;
-    limit?: number;
-  }) {
+  listBackups(filters?: { tags?: string[]; isAutomatic?: boolean; limit?: number }) {
     if (!this.backup) {
       return [];
     }
@@ -1197,12 +1161,13 @@ export class EnhancedConfigManager {
       }
 
       return result;
-
     } catch (error) {
-      logger.error('Failed to restore from backup', { error: error instanceof Error ? error.message : String(error) });
+      logger.error('Failed to restore from backup', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
   }
@@ -1218,7 +1183,9 @@ export class EnhancedConfigManager {
 
       logger.info('Configuration manager cleaned up');
     } catch (error) {
-      logger.error('Error during cleanup', { error: error instanceof Error ? error.message : String(error) });
+      logger.error('Error during cleanup', {
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
   }
 
@@ -1266,7 +1233,7 @@ export class EnhancedConfigManager {
 
       const result = await this.migration.migrate({
         autoMigrate: true,
-        createBackup: true
+        createBackup: true,
       });
 
       if (result.success) {
@@ -1276,9 +1243,10 @@ export class EnhancedConfigManager {
         logger.error('Configuration migration failed', { errors: result.errors });
         return { migrated: false, result };
       }
-
     } catch (error) {
-      logger.error('Error during migration', { error: error instanceof Error ? error.message : String(error) });
+      logger.error('Error during migration', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       return { migrated: false };
     }
   }
@@ -1315,13 +1283,15 @@ export class EnhancedConfigManager {
 
     const pathResult = await this.runtimeValidator.validatePaths();
     const constraintResult = await this.runtimeValidator.validateConstraints();
-    
+
     return {
       isValid: pathResult.isValid && constraintResult.isValid,
-      errors: [...pathResult.errors, ...constraintResult.errors].map(e => new ValidationError(e, 'runtime')),
+      errors: [...pathResult.errors, ...constraintResult.errors].map(
+        (e) => new ValidationError(e, 'runtime')
+      ),
       warnings: [...pathResult.warnings, ...constraintResult.warnings],
       suggestions: [],
-      performance: { validationTime: 0, rulesApplied: 2 }
+      performance: { validationTime: 0, rulesApplied: 2 },
     };
   }
 
@@ -1333,18 +1303,20 @@ export class EnhancedConfigManager {
 
     this.watcher = createConfigWatcher({
       watchPatterns: [this.configPath],
-      validateOnChange: true
+      validateOnChange: true,
     });
 
     this.watcher.on('change', async (event) => {
       logger.info(`Configuration file changed: ${event.filepath}`);
-      
+
       try {
         // Reload and validate configuration
         await this.loadConfig();
         logger.info('Configuration reloaded successfully');
       } catch (error) {
-        logger.error('Failed to reload configuration after change', { error: error instanceof Error ? error.message : String(error) });
+        logger.error('Failed to reload configuration after change', {
+          error: error instanceof Error ? error.message : String(error),
+        });
       }
     });
 
@@ -1381,10 +1353,12 @@ export class EnhancedConfigManager {
     const constraintResult = await this.runtimeValidator.validateConstraints();
     const runtimeValidation = {
       isValid: pathResult.isValid && constraintResult.isValid,
-      errors: [...pathResult.errors, ...constraintResult.errors].map(e => new ValidationError(e, 'runtime')),
+      errors: [...pathResult.errors, ...constraintResult.errors].map(
+        (e) => new ValidationError(e, 'runtime')
+      ),
       warnings: [...pathResult.warnings, ...constraintResult.warnings],
       suggestions: [],
-      performance: { validationTime: 0, rulesApplied: 2 }
+      performance: { validationTime: 0, rulesApplied: 2 },
     };
 
     this.config = config;
@@ -1392,7 +1366,7 @@ export class EnhancedConfigManager {
     return {
       config,
       validation,
-      runtimeValidation
+      runtimeValidation,
     };
   }
 
@@ -1411,7 +1385,9 @@ export class EnhancedConfigManager {
     }
 
     if (metrics.recommendations.length > 0) {
-      logger.info('Performance recommendations', { recommendations: metrics.recommendations.map(r => r.title) });
+      logger.info('Performance recommendations', {
+        recommendations: metrics.recommendations.map((r: PerformanceRecommendation) => r.title),
+      });
     }
   }
 }
@@ -1442,7 +1418,7 @@ export async function loadEnhancedConfig(
 ): Promise<EnigmaConfig> {
   const manager = createEnhancedConfigManager(environment, {
     enableWatching: false, // Don't start watching for one-time loads
-    createBackupOnLoad: false
+    createBackupOnLoad: false,
   });
 
   const result = await manager.loadConfig(searchFrom);
@@ -1454,10 +1430,17 @@ export async function loadEnhancedConfig(
 /**
  * Load configuration asynchronously with CLI args support
  */
-export async function loadConfig(cliArgs?: CliArguments, searchFrom?: string): Promise<ConfigResult> {
+export async function loadConfig(
+  cliArgs?: CliArguments,
+  searchFrom?: string
+): Promise<ConfigResult> {
   try {
     // Load config from file
-    const { config: fileConfig, filepath, isEmpty } = await loadConfigFromFile(
+    const {
+      config: fileConfig,
+      filepath,
+      isEmpty,
+    } = await loadConfigFromFile(
       searchFrom || (cliArgs?.config ? undefined : process.cwd()),
       cliArgs?.config
     );
@@ -1474,7 +1457,7 @@ export async function loadConfig(cliArgs?: CliArguments, searchFrom?: string): P
     return {
       config,
       filepath,
-      isEmpty
+      isEmpty,
     };
   } catch (error) {
     // If error is already a ConfigError, rethrow
@@ -1485,12 +1468,16 @@ export async function loadConfig(cliArgs?: CliArguments, searchFrom?: string): P
       const config = validateConfig(cliConfig);
       return {
         config,
-        isEmpty: true
+        isEmpty: true,
       };
     } catch (fallbackError) {
       // Always throw a ConfigError for consistency
       if (fallbackError instanceof ConfigError) throw fallbackError;
-      throw new ConfigError("Failed to load configuration and fallback config is invalid", undefined, fallbackError instanceof Error ? fallbackError : undefined);
+      throw new ConfigError(
+        'Failed to load configuration and fallback config is invalid',
+        undefined,
+        fallbackError instanceof Error ? fallbackError : undefined
+      );
     }
   }
 }
@@ -1501,7 +1488,11 @@ export async function loadConfig(cliArgs?: CliArguments, searchFrom?: string): P
 export function loadConfigSync(cliArgs?: CliArguments, searchFrom?: string): ConfigResult {
   try {
     // Load config from file synchronously
-    const { config: fileConfig, filepath, isEmpty } = loadConfigFromFileSync(
+    const {
+      config: fileConfig,
+      filepath,
+      isEmpty,
+    } = loadConfigFromFileSync(
       searchFrom || (cliArgs?.config ? undefined : process.cwd()),
       cliArgs?.config
     );
@@ -1518,7 +1509,7 @@ export function loadConfigSync(cliArgs?: CliArguments, searchFrom?: string): Con
     return {
       config,
       filepath,
-      isEmpty
+      isEmpty,
     };
   } catch (error) {
     // If error is already a ConfigError, rethrow
@@ -1529,12 +1520,16 @@ export function loadConfigSync(cliArgs?: CliArguments, searchFrom?: string): Con
       const config = validateConfig(cliConfig);
       return {
         config,
-        isEmpty: true
+        isEmpty: true,
       };
     } catch (fallbackError) {
       // Always throw a ConfigError for consistency
       if (fallbackError instanceof ConfigError) throw fallbackError;
-      throw new ConfigError("Failed to load configuration and fallback config is invalid", undefined, fallbackError instanceof Error ? fallbackError : undefined);
+      throw new ConfigError(
+        'Failed to load configuration and fallback config is invalid',
+        undefined,
+        fallbackError instanceof Error ? fallbackError : undefined
+      );
     }
   }
 }
@@ -1563,32 +1558,32 @@ export function createSampleConfig(): string {
 module.exports = {
   // Output settings
   pretty: false,
-  
+
   // File processing
   input: "./src",
   output: "./dist",
-  
+
   // Processing options
   minify: true,
   removeUnused: true,
-  
+
   // Debug and logging
   verbose: false,
   debug: false,
-  
+
   // Performance settings
   maxConcurrency: 4,
-  
+
   // Output customization
   classPrefix: "",
   excludePatterns: ["node_modules/**", "*.test.*"],
-  
+
   // File Discovery Options
   followSymlinks: false,
   // maxFiles: 1000,
   // includeFileTypes: ["HTML", "JAVASCRIPT"],
   excludeExtensions: [".min.js", ".min.css"],
-  
+
   // Advanced options
   preserveComments: false,
   sourceMaps: false,

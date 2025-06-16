@@ -10,11 +10,11 @@
  * Defines the API contracts for the plugin system integration
  */
 
-import type { Result, Plugin } from "postcss";
-import type { z } from "zod";
-import type { FrequencyAnalysisResult } from "../patternAnalysis";
-import type { Logger } from "../utils/logger";
-import type { PluginUtils } from "../utils/index";
+import type { Plugin, Result } from 'postcss';
+import type { z } from 'zod';
+import type { FrequencyAnalysisResult } from '../../processors/patternAnalysis';
+import type { PluginUtils } from '../../utils';
+import type { Logger } from '../../utils/logger';
 
 /**
  * Core plugin configuration interface
@@ -174,10 +174,7 @@ export interface PluginManager {
   cleanup(): Promise<void>;
 
   /** Execute a plugin with given parameters */
-  executePlugin<T = PluginResult>(
-    pluginName: string,
-    ...args: any[]
-  ): Promise<T | null>;
+  executePlugin<T = PluginResult>(pluginName: string, ...args: any[]): Promise<T | null>;
 
   /** Get plugin health status */
   getPluginHealth(pluginName: string): any;
@@ -223,9 +220,9 @@ export interface ProcessorConfig {
   /** Plugins to apply */
   plugins: PluginConfig[];
   /** Input source map */
-  sourceMap?: boolean | "inline" | string;
+  sourceMap?: boolean | 'inline' | string;
   /** Output source map */
-  outputSourceMap?: boolean | "inline" | string;
+  outputSourceMap?: boolean | 'inline' | string;
   /** Input file path for source maps */
   from?: string;
   /** Output file path for source maps */
@@ -278,9 +275,9 @@ export interface PluginDiscoveryOptions {
 }
 
 // Re-export frequently used types from dependencies
-export type { Root, Result, Plugin, PluginCreator } from "postcss";
-export type { EnigmaConfig } from "../config";
-export type { PluginUtils } from "../utils/index";
+export type { Plugin, PluginCreator, Result, Root } from 'postcss';
+export type { EnigmaConfig } from '../../config';
+export type { PluginUtils } from '../../utils';
 
 /**
  * Enhanced plugin context for the new plugin system
@@ -314,7 +311,7 @@ export abstract class BaseEnigmaPlugin implements EnigmaPlugin {
 
   protected config: PluginConfig;
 
-  constructor(config: PluginConfig = { name: "unknown" }) {
+  constructor(config: PluginConfig = { name: 'unknown' }) {
     this.config = {
       enabled: true,
       priority: 0,
@@ -353,7 +350,7 @@ export abstract class BaseEnigmaPlugin implements EnigmaPlugin {
     return {
       name: this.meta.name,
       enabled: this.config.enabled,
-      status: "unknown",
+      status: 'unknown',
     };
   }
 
@@ -379,12 +376,12 @@ export abstract class BasePostCSSEnigmaPlugin extends BaseEnigmaPlugin {
    */
   async processCss(css: string, _context: EnigmaPluginContext): Promise<string> {
     // Default PostCSS processing - can be overridden
-    const postcss = await import("postcss");
+    const postcss = await import('postcss');
     const plugin = this.createPostCSSPlugin();
 
     const result = await postcss.default([plugin]).process(css, {
-      from: _context.filePath || "unknown",
-      to: _context.filePath || "unknown",
+      from: _context.filePath || 'unknown',
+      to: _context.filePath || 'unknown',
     });
 
     return result.css;

@@ -5,25 +5,24 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { glob, globSync } from "glob";
-import { extname } from "path";
-import type { EnigmaConfig } from "./config";
+import { glob, globSync } from 'glob';
+import { extname } from 'path';
+import type { EnigmaConfig } from '../config/config';
 
 /**
  * Supported file types for CSS optimization
  */
 export const SUPPORTED_FILE_TYPES = {
-  HTML: [".html", ".htm"] as string[],
-  JAVASCRIPT: [".js", ".jsx", ".ts", ".tsx"] as string[],
-  CSS: [".css"] as string[],
-  TEMPLATE: [".vue", ".svelte", ".astro"] as string[],
+  HTML: ['.html', '.htm'] as string[],
+  JAVASCRIPT: ['.js', '.jsx', '.ts', '.tsx'] as string[],
+  CSS: ['.css'] as string[],
+  TEMPLATE: ['.vue', '.svelte', '.astro'] as string[],
 } as const;
 
 /**
  * All supported file extensions
  */
-export const ALL_SUPPORTED_EXTENSIONS =
-  Object.values(SUPPORTED_FILE_TYPES).flat();
+export const ALL_SUPPORTED_EXTENSIONS = Object.values(SUPPORTED_FILE_TYPES).flat();
 
 /**
  * File discovery options
@@ -74,15 +73,10 @@ export class FileDiscoveryError extends Error {
   public code: string;
   public patterns?: string | string[];
   public cause?: Error;
-  
-  constructor(
-    message: string,
-    code: string,
-    patterns?: string | string[],
-    cause?: Error,
-  ) {
+
+  constructor(message: string, code: string, patterns?: string | string[], cause?: Error) {
     super(message);
-    this.name = "FileDiscoveryError";
+    this.name = 'FileDiscoveryError';
     this.code = code;
     this.patterns = patterns;
     this.cause = cause;
@@ -93,27 +87,21 @@ export class FileDiscoveryError extends Error {
  * Validates a glob pattern for common issues
  */
 export function validateGlobPattern(pattern: string): void {
-  if (!pattern || typeof pattern !== "string") {
-    throw new FileDiscoveryError(
-      "Pattern must be a non-empty string",
-      "INVALID_PATTERN",
-      pattern,
-    );
+  if (!pattern || typeof pattern !== 'string') {
+    throw new FileDiscoveryError('Pattern must be a non-empty string', 'INVALID_PATTERN', pattern);
   }
 
   if (pattern.trim() !== pattern) {
     throw new FileDiscoveryError(
-      "Pattern cannot have leading or trailing whitespace",
-      "INVALID_PATTERN",
-      pattern,
+      'Pattern cannot have leading or trailing whitespace',
+      'INVALID_PATTERN',
+      pattern
     );
   }
 
   // Check for potentially dangerous patterns
-  if (pattern.includes("..") && !pattern.includes("**/")) {
-    console.warn(
-      `Warning: Pattern "${pattern}" contains ".." which may access parent directories`,
-    );
+  if (pattern.includes('..') && !pattern.includes('**/')) {
+    console.warn(`Warning: Pattern "${pattern}" contains ".." which may access parent directories`);
   }
 }
 
@@ -122,21 +110,13 @@ export function validateGlobPattern(pattern: string): void {
  */
 export function validateOptions(options: FileDiscoveryOptions): void {
   if (!options.patterns) {
-    throw new FileDiscoveryError(
-      "At least one pattern must be provided",
-      "NO_PATTERNS",
-    );
+    throw new FileDiscoveryError('At least one pattern must be provided', 'NO_PATTERNS');
   }
 
-  const patterns = Array.isArray(options.patterns)
-    ? options.patterns
-    : [options.patterns];
+  const patterns = Array.isArray(options.patterns) ? options.patterns : [options.patterns];
 
   if (patterns.length === 0) {
-    throw new FileDiscoveryError(
-      "At least one pattern must be provided",
-      "NO_PATTERNS",
-    );
+    throw new FileDiscoveryError('At least one pattern must be provided', 'NO_PATTERNS');
   }
 
   // Validate each pattern
@@ -144,38 +124,26 @@ export function validateOptions(options: FileDiscoveryOptions): void {
 
   // Validate numeric options
   if (options.maxFiles !== undefined && options.maxFiles < 1) {
-    throw new FileDiscoveryError(
-      "maxFiles must be a positive number",
-      "INVALID_OPTIONS",
-    );
+    throw new FileDiscoveryError('maxFiles must be a positive number', 'INVALID_OPTIONS');
   }
 
   // Validate working directory
   if (options.cwd !== undefined && (!options.cwd || !options.cwd.trim())) {
-    throw new FileDiscoveryError(
-      "cwd must be a non-empty string",
-      "INVALID_OPTIONS",
-    );
+    throw new FileDiscoveryError('cwd must be a non-empty string', 'INVALID_OPTIONS');
   }
 }
 
 /**
  * Determines if a file should be included based on extension filtering
  */
-export function shouldIncludeFile(
-  filePath: string,
-  options: FileDiscoveryOptions,
-): boolean {
+export function shouldIncludeFile(filePath: string, options: FileDiscoveryOptions): boolean {
   const ext = extname(filePath).toLowerCase();
   const fileName = filePath.toLowerCase();
 
   // Check exclude extensions first - support both simple extensions and compound extensions
   if (options.excludeExtensions?.length) {
     for (const excludeExt of options.excludeExtensions) {
-      if (
-        excludeExt.startsWith(".") &&
-        fileName.endsWith(excludeExt.toLowerCase())
-      ) {
+      if (excludeExt.startsWith('.') && fileName.endsWith(excludeExt.toLowerCase())) {
         return false;
       }
     }
@@ -184,7 +152,7 @@ export function shouldIncludeFile(
   // If includeExtensions is specified, only include those
   if (options.includeExtensions?.length) {
     return options.includeExtensions.some((includeExt) => {
-      if (includeExt.startsWith(".")) {
+      if (includeExt.startsWith('.')) {
         return fileName.endsWith(includeExt.toLowerCase());
       }
       return ext === includeExt.toLowerCase();
@@ -193,16 +161,11 @@ export function shouldIncludeFile(
 
   // If includeTypes is specified, check against those types
   if (options.includeTypes?.length) {
-    return options.includeTypes.some((type) =>
-      SUPPORTED_FILE_TYPES[type].includes(ext),
-    );
+    return options.includeTypes.some((type) => SUPPORTED_FILE_TYPES[type].includes(ext));
   }
 
   // Default: include HTML and JavaScript files
-  return (
-    SUPPORTED_FILE_TYPES.HTML.includes(ext) ||
-    SUPPORTED_FILE_TYPES.JAVASCRIPT.includes(ext)
-  );
+  return SUPPORTED_FILE_TYPES.HTML.includes(ext) || SUPPORTED_FILE_TYPES.JAVASCRIPT.includes(ext);
 }
 
 /**
@@ -217,7 +180,7 @@ export function getFileType(filePath: string): string {
     }
   }
 
-  return "OTHER";
+  return 'OTHER';
 }
 
 /**
@@ -230,17 +193,13 @@ export function deduplicateAndSort(files: string[]): string[] {
 /**
  * Discovers files using glob patterns (synchronous)
  */
-export function discoverFilesSync(
-  options: FileDiscoveryOptions,
-): FileDiscoveryResult {
+export function discoverFilesSync(options: FileDiscoveryOptions): FileDiscoveryResult {
   const startTime = Date.now();
 
   try {
     validateOptions(options);
 
-    const patterns = Array.isArray(options.patterns)
-      ? options.patterns
-      : [options.patterns];
+    const patterns = Array.isArray(options.patterns) ? options.patterns : [options.patterns];
 
     const globOptions = {
       cwd: options.cwd || process.cwd(),
@@ -267,9 +226,9 @@ export function discoverFilesSync(
       } catch (error) {
         throw new FileDiscoveryError(
           `Failed to process pattern "${pattern}": ${error instanceof Error ? error.message : String(error)}`,
-          "PATTERN_ERROR",
+          'PATTERN_ERROR',
           pattern,
-          error instanceof Error ? error : undefined,
+          error instanceof Error ? error : undefined
         );
       }
     }
@@ -278,14 +237,10 @@ export function discoverFilesSync(
     allFiles = deduplicateAndSort(allFiles);
 
     // Apply file type filtering
-    const filteredFiles = allFiles.filter((file) =>
-      shouldIncludeFile(file, options),
-    );
+    const filteredFiles = allFiles.filter((file) => shouldIncludeFile(file, options));
 
     // Apply max files limit
-    const finalFiles = options.maxFiles
-      ? filteredFiles.slice(0, options.maxFiles)
-      : filteredFiles;
+    const finalFiles = options.maxFiles ? filteredFiles.slice(0, options.maxFiles) : filteredFiles;
 
     // Calculate breakdown by file type
     const breakdown: Record<string, number> = {};
@@ -311,9 +266,9 @@ export function discoverFilesSync(
 
     throw new FileDiscoveryError(
       `File discovery failed: ${error instanceof Error ? error.message : String(error)}`,
-      "DISCOVERY_ERROR",
+      'DISCOVERY_ERROR',
       options.patterns,
-      error instanceof Error ? error : undefined,
+      error instanceof Error ? error : undefined
     );
   }
 }
@@ -321,17 +276,13 @@ export function discoverFilesSync(
 /**
  * Discovers files using glob patterns (asynchronous)
  */
-export async function discoverFiles(
-  options: FileDiscoveryOptions,
-): Promise<FileDiscoveryResult> {
+export async function discoverFiles(options: FileDiscoveryOptions): Promise<FileDiscoveryResult> {
   const startTime = Date.now();
 
   try {
     validateOptions(options);
 
-    const patterns = Array.isArray(options.patterns)
-      ? options.patterns
-      : [options.patterns];
+    const patterns = Array.isArray(options.patterns) ? options.patterns : [options.patterns];
 
     const globOptions = {
       cwd: options.cwd || process.cwd(),
@@ -358,9 +309,9 @@ export async function discoverFiles(
       } catch (error) {
         throw new FileDiscoveryError(
           `Failed to process pattern "${pattern}": ${error instanceof Error ? error.message : String(error)}`,
-          "PATTERN_ERROR",
+          'PATTERN_ERROR',
           pattern,
-          error instanceof Error ? error : undefined,
+          error instanceof Error ? error : undefined
         );
       }
     }
@@ -369,14 +320,10 @@ export async function discoverFiles(
     allFiles = deduplicateAndSort(allFiles);
 
     // Apply file type filtering
-    const filteredFiles = allFiles.filter((file) =>
-      shouldIncludeFile(file, options),
-    );
+    const filteredFiles = allFiles.filter((file) => shouldIncludeFile(file, options));
 
     // Apply max files limit
-    const finalFiles = options.maxFiles
-      ? filteredFiles.slice(0, options.maxFiles)
-      : filteredFiles;
+    const finalFiles = options.maxFiles ? filteredFiles.slice(0, options.maxFiles) : filteredFiles;
 
     // Calculate breakdown by file type
     const breakdown: Record<string, number> = {};
@@ -402,9 +349,9 @@ export async function discoverFiles(
 
     throw new FileDiscoveryError(
       `File discovery failed: ${error instanceof Error ? error.message : String(error)}`,
-      "DISCOVERY_ERROR",
+      'DISCOVERY_ERROR',
       options.patterns,
-      error instanceof Error ? error : undefined,
+      error instanceof Error ? error : undefined
     );
   }
 }
@@ -412,19 +359,17 @@ export async function discoverFiles(
 /**
  * Convenience function to discover files from configuration
  */
-export function discoverFilesFromConfig(
-  config: EnigmaConfig,
-): FileDiscoveryResult {
+export function discoverFilesFromConfig(config: EnigmaConfig): FileDiscoveryResult {
   // Handle input patterns - can be string or array, and string might be comma-separated
   let patterns: string[];
   if (!config.input) {
-    patterns = ["src/**/*.{html,htm,js,jsx,ts,tsx}"];
+    patterns = ['src/**/*.{html,htm,js,jsx,ts,tsx}'];
   } else if (Array.isArray(config.input)) {
     patterns = config.input;
   } else {
     // Split comma-separated patterns
     patterns = config.input
-      .split(",")
+      .split(',')
       .map((p) => p.trim())
       .filter((p) => p.length > 0);
   }
@@ -447,18 +392,18 @@ export function discoverFilesFromConfig(
  * Convenience function to discover files from configuration (async)
  */
 export async function discoverFilesFromConfigAsync(
-  config: EnigmaConfig,
+  config: EnigmaConfig
 ): Promise<FileDiscoveryResult> {
   // Handle input patterns - can be string or array, and string might be comma-separated
   let patterns: string[];
   if (!config.input) {
-    patterns = ["src/**/*.{html,htm,js,jsx,ts,tsx}"];
+    patterns = ['src/**/*.{html,htm,js,jsx,ts,tsx}'];
   } else if (Array.isArray(config.input)) {
     patterns = config.input;
   } else {
     // Split comma-separated patterns
     patterns = config.input
-      .split(",")
+      .split(',')
       .map((p) => p.trim())
       .filter((p) => p.length > 0);
   }

@@ -65,51 +65,44 @@
  */
 
 // Core error handling components
-export {
-  ErrorHandler,
-  getErrorHandler,
-  handleError,
-  type ErrorStats,
-} from "./errorHandler";
+export { ErrorHandler, getErrorHandler, handleError, type ErrorStats } from './errorHandler';
 
 // Circuit breaker components
 export {
   CircuitBreaker,
-  CircuitBreakerRegistry,
   CircuitBreakerOpenError,
+  CircuitBreakerRegistry,
   withCircuitBreaker,
-} from "./circuitBreaker";
+} from './circuitBreaker';
 
 // Type definitions and utilities
 export {
-  // Enums
-  ErrorSeverity,
-  ErrorCategory,
-  CircuitBreakerState,
-  HealthStatus,
-
-  // Interfaces
-  type EnhancedErrorContext,
-  type ErrorHandlerConfig,
-  type ErrorRecoveryStrategy,
-  type ErrorAnalytics,
-  type CircuitBreakerMetrics,
-  type CircuitBreakerFallback,
-  type CircuitBreakerHealthStatus,
-
   // Utility functions
   categorizeError,
-  severityToNumber,
+  CircuitBreakerState,
+  ErrorCategory,
+  // Enums
+  ErrorSeverity,
+  HealthStatus,
   isEnigmaError,
-} from "./types";
+  severityToNumber,
+  type CircuitBreakerFallback,
+  type CircuitBreakerHealthStatus,
+  type CircuitBreakerMetrics,
+  // Interfaces
+  type EnhancedErrorContext,
+  type ErrorAnalytics,
+  type ErrorHandlerConfig,
+  type ErrorRecoveryStrategy,
+} from './types';
 
 // Convenience re-exports for common use cases
-export { createLogger } from "../utils/logger";
-export { EnigmaError } from "../errors";
+export { EnigmaError } from '../utils/errors';
+export { createLogger } from '../utils/logger';
 
-import { ErrorHandlerConfig, ErrorSeverity, HealthStatus } from "./types";
-import { ErrorHandler, getErrorHandler } from "./errorHandler";
-import { CircuitBreakerRegistry } from "./circuitBreaker";
+import { CircuitBreakerRegistry } from './circuitBreaker';
+import { ErrorHandler, getErrorHandler } from './errorHandler';
+import { ErrorHandlerConfig, ErrorSeverity, HealthStatus } from './types';
 
 /**
  * Initialize error handling with default configuration
@@ -125,7 +118,7 @@ export function initializeErrorHandling(config?: Partial<ErrorHandlerConfig>) {
     exponentialBackoff: true,
     circuitBreakerEnabled: true,
     enableAnalytics: true,
-    logLevel: "info",
+    logLevel: 'info',
     alertThresholds: {
       [ErrorSeverity.CRITICAL]: 1,
       [ErrorSeverity.HIGH]: 5,
@@ -156,10 +149,7 @@ export function getSystemHealth() {
     circuitHealth.unhealthy > circuitHealth.healthy
   ) {
     overall = HealthStatus.UNHEALTHY;
-  } else if (
-    analytics.systemHealth === HealthStatus.DEGRADED ||
-    circuitHealth.degraded > 0
-  ) {
+  } else if (analytics.systemHealth === HealthStatus.DEGRADED || circuitHealth.degraded > 0) {
     overall = HealthStatus.DEGRADED;
   }
 
@@ -187,8 +177,8 @@ export async function shutdownErrorHandling(): Promise<void> {
     // Destroy all circuit breakers
     circuitRegistry.destroyAll();
 
-    console.log("Error handling system shutdown complete");
+    console.log('Error handling system shutdown complete');
   } catch (error) {
-    console.error("Error during error handling shutdown:", error);
+    console.error('Error during error handling shutdown:', error);
   }
 }

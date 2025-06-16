@@ -7,11 +7,11 @@
 
 /**
  * Optimization Cache Integration Layer
- * 
+ *
  * Provides seamless integration between the optimization cache and the existing
  * optimization pipeline. Handles storage and retrieval with fallback mechanisms
  * and ensures compatibility with all optimization workflows.
- * 
+ *
  * Features:
  * - Transparent cache integration with existing optimization flows
  * - Circuit breaker pattern for cache service unavailability
@@ -23,14 +23,14 @@
 
 import { EventEmitter } from 'events';
 import { performance } from 'perf_hooks';
-import { 
-  OptimizationCache, 
-  CachedOptimizationResult, 
+import type { EnigmaConfig } from '../config/config';
+import type { OptimizationResult } from '../output/assetHasher';
+import {
+  CachedOptimizationResult,
+  OptimizationCache,
   OptimizationCacheConfig,
-  getOptimizationCache 
+  getOptimizationCache,
 } from './optimizationCache';
-import type { EnigmaConfig } from './config';
-import type { OptimizationResult } from './output/assetHasher';
 
 /**
  * Circuit breaker states for cache availability
@@ -149,7 +149,7 @@ export class OptimizationCacheIntegration extends EventEmitter {
   ): Promise<CachedOptimizationResult | null> {
     const operationId = options.operationId || this.generateOperationId();
     const startTime = performance.now();
-    
+
     this.stats.getOperations++;
 
     // Create operation context
@@ -168,28 +168,31 @@ export class OptimizationCacheIntegration extends EventEmitter {
       // Check if cache should be bypassed
       if (context.bypassCache || !this.isCacheAvailable()) {
         this.stats.fallbackOperations++;
-        this.emit('cache-bypassed', { operationId, reason: context.bypassCache ? 'manual' : 'circuit-breaker' });
+        this.emit('cache-bypassed', {
+          operationId,
+          reason: context.bypassCache ? 'manual' : 'circuit-breaker',
+        });
         return null;
       }
 
       // Set operation timeout
       const timeoutPromise = this.createOperationTimeout(operationId);
-      
+
       // Attempt cache retrieval with timeout
       const retrievalPromise = this.performCacheRetrieval(context);
-      
+
       const result = await Promise.race([retrievalPromise, timeoutPromise]);
 
       if (result) {
         this.recordSuccessfulGet(startTime);
         this.handleCircuitBreakerSuccess();
-        this.emit('cache-hit', { 
-          operationId, 
+        this.emit('cache-hit', {
+          operationId,
           cacheKey: result.cacheKey,
           timeSaved: result.stats.optimizationTime,
-          hitCount: result.hitCount 
+          hitCount: result.hitCount,
         });
-        
+
         return result;
       } else {
         this.recordMissedGet(startTime);
@@ -197,12 +200,11 @@ export class OptimizationCacheIntegration extends EventEmitter {
         this.emit('cache-miss', { operationId, inputFiles });
         return null;
       }
-
     } catch (error) {
       this.handleCircuitBreakerFailure();
       this.recordFailedGet(startTime);
       this.emit('cache-error', { operationId, error, operation: 'get' });
-      
+
       // Fallback: return null to trigger normal optimization
       this.stats.fallbackOperations++;
       return null;
@@ -224,7 +226,7 @@ export class OptimizationCacheIntegration extends EventEmitter {
   ): Promise<boolean> {
     const operationId = options.operationId || this.generateOperationId();
     const startTime = performance.now();
-    
+
     this.stats.setOperations++;
 
     // Create operation context
@@ -248,33 +250,32 @@ export class OptimizationCacheIntegration extends EventEmitter {
 
       // Set operation timeout
       const timeoutPromise = this.createOperationTimeout(operationId);
-      
+
       // Attempt cache storage with timeout
       const storagePromise = this.performCacheStorage(context, result);
-      
+
       const success = await Promise.race([storagePromise, timeoutPromise]);
 
       if (success) {
         this.recordSuccessfulSet(startTime);
         this.handleCircuitBreakerSuccess();
-        this.emit('cache-stored', { 
-          operationId, 
-          inputFiles, 
+        this.emit('cache-stored', {
+          operationId,
+          inputFiles,
           size: this.estimateResultSize(result),
-          cacheKey: await this.cache.generateCacheKey(inputFiles, config, framework) 
+          cacheKey: await this.cache.generateCacheKey(inputFiles, config, framework),
         });
-        
+
         return true;
       } else {
         this.recordFailedSet(startTime);
         return false;
       }
-
     } catch (error) {
       this.handleCircuitBreakerFailure();
       this.recordFailedSet(startTime);
       this.emit('cache-error', { operationId, error, operation: 'set' });
-      
+
       // Graceful degradation: continue without caching
       return false;
     } finally {
@@ -310,7 +311,6 @@ export class OptimizationCacheIntegration extends EventEmitter {
 
       this.emit('cache-invalidated', { reason, files, config, count: invalidatedCount });
       return invalidatedCount;
-
     } catch (error) {
       this.handleCircuitBreakerFailure();
       this.emit('cache-error', { error, operation: 'invalidate' });
@@ -324,9 +324,10 @@ export class OptimizationCacheIntegration extends EventEmitter {
   getStats(): StorageRetrievalStats {
     return {
       ...this.stats,
-      hitRate: this.stats.getOperations > 0 
-        ? (this.stats.successfulGets / this.stats.getOperations) * 100 
-        : 0,
+      hitRate:
+        this.stats.getOperations > 0
+          ? (this.stats.successfulGets / this.stats.getOperations) * 100
+          : 0,
       circuitBreakerState: this.circuitBreakerState,
     };
   }
@@ -351,14 +352,16 @@ export class OptimizationCacheIntegration extends EventEmitter {
   /**
    * Perform actual cache retrieval
    */
-  private async performCacheRetrieval(context: OptimizationContext): Promise<CachedOptimizationResult | null> {
+  private async performCacheRetrieval(
+    context: OptimizationContext
+  ): Promise<CachedOptimizationResult | null> {
     const { inputFiles, config, framework } = context;
-    
+
     // Multi-layered cache check
     try {
       // Layer 1: Memory cache
       const result = await this.cache.get(inputFiles, config, framework);
-      
+
       if (result) {
         return result;
       }
@@ -366,7 +369,6 @@ export class OptimizationCacheIntegration extends EventEmitter {
       // Layer 2: If persistence is enabled, the cache manager handles disk cache internally
       // Layer 3: Return null to trigger fallback to original optimization
       return null;
-
     } catch (error) {
       // Log error and re-throw to trigger circuit breaker
       this.emit('cache-retrieval-error', { context, error });
@@ -378,11 +380,11 @@ export class OptimizationCacheIntegration extends EventEmitter {
    * Perform actual cache storage
    */
   private async performCacheStorage(
-    context: OptimizationContext, 
+    context: OptimizationContext,
     result: OptimizationResult
   ): Promise<boolean> {
     const { inputFiles, config, framework } = context;
-    
+
     try {
       return await this.cache.set(inputFiles, config, result, framework);
     } catch (error) {
@@ -396,11 +398,11 @@ export class OptimizationCacheIntegration extends EventEmitter {
    */
   private isCacheAvailable(): boolean {
     const now = Date.now();
-    
+
     switch (this.circuitBreakerState) {
       case 'closed':
         return true;
-        
+
       case 'open':
         // Check if enough time has passed to try half-open
         if (now - this.circuitBreakerLastFailureTime >= this.circuitBreakerConfig.resetTimeout) {
@@ -410,10 +412,10 @@ export class OptimizationCacheIntegration extends EventEmitter {
           return true;
         }
         return false;
-        
+
       case 'half-open':
         return true;
-        
+
       default:
         return false;
     }
@@ -447,7 +449,7 @@ export class OptimizationCacheIntegration extends EventEmitter {
   private handleCircuitBreakerSuccess(): void {
     if (this.circuitBreakerState === 'half-open') {
       this.circuitBreakerSuccessCount++;
-      
+
       if (this.circuitBreakerSuccessCount >= this.circuitBreakerConfig.successThreshold) {
         this.circuitBreakerState = 'closed';
         this.circuitBreakerFailureCount = 0;
@@ -468,7 +470,7 @@ export class OptimizationCacheIntegration extends EventEmitter {
       const timer = setTimeout(() => {
         reject(new Error(`Cache operation timeout for ${operationId}`));
       }, this.circuitBreakerConfig.operationTimeout);
-      
+
       this.operationTimers.set(operationId, timer);
     });
   }
@@ -546,7 +548,7 @@ export class OptimizationCacheIntegration extends EventEmitter {
   private updateAverageRetrievalTime(duration: number): void {
     const totalOperations = this.stats.getOperations;
     const currentAverage = this.stats.averageRetrievalTime;
-    this.stats.averageRetrievalTime = 
+    this.stats.averageRetrievalTime =
       (currentAverage * (totalOperations - 1) + duration) / totalOperations;
   }
 
@@ -556,7 +558,7 @@ export class OptimizationCacheIntegration extends EventEmitter {
   private updateAverageStorageTime(duration: number): void {
     const totalOperations = this.stats.setOperations;
     const currentAverage = this.stats.averageStorageTime;
-    this.stats.averageStorageTime = 
+    this.stats.averageStorageTime =
       (currentAverage * (totalOperations - 1) + duration) / totalOperations;
   }
 
@@ -629,4 +631,4 @@ export function createOptimizationCacheIntegration(
   cacheConfig?: Partial<OptimizationCacheConfig>
 ): OptimizationCacheIntegration {
   return new OptimizationCacheIntegration(cacheConfig);
-} 
+}

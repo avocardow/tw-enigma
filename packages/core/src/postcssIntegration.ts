@@ -10,26 +10,22 @@
  * Provides the main processor factory and CSS processing pipeline
  */
 
-import postcss, { /* Root - removed, not used */ type Result, type ProcessOptions } from "postcss";
-import { readFile, writeFile } from "fs/promises";
-import { createLogger } from "./utils/logger";
-import { createPluginMetrics } from "./core/postcssPlugin";
+import { readFile, writeFile } from 'fs/promises';
+import postcss, { type ProcessOptions, /* Root - removed, not used */ type Result } from 'postcss';
+import type { EnigmaConfig } from './config';
+import { createPluginMetrics } from './core/postcssPlugin';
+import type { FrequencyAnalysisResult } from './processors/patternAnalysis';
 import type {
-  ProcessorConfig,
-  ProcessingResult,
   // PluginConfig - removed, not used
   PluginContext,
   PluginManager,
   PluginUtils,
-  // EnigmaPlugin - removed, not used
-} from "./types/plugins";
-import type { EnigmaConfig } from "./config";
-import type {
-  FrequencyAnalysisResult,
+  ProcessingResult,
+  ProcessorConfig,
+} from './types/plugins';
+import { createLogger } from './utils/logger';
 
-} from "./patternAnalysis";
-
-const logger = createLogger("postcss-integration");
+const logger = createLogger('postcss-integration');
 
 /**
  * PostCSS processor for Enigma
@@ -50,11 +46,11 @@ export class EnigmaPostCSSProcessor {
     css: string,
     options: ProcessorConfig,
     frequencyData?: FrequencyAnalysisResult,
-    patternData?: any,
+    patternData?: any
   ): Promise<ProcessingResult> {
     const startTime = Date.now();
-    const pluginResults: ProcessingResult["pluginResults"] = [];
-    const warnings: ProcessingResult["warnings"] = [];
+    const pluginResults: ProcessingResult['pluginResults'] = [];
+    const warnings: ProcessingResult['warnings'] = [];
     const dependencies: string[] = [];
     let peakMemory = this.getMemoryUsage();
 
@@ -62,18 +58,16 @@ export class EnigmaPostCSSProcessor {
       // Validate and prepare plugins
       const enabledPlugins = options.plugins.filter((p) => p.enabled !== false);
       const validationResult = this.pluginManager.validateDependencies(
-        enabledPlugins.map((p) => p.name),
+        enabledPlugins.map((p) => p.name)
       );
 
       if (!validationResult.valid) {
-        throw new Error(
-          `Plugin validation failed: ${validationResult.errors.join(", ")}`,
-        );
+        throw new Error(`Plugin validation failed: ${validationResult.errors.join(', ')}`);
       }
 
       // Get execution order
       const executionOrder = this.pluginManager.getExecutionOrder(
-        enabledPlugins.map((p) => p.name),
+        enabledPlugins.map((p) => p.name)
       );
 
       // Create PostCSS plugins array
@@ -94,7 +88,7 @@ export class EnigmaPostCSSProcessor {
           const metrics = createPluginMetrics(pluginName);
 
           // Create plugin context
-          const context: Omit<PluginContext, "result"> = {
+          const context: Omit<PluginContext, 'result'> = {
             config: pluginConfig,
             frequencyData,
             patternData,
@@ -115,7 +109,7 @@ export class EnigmaPostCSSProcessor {
           // Wrap plugin to capture context
           let wrappedPlugin = null;
           if (postcssPlugin) {
-            if (typeof postcssPlugin === "function") {
+            if (typeof postcssPlugin === 'function') {
               wrappedPlugin = (postcssPlugin as any)({ context });
             } else {
               wrappedPlugin = postcssPlugin;
@@ -128,11 +122,8 @@ export class EnigmaPostCSSProcessor {
 
           logger.debug(`Added plugin ${pluginName} to processing pipeline`);
         } catch (error) {
-          const errorMessage =
-            error instanceof Error ? error.message : String(error);
-          logger.error(
-            `Failed to create plugin ${pluginName}: ${errorMessage}`,
-          );
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          logger.error(`Failed to create plugin ${pluginName}: ${errorMessage}`);
           warnings.push({
             plugin: pluginName,
             text: `Plugin creation failed: ${errorMessage}`,
@@ -146,20 +137,17 @@ export class EnigmaPostCSSProcessor {
         to: options.to,
         map: options.sourceMap
           ? {
-              inline: options.sourceMap === "inline",
-              annotation:
-                typeof options.sourceMap === "string"
-                  ? options.sourceMap
-                  : undefined,
+              inline: options.sourceMap === 'inline',
+              annotation: typeof options.sourceMap === 'string' ? options.sourceMap : undefined,
             }
           : false,
-        parser: typeof options.parser === "string" ? undefined : options.parser,
-        stringifier: typeof options.stringifier === "string" ? undefined : options.stringifier,
-        syntax: typeof options.syntax === "string" ? undefined : options.syntax,
+        parser: typeof options.parser === 'string' ? undefined : options.parser,
+        stringifier: typeof options.stringifier === 'string' ? undefined : options.stringifier,
+        syntax: typeof options.syntax === 'string' ? undefined : options.syntax,
       };
 
       // Process CSS
-      logger.debug("Starting PostCSS processing", {
+      logger.debug('Starting PostCSS processing', {
         pluginCount: postcssPlugins.length,
         options: processOptions,
       });
@@ -190,7 +178,7 @@ export class EnigmaPostCSSProcessor {
       // Collect warnings from PostCSS result
       result.warnings().forEach((warning) => {
         warnings.push({
-          plugin: warning.plugin || "postcss",
+          plugin: warning.plugin || 'postcss',
           text: warning.text,
           line: warning.line,
           column: warning.column,
@@ -199,14 +187,14 @@ export class EnigmaPostCSSProcessor {
 
       // Collect dependencies from messages
       result.messages.forEach((message) => {
-        if (message.type === "dependency" && message.file) {
+        if (message.type === 'dependency' && message.file) {
           dependencies.push(message.file);
         }
       });
 
       const totalTime = Date.now() - startTime;
 
-      logger.debug("PostCSS processing completed", {
+      logger.debug('PostCSS processing completed', {
         totalTime,
         warningCount: warnings.length,
         dependencyCount: dependencies.length,
@@ -227,12 +215,12 @@ export class EnigmaPostCSSProcessor {
       // Handle PostCSS-specific errors
       if (
         error &&
-        typeof error === "object" &&
-        "name" in error &&
-        error.name === "CssSyntaxError"
+        typeof error === 'object' &&
+        'name' in error &&
+        error.name === 'CssSyntaxError'
       ) {
         const cssError = error as any;
-        logger.error("CSS syntax error during processing", {
+        logger.error('CSS syntax error during processing', {
           message: cssError.message,
           line: cssError.line,
           column: cssError.column,
@@ -241,12 +229,12 @@ export class EnigmaPostCSSProcessor {
 
         throw new Error(
           `CSS Syntax Error: ${cssError.message}${
-            cssError.line ? ` at line ${cssError.line}` : ""
-          }${cssError.column ? `, column ${cssError.column}` : ""}`,
+            cssError.line ? ` at line ${cssError.line}` : ''
+          }${cssError.column ? `, column ${cssError.column}` : ''}`
         );
       }
 
-      logger.error("PostCSS processing failed", {
+      logger.error('PostCSS processing failed', {
         error: error instanceof Error ? error.message : String(error),
         totalTime,
       });
@@ -261,14 +249,14 @@ export class EnigmaPostCSSProcessor {
   async processFile(
     inputPath: string,
     outputPath: string,
-    options: Omit<ProcessorConfig, "from" | "to">,
+    options: Omit<ProcessorConfig, 'from' | 'to'>,
     frequencyData?: FrequencyAnalysisResult,
-    patternData?: any,
+    patternData?: any
   ): Promise<ProcessingResult> {
     try {
-      logger.debug("Processing CSS file", { inputPath, outputPath });
+      logger.debug('Processing CSS file', { inputPath, outputPath });
 
-      const css = await readFile(inputPath, "utf-8");
+      const css = await readFile(inputPath, 'utf-8');
 
       const result = await this.processCss(
         css,
@@ -278,22 +266,22 @@ export class EnigmaPostCSSProcessor {
           to: outputPath,
         },
         frequencyData,
-        patternData,
+        patternData
       );
 
       // Write output file
-      await writeFile(outputPath, result.css, "utf-8");
+      await writeFile(outputPath, result.css, 'utf-8');
 
       // Write source map if available
       if (result.map && options.outputSourceMap) {
         const mapPath =
-          typeof options.outputSourceMap === "string"
+          typeof options.outputSourceMap === 'string'
             ? options.outputSourceMap
             : `${outputPath}.map`;
-        await writeFile(mapPath, result.map, "utf-8");
+        await writeFile(mapPath, result.map, 'utf-8');
       }
 
-      logger.debug("CSS file processing completed", {
+      logger.debug('CSS file processing completed', {
         inputPath,
         outputPath,
         outputSize: result.css.length,
@@ -301,7 +289,7 @@ export class EnigmaPostCSSProcessor {
 
       return result;
     } catch (error) {
-      logger.error("File processing failed", {
+      logger.error('File processing failed', {
         inputPath,
         outputPath,
         error: error instanceof Error ? error.message : String(error),
@@ -314,7 +302,7 @@ export class EnigmaPostCSSProcessor {
    * Get current memory usage
    */
   private getMemoryUsage(): number {
-    if (typeof process !== "undefined" && process.memoryUsage) {
+    if (typeof process !== 'undefined' && process.memoryUsage) {
       return process.memoryUsage().heapUsed;
     }
     return 0;
@@ -326,7 +314,7 @@ export class EnigmaPostCSSProcessor {
  */
 export function createProcessor(
   pluginManager: PluginManager,
-  config: EnigmaConfig,
+  config: EnigmaConfig
 ): EnigmaPostCSSProcessor {
   return new EnigmaPostCSSProcessor(pluginManager, config);
 }
@@ -335,24 +323,24 @@ export function createProcessor(
  * Utility function to validate PostCSS processor configuration
  */
 export function validateProcessorConfig(config: unknown): ProcessorConfig {
-  if (!config || typeof config !== "object") {
-    throw new Error("Processor configuration must be an object");
+  if (!config || typeof config !== 'object') {
+    throw new Error('Processor configuration must be an object');
   }
 
   const typedConfig = config as any;
 
   if (!Array.isArray(typedConfig.plugins)) {
-    throw new Error("Processor configuration must include plugins array");
+    throw new Error('Processor configuration must include plugins array');
   }
 
   // Validate each plugin config
   typedConfig.plugins.forEach((plugin: unknown, index: number) => {
-    if (!plugin || typeof plugin !== "object") {
+    if (!plugin || typeof plugin !== 'object') {
       throw new Error(`Plugin at index ${index} must be an object`);
     }
 
     const typedPlugin = plugin as any;
-    if (!typedPlugin.name || typeof typedPlugin.name !== "string") {
+    if (!typedPlugin.name || typeof typedPlugin.name !== 'string') {
       throw new Error(`Plugin at index ${index} must have a string name`);
     }
   });
