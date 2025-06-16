@@ -29,7 +29,7 @@ const program = new Command();
 const packageInfo = getPackageInfo();
 const logger = createDefaultCliLogger();
 
-// Display banner
+// Display banner first, before any error handling
 displayBanner();
 
 // Configure main program
@@ -74,6 +74,7 @@ program
     console.log(`Core Version: ${coreVersion}`);
     console.log(`Node.js: ${process.version}`);
     console.log(`Platform: ${process.platform} ${process.arch}`);
+    process.exit(0);
   });
 
 // Add default action to handle when no subcommand is provided
@@ -137,7 +138,15 @@ program.action(async (options) => {
       chalk.cyan("💡 Tip: Run 'enigma init-config' to create a sample configuration file")
     );
   }
+
+  // Ensure successful exit code
+  process.exit(0);
 });
 
-// Parse command line arguments
-program.parse(process.argv);
+// Parse command line arguments with error handling
+try {
+  program.parse(process.argv);
+} catch (error) {
+  console.error(chalk.red('❌ CLI Error:'), error);
+  process.exit(1);
+}

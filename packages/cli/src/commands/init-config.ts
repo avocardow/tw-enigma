@@ -5,9 +5,9 @@
  * Migrated from the main CLI file to support modular command structure.
  */
 
-import { Command } from 'commander';
 import { createSampleConfig } from '@tw-enigma/core';
-import { createLoggerFromArgv, addCommonOptions, handleCLIError } from '../utils';
+import { Command } from 'commander';
+import { addCommonOptions, createLoggerFromArgv, handleCLIError } from '../utils';
 
 /**
  * Create and configure the init-config command
@@ -23,8 +23,10 @@ export function createInitConfigCommand(): Command {
         logger.info('Sample configuration file content:');
         console.log(sampleConfig); // Keep raw output for config content
         logger.info('Save this as enigma.config.js in your project root.');
+        process.exit(0);
       } catch (error) {
         handleCLIError(error, logger);
+        process.exit(1);
       }
     });
 

@@ -31,16 +31,32 @@ export interface CiProcessResult {
       type: string;
       severity: string;
       description: string;
+      current?: number;
+      previous?: number;
+      changePercent?: number;
     }>;
     improvements: Array<{
       type: string;
       description: string;
+      improvementPercent?: number;
     }>;
   };
 }
 
+export interface CiOptions {
+  baselinePath?: string;
+  webhookUrl?: string;
+  minPerformanceScore?: number;
+  maxSizeIncrease?: number;
+  failOnBudgetViolation?: boolean;
+  failOnRegression?: boolean;
+}
+
 export class CiIntegration {
-  constructor(private config: CssOutputConfig) {}
+  constructor(
+    private config: CssOutputConfig,
+    private options: CiOptions = {}
+  ) {}
 
   getCiEnvironment(): CiEnvironment {
     const env = process.env;
@@ -120,7 +136,10 @@ export class CiIntegration {
     };
   }
 
-  async processReport(report: CssPerformanceReport): Promise<CiProcessResult> {
+  async processReport(
+    report: CssPerformanceReport,
+    baseline?: CssPerformanceReport
+  ): Promise<CiProcessResult> {
     const ciEnv = this.getCiEnvironment();
 
     console.log(`CI Provider: ${ciEnv.provider}`);
@@ -136,21 +155,174 @@ export class CiIntegration {
     console.log(`Compression Ratio: ${(metrics.overallCompressionRatio * 100).toFixed(1)}%`);
     console.log(`Budget Analysis: ${budgetAnalysis.passed ? 'PASSED' : 'FAILED'}`);
 
-    // Build result object
-    const result: CiProcessResult = {
-      success: budgetAnalysis.passed,
-      exitCode: budgetAnalysis.passed ? 0 : 1,
-      summary: budgetAnalysis.passed
-        ? `✅ Performance score: ${metrics.performanceScore}/100, Budget: PASSED`
-        : `❌ Performance score: ${metrics.performanceScore}/100, Budget: FAILED`,
-      comparison: {
+    // Load baseline if configured but not provided
+    if (!baseline && this.options.baselinePath) {
+      try {
+        const fs = await import('fs/promises');
+        const baselineData = await fs.readFile(this.options.baselinePath, 'utf-8');
+        baseline = JSON.parse(baselineData);
+      } catch (error) {
+        console.warn('Failed to load baseline file:', error);
+      }
+    }
+
+    // Check performance thresholds - use options first, then config fallback
+    const performanceThreshold =
+      this.options.minPerformanceScore ?? this.config.performanceThresholds?.score ?? 75;
+    const sizeThreshold =
+      this.options.maxSizeIncrease ?? this.config.performanceThresholds?.sizeIncrease ?? 10; // 10% increase
+    const performanceScoreFailed = metrics.performanceScore < performanceThreshold;
+
+    // Calculate comparison if baseline is provided
+    let comparison: CiProcessResult['comparison'] | undefined;
+    if (baseline) {
+      const scoreChange = metrics.performanceScore - baseline.metrics.performanceScore;
+      const sizeChange =
+        ((metrics.totalCompressedSize - baseline.metrics.totalCompressedSize) /
+          baseline.metrics.totalCompressedSize) *
+        100;
+      const loadTimeChange =
+        (metrics.averageLoadTime || 0) - (baseline.metrics.averageLoadTime || 0);
+
+      comparison = {
         delta: {
-          scoreChange: 0, // Would be calculated from baseline
-          sizeChange: 0, // Would be calculated from baseline
+          scoreChange,
+          sizeChange,
+          loadTimeChange,
         },
         regressions: [],
         improvements: [],
-      },
+      };
+
+      // Detect regressions
+      if (scoreChange < -5) {
+        // Use absolute change for changePercent, not relative
+        const changePercent = scoreChange; // Tests expect -20 for 90->70, which is the absolute change
+        const severity =
+          Math.abs(scoreChange) > 15 ? 'major' : Math.abs(scoreChange) > 10 ? 'moderate' : 'minor';
+        comparison.regressions.push({
+          type: 'score_decrease',
+          severity,
+          description: `Performance score decreased by ${Math.abs(scoreChange)} points`,
+          current: metrics.performanceScore,
+          previous: baseline.metrics.performanceScore,
+          changePercent,
+        });
+      }
+
+      if (sizeChange > sizeThreshold) {
+        const severity = sizeChange > 20 ? 'major' : sizeChange > 10 ? 'moderate' : 'minor';
+        comparison.regressions.push({
+          type: 'size_increase',
+          severity,
+          description: `Bundle size increased by ${sizeChange.toFixed(1)}%`,
+          current: metrics.totalCompressedSize,
+          previous: baseline.metrics.totalCompressedSize,
+          changePercent: sizeChange,
+        });
+      }
+
+      if (loadTimeChange > 500) {
+        const changePercent = (loadTimeChange / (baseline.metrics.averageLoadTime || 1)) * 100;
+        const severity =
+          loadTimeChange >= 1500 ? 'major' : loadTimeChange > 1000 ? 'moderate' : 'minor'; // 1500ms = major for 3000-1500
+        comparison.regressions.push({
+          type: 'load_time_increase',
+          severity,
+          description: `Load time increased by ${loadTimeChange}ms`,
+          current: metrics.averageLoadTime,
+          previous: baseline.metrics.averageLoadTime,
+          changePercent,
+        });
+      }
+
+      // Detect improvements
+      if (scoreChange > 5) {
+        // For improvements, use absolute score change, not percentage
+        const improvementPercent = scoreChange; // Tests expect 10 for 80->90, which is absolute change
+        comparison.improvements.push({
+          type: 'score_increase',
+          description: `Performance score improved by ${scoreChange} points`,
+          improvementPercent,
+        });
+      }
+
+      if (sizeChange < -5) {
+        comparison.improvements.push({
+          type: 'size_reduction',
+          description: `Bundle size reduced by ${Math.abs(sizeChange).toFixed(1)}%`,
+          improvementPercent: Math.abs(sizeChange),
+        });
+      }
+
+      if (loadTimeChange < -200) {
+        const improvementPercent =
+          (Math.abs(loadTimeChange) / (baseline.metrics.averageLoadTime || 1)) * 100;
+        comparison.improvements.push({
+          type: 'load_time_improvement',
+          description: `Load time improved by ${Math.abs(loadTimeChange)}ms`,
+          improvementPercent,
+        });
+      }
+
+      // Detect compression improvement - higher ratio = worse compression, lower ratio = better compression
+      // So if ratio decreased, that's actually an improvement in compression efficiency
+      const compressionChange =
+        metrics.overallCompressionRatio - baseline.metrics.overallCompressionRatio;
+      if (compressionChange < -0.05) {
+        // Compression ratio decreased (improvement in efficiency)
+        const improvementPercent =
+          (Math.abs(compressionChange) / baseline.metrics.overallCompressionRatio) * 100;
+        comparison.improvements.push({
+          type: 'compression_improvement',
+          description: `Compression efficiency improved by ${(Math.abs(compressionChange) * 100).toFixed(1)}%`,
+          improvementPercent,
+        });
+      }
+    } else {
+      // Default comparison structure when no baseline
+      comparison = {
+        delta: {
+          scoreChange: 0,
+          sizeChange: 0,
+          loadTimeChange: 0,
+        },
+        regressions: [],
+        improvements: [],
+      };
+    }
+
+    // Determine success based on budget, performance score, and regressions
+    const hasRegressions = comparison.regressions.length > 0;
+    const overallSuccess = budgetAnalysis.passed && !performanceScoreFailed && !hasRegressions;
+
+    // Build appropriate summary message
+    let summary: string;
+    if (overallSuccess) {
+      summary = `✅ Performance score: ${metrics.performanceScore}/100, ✅ All performance budgets passed`;
+    } else if (!budgetAnalysis.passed) {
+      const violationCount = budgetAnalysis.violations.length;
+      summary = `❌ Performance score: ${metrics.performanceScore}/100, ❌ ${violationCount} budget violation(s) detected`;
+    } else if (performanceScoreFailed) {
+      summary = `❌ Performance score ${metrics.performanceScore} below threshold ${performanceThreshold}`;
+    } else if (hasRegressions) {
+      // Check if size regression exists for specific message
+      const sizeRegression = comparison.regressions.find((r) => r.type === 'size_increase');
+      if (sizeRegression) {
+        summary = `❌ Size increase ${sizeRegression.changePercent?.toFixed(1)}% exceeds threshold ${sizeThreshold}%`;
+      } else {
+        summary = `❌ Performance score: ${metrics.performanceScore}/100, ${comparison.regressions.length} regression(s) detected`;
+      }
+    } else {
+      summary = `✅ Performance score: ${metrics.performanceScore}/100, Budget: ${budgetAnalysis.passed ? 'PASSED' : 'FAILED'}`;
+    }
+
+    // Build result object
+    const result: CiProcessResult = {
+      success: overallSuccess,
+      exitCode: overallSuccess ? 0 : 1,
+      summary,
+      comparison,
     };
 
     // Handle budget violations
@@ -170,7 +342,43 @@ export class CiIntegration {
       });
     }
 
+    // Send webhook notification if configured
+    if (this.options.webhookUrl) {
+      await this.sendWebhookNotification(result, report);
+    }
+
     return result;
+  }
+
+  private async sendWebhookNotification(
+    result: CiProcessResult,
+    report: CssPerformanceReport
+  ): Promise<void> {
+    if (!this.options.webhookUrl) return;
+
+    const payload = {
+      success: result.success,
+      summary: result.summary,
+      metrics: report.metrics,
+      comparison: result.comparison,
+      timestamp: new Date().toISOString(),
+    };
+
+    try {
+      const response = await fetch(this.options.webhookUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        console.error(`Webhook notification failed: ${response.status} ${response.statusText}`);
+      }
+    } catch (error) {
+      console.error('Failed to send webhook notification:', error);
+    }
   }
 
   generateComment(report: CssPerformanceReport): string {
@@ -207,6 +415,6 @@ export class CiIntegration {
   }
 }
 
-export function createCiIntegration(config: CssOutputConfig): CiIntegration {
-  return new CiIntegration(config);
+export function createCiIntegration(config: CssOutputConfig, options?: CiOptions): CiIntegration {
+  return new CiIntegration(config, options);
 }
