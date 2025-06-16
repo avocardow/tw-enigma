@@ -56,9 +56,20 @@ export interface ReporterStats {
   lastReportTime?: number;
 }
 
+export interface ReportData {
+  originalSize?: number;
+  optimizedSize?: number;
+  compressedSize?: number;
+  executionTime?: number;
+  memoryUsage?: number;
+  filesProcessed?: number;
+  patterns?: unknown[];
+  [key: string]: unknown;
+}
+
 export default class Reporter {
   public config: Required<ReporterConfig>;
-  private reports: any[] = [];
+  private reports: ReportData[] = [];
   private startTime: number;
 
   constructor(config: ReporterConfig = {}) {
@@ -76,7 +87,7 @@ export default class Reporter {
     this.startTime = Date.now();
   }
 
-  getReports(): any[] {
+  getReports(): ReportData[] {
     return [...this.reports]; // Return a copy to prevent mutation
   }
 
@@ -126,7 +137,7 @@ export default class Reporter {
     };
   }
 
-  calculateOptimizationSavings(fileData: any): OptimizationSavings {
+  calculateOptimizationSavings(fileData: ReportData): OptimizationSavings {
     const files = fileData.files || [];
 
     if (files.length === 0) {
@@ -139,7 +150,9 @@ export default class Reporter {
       };
     }
 
-    const savings = files.map((file: any) => file.originalSize - file.optimizedSize);
+    const savings = (files as unknown[]).map(
+      (file: Record<string, number>) => file.originalSize - file.optimizedSize
+    );
     const totalSavings = savings.reduce((sum: number, saving: number) => sum + saving, 0);
     const averageSavings = totalSavings / files.length;
     const maxSavings = Math.max(...savings);
@@ -154,7 +167,7 @@ export default class Reporter {
     };
   }
 
-  generatePatternStats(data: any): PatternStats[] {
+  generatePatternStats(data: ReportData): PatternStats[] {
     const patterns = data.patterns || [];
 
     // Handle corrupted patterns data gracefully
@@ -164,8 +177,8 @@ export default class Reporter {
 
     try {
       return patterns
-        .filter((pattern: any) => pattern && typeof pattern === 'object') // Filter out invalid patterns
-        .map((pattern: any) => ({
+        .filter((pattern: unknown) => pattern && typeof pattern === 'object') // Filter out invalid patterns
+        .map((pattern: Record<string, unknown>) => ({
           patternName: pattern.name || 'Unknown Pattern',
           frequency: pattern.frequency || 0,
           sizeSavings: pattern.sizeSavings || 0,
@@ -174,22 +187,23 @@ export default class Reporter {
           size: pattern.size || 0,
         }))
         .sort((a: PatternStats, b: PatternStats) => b.sizeSavings - a.sizeSavings); // Sort by savings descending
-    } catch (error) {
+    } catch {
       // Gracefully handle any errors during pattern processing
       return [];
     }
   }
 
-  calculatePatternEfficiency(pattern: any): number {
+  calculatePatternEfficiency(pattern: Record<string, unknown>): number {
     if (pattern.frequency === 0 || pattern.size === 0) {
       return 0;
     }
 
-    const efficiency = pattern.sizeSavings / pattern.frequency / pattern.size;
+    const efficiency =
+      (pattern.sizeSavings as number) / (pattern.frequency as number) / (pattern.size as number);
     return Math.min(efficiency, 1.0); // Cap at 1.0
   }
 
-  addReport(report: any): void {
+  addReport(report: ReportData): void {
     const reportWithTimestamp = {
       ...report,
       timestamp: Date.now(),
@@ -197,7 +211,7 @@ export default class Reporter {
     this.reports.push(reportWithTimestamp);
   }
 
-  generateSummary(data: any): string {
+  generateSummary(data: ReportData): string {
     const sizeReduction = this.calculateSizeReductions(
       data.originalSize || 0,
       data.optimizedSize || 0,
