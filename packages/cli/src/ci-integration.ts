@@ -167,10 +167,8 @@ export class CiIntegration {
     }
 
     // Check performance thresholds - use options first, then config fallback
-    const performanceThreshold =
-      this.options.minPerformanceScore ?? this.config.performanceThresholds?.score ?? 75;
-    const sizeThreshold =
-      this.options.maxSizeIncrease ?? this.config.performanceThresholds?.sizeIncrease ?? 10; // 10% increase
+    const performanceThreshold = this.options.minPerformanceScore ?? 75;
+    const sizeThreshold = this.options.maxSizeIncrease ?? 10; // 10% increase
     const performanceScoreFailed = metrics.performanceScore < performanceThreshold;
 
     // Calculate comparison if baseline is provided

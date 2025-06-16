@@ -63,7 +63,9 @@ export interface ReportData {
   executionTime?: number;
   memoryUsage?: number;
   filesProcessed?: number;
-  patterns?: unknown[];
+  patterns?: Array<Record<string, unknown>>;
+  files?: Array<Record<string, number>>;
+  timestamp?: number;
   [key: string]: unknown;
 }
 
@@ -150,9 +152,7 @@ export default class Reporter {
       };
     }
 
-    const savings = (files as unknown[]).map(
-      (file: Record<string, number>) => file.originalSize - file.optimizedSize
-    );
+    const savings = files.map((file) => file.originalSize - file.optimizedSize);
     const totalSavings = savings.reduce((sum: number, saving: number) => sum + saving, 0);
     const averageSavings = totalSavings / files.length;
     const maxSavings = Math.max(...savings);
@@ -178,13 +178,13 @@ export default class Reporter {
     try {
       return patterns
         .filter((pattern: unknown) => pattern && typeof pattern === 'object') // Filter out invalid patterns
-        .map((pattern: Record<string, unknown>) => ({
-          patternName: pattern.name || 'Unknown Pattern',
-          frequency: pattern.frequency || 0,
-          sizeSavings: pattern.sizeSavings || 0,
-          efficiency: this.calculatePatternEfficiency(pattern),
-          type: pattern.type || 'utility',
-          size: pattern.size || 0,
+        .map((pattern) => ({
+          patternName: ((pattern as any).name as string) || 'Unknown Pattern',
+          frequency: ((pattern as any).frequency as number) || 0,
+          sizeSavings: ((pattern as any).sizeSavings as number) || 0,
+          efficiency: this.calculatePatternEfficiency(pattern as Record<string, unknown>),
+          type: ((pattern as any).type as string) || 'utility',
+          size: ((pattern as any).size as number) || 0,
         }))
         .sort((a: PatternStats, b: PatternStats) => b.sizeSavings - a.sizeSavings); // Sort by savings descending
     } catch {
