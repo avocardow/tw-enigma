@@ -1,54 +1,158 @@
 # Task ID: 11
-# Title: Develop CSS generation with @apply directives
-# Status: done
-# Dependencies: 8, 9, 10, 20
-# Priority: high
-# Description: Create a system to generate CSS rules using Tailwind's @apply directive for optimized patterns.
+# Title: Create Comprehensive Documentation
+# Status: pending
+# Dependencies: 5, 6, 7, 8
+# Priority: medium
+# Description: Develop detailed documentation for the monorepo structure, development workflows, and package usage.
 # Details:
-1. Create src/cssGeneration.js
-2. Implement function to generate CSS rules
-3. Use @apply directive for each optimized pattern
-4. Handle single-class and multi-class patterns
-5. Implement sorting for consistent output
-6. Add comments for traceability
+1. Create a comprehensive README.md at the root:
+```md
+# tw-enigma Monorepo
+
+[![CI](https://github.com/your-org/tw-enigma/actions/workflows/ci.yml/badge.svg)](https://github.com/your-org/tw-enigma/actions/workflows/ci.yml)
+
+Monorepo for tw-enigma CSS optimization tools.
+
+## Packages
+
+- [@tw-enigma/core](./packages/core) - CSS optimization engine
+- [@tw-enigma/cli](./packages/cli) - Command-line interface
+
+## Development
+
+### Prerequisites
+
+- Node.js >= 18.0.0
+- pnpm >= 7.0.0
+
+### Setup
+
+```bash
+# Install dependencies
+pnpm install
+
+# Build all packages
+pnpm build
+
+# Run tests
+pnpm test
+```
+
+### Workflow
+
+- Work on a specific package: `pnpm --filter @tw-enigma/core dev`
+- Run tests for a specific package: `pnpm --filter @tw-enigma/cli test`
+- Lint all packages: `pnpm lint`
+
+## Contributing
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for details.
+```
+2. Create package-specific README.md files
+3. Create a CONTRIBUTING.md guide:
+```md
+# Contributing to tw-enigma
+
+## Monorepo Structure
+
+This project uses a monorepo structure with pnpm workspaces and Turborepo:
+
+- `packages/core`: The CSS optimization engine
+- `packages/cli`: Command-line interface
+
+## Development Workflow
+
+1. Fork and clone the repository
+2. Install dependencies: `pnpm install`
+3. Build all packages: `pnpm build`
+4. Make your changes in the appropriate package
+5. Run tests: `pnpm test`
+6. Submit a pull request
+
+## Package Development
+
+### Working on a specific package
+
+```bash
+# Start development mode for a specific package
+pnpm --filter @tw-enigma/core dev
+
+# Run tests for a specific package
+pnpm --filter @tw-enigma/cli test
+```
+
+## Release Process
+
+Releases are managed through GitHub Actions when tags are pushed.
+```
+4. Create API documentation for each package
+5. Add examples and usage guides
+6. Document the monorepo architecture and design decisions
+7. Create a CHANGELOG.md file
+8. Add license information
+9. Document private package development workflow (without revealing proprietary details)
 
 # Test Strategy:
-Unit tests for various pattern inputs and generated CSS validity
+1. Verify all documentation files for accuracy
+2. Test documentation examples to ensure they work as described
+3. Review documentation for completeness and clarity
+4. Validate links between documentation files
+5. Ensure documentation reflects the actual project structure
+6. Check that all commands and workflows described actually work
+7. Have team members review documentation for usability
 
 # Subtasks:
-## 1. Set Up File Structure and Boilerplate [done]
+## 1. Draft Root README [pending]
 ### Dependencies: None
-### Description: Create the necessary files and directories for CSS generation, including base CSS files, configuration files, and pattern definition files.
+### Description: Create a comprehensive README for the root of the repository, outlining the project overview, goals, and high-level structure.
 ### Details:
-Establish a clear directory structure for source, generated, and test files. Initialize boilerplate code for CSS processing and ensure all dependencies are installed.
+Include project purpose, main features, directory structure, and links to subpackage documentation.
 
-## 2. Implement CSS Rule Generation Logic [done]
+## 2. Draft Package READMEs [pending]
 ### Dependencies: 11.1
-### Description: Develop the core logic to generate CSS rules from pattern definitions, ensuring correct selector and property formatting.
+### Description: Write individual README files for each package, detailing their specific purpose, features, and usage.
 ### Details:
-Map pattern definitions to CSS selectors and property-value pairs. Ensure generated rules follow best practices for specificity and formatting, including multi-line and single-line ruleblock conventions.
+Ensure each package README includes installation instructions, usage examples, and links to relevant documentation.
 
-## 3. Integrate @apply Directive Handling [done]
+## 3. Write Contributing Guidelines [pending]
+### Dependencies: 11.1
+### Description: Develop a CONTRIBUTING.md file describing how to contribute to the project, including code standards, pull request process, and issue reporting.
+### Details:
+Outline code style, branching strategy, review process, and communication channels.
+
+## 4. Document API Reference [pending]
 ### Dependencies: 11.2
-### Description: Add support for the @apply directive within generated CSS, enabling utility class composition where required.
+### Description: Generate or write API documentation for all public modules and functions.
 ### Details:
-Detect when @apply should be used based on pattern type or configuration. Insert @apply statements into the appropriate CSS rules, ensuring valid syntax and compatibility.
+Use automated tools where possible and supplement with manual explanations for clarity.
 
-## 4. Handle Multiple Pattern Types [done]
-### Dependencies: 11.3
-### Description: Expand logic to support various pattern types (e.g., atomic, utility, component), ensuring each is processed and output correctly.
+## 5. Add Usage Examples [pending]
+### Dependencies: 11.2, 11.4
+### Description: Create clear and practical usage examples for each package and the root project.
 ### Details:
-Implement branching or modular code to process different pattern types. Validate that each type results in the correct CSS structure and usage of @apply where applicable.
+Include code snippets and expected outputs to help users understand how to use the software.
 
-## 5. Implement Sorting of CSS Rules and Declarations [done]
-### Dependencies: 11.4
-### Description: Sort generated CSS rules and their declarations according to best practices, such as context or specificity, to ensure maintainability and override predictability.
+## 6. Document Architecture [pending]
+### Dependencies: 11.1, 11.2
+### Description: Write documentation explaining the overall architecture, design decisions, and key components.
 ### Details:
-Apply sorting algorithms to order rules and declarations. Follow conventions such as sorting by context in descending order and grouping related rules logically.
+Include diagrams and rationale for major design choices to aid maintainability and onboarding.
 
-## 6. Add and Validate Comments in Generated CSS [done]
-### Dependencies: 11.5
-### Description: Insert informative comments into the generated CSS to clarify sections, rule purposes, and non-obvious logic, following formatting guidelines.
+## 7. Create and Maintain Changelogs [pending]
+### Dependencies: 11.1, 11.2
+### Description: Establish CHANGELOG.md files at the root and package levels to track notable changes, enhancements, and bug fixes.
 ### Details:
-Ensure comments are placed according to multi-line and single-line ruleblock conventions. Validate that comments enhance readability without cluttering the output.
+Follow semantic versioning and document changes for each release.
+
+## 8. Add License Information [pending]
+### Dependencies: 11.1, 11.2
+### Description: Include LICENSE files and document license details in READMEs for both root and packages.
+### Details:
+Ensure license type, copyright, and usage terms are clearly stated.
+
+## 9. Document Private Package Workflow [pending]
+### Dependencies: 11.2, 11.3, 11.7, 11.8
+### Description: Write documentation on the workflow for developing, publishing, and consuming private packages within the project.
+### Details:
+Cover authentication, access control, versioning, and internal distribution practices.
 

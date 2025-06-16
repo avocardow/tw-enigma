@@ -1,54 +1,139 @@
 # Task ID: 4
-# Title: Implement file discovery with glob
-# Status: done
-# Dependencies: 3
+# Title: Create CLI Package Structure
+# Status: pending
+# Dependencies: 2
 # Priority: high
-# Description: Create a system to discover HTML and JS files based on configurable patterns using glob.
+# Description: Set up the @tw-enigma/cli package with proper configuration, directory structure, and package.json setup.
 # Details:
-1. Install glob: npm install glob@10.2.7
-2. Create src/fileDiscovery.js
-3. Implement function to discover files based on patterns
-4. Handle multiple source patterns from config
-5. Implement filtering for HTML and JS files
-6. Add error handling for invalid patterns or no files found
+1. Create the CLI package structure:
+```
+packages/cli/
+├── src/
+├── bin/
+│   └── enigma.ts
+├── tests/
+├── package.json
+├── tsconfig.json
+├── tsup.config.ts
+└── README.md
+```
+2. Configure package.json for CLI:
+```json
+{
+  "name": "@tw-enigma/cli",
+  "version": "0.1.0",
+  "description": "Command-line interface for tw-enigma CSS optimization",
+  "bin": {
+    "enigma": "dist/bin/enigma.js"
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint src bin --ext .ts"
+  },
+  "dependencies": {
+    "@tw-enigma/core": "workspace:*",
+    "commander": "^11.0.0",
+    "chalk": "^5.3.0"
+  },
+  "keywords": ["cli", "css", "optimization", "tailwind"],
+  "publishConfig": {
+    "access": "public"
+  }
+}
+```
+3. Create tsconfig.json for CLI that extends the base config:
+```json
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./"
+  },
+  "include": ["src/**/*", "bin/**/*"]
+}
+```
+4. Create tsup.config.ts for CLI:
+```ts
+import { defineConfig } from 'tsup';
+
+export default defineConfig({
+  entry: ['src/index.ts', 'bin/enigma.ts'],
+  format: ['cjs'],
+  dts: true,
+  splitting: false,
+  sourcemap: true,
+  clean: true,
+  banner: {
+    js: '#!/usr/bin/env node',
+  },
+});
+```
+5. Create a basic bin/enigma.ts file as a placeholder:
+```ts
+#!/usr/bin/env node
+import { Command } from 'commander';
+import { version } from '../src';
+
+const program = new Command();
+
+program
+  .version(version)
+  .description('tw-enigma CSS optimization tool')
+  .parse(process.argv);
+```
+6. Create a basic src/index.ts file:
+```ts
+export const version = '0.1.0';
+
+// CLI utilities will be exported here
+```
 
 # Test Strategy:
-Unit tests with mock file system for various discovery scenarios
+1. Verify package directory structure is created correctly
+2. Validate package.json configuration
+3. Test build process with `pnpm --filter @tw-enigma/cli build`
+4. Ensure the CLI binary is executable after building
+5. Test the CLI with `node packages/cli/dist/bin/enigma.js --version`
+6. Verify workspace dependency resolution between CLI and core packages
 
 # Subtasks:
-## 1. Install and Configure Glob Library [done]
+## 1. Create CLI Package Directory Structure [pending]
 ### Dependencies: None
-### Description: Set up the project environment and install the glob library required for file pattern matching. Ensure the library is correctly added to the project dependencies and verify installation.
+### Description: Set up the initial directory structure for the CLI package, including main folders and placeholder files.
 ### Details:
-Run the appropriate package manager command (e.g., npm install glob or pip install glob). Update project documentation to reflect the new dependency. Confirm installation by importing and running a basic glob pattern match in a test script.
+Create the root directory for the CLI package. Inside it, create subdirectories such as 'bin' for executables and 'src' for source files. Add placeholder files like 'bin/cli.js' and 'src/cli.ts' to establish the structure.[5]
 
-## 2. Implement Basic File Discovery Using Glob Patterns [done]
+## 2. Initialize and Configure package.json [pending]
 ### Dependencies: 4.1
-### Description: Develop the core logic to discover files matching a single glob pattern. Ensure the implementation can traverse directories and return matching file paths.
+### Description: Initialize the Node.js project and configure package.json with the necessary fields for a CLI tool.
 ### Details:
-Write a function that accepts a glob pattern and returns a list of matching files. Test with simple patterns (e.g., *.txt, **/*.py) to ensure correct file discovery. Validate results against known directory structures.
+Run 'npm init --yes' to generate package.json. Add the 'bin' field to map the CLI command to the executable file (e.g., 'bin/cli.js'). Set the 'type' field to 'module' if using ES modules. Add other relevant metadata as needed.[5]
 
-## 3. Support Multiple Glob Patterns for File Discovery [done]
+## 3. Set Up TypeScript Configuration [pending]
 ### Dependencies: 4.2
-### Description: Extend the file discovery logic to handle multiple glob patterns in a single invocation, aggregating and deduplicating results.
+### Description: Add and configure TypeScript for the CLI package.
 ### Details:
-Modify the discovery function to accept an array of patterns. Implement logic to combine results from each pattern, ensuring no duplicate file paths are returned. Add tests for overlapping and non-overlapping patterns.
+Install TypeScript and create a 'tsconfig.json' file. Configure it to output compiled JavaScript files to a 'dist' directory, and ensure the 'src' directory is included as the source root.
 
-## 4. Implement File Type Filtering [done]
+## 4. Configure Build Scripts [pending]
 ### Dependencies: 4.3
-### Description: Add functionality to filter discovered files by specific file types or extensions after glob matching.
+### Description: Add build scripts to package.json to compile TypeScript sources.
 ### Details:
-Introduce parameters for file type filtering (e.g., by extension or MIME type). Apply filtering after initial discovery. Write tests to confirm only files of the specified type(s) are returned.
+Add a 'build' script in package.json that runs the TypeScript compiler (e.g., 'tsc'). Optionally, add a 'prepublishOnly' script to ensure the CLI is built before publishing.
 
-## 5. Develop Robust Error Handling for File Discovery [done]
+## 5. Add Placeholder CLI Implementation Files [pending]
 ### Dependencies: 4.4
-### Description: Implement comprehensive error handling for invalid patterns, inaccessible directories, and unexpected runtime errors during file discovery.
+### Description: Create initial CLI implementation files with basic placeholder code.
 ### Details:
-Identify potential failure points (e.g., malformed patterns, permission errors). Add try-catch or equivalent error handling. Return meaningful error messages or codes. Write tests to simulate and validate error scenarios.
+Add minimal code to 'src/cli.ts' and 'bin/cli.js' (or their equivalents) to allow the CLI to execute and print a simple message. Ensure the bin file has the appropriate shebang line for Node.js execution.
 
-## 6. Test, Validate, and Document File Discovery Functionality [done]
+## 6. Validate CLI Build and Execution [pending]
 ### Dependencies: 4.5
-### Description: Perform end-to-end testing of all implemented features, validate correctness, and document usage and limitations.
+### Description: Test the build process and verify that the CLI can be executed successfully.
 ### Details:
-Create comprehensive test cases covering single/multiple patterns, file type filtering, and error scenarios. Validate results against expected outputs. Update project documentation with usage examples, configuration options, and troubleshooting tips.
+Run the build script to compile TypeScript sources. Test the CLI by running it via 'node bin/cli.js' or by linking the package locally with 'npm link' and invoking the CLI command. Confirm that the placeholder output appears as expected.
 

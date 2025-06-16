@@ -1,54 +1,133 @@
 # Task ID: 8
-# Title: Create pattern frequency map generation
-# Status: done
-# Dependencies: 6, 7, 20
-# Priority: high
-# Description: Develop a system to generate a frequency map of class patterns from extracted data.
+# Title: Set Up Private Package Infrastructure
+# Status: pending
+# Dependencies: 1, 2
+# Priority: medium
+# Description: Create a secure foundation for proprietary package development without compromising the open-source repository.
 # Details:
-1. Create src/patternAnalysis.js
-2. Implement function to process extracted classes
-3. Generate Map<string, number> for pattern frequencies
-4. Handle single classes and multi-class patterns
-5. Implement sorting by frequency for optimization
-6. Add threshold for minimum frequency to consider
+1. Create a packages-private directory at the root of the monorepo
+2. Update .gitignore to exclude private packages:
+```
+# Private packages - NEVER COMMIT
+packages-private/
+**/packages-private/
+```
+3. Create a template for private packages:
+```
+packages-private/scramble/
+├── src/
+├── tests/
+├── package.json
+├── tsconfig.json
+└── README.md
+```
+4. Create a local-only pnpm-workspace.yaml.local file that includes private packages:
+```yaml
+packages:
+  - 'packages/*'
+  - 'packages-private/*'
+```
+5. Add instructions in the README.md for local private package development:
+```md
+## Private Package Development
+
+To develop private packages locally:
+
+1. Create a directory under `packages-private/`
+2. Copy `pnpm-workspace.yaml` to `pnpm-workspace.yaml.local` and add `- 'packages-private/*'` to the packages array
+3. Run `cp pnpm-workspace.yaml.local pnpm-workspace.yaml` (DO NOT COMMIT this change)
+4. Run `pnpm install` to update workspace
+5. Develop your private package
+6. Before committing, run `cp pnpm-workspace.yaml.original pnpm-workspace.yaml` to restore
+```
+6. Create a pre-commit hook to prevent accidental commits of private packages or modified workspace config:
+```sh
+#!/bin/sh
+
+if git diff --cached --name-only | grep -q "packages-private/"; then
+  echo "Error: Attempting to commit files from packages-private/ directory"
+  exit 1
+fi
+
+if git diff --cached --name-only | grep -q "pnpm-workspace.yaml" && grep -q "packages-private" pnpm-workspace.yaml; then
+  echo "Error: Attempting to commit pnpm-workspace.yaml with private packages"
+  exit 1
+fi
+
+exit 0
+```
+7. Create a sample private package package.json:
+```json
+{
+  "name": "@tw-enigma/scramble",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Proprietary extension for tw-enigma",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "lint": "eslint src --ext .ts"
+  },
+  "dependencies": {
+    "@tw-enigma/core": "workspace:*"
+  }
+}
+```
 
 # Test Strategy:
-Unit tests for various input scenarios and frequency calculations
+1. Verify .gitignore correctly excludes packages-private directory
+2. Test the pre-commit hook with a dummy private package file
+3. Validate that the local workspace configuration works with private packages
+4. Test building a sample private package that depends on @tw-enigma/core
+5. Verify that private packages don't appear in the git status
+6. Test the workflow for switching between public and private development
+7. Ensure private package tests can run in isolation
 
 # Subtasks:
-## 1. Set Up Data Structures for Class Extraction [done]
+## 1. Create Private Packages Directory [pending]
 ### Dependencies: None
-### Description: Design and implement data structures to store and represent extracted classes and their occurrences from the input data.
+### Description: Set up a dedicated directory within the project structure to store private packages, ensuring clear separation from public or shared code.
 ### Details:
-Define appropriate data types (e.g., arrays, hash maps, or objects) to hold class labels and their associated metadata. Ensure compatibility with downstream processing steps.
+Decide on a directory name (e.g., 'private_packages' or 'src/private') and create it in the repository. Ensure it is structured to support package development and distribution best practices.
 
-## 2. Implement Frequency Map Generation [done]
+## 2. Update .gitignore to Exclude Private Packages [pending]
 ### Dependencies: 8.1
-### Description: Develop logic to iterate through the extracted classes and count the frequency of each class, storing the results in a frequency map.
+### Description: Modify the .gitignore file to prevent accidental commits of private packages or sensitive files to the public repository.
 ### Details:
-Traverse the data structure containing extracted classes, incrementing counts in a hash map or similar structure for each class encountered. Validate that all classes are accounted for and frequencies are accurate.
+Add the private packages directory and any related build artifacts or sensitive files to .gitignore. Double-check for patterns that might miss subdirectories or hidden files.
 
-## 3. Handle Multi-Class Patterns [done]
-### Dependencies: 8.2
-### Description: Extend frequency mapping and data structures to support and correctly process cases where multiple classes are present in a single data instance.
+## 3. Create Package and Workflow Templates [pending]
+### Dependencies: 8.1
+### Description: Develop templates for new private packages and for common workflows to standardize development and reduce errors.
 ### Details:
-Update extraction and counting logic to handle lists or sets of classes per instance. Ensure that frequency counts reflect all class occurrences, including those in multi-class patterns.
+Include template files such as README.md, setup.py/pyproject.toml, and example module files. Provide workflow templates for building, testing, and publishing packages.
 
-## 4. Sort Classes by Frequency [done]
-### Dependencies: 8.3
-### Description: Implement sorting of classes based on their frequency, supporting both ascending and descending order as required.
+## 4. Configure Local Workspace Files [pending]
+### Dependencies: 8.1
+### Description: Set up local configuration files to ensure the development environment recognizes and properly handles the private packages directory.
 ### Details:
-Use the frequency map to generate a sorted list or array of classes. Implement sorting logic that can handle ties (e.g., secondary sort by class label) and is optimized for performance with large datasets.
+Update IDE settings, virtual environment configurations, and dependency management files (e.g., requirements.txt, pip.conf, or poetry.toml) to include the private packages directory.
 
-## 5. Apply Frequency Thresholding [done]
-### Dependencies: 8.4
-### Description: Develop logic to filter classes based on configurable frequency thresholds, retaining only those classes that meet the specified criteria.
+## 5. Document the Workflow [pending]
+### Dependencies: 8.3, 8.4
+### Description: Create comprehensive documentation outlining the process for developing, testing, and publishing private packages, as well as guidelines for maintaining security.
 ### Details:
-Allow for dynamic threshold input (e.g., minimum or maximum frequency). Ensure that the filtering step is robust and integrates seamlessly with the sorted class list.
+Include step-by-step instructions, diagrams if helpful, and security best practices. Ensure documentation is accessible and kept up to date.
 
-## 6. Test and Validate Processing Pipeline [done]
-### Dependencies: 8.5
-### Description: Design and execute comprehensive tests to verify the correctness and robustness of class extraction, frequency mapping, multi-class handling, sorting, and thresholding.
+## 6. Add Pre-commit Hooks [pending]
+### Dependencies: 8.2, 8.5
+### Description: Implement pre-commit hooks to enforce repository policies, such as preventing accidental commits of private packages or sensitive files.
 ### Details:
-Create unit and integration tests covering edge cases (e.g., empty input, all unique classes, all identical classes, multi-class overlaps). Validate outputs against expected results and document test coverage.
+Configure tools like pre-commit or custom git hooks to check for forbidden files, enforce code standards, and validate commit messages before allowing commits.
+
+## 7. Validate the Setup [pending]
+### Dependencies: None
+### Description: Test the entire setup to ensure that private packages are properly isolated, .gitignore rules are effective, templates and hooks work as intended, and documentation is clear.
+### Details:
+Perform dry runs of the workflow, attempt to commit forbidden files, and solicit feedback from team members to confirm the setup prevents leaks and supports efficient development.
 

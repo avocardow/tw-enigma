@@ -1,54 +1,107 @@
 # Task ID: 6
-# Title: Implement HTML class extraction using cheerio
-# Status: done
-# Dependencies: 4
-# Priority: high
-# Description: Develop a system to extract class patterns from HTML files using cheerio library.
+# Title: Migrate CLI Functionality
+# Status: pending
+# Dependencies: 4, 5
+# Priority: medium
+# Description: Migrate the command-line interface and developer tools from the current monolithic package to the @tw-enigma/cli package.
 # Details:
-1. Install cheerio: npm install cheerio@1.0.0-rc.12
-2. Create src/htmlExtractor.js
-3. Implement function to load HTML file with cheerio
-4. Extract class attributes from all elements
-5. Parse class strings into individual classes
-6. Handle special cases like conditional classes
+1. Identify all CLI-related modules in the current codebase
+2. Create appropriate directory structure in packages/cli/src/ to organize the CLI functionality:
+```
+src/
+├── commands/
+├── utils/
+└── index.ts
+```
+3. Move CLI command implementations to packages/cli/src/commands/
+4. Move CLI-specific utilities to packages/cli/src/utils/
+5. Update the bin/enigma.ts entry point to use the command structure:
+```ts
+#!/usr/bin/env node
+import { Command } from 'commander';
+import { version } from '../src';
+import { registerCommands } from '../src/commands';
+
+const program = new Command();
+
+program.version(version).description('tw-enigma CSS optimization tool');
+
+// Register all commands
+registerCommands(program);
+
+program.parse(process.argv);
+```
+6. Create a commands/index.ts file to register all commands:
+```ts
+import { Command } from 'commander';
+import { registerOptimizeCommand } from './optimize';
+
+export function registerCommands(program: Command): void {
+  registerOptimizeCommand(program);
+  // Register other commands here
+}
+```
+7. Implement each command in separate files (e.g., commands/optimize.ts)
+8. Update imports to use @tw-enigma/core for optimization functionality
+9. Ensure all CLI-specific dependencies are added to package.json
+10. Update package.json bin field to point to the correct binary path
 
 # Test Strategy:
-Unit tests with various HTML structures and class patterns
+1. Migrate tests related to CLI functionality to packages/cli/tests/
+2. Create test fixtures in packages/cli/tests/fixtures/
+3. Update test imports to reference the new package structure
+4. Run tests with `pnpm --filter @tw-enigma/cli test`
+5. Verify all CLI functionality tests pass
+6. Test the CLI binary with various commands and options
+7. Create integration tests that validate the CLI works with the core package
+8. Test error handling and edge cases in the CLI interface
 
 # Subtasks:
-## 1. Install and Configure Cheerio [done]
+## 1. Identify Existing CLI Modules [pending]
 ### Dependencies: None
-### Description: Set up the project environment and install Cheerio library
+### Description: Catalog all current CLI modules, commands, and utilities in the project to establish a migration baseline.
 ### Details:
-Initialize a new Node.js project with npm init, install Cheerio using npm install cheerio, verify installation by checking package.json dependencies, and create the basic project structure with necessary files (index.js, parser.js)
+Review the codebase and documentation to list all CLI modules, their commands, and associated utilities.
 
-## 2. Implement HTML Loading Functionality [done]
+## 2. Analyze Command Structure and Dependencies [pending]
 ### Dependencies: 6.1
-### Description: Create functions to load HTML content from various sources
+### Description: Map out the structure of CLI commands and their dependencies on internal and external modules.
 ### Details:
-Implement functions to load HTML from strings, files, and URLs using cheerio.load() method, handle loading errors gracefully, create utility functions for different input types, and document the loading process with code comments
+Document how commands are organized, their invocation patterns, and any dependencies on the core package or third-party libraries.
 
-## 3. Develop Class Attribute Extraction [done]
+## 3. Plan Migration Strategy for CLI Commands and Utilities [pending]
 ### Dependencies: 6.2
-### Description: Create functions to extract class attributes from HTML elements
+### Description: Develop a migration plan detailing how each CLI command and utility will be moved or refactored.
 ### Details:
-Implement selectors to target elements with class attributes, extract the class attribute values using .attr('class'), create a function to process all elements with classes, handle elements with multiple classes, and build a collection of all class attributes found in the document
+Determine which commands/utilities require refactoring, which can be moved as-is, and outline the migration steps for each.
 
-## 4. Implement Class Parsing Logic [done]
+## 4. Migrate CLI Commands and Utilities [pending]
 ### Dependencies: 6.3
-### Description: Parse and analyze extracted class attributes
+### Description: Execute the migration of CLI commands and utilities according to the migration plan.
 ### Details:
-Create functions to split multi-class strings into individual classes, normalize class names (trim whitespace, handle case sensitivity), implement frequency counting for class occurrences, identify class patterns and relationships, and create data structures to store parsed class information
+Move or refactor code, ensuring compatibility with the new structure and integration points.
 
-## 5. Handle Special Cases and Edge Conditions [done]
+## 5. Update CLI Entry Point [pending]
 ### Dependencies: 6.4
-### Description: Implement robust handling for special cases in HTML class parsing
+### Description: Modify the CLI entry point to reflect the new command structure and ensure proper routing of commands.
 ### Details:
-Add support for dynamically generated classes, handle malformed HTML gracefully, implement error recovery for parsing failures, account for special characters in class names, and create validation functions to ensure parsed data integrity
+Update the main CLI script or entry file to import and register migrated commands and utilities.
 
-## 6. Create Testing and Validation Suite [done]
+## 6. Integrate CLI with Core Package [pending]
 ### Dependencies: 6.5
-### Description: Develop comprehensive tests for the HTML class parsing functionality
+### Description: Ensure the migrated CLI commands and utilities are properly integrated with the core package.
 ### Details:
-Create unit tests for each parsing function, develop integration tests for the complete workflow, test with various HTML inputs (simple, complex, malformed), validate output against expected results, and implement performance benchmarking for optimization
+Refactor code as needed to use core package APIs, ensuring seamless interaction between CLI and core logic.
+
+## 7. Update and Audit Dependencies [pending]
+### Dependencies: None
+### Description: Review and update project dependencies to support the new CLI structure and remove obsolete packages.
+### Details:
+Update dependency files, ensure compatibility, and remove unused or deprecated packages.
+
+## 8. Validate Migration with Tests and Manual CLI Runs [pending]
+### Dependencies: None
+### Description: Run automated tests and perform manual CLI executions to verify correct behavior and user experience.
+### Details:
+Execute unit, integration, and end-to-end tests; manually run CLI commands to ensure all functionalities work as expected.
 

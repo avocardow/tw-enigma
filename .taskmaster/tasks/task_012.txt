@@ -1,60 +1,146 @@
 # Task ID: 12
-# Title: Implement PostCSS integration
-# Status: done
-# Dependencies: 11
-# Priority: high
-# Description: Integrate PostCSS to process generated CSS rules through the project's Tailwind configuration.
+# Title: Implement Developer Experience Enhancements
+# Status: pending
+# Dependencies: 7, 9, 10, 11
+# Priority: low
+# Description: Add developer experience improvements such as scripts, tooling, and error handling to streamline the development workflow.
 # Details:
-1. Install postcss@8.4.24 and postcss-cli@10.1.0
-2. Create src/postcssProcessor.js
-3. Implement function to load project's tailwind.config.js
-4. Set up PostCSS pipeline with Tailwind plugin
-5. Process generated CSS through PostCSS
-6. Handle errors and invalid configurations
+1. Add useful scripts to the root package.json:
+```json
+"scripts": {
+  "dev:all": "turbo dev",
+  "format": "prettier --write \"**/*.{ts,tsx,md,json}\"",
+  "format:check": "prettier --check \"**/*.{ts,tsx,md,json}\"",
+  "update-deps": "pnpm update -r",
+  "postinstall": "turbo build"
+}
+```
+2. Create a VSCode workspace configuration in .vscode/settings.json:
+```json
+{
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
+  "eslint.workingDirectories": [
+    { "pattern": "packages/*" },
+    { "pattern": "packages-private/*" }
+  ],
+  "typescript.tsdk": "node_modules/typescript/lib"
+}
+```
+3. Add a debug configuration in .vscode/launch.json:
+```json
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug CLI",
+      "program": "${workspaceFolder}/packages/cli/dist/bin/enigma.js",
+      "args": [],
+      "preLaunchTask": "build-cli",
+      "outFiles": ["${workspaceFolder}/packages/cli/dist/**/*.js"]
+    }
+  ]
+}
+```
+4. Create .vscode/tasks.json for build tasks:
+```json
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build-cli",
+      "type": "shell",
+      "command": "pnpm --filter @tw-enigma/cli build",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    }
+  ]
+}
+```
+5. Add a script to generate package documentation:
+```json
+"scripts": {
+  "docs": "typedoc --entryPointStrategy packages ./packages/*/src/index.ts"
+}
+```
+6. Create a script for checking for circular dependencies:
+```json
+"scripts": {
+  "check-deps": "madge --circular --extensions ts ./packages"
+}
+```
+7. Add helpful error messages and validation to build scripts
+8. Create a script for workspace visualization:
+```json
+"scripts": {
+  "graph": "turbo run build --graph=dependency-graph.png"
+}
+```
+9. Add typedoc and madge as dev dependencies to the root package.json
 
 # Test Strategy:
-Integration tests with mock Tailwind configs and generated CSS
+1. Test all new scripts to ensure they work as expected
+2. Verify VSCode configurations with different development scenarios
+3. Test debug configurations with breakpoints
+4. Validate error messages are helpful and actionable
+5. Test the documentation generation script
+6. Verify circular dependency checking works correctly
+7. Test workspace visualization output
+8. Ensure postinstall script works correctly for new installations
 
 # Subtasks:
-## 1. Install Dependencies [done]
+## 1. Add Project Scripts [pending]
 ### Dependencies: None
-### Description: Set up the project environment with all required packages and tools
+### Description: Create and integrate scripts for common development tasks such as build, test, lint, and start.
 ### Details:
-Install core dependencies (PostCSS, Tailwind CSS), development dependencies (build tools, testing frameworks), and optional plugins. Create package.json with proper versioning and scripts. Document dependency relationships and compatibility requirements.
+Define scripts in the project's package manager configuration (e.g., package.json for Node.js) to streamline developer workflows.
 
-## 2. Create CSS Processor [done]
+## 2. Configure VSCode User and Workspace Settings [pending]
 ### Dependencies: 12.1
-### Description: Develop the core processor module that will handle CSS transformations
+### Description: Set up recommended VSCode settings for the project to ensure consistency and improve developer experience.
 ### Details:
-Implement processor factory function, configure PostCSS integration, create plugin architecture for extensibility, implement transformation pipeline, and add logging mechanisms. Ensure processor handles different input/output formats and supports streaming API.
+Edit settings.json to include preferences such as auto-save, format on save, font size, and whitespace rendering.
 
-## 3. Load Configurations [done]
-### Dependencies: 12.1
-### Description: Implement configuration loading and validation system
+## 3. Add Debug Configuration [pending]
+### Dependencies: 12.2
+### Description: Create and customize VSCode debug configurations for the project.
 ### Details:
-Create configuration schema, implement file-based config loading (.config.js, .json, etc.), add environment variable support, implement config validation, create default configurations, and develop configuration merging logic to handle multiple sources.
+Define launch.json with appropriate debug settings for the project's language and frameworks.
 
-## 4. Set Up Processing Pipeline [done]
-### Dependencies: 12.2, 12.3
-### Description: Establish the complete CSS processing workflow
+## 4. Add Build Tasks [pending]
+### Dependencies: 12.3
+### Description: Set up VSCode tasks for building the project using tasks.json.
 ### Details:
-Create pipeline stages (preprocessing, transformation, optimization), implement plugin hooks for each stage, add Tailwind integration, create asset management system, implement caching mechanisms, and develop watch mode for development.
+Configure build tasks to automate compilation, bundling, or other build steps directly from VSCode.
 
-## 5. Implement CSS Processing [done]
+## 5. Set Up Documentation Scripts [pending]
 ### Dependencies: 12.4
-### Description: Develop core CSS processing functionality with all required features
+### Description: Add scripts to generate and serve project documentation.
 ### Details:
-Implement CSS parsing, selector processing, property transformations, media query handling, browser compatibility features, minification options, source map generation, and CSS variable processing. Add support for modern CSS features and fallbacks.
+Integrate documentation tools (e.g., JSDoc, Sphinx) and provide scripts for generating and viewing docs.
 
-## 6. Add Error Handling [done]
+## 6. Add Dependency Management Scripts [pending]
 ### Dependencies: 12.5
-### Description: Create comprehensive error handling and reporting system
+### Description: Create scripts to install, update, and audit project dependencies.
 ### Details:
-Implement error classification system, create detailed error messages, add source code references in errors, implement warning system, create error recovery mechanisms, add syntax validation, implement linting integration, and develop error reporting formats.
+Include commands for dependency installation, upgrades, and security checks in the project's script configuration.
 
-## 7. Implement Testing Framework [done]
-### Dependencies: 12.6
-### Description: Develop comprehensive testing suite for all components
+## 7. Improve Error Handling in Scripts [pending]
+### Dependencies: None
+### Description: Enhance all scripts with robust error handling and clear output messages.
 ### Details:
-Create unit tests for each module, implement integration tests for the pipeline, add visual regression testing, create performance benchmarks, implement browser compatibility tests, add CI/CD configuration, create documentation tests, and develop test coverage reporting.
+Update scripts to handle failures gracefully and provide actionable feedback to developers.
+
+## 8. Validate and Test All Enhancements [pending]
+### Dependencies: None
+### Description: Verify that all scripts, settings, and configurations work as intended and improve developer experience.
+### Details:
+Test each enhancement in a clean environment, gather feedback, and document any issues or improvements.
 

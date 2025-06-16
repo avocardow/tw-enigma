@@ -1,61 +1,125 @@
 # Task ID: 7
-# Title: Develop JS class extraction with regex
-# Status: done
-# Dependencies: 4
-# Priority: high
-# Description: Create a robust regex-based system to extract Tailwind CSS class patterns from JavaScript and JSX files, focusing on React/JSX syntax and dynamic class assignments.
+# Title: Implement Advanced Turborepo Pipeline Configuration
+# Status: pending
+# Dependencies: 2, 3, 4
+# Priority: medium
+# Description: Configure advanced Turborepo pipeline dependencies, caching strategies, and task scheduling for optimal monorepo performance.
 # Details:
-1. Detect and process JavaScript and JSX files, identifying the framework (React, Preact, Solid, etc.) where possible.
-2. Implement optimized regex patterns to extract Tailwind class names from JSX className and class attributes, handling both static and dynamic assignments.
-3. Parse template literals and dynamic expressions to extract Tailwind classes, including those constructed via string interpolation or conditional logic.
-4. Support extraction from component props, including spread attributes and prop forwarding patterns common in JSX frameworks.
-5. Handle conditional and dynamic class assignments, such as ternaries, logical expressions, and utility libraries (e.g., clsx, classnames).
-6. Optimize regex and parsing logic for performance, especially with large or complex JSX files.
-7. Focus exclusively on class extraction from JSX/JS files—remove generic file creation logic.
+1. Enhance the turbo.json configuration with advanced pipeline settings:
+```json
+{
+  "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": ["tsconfig.base.json"],
+  "pipeline": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"],
+      "cache": true
+    },
+    "test": {
+      "dependsOn": ["build"],
+      "inputs": ["src/**/*.ts", "tests/**/*.ts", "vitest.config.ts"],
+      "outputs": ["coverage/**"],
+      "cache": true
+    },
+    "lint": {
+      "outputs": [],
+      "cache": true
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "clean": {
+      "cache": false
+    }
+  }
+}
+```
+2. Add a clean script to each package's package.json:
+```json
+"scripts": {
+  "clean": "rimraf dist coverage"
+}
+```
+3. Add a clean script to the root package.json:
+```json
+"scripts": {
+  "clean": "turbo clean"
+}
+```
+4. Configure remote caching for CI/CD (optional):
+```json
+// In turbo.json
+{
+  "remoteCache": {
+    "signature": true
+  }
+}
+```
+5. Add rimraf as a dev dependency to the root package.json:
+```json
+"devDependencies": {
+  "rimraf": "^5.0.5"
+}
+```
+6. Create a .turbo directory in .gitignore to exclude local cache files
+7. Configure package-specific cache inputs in each package's package.json:
+```json
+"turbo": {
+  "extends": ["//"]
+}
+```
 
 # Test Strategy:
-Comprehensive unit and integration tests using real-world JSX components and patterns from multiple frameworks. Cover static, dynamic, conditional, and prop-based class assignments. Validate extraction accuracy and performance.
+1. Test build pipeline with `pnpm build` and verify correct build order
+2. Test incremental builds by making changes to one package and verifying only affected packages rebuild
+3. Validate caching by running the same command twice and checking for cache hits
+4. Test clean command functionality
+5. Measure build performance improvements with and without caching
+6. Verify parallel task execution for independent packages
+7. Test pipeline with various combinations of package changes to ensure correct dependency resolution
 
 # Subtasks:
-## 1. JSX File Detection and Framework Identification [done]
+## 1. Analyze and Update turbo.json Configuration [pending]
 ### Dependencies: None
-### Description: Implement logic to detect JavaScript and JSX files and, where possible, identify the JSX framework (React, Preact, Solid, etc.).
+### Description: Review the current turbo.json and enhance it to support advanced pipeline features, including custom tasks, dependencies, and output configurations.
 ### Details:
-Scan project files for .js, .jsx, .ts, and .tsx extensions. Analyze import statements and file content to infer the framework. Prepare files for targeted class extraction.
+Ensure turbo.json includes all necessary pipelines, uses appropriate inputs/outputs, and leverages features like $TURBO_DEFAULT$ and $TURBO_ROOT$ for granular control.
 
-## 2. Regex Patterns for JSX className/class Attribute Extraction [done]
+## 2. Add and Integrate Clean Scripts [pending]
 ### Dependencies: 7.1
-### Description: Develop and optimize regex patterns to extract Tailwind class names from JSX className and class attributes.
+### Description: Create clean scripts for each package and integrate them into the turbo pipeline to ensure build artifacts are properly removed.
 ### Details:
-Write regex to match className and class attributes in JSX, supporting both single and double quotes, as well as backticks. Ensure patterns capture static and simple dynamic assignments.
+Define clean scripts in each package's package.json and reference them in turbo.json as tasks, ensuring they run before builds as needed.
 
-## 3. Template Literal and Dynamic Class Parsing [done]
-### Dependencies: 7.2
-### Description: Parse template literals and dynamic expressions in JSX to extract Tailwind classes, including those built with string interpolation.
+## 3. Configure Remote Caching in turbo.json [pending]
+### Dependencies: 7.1
+### Description: Set up remote caching to optimize build performance and enable cache sharing across environments.
 ### Details:
-Implement logic to parse template literals (backtick strings) and extract all possible Tailwind class names, including those within embedded expressions. Handle multiline and nested template literals.
+Update turbo.json with remote cache provider settings and ensure authentication/secrets are handled securely.
 
-## 4. Component Prop and Spreading Pattern Extraction [done]
-### Dependencies: 7.3
-### Description: Extract Tailwind classes from component props, including spread attributes and prop forwarding patterns.
+## 4. Update .gitignore for Cache and Build Artifacts [pending]
+### Dependencies: 7.2, 7.3
+### Description: Modify the .gitignore file to exclude turbo cache directories and build outputs, preventing unnecessary files from being tracked.
 ### Details:
-Analyze JSX props for className/class attributes passed via props or spread syntax. Extract class names from these patterns, supporting common utility libraries and custom components.
+Add patterns for .turbo, dist, .next, and any other relevant directories to .gitignore, using $TURBO_DEFAULT$ as needed for turbo configuration.
 
-## 5. Conditional and Dynamic Class Pattern Handling [done]
-### Dependencies: 7.4
-### Description: Handle extraction of Tailwind classes from conditional and dynamic assignments in JSX.
+## 5. Set Up Package-Specific Cache Inputs [pending]
+### Dependencies: 7.1, 7.3
+### Description: Configure each package to specify its own cache inputs for turbo tasks, allowing for granular cache invalidation.
 ### Details:
-Support extraction from ternary expressions, logical AND/OR, and utility libraries like clsx/classnames. Ensure all possible Tailwind classes are captured from dynamic patterns.
+Edit package-level turbo.json or package.json files to define inputs arrays, using $TURBO_DEFAULT$ and package-specific globs as appropriate.
 
-## 6. Performance Optimization for JSX Parsing [done]
-### Dependencies: 7.5
-### Description: Profile and optimize the extraction logic for speed and memory efficiency, focusing on regex and parsing performance in large JSX files.
+## 6. Validate and Test Pipeline Performance [pending]
+### Dependencies: 7.2, 7.3, 7.4, 7.5
+### Description: Run the enhanced pipeline to verify correct behavior, cache effectiveness, and overall performance improvements.
 ### Details:
-Use profiling tools to identify bottlenecks in regex and parsing. Refactor code for efficiency and maintainability. Document performance improvements.
+Execute builds and cleans, monitor cache hits/misses, and compare build times before and after enhancements.
 
-## 7. Comprehensive Testing with Real JSX Components [done]
+## 7. Document Configuration and Usage [pending]
 ### Dependencies: None
-### Description: Develop and execute a comprehensive suite of automated tests using real-world JSX components and patterns.
+### Description: Update project documentation to explain the new turbo.json structure, clean scripts, caching setup, and .gitignore changes.
 ### Details:
-Write unit and integration tests for all extraction logic, covering static, dynamic, conditional, and prop-based class assignments. Use test frameworks (e.g., Jest, Mocha) and ensure high code coverage.
+Provide clear instructions for developers on running tasks, leveraging cache, and maintaining the configuration.
 

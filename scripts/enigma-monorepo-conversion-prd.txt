@@ -1,0 +1,384 @@
+# tw-enigma Monorepo Conversion - Product Requirements Document
+
+# Overview  
+The tw-enigma monorepo conversion project transforms the current single-package tw-enigma CSS optimization tool into a high-performance, maintainable monorepo architecture. This refactoring addresses the critical need for code organization, shared configuration management, and foundational infrastructure required for developing proprietary add-on packages (like @tw-enigma/scramble) while maintaining the existing production-ready optimization capabilities.
+
+**Problem Solved:** Single package architecture limits scalability, configuration sharing, and private package development. Current structure makes it difficult to maintain separate concerns between core optimization logic and CLI wrapper functionality.
+
+**Target Users:** Development team working on tw-enigma core and future proprietary extensions, open-source contributors, and enterprise users requiring modular CSS optimization solutions.
+
+**Value Proposition:** Improved maintainability, better developer experience, intelligent build caching, foundation for private package ecosystem, and streamlined development workflows through modern monorepo tooling.
+
+# Core Features  
+
+## 1. Package Separation Architecture
+**What it does:** Splits current monolithic package into logical, focused packages
+- `@tw-enigma/core`: CSS optimization engine and processing logic
+- `@tw-enigma/cli`: Command-line interface and developer tools
+**Why it's important:** Enables better code organization, clearer dependency management, and selective package consumption
+**How it works:** Systematic migration of 70+ source files into appropriate package boundaries with proper inter-package dependencies
+
+## 2. Shared Configuration Management
+**What it does:** Centralizes TypeScript, ESLint, Prettier, and build configurations at monorepo root
+- Base TypeScript configuration extended by all packages
+- Shared linting and formatting rules
+- Unified development dependencies
+**Why it's important:** Eliminates configuration duplication, ensures consistency across packages, simplifies maintenance
+**How it works:** Configuration hoisting with package-specific extensions inheriting from shared base configurations
+
+## 3. Turborepo Build Orchestration
+**What it does:** Implements intelligent build caching and task scheduling across packages
+- Dependency-aware build ordering
+- Incremental builds with smart caching
+- Parallel task execution where possible
+**Why it's important:** Dramatically improves build performance, developer productivity, and CI/CD efficiency
+**How it works:** Pipeline configuration defining task dependencies, inputs, and outputs for optimal caching strategies
+
+## 4. Private Package Infrastructure
+**What it does:** Secure foundation for proprietary package development without compromising open-source repository
+- `packages-private/` directory structure
+- Git ignore protection for proprietary code
+- Local workspace development capability
+**Why it's important:** Enables commercial product development while maintaining open-source integrity
+**How it works:** Gitignored directory with local workspace configuration for development, never committed to public repository
+
+## 5. Workspace Development Experience
+**What it does:** Streamlined development workflows with monorepo-aware tooling
+- Single `pnpm install` for all packages
+- Unified scripts: `turbo build`, `turbo test`, `turbo lint`
+- Cross-package linking and dependency management
+**Why it's important:** Reduces development friction, improves onboarding, standardizes workflows
+**How it works:** pnpm workspaces with Turborepo task orchestration and intelligent dependency resolution
+
+# User Experience  
+
+## Developer Personas
+**Core Maintainer:** Primary tw-enigma developers managing optimization engines and core functionality
+**CLI Developer:** Team members focused on developer experience, command-line tools, and user interfaces  
+**Private Package Developer:** Commercial development team working on proprietary extensions
+**Open Source Contributor:** External developers contributing to public packages
+
+## Key User Flows
+
+### Monorepo Setup Flow
+1. Clone repository with new monorepo structure
+2. Single `pnpm install` command installs all dependencies
+3. `turbo build` builds all packages with optimal caching
+4. Individual package development with hot reloading
+5. Cross-package changes handled automatically
+
+### Development Workflow
+1. Developer identifies target package for changes
+2. Makes modifications with full TypeScript support across packages
+3. Runs `turbo test` for affected package validation
+4. Build system automatically handles dependencies
+5. CI/CD validates all affected packages
+
+### Private Package Development
+1. Developer creates local `packages-private/scramble` directory
+2. Modifies local pnpm-workspace.yaml (not committed)
+3. Develops proprietary features with full monorepo benefits
+4. Private code remains completely isolated from public repository
+
+## UI/UX Considerations
+- Consistent CLI experience across all packages
+- Clear package boundaries and responsibilities
+- Intuitive workspace commands and scripts
+- Comprehensive documentation for setup and development
+- Error messages that guide developers to correct package context
+
+# Technical Architecture  
+
+## System Components
+
+### Monorepo Root Infrastructure
+- **pnpm-workspace.yaml:** Workspace definition and package discovery
+- **turbo.json:** Build pipeline configuration and caching strategies
+- **tsconfig.base.json:** Shared TypeScript compiler options
+- **Root package.json:** Workspace scripts and shared devDependencies
+
+### Package Architecture
+```
+packages/
+├── core/                    # @tw-enigma/core
+│   ├── src/                 # Optimization engines, CSS processing
+│   ├── tests/               # Core functionality tests
+│   ├── package.json         # Core package configuration
+│   └── tsconfig.json        # Package-specific TS config
+└── cli/                     # @tw-enigma/cli
+    ├── bin/enigma.ts        # CLI entry point
+    ├── src/                 # CLI utilities and commands
+    ├── tests/               # CLI-specific tests
+    └── package.json         # CLI package configuration
+```
+
+### Private Package Structure
+```
+packages-private/            # GITIGNORED
+└── scramble/                # @tw-enigma/scramble
+    ├── src/                 # Proprietary functionality
+    ├── tests/               # Private tests
+    └── package.json         # Private package config
+```
+
+## Data Models
+- **Package Dependencies:** Workspace protocol for internal packages
+- **Build Artifacts:** Organized in package-specific dist/ directories
+- **Configuration Inheritance:** Base configs extended by package-specific settings
+- **Test Organization:** Package-scoped with shared testing utilities
+
+## APIs and Integrations
+- **Internal Package API:** @tw-enigma/core exports consumed by CLI package
+- **Turborepo API:** Build orchestration and caching interfaces
+- **pnpm Workspaces:** Package linking and dependency resolution
+- **CI/CD Integration:** GitHub Actions with monorepo awareness
+
+## Infrastructure Requirements
+- **Node.js:** >=18.0.0 (maintained from current requirements)
+- **pnpm:** Workspace-capable version (>=7.0.0)
+- **Turborepo:** Latest stable (^2.0.4)
+- **Build Tools:** tsup, TypeScript, vitest maintained per package
+- **CI/CD:** GitHub Actions with monorepo build matrix
+
+# Development Roadmap  
+
+## Phase 1: Foundation Setup (MVP)
+**Scope:** Basic monorepo infrastructure without breaking existing functionality
+- Create monorepo directory structure
+- Configure pnpm workspaces
+- Set up basic Turborepo pipeline
+- Hoist shared dependencies to root
+- **Deliverable:** Functional monorepo with current code intact
+
+## Phase 2: Package Separation (Core Migration)
+**Scope:** Split existing code into logical packages while maintaining all functionality
+- Migrate core optimization logic to @tw-enigma/core
+- Move CLI functionality to @tw-enigma/cli package
+- Configure inter-package dependencies
+- Update build configurations per package
+- **Deliverable:** Two functional packages with complete feature parity
+
+## Phase 3: Test Infrastructure Migration
+**Scope:** Ensure comprehensive test coverage across new package structure
+- Migrate 1,779 existing tests to appropriate packages
+- Configure vitest for monorepo testing
+- Validate 100% test success rate maintained
+- Set up cross-package testing utilities
+- **Deliverable:** Complete test suite with package-specific organization
+
+## Phase 4: Advanced Build Optimization
+**Scope:** Implement sophisticated Turborepo caching and optimization
+- Configure advanced pipeline dependencies
+- Implement build artifact caching
+- Optimize CI/CD for monorepo builds
+- Set up remote caching capabilities
+- **Deliverable:** High-performance build system with intelligent caching
+
+## Phase 5: Private Package Infrastructure
+**Scope:** Secure foundation for proprietary package development
+- Create packages-private directory structure
+- Implement gitignore security measures
+- Document local development setup
+- Create template for @tw-enigma/scramble
+- **Deliverable:** Secure private package development capability
+
+## Phase 6: Developer Experience Enhancement
+**Scope:** Polish developer workflows and documentation
+- Comprehensive monorepo documentation
+- Developer onboarding guides
+- Workspace command optimization
+- Error handling and debugging improvements
+- **Deliverable:** Production-ready monorepo with excellent DX
+
+# Logical Dependency Chain
+
+## Foundation Layer (Phase 1)
+**Must be built first:** Monorepo infrastructure and workspace configuration
+- Directory structure creation
+- pnpm-workspace.yaml configuration
+- Basic Turborepo setup
+- Root package.json with workspace scripts
+**Why first:** All subsequent development depends on functional workspace
+
+## Package Architecture Layer (Phase 2)
+**Depends on:** Foundation Layer
+**Must complete before:** Test migration and advanced features
+- @tw-enigma/core package creation with all optimization logic
+- @tw-enigma/cli package with proper core dependency
+- Inter-package dependency configuration
+**Why critical:** Establishes package boundaries and API contracts
+
+## Validation Layer (Phase 3)
+**Depends on:** Package Architecture Layer
+**Must complete before:** Advanced optimizations
+- Complete test suite migration and validation
+- Functional validation of all existing capabilities
+- Performance regression testing
+**Why essential:** Ensures no functionality loss during refactoring
+
+## Optimization Layer (Phase 4)
+**Depends on:** Validation Layer
+**Can be developed in parallel with:** Private Package Infrastructure
+- Advanced Turborepo pipeline configuration
+- Build caching and performance optimization
+- CI/CD monorepo integration
+**Why here:** Requires stable package architecture to optimize effectively
+
+## Security Layer (Phase 5)
+**Can be developed in parallel with:** Optimization Layer
+**Must complete before:** Private package development
+- packages-private directory and gitignore setup
+- Security validation and documentation
+- Local workspace configuration
+**Why parallel:** Independent of build optimization, critical for commercial development
+
+## Experience Layer (Phase 6)
+**Depends on:** All previous layers
+**Final polish for:** Production readiness
+- Documentation and developer experience
+- Error handling and debugging
+- Performance monitoring and analytics
+**Why last:** Requires complete system to document and optimize
+
+# Risks and Mitigations  
+
+## Technical Challenges
+
+### Risk: Dependency Resolution Complexity
+**Impact:** High - Package interdependencies could create circular references or resolution conflicts
+**Mitigation:** 
+- Careful API design with clear package boundaries
+- Use of workspace protocol for internal dependencies
+- Comprehensive dependency validation tooling
+- Incremental migration with validation at each step
+
+### Risk: Build System Performance Degradation
+**Impact:** Medium - Monorepo might initially be slower than single package
+**Mitigation:**
+- Turborepo intelligent caching implementation
+- Parallel build optimization
+- Build performance monitoring and benchmarking
+- Incremental adoption of advanced caching strategies
+
+### Risk: Test Suite Migration Complexity
+**Impact:** High - 1,779 tests must maintain 100% success rate
+**Mitigation:**
+- Test-by-test migration with validation
+- Temporary dual test running during transition
+- Automated test categorization and migration tooling
+- Rollback plan for test failures
+
+## MVP Definition and Buildability
+
+### Risk: Over-Engineering Initial Implementation
+**Impact:** Medium - Complexity could delay basic functionality
+**Mitigation:**
+- Phase 1 focuses only on basic monorepo structure
+- Maintain existing build processes initially
+- Incremental feature adoption with validation gates
+- Clear MVP definition: functional packages with current capabilities
+
+### Risk: Private Package Security Breach
+**Impact:** Critical - Proprietary code accidentally committed to public repository
+**Mitigation:**
+- Multiple gitignore validations and checks
+- Pre-commit hooks preventing private package commits
+- Comprehensive security documentation and training
+- Regular security audits of git history
+
+## Resource Constraints
+
+### Risk: Developer Context Switching Overhead
+**Impact:** Medium - Learning new monorepo workflows could reduce productivity
+**Mitigation:**
+- Comprehensive documentation and training materials
+- Gradual workflow transition with fallback options
+- Clear command reference and troubleshooting guides
+- Pair programming for monorepo adoption
+
+### Risk: CI/CD Pipeline Complexity
+**Impact:** Medium - Monorepo could complicate existing CI/CD processes
+**Mitigation:**
+- Incremental CI/CD migration with parallel validation
+- Comprehensive testing of build processes
+- Rollback plan for CI/CD issues
+- Performance monitoring and optimization
+
+# Appendix  
+
+## Research Findings
+
+### Monorepo Tooling Analysis
+**pnpm vs npm/yarn:** pnpm chosen for superior workspace support, performance, and disk efficiency
+**Turborepo vs Nx:** Turborepo selected for simplicity, performance focus, and excellent caching
+**Build Tools:** Maintaining tsup for consistency while adding monorepo orchestration
+
+### Current Project Analysis
+- **Codebase Size:** 70+ files in src/, substantial CLI implementation (72KB)
+- **Test Coverage:** Comprehensive with 1,779 tests (100% passing)
+- **Dependencies:** 45 total dependencies requiring careful separation
+- **Build Performance:** Current build acceptable, monorepo should improve with caching
+
+## Technical Specifications
+
+### Package.json Workspace Configuration
+```json
+{
+  "name": "tw-enigma-monorepo",
+  "private": true,
+  "workspaces": ["packages/*"],
+  "scripts": {
+    "build": "turbo build",
+    "test": "turbo test",
+    "lint": "turbo lint",
+    "dev": "turbo dev"
+  }
+}
+```
+
+### Turborepo Pipeline Configuration
+```json
+{
+  "pipeline": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"]
+    },
+    "test": {
+      "dependsOn": ["build"],
+      "inputs": ["src/**/*.ts", "tests/**/*.ts"]
+    }
+  }
+}
+```
+
+### Security Configuration
+```gitignore
+# Private packages - NEVER COMMIT
+packages-private/
+**/packages-private/
+.env.local
+*.local
+```
+
+### Performance Benchmarks
+- **Current Build Time:** ~30-45 seconds full build
+- **Expected Monorepo Build Time:** ~20-30 seconds with caching
+- **Test Suite Time:** ~45 seconds (should maintain or improve)
+- **Development Rebuild:** <5 seconds with Turborepo caching
+
+## Migration Checklist
+- [ ] Backup current working state
+- [ ] Create monorepo directory structure
+- [ ] Configure pnpm workspaces
+- [ ] Set up Turborepo pipeline
+- [ ] Migrate core package
+- [ ] Migrate CLI package
+- [ ] Update all package dependencies
+- [ ] Migrate test suite
+- [ ] Validate functionality
+- [ ] Configure private package security
+- [ ] Update CI/CD pipelines
+- [ ] Update documentation
+- [ ] Performance validation
+- [ ] Security audit 

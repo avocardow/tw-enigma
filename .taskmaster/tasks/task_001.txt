@@ -1,49 +1,86 @@
 # Task ID: 1
-# Title: Set up project repository and basic structure
-# Status: done
+# Title: Create Monorepo Foundation Structure
+# Status: pending
 # Dependencies: None
 # Priority: high
-# Description: Initialize the project repository with necessary files and folder structure for Tailwind Enigma Core.
+# Description: Set up the basic monorepo directory structure, configure pnpm workspaces, and establish the root package.json with shared dependencies.
 # Details:
-1. Create a new repository on GitHub
-2. Initialize the project with npm init -y
-3. Create basic folder structure: src/, tests/, docs/
-4. Add .gitignore file with node_modules/ and dist/
-5. Create initial README.md with project description
-6. Set up ESLint and Prettier for code style consistency
-7. Configure package.json with initial scripts and metadata
+1. Initialize the monorepo root directory
+2. Create the following structure:
+```
+./
+├── packages/
+│   ├── core/
+│   └── cli/
+├── package.json
+├── pnpm-workspace.yaml
+├── turbo.json
+├── tsconfig.base.json
+├── .gitignore
+└── README.md
+```
+3. Configure root package.json:
+```json
+{
+  "name": "tw-enigma-monorepo",
+  "private": true,
+  "scripts": {
+    "build": "turbo build",
+    "test": "turbo test",
+    "lint": "turbo lint",
+    "dev": "turbo dev"
+  },
+  "devDependencies": {
+    "turbo": "^2.0.4",
+    "typescript": "^5.2.2",
+    "eslint": "^8.53.0",
+    "prettier": "^3.0.3"
+  }
+}
+```
+4. Configure pnpm-workspace.yaml:
+```yaml
+packages:
+  - 'packages/*'
+```
+5. Install pnpm globally if not already installed: `npm install -g pnpm@latest` (at least v7.0.0)
+6. Run `pnpm install` to initialize the workspace
 
 # Test Strategy:
-Manual verification of repository structure and files
+1. Verify directory structure is created correctly
+2. Validate pnpm-workspace.yaml configuration
+3. Ensure pnpm install completes successfully
+4. Confirm workspace recognition with `pnpm -r exec pwd`
+5. Validate that the root package.json contains all required scripts and dependencies
 
 # Subtasks:
-## 1. Create and Configure Repository [done]
+## 1. Initialize the Monorepo Repository [pending]
 ### Dependencies: None
-### Description: Set up the initial repository structure locally and on GitHub
+### Description: Create a new Git repository and initialize it with version control. Ensure Node.js and pnpm are installed.
 ### Details:
-Create a new directory for the project, initialize git repository, create a .gitignore file with Node.js specific patterns, and set up the remote repository on GitHub with appropriate visibility settings and branch protection rules
+Run 'git init' in the desired directory. Confirm Node.js (v16.13+) and pnpm are installed as prerequisites.
 
-## 2. Initialize NPM and Package Configuration [done]
+## 2. Create the Directory Structure [pending]
 ### Dependencies: 1.1
-### Description: Set up package.json with project metadata and dependencies
+### Description: Establish the foundational directory layout for the monorepo, including folders for apps, packages, and shared code.
 ### Details:
-Run npm init to create package.json, configure project name, version, description, author, license, and entry point. Install core dependencies and development dependencies. Set up scripts for common operations like start, test, lint, and build
+Create directories such as 'apps/', 'packages/', and any other relevant folders to organize projects and shared modules.
 
-## 3. Establish Project Folder Structure [done]
+## 3. Configure pnpm Workspaces [pending]
 ### Dependencies: 1.2
-### Description: Create standardized directory layout following Node.js best practices
+### Description: Set up pnpm workspaces to manage multiple packages within the monorepo efficiently.
 ### Details:
-Create src/ directory for source code, test/ for test files, config/ for configuration files, docs/ for documentation, and public/ or dist/ for build outputs. Add placeholder files in each directory to maintain structure in git
+Create a 'pnpm-workspace.yaml' file at the root, specifying workspace patterns (e.g., 'apps/*', 'packages/*') to include all relevant subprojects.
 
-## 4. Configure Code Quality Tools [done]
-### Dependencies: 1.2
-### Description: Set up linting, formatting, and other code quality tools
+## 4. Set Up Root Configuration Files [pending]
+### Dependencies: 1.3
+### Description: Add and configure essential root-level files: package.json, pnpm-workspace.yaml, turbo.json, and tsconfig.base.json.
 ### Details:
-Install and configure ESLint with appropriate rules, set up Prettier for code formatting, add EditorConfig file for consistent editor settings, configure pre-commit hooks with husky to enforce code quality standards, and set up TypeScript if applicable
+Initialize a root 'package.json' with workspace settings, add 'turbo.json' for task orchestration, and create 'tsconfig.base.json' for shared TypeScript configuration. Ensure all files are properly structured for monorepo tooling.
 
-## 5. Create Comprehensive Documentation [done]
-### Dependencies: 1.3, 1.4
-### Description: Write initial README and supporting documentation
+## 5. Verify Initial Workspace Installation [pending]
+### Dependencies: 1.4
+### Description: Install dependencies and verify that the workspace is correctly set up and all packages are recognized.
 ### Details:
-Create README.md with project name, description, installation instructions, usage examples, API documentation if applicable, contribution guidelines, and license information. Add CONTRIBUTING.md for contribution workflow, CHANGELOG.md to track versions, and LICENSE file with appropriate license text
+Run 'pnpm install' at the root. Confirm that dependencies are installed, workspace packages are linked, and tooling (e.g., TurboRepo, TypeScript) recognizes all configured projects.
 

@@ -1,0 +1,109 @@
+{
+	"meta": {
+		"generatedAt": "2025-06-16T01:53:41.739Z",
+		"tasksAnalyzed": 12,
+		"totalTasks": 12,
+		"analysisCount": 12,
+		"thresholdScore": 5,
+		"projectName": "Taskmaster",
+		"usedResearch": true
+	},
+	"complexityAnalysis": [
+		{
+			"taskId": 1,
+			"taskTitle": "Create Monorepo Foundation Structure",
+			"complexityScore": 4,
+			"recommendedSubtasks": 5,
+			"expansionPrompt": "Break down the monorepo foundation setup into subtasks such as initializing the repository, creating the directory structure, configuring pnpm workspaces, setting up root configuration files (package.json, pnpm-workspace.yaml, turbo.json, tsconfig.base.json), and verifying the initial workspace installation.",
+			"reasoning": "This task is foundational but follows a well-documented, repeatable process. It involves several configuration steps but no complex logic or migration. Each step is clear and can be independently verified."
+		},
+		{
+			"taskId": 2,
+			"taskTitle": "Configure Shared Development Configurations",
+			"complexityScore": 5,
+			"recommendedSubtasks": 6,
+			"expansionPrompt": "Expand this task into subtasks for creating and validating each shared configuration file (TypeScript, ESLint, Prettier, Turbo), updating root package.json with dev dependencies, and testing each tool's integration.",
+			"reasoning": "Setting up shared configs is moderately complex due to the need to ensure compatibility and correct integration across tools, but each config is a discrete, well-understood deliverable."
+		},
+		{
+			"taskId": 3,
+			"taskTitle": "Create Core Package Structure",
+			"complexityScore": 4,
+			"recommendedSubtasks": 5,
+			"expansionPrompt": "Decompose into subtasks for creating the core package directory, configuring package.json, setting up TypeScript and build configs, adding placeholder source files, and validating the build.",
+			"reasoning": "This is a standard package scaffolding task with clear steps and minimal complexity, as it does not yet involve migrating or implementing business logic."
+		},
+		{
+			"taskId": 4,
+			"taskTitle": "Create CLI Package Structure",
+			"complexityScore": 5,
+			"recommendedSubtasks": 6,
+			"expansionPrompt": "Break down into subtasks for creating the CLI package directory, configuring package.json and bin entry, setting up TypeScript and build configs, adding placeholder CLI files, and validating the CLI build and execution.",
+			"reasoning": "Slightly more complex than the core package due to the bin entry and CLI-specific setup, but still a standard scaffolding task."
+		},
+		{
+			"taskId": 5,
+			"taskTitle": "Migrate Core Optimization Logic",
+			"complexityScore": 8,
+			"recommendedSubtasks": 8,
+			"expansionPrompt": "Expand into subtasks for identifying modules to migrate, creating the new directory structure, migrating engine/processors/utils, updating imports, creating index and types files, updating dependencies, and validating with tests.",
+			"reasoning": "This task involves significant code migration, refactoring, and validation, with risk of regressions and the need for careful dependency management."
+		},
+		{
+			"taskId": 6,
+			"taskTitle": "Migrate CLI Functionality",
+			"complexityScore": 7,
+			"recommendedSubtasks": 8,
+			"expansionPrompt": "Decompose into subtasks for identifying CLI modules, migrating commands and utilities, updating the CLI entry point, integrating with the core package, updating dependencies, and validating with tests and manual CLI runs.",
+			"reasoning": "Migrating CLI logic is complex due to command structure, integration with the core, and the need for robust testing of user-facing interfaces."
+		},
+		{
+			"taskId": 7,
+			"taskTitle": "Implement Advanced Turborepo Pipeline Configuration",
+			"complexityScore": 6,
+			"recommendedSubtasks": 7,
+			"expansionPrompt": "Expand into subtasks for enhancing turbo.json, adding clean scripts, configuring remote caching, updating .gitignore, setting up package-specific cache inputs, and validating pipeline performance.",
+			"reasoning": "Advanced pipeline configuration requires understanding of build dependencies, caching, and CI/CD integration, but is mostly configuration-driven."
+		},
+		{
+			"taskId": 8,
+			"taskTitle": "Set Up Private Package Infrastructure",
+			"complexityScore": 6,
+			"recommendedSubtasks": 7,
+			"expansionPrompt": "Break down into subtasks for creating the private packages directory, updating .gitignore, creating templates, configuring local workspace files, documenting the workflow, adding pre-commit hooks, and validating the setup.",
+			"reasoning": "This task involves both technical setup and process enforcement to prevent accidental leaks, requiring careful attention to workflow and tooling."
+		},
+		{
+			"taskId": 9,
+			"taskTitle": "Migrate and Configure Test Infrastructure",
+			"complexityScore": 9,
+			"recommendedSubtasks": 10,
+			"expansionPrompt": "Expand into subtasks for creating test configs, categorizing and migrating tests, updating imports, setting up shared utilities, configuring scripts, migrating fixtures, updating environment/config, installing dependencies, and validating test coverage and pass rates.",
+			"reasoning": "Migrating a large volume of tests (1,779) across packages is highly complex, requiring careful organization, import updates, and extensive validation to ensure nothing is lost or broken."
+		},
+		{
+			"taskId": 10,
+			"taskTitle": "Configure CI/CD for Monorepo",
+			"complexityScore": 7,
+			"recommendedSubtasks": 7,
+			"expansionPrompt": "Decompose into subtasks for creating CI workflows, configuring caching, setting up release workflows, adding changeset/versioning, updating documentation, configuring branch protection, and validating the full pipeline.",
+			"reasoning": "CI/CD setup for a monorepo is moderately complex, involving multiple workflows, caching, and integration with release/versioning tools."
+		},
+		{
+			"taskId": 11,
+			"taskTitle": "Create Comprehensive Documentation",
+			"complexityScore": 6,
+			"recommendedSubtasks": 9,
+			"expansionPrompt": "Expand into subtasks for creating root and package READMEs, writing contributing and API docs, adding usage examples, documenting architecture, creating changelogs, adding license info, and documenting private package workflow.",
+			"reasoning": "Comprehensive documentation requires coordination across packages and workflows, but is mostly a writing and validation effort."
+		},
+		{
+			"taskId": 12,
+			"taskTitle": "Implement Developer Experience Enhancements",
+			"complexityScore": 5,
+			"recommendedSubtasks": 8,
+			"expansionPrompt": "Break down into subtasks for adding scripts, configuring VSCode settings, adding debug and build tasks, setting up documentation and dependency scripts, improving error handling, and validating all enhancements.",
+			"reasoning": "Developer experience improvements are valuable but mostly involve scripting and configuration, with moderate complexity."
+		}
+	]
+}

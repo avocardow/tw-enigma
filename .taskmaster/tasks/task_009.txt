@@ -1,60 +1,116 @@
 # Task ID: 9
-# Title: Implement standard name generation algorithm
-# Status: done
-# Dependencies: 8
+# Title: Migrate and Configure Test Infrastructure
+# Status: pending
+# Dependencies: 5, 6
 # Priority: high
-# Description: Develop an algorithm to generate optimal length identifiers for class patterns.
+# Description: Migrate the existing 1,779 tests to the appropriate packages and configure the test infrastructure for the monorepo.
 # Details:
-1. Create src/nameGeneration.js
-2. Implement base-26 calculation for identifier length
-3. Generate unique identifiers of minimum length
-4. Ensure no collisions in generated names
-5. Optimize for performance with large pattern sets
-6. Implement caching for generated names
+1. Create vitest.config.ts files for each package:
+```ts
+import { defineConfig } from 'vitest/config';
+
+export default defineConfig({
+  test: {
+    environment: 'node',
+    include: ['tests/**/*.test.ts'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+    },
+  },
+});
+```
+2. Categorize existing tests by functionality (core vs. CLI)
+3. Migrate core-related tests to packages/core/tests/
+4. Migrate CLI-related tests to packages/cli/tests/
+5. Update test imports to use the new package structure
+6. Create shared test utilities in each package if needed
+7. Add test scripts to each package's package.json:
+```json
+"scripts": {
+  "test": "vitest run",
+  "test:watch": "vitest",
+  "test:coverage": "vitest run --coverage"
+}
+```
+8. Add a test script to the root package.json for running all tests:
+```json
+"scripts": {
+  "test": "turbo test",
+  "test:coverage": "turbo test:coverage"
+}
+```
+9. Configure test fixtures and shared test data
+10. Update any test environment variables or configuration
+11. Ensure all test dependencies are properly installed
 
 # Test Strategy:
-Unit tests for various pattern counts and generated name uniqueness
+1. Run tests for each package individually to verify migration
+2. Run all tests from the root to verify monorepo test configuration
+3. Check test coverage reports for each package
+4. Verify that all 1,779 tests are accounted for and passing
+5. Test the watch mode functionality
+6. Validate that tests correctly use dependencies between packages
+7. Ensure test fixtures are properly loaded in the new structure
 
 # Subtasks:
-## 1. File Creation and Structure Setup [done]
+## 1. Create Test Configuration Files [pending]
 ### Dependencies: None
-### Description: Establish the foundational file structure for the unique identifier generation system
+### Description: Develop and standardize test configuration files for all relevant packages to ensure consistent test execution environments.
 ### Details:
-Create necessary files including main generator class, utility helpers, and configuration files. Set up the project structure with proper separation of concerns. Implement logging mechanisms for debugging and monitoring. Define interfaces for the generator components to ensure modularity.
+Define configuration formats, set up base configs, and document usage for each package.
 
-## 2. Base-26 Calculation Implementation [done]
+## 2. Categorize Existing Tests [pending]
 ### Dependencies: 9.1
-### Description: Develop the core algorithm for base-26 calculations required for identifier generation
+### Description: Review and categorize all existing tests (1,779) by type, package, and priority to facilitate organized migration.
 ### Details:
-Implement conversion functions between decimal and base-26 representation. Create efficient encoding/decoding mechanisms using alphabetic characters. Optimize the calculation process for performance. Add validation to ensure generated values conform to the base-26 constraints. Include edge case handling for maximum values.
+Establish categories such as unit, integration, and end-to-end; tag tests accordingly.
 
-## 3. Unique Identifier Generation Core Logic [done]
+## 3. Migrate Tests to Target Packages [pending]
 ### Dependencies: 9.2
-### Description: Build the primary identifier generation algorithm combining timestamp, node ID, and sequence components
+### Description: Move categorized tests to their appropriate target packages, ensuring directory structure and naming conventions are followed.
 ### Details:
-Implement Snowflake-inspired ID generation with 64-bit structure. Create bit-shifting operations to combine timestamp, machine ID, and sequence number. Develop time synchronization mechanism to handle clock drift. Implement sequence number management to handle multiple requests within the same millisecond. Create proper initialization sequence for the generator.
+Track progress and verify that all tests are accounted for in the migration.
 
-## 4. Collision Avoidance Mechanisms [done]
+## 4. Update Test Imports and References [pending]
 ### Dependencies: 9.3
-### Description: Implement strategies to prevent ID collisions in distributed environments
+### Description: Update all import statements and internal references in migrated tests to reflect new package locations and shared utilities.
 ### Details:
-Develop worker/node ID assignment and management system. Implement distributed coordination using ZooKeeper or etcd. Create retry mechanisms for collision detection and resolution. Add monitoring for potential collision scenarios. Implement backoff strategies for high-contention situations.
+Automate refactoring where possible and manually review complex cases.
 
-## 5. Performance Optimization [done]
-### Dependencies: 9.3, 9.4
-### Description: Enhance the system for high-throughput ID generation exceeding 10,000 IDs per second
+## 5. Set Up Shared Test Utilities [pending]
+### Dependencies: 9.4
+### Description: Develop or migrate shared test utility modules to a central location accessible by all packages.
 ### Details:
-Implement batch generation capabilities for high-volume scenarios. Optimize bit manipulation operations for efficiency. Add thread-safety mechanisms for concurrent access. Conduct performance profiling to identify bottlenecks. Implement asynchronous processing where applicable to improve throughput.
+Document utility usage and update test imports to use shared utilities.
 
-## 6. Caching Implementation [done]
+## 6. Configure Test Scripts [pending]
 ### Dependencies: 9.5
-### Description: Develop caching strategies to improve performance and reduce computational overhead
+### Description: Update or create test runner scripts (e.g., npm scripts, CI/CD jobs) to execute tests in their new locations.
 ### Details:
-Implement pre-generation of IDs for caching. Create cache invalidation strategies based on time or volume. Develop distributed cache synchronization for multi-node deployments. Add monitoring for cache hit/miss rates. Implement fallback mechanisms when cache is depleted or unavailable.
+Ensure scripts support parallel execution and reporting.
 
-## 7. Testing and Validation Framework [done]
-### Dependencies: 9.6
-### Description: Create comprehensive testing suite to ensure uniqueness, performance, and reliability
+## 7. Migrate and Refactor Test Fixtures [pending]
+### Dependencies: None
+### Description: Move and refactor test fixtures to align with new test locations and shared utility patterns.
 ### Details:
-Develop unit tests for each component of the ID generation system. Create integration tests for distributed scenarios. Implement load testing to verify performance under high throughput. Add collision detection tests to validate uniqueness guarantees. Create long-running stability tests to ensure reliability over time.
+Ensure fixtures are reusable and compatible with updated test imports.
+
+## 8. Update Environment and Global Configurations [pending]
+### Dependencies: None
+### Description: Adjust environment variables, global config files, and setup scripts to support the new test structure.
+### Details:
+Verify that all packages can access required environment settings for tests.
+
+## 9. Install and Update Test Dependencies [pending]
+### Dependencies: None
+### Description: Review, install, and update all necessary test dependencies in each package to ensure compatibility and avoid duplication.
+### Details:
+Remove obsolete dependencies and document required versions.
+
+## 10. Validate Test Coverage and Pass Rates [pending]
+### Dependencies: None
+### Description: Run all migrated tests, analyze coverage reports, and compare pass rates to pre-migration baselines to ensure migration integrity.
+### Details:
+Identify and resolve any regressions or missing tests; document results and sign off on migration.
 

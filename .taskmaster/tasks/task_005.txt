@@ -1,54 +1,99 @@
 # Task ID: 5
-# Title: Develop basic error handling and logging framework
-# Status: done
-# Dependencies: 2
-# Priority: medium
-# Description: Create a centralized error handling and logging system using chalk for user-friendly output.
+# Title: Migrate Core Optimization Logic
+# Status: pending
+# Dependencies: 3
+# Priority: high
+# Description: Migrate the CSS optimization engine and processing logic from the current monolithic package to the @tw-enigma/core package.
 # Details:
-1. Install chalk: npm install chalk@5.2.0
-2. Create src/logger.js
-3. Implement functions for info, warning, error, and success logging
-4. Use chalk for color-coded output
-5. Implement verbose logging option
-6. Create custom error classes for specific error types
+1. Identify all core optimization modules in the current codebase
+2. Create appropriate directory structure in packages/core/src/ to organize the optimization logic:
+```
+src/
+├── engine/
+├── processors/
+├── utils/
+└── index.ts
+```
+3. Move optimization engine code to packages/core/src/engine/
+4. Move CSS processors to packages/core/src/processors/
+5. Move utility functions to packages/core/src/utils/
+6. Update import paths throughout the migrated code
+7. Create a comprehensive index.ts that exports all public API functions:
+```ts
+// Re-export from engine
+export * from './engine/optimizer';
+export * from './engine/parser';
+
+// Re-export from processors
+export * from './processors/css';
+export * from './processors/tailwind';
+
+// Export types
+export * from './types';
+
+// Version export
+export const version = '0.1.0';
+```
+8. Create a types.ts file for shared type definitions
+9. Ensure all dependencies required by the core functionality are added to the package.json
+10. Update tsconfig.json if additional configuration is needed for the migrated code
 
 # Test Strategy:
-Unit tests for each log type and error scenario
+1. Migrate tests related to core functionality to packages/core/tests/
+2. Create test fixtures in packages/core/tests/fixtures/
+3. Update test imports to reference the new package structure
+4. Run tests with `pnpm --filter @tw-enigma/core test`
+5. Verify all core functionality tests pass
+6. Create integration tests that validate the exported API functions
+7. Test edge cases to ensure optimization logic works as expected
+8. Benchmark performance to ensure no regression from the original implementation
 
 # Subtasks:
-## 1. Install and configure chalk package [done]
+## 1. Identify Modules to Migrate [pending]
 ### Dependencies: None
-### Description: Set up the chalk package for color-coded console output in the logging system
+### Description: Review the existing codebase to determine which modules (engine, processors, utils, etc.) need to be migrated. Document their current structure, dependencies, and owners.
 ### Details:
-Install chalk using npm or yarn, verify the installation, and create a simple test to ensure chalk is working properly. Document the available color options and how they will be mapped to different log levels.
+Create an inventory of all modules, their relationships, and any critical dependencies to ensure nothing is overlooked during migration.
 
-## 2. Create logger module structure [done]
+## 2. Define New Directory Structure [pending]
 ### Dependencies: 5.1
-### Description: Develop the core logger module with proper structured logging format
+### Description: Design and document the new directory structure for the migrated modules, ensuring it supports scalability and maintainability.
 ### Details:
-Create a logger class/module that follows structured logging best practices. Implement JSON formatting for logs, standardize timestamp format, include contextual information like session IDs, and ensure logs can be easily parsed by analysis tools. Set up the logger to be easily imported across the application.
+Map out the new folder hierarchy and file organization, considering best practices for modular codebases.
 
-## 3. Implement log levels with appropriate filtering [done]
+## 3. Migrate Engine Module [pending]
 ### Dependencies: 5.2
-### Description: Add support for different log levels (FATAL, ERROR, WARN, INFO, DEBUG, TRACE) with filtering capability
+### Description: Move the engine module to the new directory structure, refactoring as necessary to fit the new architecture.
 ### Details:
-Define all log levels with clear documentation on when each should be used. Implement methods for each log level and create a mechanism to filter logs based on the current application environment. Ensure log level configuration can be changed at runtime without application restart.
+Ensure all engine-related files are relocated and updated to match the new structure.
 
-## 4. Add color coding to log output [done]
-### Dependencies: 5.1, 5.3
-### Description: Integrate chalk to provide color-coded console output based on log levels
+## 4. Migrate Processors and Utils Modules [pending]
+### Dependencies: 5.2
+### Description: Relocate the processors and utils modules to the new directory structure, updating code as needed.
 ### Details:
-Map each log level to an appropriate color scheme using chalk. Implement color coding that works in different terminal environments. Create a configuration option to disable colors for environments where ANSI color codes aren't supported. Test color output in various terminal environments.
+Refactor code to align with the new structure and resolve any immediate issues from the move.
 
-## 5. Implement verbose logging option [done]
-### Dependencies: 5.3
-### Description: Add a configurable verbose mode that controls the detail level of logs
+## 5. Update Imports Across Codebase [pending]
+### Dependencies: 5.3, 5.4
+### Description: Update all import statements throughout the codebase to reference the new module locations.
 ### Details:
-Create a verbose flag that can be set via environment variables or command line arguments. Implement additional detailed logging when verbose mode is enabled. Add context-specific verbose logging that includes stack traces, request details, and system information when appropriate. Test verbose mode in different scenarios.
+Perform a comprehensive search and replace, and manually verify critical paths to prevent broken imports.
 
-## 6. Create custom error classes with logging integration [done]
-### Dependencies: 5.2, 5.3
-### Description: Develop custom error classes that automatically integrate with the logging system
+## 6. Create Index and Types Files [pending]
+### Dependencies: 5.3, 5.4
+### Description: Add or update index files and type definition files in the new directory structure to facilitate module exports and type safety.
 ### Details:
-Design a base custom error class that extends the standard Error object. Add properties for error codes, severity levels, and additional context. Implement automatic logging of errors when they're created. Create specific error subclasses for different error categories (e.g., ValidationError, NetworkError, DatabaseError). Ensure proper stack trace preservation.
+Ensure all modules are properly exported and types are accessible where needed.
+
+## 7. Update and Validate Dependencies [pending]
+### Dependencies: 5.5, 5.6
+### Description: Review and update package dependencies to ensure compatibility with the new structure. Remove obsolete dependencies and add any new required ones.
+### Details:
+Check package.json or equivalent files, and run dependency audits to catch issues early.
+
+## 8. Validate Migration with Tests [pending]
+### Dependencies: None
+### Description: Run the full test suite to validate that the migration did not introduce regressions. Address any test failures and ensure all functionality is intact.
+### Details:
+Perform both automated and manual testing as needed, and document any issues or follow-up actions.
 
