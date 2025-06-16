@@ -2,6 +2,7 @@
   "name": "tw-enigma-monorepo",
   "version": "1.0.3",
   "private": true,
+  "type": "module",
   "description": "A post-build optimizer for Tailwind CSS that bundles utility classes into single, obfuscated identifiers.",
   "author": "Rowan Cardow",
   "license": "MIT",
