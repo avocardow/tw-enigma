@@ -148,8 +148,8 @@ importers:
         specifier: ^10.2.7
         version: 10.4.5
       lru-cache:
-        specifier: ^10.2.0
-        version: 10.4.3
+        specifier: ^11.1.0
+        version: 11.1.0
       penthouse:
         specifier: ^2.3.3
         version: 2.3.3
