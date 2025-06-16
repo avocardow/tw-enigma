@@ -17,6 +17,7 @@ import { displayBanner, getPackageInfo } from '../src/utils';
 let coreVersion: string = 'unknown';
 try {
   // Use require for CommonJS compatibility
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const coreModule = require('@tw-enigma/core');
   coreVersion = coreModule.version || 'unknown';
 } catch {
