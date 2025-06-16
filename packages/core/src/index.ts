@@ -189,6 +189,7 @@ export * from './config/configWatcher';
 // Config
 export {
   createSampleConfig,
+  EnigmaConfigSchema,
   getConfig,
   getConfigSync,
   loadConfig,

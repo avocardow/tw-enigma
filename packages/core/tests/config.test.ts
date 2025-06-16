@@ -1,49 +1,61 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { writeFileSync, existsSync, mkdirSync, rmSync } from "fs";
-import { join } from "path";
+import type { CliArguments, EnigmaConfig } from '@tw-enigma/core';
 import {
-  loadConfig,
-  loadConfigSync,
+  ConfigError,
+  createSampleConfig,
+  EnigmaConfigSchema,
   getConfig,
   getConfigSync,
-  createSampleConfig,
-  ConfigError,
-  EnigmaConfigSchema,
-} from "@tw-enigma/core";
-import type { CliArguments, EnigmaConfig } from "@tw-enigma/core";
+  loadConfig,
+  loadConfigSync,
+} from '@tw-enigma/core';
+import { existsSync, mkdirSync, rmSync, writeFileSync } from 'fs';
+import { join } from 'path';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-const TEST_DIR = join(process.cwd(), "test-config");
-const TEST_CONFIG_FILE = join(TEST_DIR, ".enigmarc.json");
-const TEST_JS_CONFIG_FILE = join(TEST_DIR, "enigma.config.ts");
+const TEST_DIR = join(process.cwd(), 'test-config');
+const TEST_CONFIG_FILE = join(TEST_DIR, '.enigmarc.json');
+const TEST_JS_CONFIG_FILE = join(TEST_DIR, 'enigma.config.ts');
 
-describe("Configuration System", () => {
+describe('Configuration System', () => {
   beforeEach(() => {
-    // Create test directory
-    if (!existsSync(TEST_DIR)) {
-      mkdirSync(TEST_DIR, { recursive: true });
+    // Ensure clean state before each test
+    try {
+      if (existsSync(TEST_DIR)) {
+        rmSync(TEST_DIR, { recursive: true, force: true });
+      }
+    } catch (error) {
+      // Ignore cleanup errors, directory might not exist
     }
+
+    // Create test directory
+    mkdirSync(TEST_DIR, { recursive: true });
   });
 
   afterEach(() => {
-    // Clean up test files
-    if (existsSync(TEST_DIR)) {
-      rmSync(TEST_DIR, { recursive: true, force: true });
+    // Clean up test files with better error handling
+    try {
+      if (existsSync(TEST_DIR)) {
+        rmSync(TEST_DIR, { recursive: true, force: true });
+      }
+    } catch (error) {
+      // Log but don't fail on cleanup errors to prevent cascade failures
+      console.warn(`Failed to clean up test directory ${TEST_DIR}:`, error);
     }
   });
 
-  describe("Schema Validation", () => {
-    it("should validate a complete valid configuration", () => {
+  describe('Schema Validation', () => {
+    it('should validate a complete valid configuration', () => {
       const validConfig = {
         pretty: true,
-        input: "./src",
-        output: "./dist",
+        input: './src',
+        output: './dist',
         minify: false,
         removeUnused: true,
         verbose: true,
         debug: false,
         maxConcurrency: 6,
-        classPrefix: "tw-",
-        excludePatterns: ["*.test.*"],
+        classPrefix: 'tw-',
+        excludePatterns: ['*.test.*'],
         preserveComments: true,
         sourceMaps: false,
       };
@@ -52,13 +64,13 @@ describe("Configuration System", () => {
       expect(result).toEqual(EnigmaConfigSchema.parse(validConfig));
     });
 
-    it("should apply defaults for missing optional fields", () => {
+    it('should apply defaults for missing optional fields', () => {
       const minimalConfig = {};
       const result = EnigmaConfigSchema.parse(minimalConfig);
       expect(result).toEqual(EnigmaConfigSchema.parse({}));
     });
 
-    it("should reject invalid maxConcurrency values", () => {
+    it('should reject invalid maxConcurrency values', () => {
       expect(() => {
         EnigmaConfigSchema.parse({ maxConcurrency: 0 });
       }).toThrow();
@@ -68,17 +80,17 @@ describe("Configuration System", () => {
       }).toThrow();
     });
 
-    it("should reject invalid types", () => {
+    it('should reject invalid types', () => {
       expect(() => {
-        EnigmaConfigSchema.parse({ pretty: "true" });
+        EnigmaConfigSchema.parse({ pretty: 'true' });
       }).toThrow();
 
       expect(() => {
-        EnigmaConfigSchema.parse({ excludePatterns: "pattern" });
+        EnigmaConfigSchema.parse({ excludePatterns: 'pattern' });
       }).toThrow();
     });
 
-    it("should validate HTML extractor configuration", () => {
+    it('should validate HTML extractor configuration', () => {
       const configWithHtmlExtractor = {
         htmlExtractor: {
           caseSensitive: false,
@@ -99,7 +111,7 @@ describe("Configuration System", () => {
       });
     });
 
-    it("should reject invalid HTML extractor options", () => {
+    it('should reject invalid HTML extractor options', () => {
       expect(() => {
         EnigmaConfigSchema.parse({
           htmlExtractor: { maxFileSize: -1 },
@@ -114,12 +126,12 @@ describe("Configuration System", () => {
 
       expect(() => {
         EnigmaConfigSchema.parse({
-          htmlExtractor: { caseSensitive: "true" },
+          htmlExtractor: { caseSensitive: 'true' },
         });
       }).toThrow();
     });
 
-    it("should allow partial HTML extractor configuration", () => {
+    it('should allow partial HTML extractor configuration', () => {
       const configWithPartialHtml = {
         htmlExtractor: {
           caseSensitive: false,
@@ -130,7 +142,7 @@ describe("Configuration System", () => {
       expect(result.htmlExtractor?.caseSensitive).toBe(false);
     });
 
-    it("should validate JavaScript/JSX extractor configuration", () => {
+    it('should validate JavaScript/JSX extractor configuration', () => {
       const configWithJsExtractor = {
         jsExtractor: {
           enableFrameworkDetection: false,
@@ -138,7 +150,7 @@ describe("Configuration System", () => {
           caseSensitive: false,
           maxFileSize: 8000000,
           timeout: 5000,
-          supportedFrameworks: ["react", "vue"],
+          supportedFrameworks: ['react', 'vue'],
         },
       };
 
@@ -150,11 +162,11 @@ describe("Configuration System", () => {
         ignoreEmpty: true, // default
         maxFileSize: 8000000,
         timeout: 5000,
-        supportedFrameworks: ["react", "vue"],
+        supportedFrameworks: ['react', 'vue'],
       });
     });
 
-    it("should reject invalid JavaScript extractor options", () => {
+    it('should reject invalid JavaScript extractor options', () => {
       expect(() => {
         EnigmaConfigSchema.parse({
           jsExtractor: { maxFileSize: -1 },
@@ -169,12 +181,12 @@ describe("Configuration System", () => {
 
       expect(() => {
         EnigmaConfigSchema.parse({
-          jsExtractor: { enableFrameworkDetection: "true" },
+          jsExtractor: { enableFrameworkDetection: 'true' },
         });
       }).toThrow();
     });
 
-    it("should allow partial JavaScript extractor configuration", () => {
+    it('should allow partial JavaScript extractor configuration', () => {
       const configWithPartialJs = {
         jsExtractor: {
           includeDynamicClasses: false,
@@ -187,13 +199,13 @@ describe("Configuration System", () => {
     });
   });
 
-  describe("Configuration File Loading", () => {
-    it("should load JSON configuration file", async () => {
+  describe('Configuration File Loading', () => {
+    it('should load JSON configuration file', async () => {
       const testConfig = {
         pretty: true,
         verbose: true,
-        input: "./test-src",
-        classPrefix: "test-",
+        input: './test-src',
+        classPrefix: 'test-',
       };
 
       writeFileSync(TEST_CONFIG_FILE, JSON.stringify(testConfig, null, 2));
@@ -201,24 +213,24 @@ describe("Configuration System", () => {
       const result = await loadConfig({}, TEST_DIR);
       expect(result.config.pretty).toBe(true);
       expect(result.config.verbose).toBe(true);
-      expect(result.config.input).toBe("./test-src");
-      expect(result.config.classPrefix).toBe("test-");
+      expect(result.config.input).toBe('./test-src');
+      expect(result.config.classPrefix).toBe('test-');
       expect(result.filepath).toBe(TEST_CONFIG_FILE);
     });
 
-    it("should handle missing configuration file gracefully", async () => {
+    it('should handle missing configuration file gracefully', async () => {
       const result = await loadConfig({}, TEST_DIR);
       expect(result.config).toEqual(EnigmaConfigSchema.parse({}));
       expect(result.filepath).toBeUndefined();
     });
 
-    it("should throw ConfigError for invalid configuration file", async () => {
+    it('should throw ConfigError for invalid configuration file', async () => {
       writeFileSync(TEST_CONFIG_FILE, '{ "maxConcurrency": 15 }'); // Invalid value
 
       await expect(loadConfig({}, TEST_DIR)).rejects.toThrow(ConfigError);
     });
 
-    it("should handle JavaScript configuration file loading limitations", async () => {
+    it('should handle JavaScript configuration file loading limitations', async () => {
       // Note: cosmiconfig@8.1.3 has limitations with CommonJS modules in ES module environments
       // This test verifies that the error is handled gracefully
       const configContent = `
@@ -234,18 +246,16 @@ describe("Configuration System", () => {
 
       // cosmiconfig@8.1.3 cannot load CommonJS modules in ES module environment
       // so we expect this to throw a ConfigError
-      await expect(loadConfig({ config: TEST_JS_CONFIG_FILE })).rejects.toThrow(
-        ConfigError,
-      );
+      await expect(loadConfig({ config: TEST_JS_CONFIG_FILE })).rejects.toThrow(ConfigError);
     });
   });
 
-  describe("Synchronous Configuration Loading", () => {
-    it("should load configuration synchronously", () => {
+  describe('Synchronous Configuration Loading', () => {
+    it('should load configuration synchronously', () => {
       const testConfig = {
         pretty: true,
         debug: true,
-        input: "./sync-src",
+        input: './sync-src',
       };
 
       writeFileSync(TEST_CONFIG_FILE, JSON.stringify(testConfig));
@@ -253,11 +263,11 @@ describe("Configuration System", () => {
       const result = loadConfigSync({}, TEST_DIR);
       expect(result.config.pretty).toBe(true);
       expect(result.config.debug).toBe(true);
-      expect(result.config.input).toBe("./sync-src");
+      expect(result.config.input).toBe('./sync-src');
     });
 
-    it("should handle sync loading errors", () => {
-      writeFileSync(TEST_CONFIG_FILE, "invalid json");
+    it('should handle sync loading errors', () => {
+      writeFileSync(TEST_CONFIG_FILE, 'invalid json');
 
       expect(() => {
         loadConfigSync({}, TEST_DIR);
@@ -265,31 +275,31 @@ describe("Configuration System", () => {
     });
   });
 
-  describe("CLI Arguments Integration", () => {
-    it("should merge CLI arguments with defaults", async () => {
+  describe('CLI Arguments Integration', () => {
+    it('should merge CLI arguments with defaults', async () => {
       const cliArgs: CliArguments = {
         pretty: true,
         verbose: true,
-        input: "./cli-input",
+        input: './cli-input',
         maxConcurrency: 2,
       };
 
       const result = await loadConfig(cliArgs, TEST_DIR);
       expect(result.config.pretty).toBe(true);
       expect(result.config.verbose).toBe(true);
-      expect(result.config.input).toBe("./cli-input");
+      expect(result.config.input).toBe('./cli-input');
       expect(result.config.maxConcurrency).toBe(2);
       // Defaults should still apply
       expect(result.config.minify).toBe(true);
       expect(result.config.removeUnused).toBe(true);
     });
 
-    it("should give CLI arguments precedence over config file", async () => {
+    it('should give CLI arguments precedence over config file', async () => {
       const fileConfig = {
         pretty: false,
         verbose: false,
-        input: "./file-input",
-        output: "./file-output",
+        input: './file-input',
+        output: './file-output',
         minify: false,
       };
 
@@ -297,7 +307,7 @@ describe("Configuration System", () => {
 
       const cliArgs: CliArguments = {
         pretty: true,
-        input: "./cli-input",
+        input: './cli-input',
         verbose: true,
       };
 
@@ -305,28 +315,28 @@ describe("Configuration System", () => {
 
       // CLI args should override file config
       expect(result.config.pretty).toBe(true);
-      expect(result.config.input).toBe("./cli-input");
+      expect(result.config.input).toBe('./cli-input');
       expect(result.config.verbose).toBe(true);
 
       // File config should be used where CLI doesn't override
-      expect(result.config.output).toBe("./file-output");
+      expect(result.config.output).toBe('./file-output');
       expect(result.config.minify).toBe(false);
     });
 
-    it("should handle undefined CLI arguments gracefully", async () => {
+    it('should handle undefined CLI arguments gracefully', async () => {
       const cliArgs: CliArguments = {
         pretty: undefined,
         verbose: undefined,
-        input: "./defined-input",
+        input: './defined-input',
       };
 
       const result = await loadConfig(cliArgs, TEST_DIR);
-      expect(result.config.input).toBe("./defined-input");
+      expect(result.config.input).toBe('./defined-input');
       expect(result.config.pretty).toBe(false); // Default
       expect(result.config.verbose).toBe(false); // Default
     });
 
-    it("should handle HTML extractor CLI arguments", async () => {
+    it('should handle HTML extractor CLI arguments', async () => {
       const cliArgs: CliArguments = {
         htmlCaseSensitive: false,
         htmlIgnoreEmpty: false,
@@ -344,14 +354,14 @@ describe("Configuration System", () => {
       });
     });
 
-    it("should handle JavaScript extractor CLI arguments", async () => {
+    it('should handle JavaScript extractor CLI arguments', async () => {
       const cliArgs: CliArguments = {
         jsEnableFrameworkDetection: false,
         jsIncludeDynamicClasses: false,
         jsCaseSensitive: false,
         jsMaxFileSize: 8000000,
         jsTimeout: 5000,
-        jsSupportedFrameworks: ["react", "vue"],
+        jsSupportedFrameworks: ['react', 'vue'],
       };
 
       const result = await loadConfig(cliArgs, TEST_DIR);
@@ -362,11 +372,11 @@ describe("Configuration System", () => {
         ignoreEmpty: true, // default value
         maxFileSize: 8000000,
         timeout: 5000,
-        supportedFrameworks: ["react", "vue"],
+        supportedFrameworks: ['react', 'vue'],
       });
     });
 
-    it("should merge HTML extractor CLI args with file config", async () => {
+    it('should merge HTML extractor CLI args with file config', async () => {
       const fileConfig = {
         htmlExtractor: {
           caseSensitive: true,
@@ -393,45 +403,45 @@ describe("Configuration System", () => {
     });
   });
 
-  describe("Configuration Merging", () => {
-    it("should merge nested configuration correctly", async () => {
+  describe('Configuration Merging', () => {
+    it('should merge nested configuration correctly', async () => {
       const fileConfig = {
-        excludePatterns: ["*.test.*", "*.spec.*"],
-        classPrefix: "file-",
+        excludePatterns: ['*.test.*', '*.spec.*'],
+        classPrefix: 'file-',
         maxConcurrency: 6,
       };
 
       writeFileSync(TEST_CONFIG_FILE, JSON.stringify(fileConfig));
 
       const cliArgs: CliArguments = {
-        excludePatterns: ["*.e2e.*"],
+        excludePatterns: ['*.e2e.*'],
         maxConcurrency: 8,
       };
 
       const result = await loadConfig(cliArgs, TEST_DIR);
 
       // CLI should override arrays completely, not merge
-      expect(result.config.excludePatterns).toEqual(["*.e2e.*"]);
+      expect(result.config.excludePatterns).toEqual(['*.e2e.*']);
       expect(result.config.maxConcurrency).toBe(8);
-      expect(result.config.classPrefix).toBe("file-");
+      expect(result.config.classPrefix).toBe('file-');
     });
 
-    it("should handle complex merging scenarios", async () => {
+    it('should handle complex merging scenarios', async () => {
       const fileConfig = {
         pretty: true,
-        input: "./file-input",
-        output: "./file-output",
+        input: './file-input',
+        output: './file-output',
         minify: false,
         verbose: true,
-        excludePatterns: ["file-pattern"],
+        excludePatterns: ['file-pattern'],
       };
 
       writeFileSync(TEST_CONFIG_FILE, JSON.stringify(fileConfig));
 
       const cliArgs: CliArguments = {
-        output: "./cli-output",
+        output: './cli-output',
         debug: true,
-        excludePatterns: ["cli-pattern1", "cli-pattern2"],
+        excludePatterns: ['cli-pattern1', 'cli-pattern2'],
       };
 
       const result = await loadConfig(cliArgs, TEST_DIR);
@@ -444,97 +454,114 @@ describe("Configuration System", () => {
     });
   });
 
-  describe("Error Handling", () => {
-    it("should provide helpful error messages for validation failures", async () => {
-      const invalidConfig = {
-        maxConcurrency: 15, // Invalid: max is 10
-        pretty: "yes", // Invalid: should be boolean
-      };
-
-      writeFileSync(TEST_CONFIG_FILE, JSON.stringify(invalidConfig));
+  describe('Error Handling', () => {
+    it('should provide helpful error messages for validation failures', async () => {
+      // Use a unique test directory to avoid interference
+      const uniqueTestDir = join(
+        process.cwd(),
+        `test-config-${Date.now()}-${Math.random().toString(36).substring(7)}`
+      );
+      const uniqueConfigFile = join(uniqueTestDir, '.enigmarc.json');
 
       try {
-        await loadConfig({}, TEST_DIR);
-        expect.fail("Should have thrown ConfigError");
-      } catch (error) {
-        expect(error).toBeInstanceOf(ConfigError);
-        expect((error as ConfigError).message).toContain(
-          "Invalid configuration",
-        );
-        expect((error as ConfigError).message).toContain("maxConcurrency");
-        expect((error as ConfigError).message).toContain("pretty");
-        expect((error as ConfigError).filepath).toBe(TEST_CONFIG_FILE);
+        // Create unique test directory
+        mkdirSync(uniqueTestDir, { recursive: true });
+
+        const invalidConfig = {
+          maxConcurrency: 15, // Invalid: max is 10
+          pretty: 'yes', // Invalid: should be boolean
+        };
+
+        writeFileSync(uniqueConfigFile, JSON.stringify(invalidConfig));
+
+        try {
+          await loadConfig({}, uniqueTestDir);
+          expect.fail('Should have thrown ConfigError');
+        } catch (error) {
+          expect(error).toBeInstanceOf(ConfigError);
+          expect((error as ConfigError).message).toContain('Invalid configuration');
+          expect((error as ConfigError).message).toContain('maxConcurrency');
+          expect((error as ConfigError).message).toContain('pretty');
+          expect((error as ConfigError).filepath).toBe(uniqueConfigFile);
+        }
+      } finally {
+        // Always clean up the unique test directory
+        try {
+          if (existsSync(uniqueTestDir)) {
+            rmSync(uniqueTestDir, { recursive: true, force: true });
+          }
+        } catch (error) {
+          console.warn(`Failed to clean up ${uniqueTestDir}:`, error);
+        }
       }
     });
 
-    it("should handle file loading errors", async () => {
-      const nonExistentFile = join(TEST_DIR, "nonexistent.ts");
+    it('should handle file loading errors', async () => {
+      const nonExistentFile = join(TEST_DIR, 'nonexistent.ts');
 
       try {
         await loadConfig({ config: nonExistentFile });
-        expect.fail("Should have thrown ConfigError");
+        expect.fail('Should have thrown ConfigError');
       } catch (error) {
         expect(error).toBeInstanceOf(ConfigError);
-        expect((error as ConfigError).message).toContain(
-          "Failed to load configuration",
-        );
+        expect((error as ConfigError).message).toContain('Failed to load configuration');
         expect((error as ConfigError).filepath).toBe(nonExistentFile);
       }
     });
   });
 
-  describe("Convenience Functions", () => {
-    it("should provide getConfig convenience function", async () => {
+  describe('Convenience Functions', () => {
+    it('should provide getConfig convenience function', async () => {
       const cliArgs: CliArguments = {
         pretty: true,
-        input: "./convenience-test",
+        input: './convenience-test',
       };
 
       const config = await getConfig(cliArgs);
       expect(config.pretty).toBe(true);
-      expect(config.input).toBe("./convenience-test");
+      expect(config.input).toBe('./convenience-test');
       expect(config.minify).toBe(true); // Default
     });
 
-    it("should provide getConfigSync convenience function", () => {
+    it('should provide getConfigSync convenience function', () => {
       const cliArgs: CliArguments = {
         verbose: true,
-        output: "./sync-convenience",
+        output: './sync-convenience',
       };
 
       const config = getConfigSync(cliArgs);
       expect(config.verbose).toBe(true);
-      expect(config.output).toBe("./sync-convenience");
+      expect(config.output).toBe('./sync-convenience');
       expect(config.removeUnused).toBe(true); // Default
     });
   });
 
-  describe("Sample Configuration", () => {
-    it("should generate valid sample configuration", () => {
+  describe('Sample Configuration', () => {
+    it('should generate valid sample configuration', () => {
       const sampleConfig = createSampleConfig();
-      expect(sampleConfig).toContain("module.exports");
-      expect(sampleConfig).toContain("pretty: false");
+      expect(sampleConfig).toContain('module.exports');
+      expect(sampleConfig).toContain('pretty: false');
       expect(sampleConfig).toContain('input: "./src"');
       expect(sampleConfig).toContain('output: "./dist"');
-      expect(sampleConfig).toContain("maxConcurrency: 4");
+      expect(sampleConfig).toContain('maxConcurrency: 4');
     });
   });
 
-  describe("Type Safety", () => {
-    it("should enforce TypeScript types for CliArguments", () => {
+  describe('Type Safety', () => {
+    it('should enforce TypeScript types for CliArguments', () => {
       // This test ensures TypeScript compilation catches type errors
       const validArgs: CliArguments = {
         pretty: true,
-        config: "./config.ts",
+        config: './config.ts',
         verbose: false,
         debug: true,
-        input: "./src",
-        output: "./dist",
+        input: './src',
+        output: './dist',
         minify: true,
         removeUnused: false,
         maxConcurrency: 6,
-        classPrefix: "prefix-",
-        excludePatterns: ["pattern1", "pattern2"],
+        classPrefix: 'prefix-',
+        excludePatterns: ['pattern1', 'pattern2'],
         preserveComments: true,
         sourceMaps: false,
       };
@@ -542,7 +569,7 @@ describe("Configuration System", () => {
       expect(validArgs).toBeDefined();
     });
 
-    it("should enforce TypeScript types for EnigmaConfig", () => {
+    it('should enforce TypeScript types for EnigmaConfig', () => {
       const validConfig: EnigmaConfig = {
         pretty: false,
         minify: true,
@@ -550,7 +577,7 @@ describe("Configuration System", () => {
         verbose: false,
         debug: false,
         maxConcurrency: 4,
-        classPrefix: "",
+        classPrefix: '',
         excludePatterns: [],
         preserveComments: false,
         sourceMaps: false,
@@ -561,30 +588,30 @@ describe("Configuration System", () => {
     });
   });
 
-  describe("Edge Cases", () => {
-    it("should handle empty configuration file", async () => {
-      writeFileSync(TEST_CONFIG_FILE, "{}" );
+  describe('Edge Cases', () => {
+    it('should handle empty configuration file', async () => {
+      writeFileSync(TEST_CONFIG_FILE, '{}');
 
       const result = await loadConfig({}, TEST_DIR);
       expect(result.config).toEqual(EnigmaConfigSchema.parse({}));
     });
 
-    it("should handle configuration with only some fields", async () => {
+    it('should handle configuration with only some fields', async () => {
       const partialConfig = {
         pretty: true,
-        input: "./partial",
+        input: './partial',
       };
 
       writeFileSync(TEST_CONFIG_FILE, JSON.stringify(partialConfig));
 
       const result = await loadConfig({}, TEST_DIR);
       expect(result.config.pretty).toBe(true);
-      expect(result.config.input).toBe("./partial");
+      expect(result.config.input).toBe('./partial');
       expect(result.config.minify).toBe(true); // Default
       expect(result.config.verbose).toBe(false); // Default
     });
 
-    it("should handle boolean CLI arguments correctly", async () => {
+    it('should handle boolean CLI arguments correctly', async () => {
       const cliArgs: CliArguments = {
         pretty: false, // Explicitly false
         verbose: true, // Explicitly true
