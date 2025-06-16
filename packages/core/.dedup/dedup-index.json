@@ -1,0 +1,30 @@
+{
+  "version": "1.0.0",
+  "totalEntries": 1,
+  "spaceSaved": 1500,
+  "lastUpdated": "2025-06-16T06:04:57.669Z",
+  "entries": {
+    "c38c2bf3055c516a98ac5d97f30e7c364e827bc0199e1c3415b794afbe55dcad": {
+      "hash": "c38c2bf3055c516a98ac5d97f30e7c364e827bc0199e1c3415b794afbe55dcad",
+      "algorithm": "sha256",
+      "size": 500,
+      "storagePath": "/Users/rowan/github/tw-enigma/tw-enigma/packages/core/.dedup/c38c2bf3055c516a98ac5d97f30e7c364e827bc0199e1c3415b794afbe55dcad.txt",
+      "referenceCount": 4,
+      "referencePaths": [
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750053712989/test1.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750053712989/test2.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750053897665/test1.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750053897665/test2.txt"
+      ],
+      "firstSeen": "2025-06-16T06:01:52.992Z",
+      "lastAccessed": "2025-06-16T06:04:57.669Z",
+      "compressed": false
+    }
+  },
+  "stats": {
+    "totalOriginalSize": 2000,
+    "totalDeduplicatedSize": 500,
+    "duplicatesFound": 3,
+    "averageReferenceCount": 4
+  }
+}

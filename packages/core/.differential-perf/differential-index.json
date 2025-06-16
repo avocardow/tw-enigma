@@ -1,0 +1,90 @@
+{
+  "version": "1.0.0",
+  "currentFullBackup": {
+    "id": "backup_1750053897855_m0f1w9",
+    "createdAt": "2025-06-16T06:04:57.855Z",
+    "filePath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750053897853/.backups-perf/diff-performance.2025-06-16T06-04-57-855Z.txt.backup",
+    "size": 36
+  },
+  "differentialChain": [
+    {
+      "id": "backup_1750053897866_7trq84",
+      "type": "differential",
+      "baseFullBackupId": "backup_1750053897855_m0f1w9",
+      "backupPath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750053897853/.backups-perf/diff-performance.2025-06-16T06-04-57-866Z.txt.backup",
+      "originalPath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750053897853/diff-performance.txt",
+      "createdAt": "2025-06-16T06:04:57.866Z",
+      "cumulativeFiles": [
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750053897853/diff-performance.txt"
+      ],
+      "cumulativeSize": 9,
+      "currentFiles": [
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750053897853/diff-performance.txt"
+      ],
+      "currentSize": 9,
+      "changeDetectionMethod": "mtime",
+      "compressed": false,
+      "deduplicated": false,
+      "timeSinceFullBackup": 0.0000030555555555555556
+    },
+    {
+      "id": "backup_1750053897878_09cal6",
+      "type": "differential",
+      "baseFullBackupId": "backup_1750053897855_m0f1w9",
+      "backupPath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750053897853/.backups-perf/diff-performance.2025-06-16T06-04-57-878Z.txt.backup",
+      "originalPath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750053897853/diff-performance.txt",
+      "createdAt": "2025-06-16T06:04:57.878Z",
+      "cumulativeFiles": [
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750053897853/diff-performance.txt"
+      ],
+      "cumulativeSize": 18,
+      "currentFiles": [
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750053897853/diff-performance.txt"
+      ],
+      "currentSize": 9,
+      "changeDetectionMethod": "mtime",
+      "compressed": false,
+      "deduplicated": false,
+      "timeSinceFullBackup": 0.0000063888888888888885
+    },
+    {
+      "id": "backup_1750053897893_flh6zw",
+      "type": "differential",
+      "baseFullBackupId": "backup_1750053897855_m0f1w9",
+      "backupPath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750053897853/.backups-perf/diff-performance.2025-06-16T06-04-57-893Z.txt.backup",
+      "originalPath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750053897853/diff-performance.txt",
+      "createdAt": "2025-06-16T06:04:57.893Z",
+      "cumulativeFiles": [
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750053897853/diff-performance.txt"
+      ],
+      "cumulativeSize": 27,
+      "currentFiles": [
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750053897853/diff-performance.txt"
+      ],
+      "currentSize": 9,
+      "changeDetectionMethod": "mtime",
+      "compressed": false,
+      "deduplicated": false,
+      "timeSinceFullBackup": 0.000010555555555555555
+    }
+  ],
+  "cumulativeFileStates": {
+    "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750053897853/diff-performance.txt": {
+      "filePath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750053897853/diff-performance.txt",
+      "size": 9,
+      "mtime": "2025-06-16T06:04:57.893Z",
+      "lastBackup": "2025-06-16T06:04:57.893Z",
+      "hasChanged": true
+    }
+  },
+  "stats": {
+    "totalDifferentials": 3,
+    "currentChainLength": 3,
+    "cumulativeSize": 27,
+    "cumulativeSizeRatio": 0.75,
+    "totalSpaceSaved": 0,
+    "lastBackupAt": "2025-06-16T06:04:57.893Z",
+    "timeSinceFullBackup": 0.000010555555555555555
+  },
+  "lastUpdated": "2025-06-16T06:04:57.894Z"
+}

@@ -34,3 +34,90 @@ node_modules/
 *.sw?
 # OS specific
 .DS_Store
+
+# Monorepo specific
+.turbo
+.turbo/
+**/.turbo/
+.turbo/**
+packages/*/dist
+packages/*/node_modules
+packages/*/.next
+packages/*/coverage
+*.tsbuildinfo
+
+# Turborepo cache and artifacts
+.turbo/cache/
+.turbo/logs/
+.turbo/cookies/
+.turbo/daemon/
+.turbo/runs/
+.cache/
+**/.cache/
+
+# Build artifacts and outputs
+dist/
+build/
+out/
+coverage/
+*.tgz
+*.tar.gz
+.nyc_output/
+.coverage/
+.test-results/
+
+# Package manager artifacts
+.pnpm-debug.log*
+.yarn-integrity
+.yarn-error.log
+.npm-debug.log*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# TypeScript build artifacts
+*.tsbuildinfo
+.tsbuildinfo
+tsbuildinfo.json
+tsconfig.tsbuildinfo
+
+# Vitest cache and coverage
+.vitest/
+**/coverage/
+**/.coverage/
+
+# ESLint cache
+.eslintcache
+**/.eslintcache
+
+# Prettier cache
+.prettier-cache
+**/.prettier-cache
+
+# 🔒 PRIVATE PACKAGES - SECURITY CRITICAL 🔒
+# Complete exclusion of all private/proprietary code
+packages-private/
+packages-private/*
+packages-private/**/*
+packages-private/.*
+packages-private/*/.*
+packages-private/**/.* 
+
+# Private workspace configurations
+pnpm-workspace.yaml.local
+pnpm-workspace.*.local
+workspace.local.*
+
+# Private development files
+*.private.*
+*-private.*
+private-*
+**/private/**
+
+# Security: Prevent accidental exposure of private package references
+# (These patterns catch common mistakes)
+packages-private.zip
+packages-private.tar.*
+packages-private.backup
+.packages-private/

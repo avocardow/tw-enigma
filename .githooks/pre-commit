@@ -1,0 +1,123 @@
+#!/bin/bash
+
+# TW-Enigma Pre-commit Hook - Private Package Security
+# Prevents accidental commits of private package references
+
+set -e
+
+echo "🔒 TW-Enigma Security Check: Validating workspace configuration..."
+
+# Color codes for output
+RED='\033[0;31m'
+YELLOW='\033[1;33m'
+GREEN='\033[0;32m'
+NC='\033[0m' # No Color
+
+# Function to print colored output
+print_error() {
+    echo -e "${RED}❌ ERROR: $1${NC}"
+}
+
+print_warning() {
+    echo -e "${YELLOW}⚠️  WARNING: $1${NC}"
+}
+
+print_success() {
+    echo -e "${GREEN}✅ $1${NC}"
+}
+
+# Check 1: Verify pnpm-workspace.yaml doesn't contain private package references
+echo "🔍 Checking workspace configuration..."
+
+if git diff --cached --name-only | grep -q "pnpm-workspace.yaml"; then
+    if git diff --cached pnpm-workspace.yaml | grep -q "packages-private"; then
+        print_error "pnpm-workspace.yaml contains private package references!"
+        echo ""
+        echo "This could expose proprietary code. To fix:"
+        echo "  1. git reset HEAD pnpm-workspace.yaml"
+        echo "  2. git checkout pnpm-workspace.yaml"
+        echo "  3. Ensure you're using the public workspace configuration"
+        echo ""
+        exit 1
+    fi
+fi
+
+# Check 2: Ensure no private package files are being committed
+echo "🔍 Checking for private package files..."
+
+private_files=$(git diff --cached --name-only | grep "^packages-private/" || true)
+if [ ! -z "$private_files" ]; then
+    print_error "Attempting to commit private package files!"
+    echo ""
+    echo "These private files would be committed:"
+    echo "$private_files" | sed 's/^/  /'
+    echo ""
+    echo "Private packages MUST NOT be committed to the public repository."
+    echo "To fix:"
+    echo "  1. git reset HEAD packages-private/"
+    echo "  2. Verify your .gitignore includes packages-private/"
+    echo ""
+    exit 1
+fi
+
+# Check 3: Look for private package references in public package files
+echo "🔍 Checking for private package references in public code..."
+
+public_files=$(git diff --cached --name-only | grep -E "^(packages|src)/" | grep -v "packages-private" || true)
+if [ ! -z "$public_files" ]; then
+    for file in $public_files; do
+        if git diff --cached "$file" | grep -q "@tw-enigma-private"; then
+            print_error "Public package file '$file' contains private package references!"
+            echo ""
+            echo "Found reference to '@tw-enigma-private' in public code."
+            echo "This could create a dependency on proprietary packages."
+            echo ""
+            exit 1
+        fi
+    done
+fi
+
+# Check 4: Verify no workspace.local files are being committed
+echo "🔍 Checking for local workspace files..."
+
+local_files=$(git diff --cached --name-only | grep -E "\\.local$|\\-local\\.|workspace.*local" || true)
+if [ ! -z "$local_files" ]; then
+    print_error "Attempting to commit local development files!"
+    echo ""
+    echo "These local files would be committed:"
+    echo "$local_files" | sed 's/^/  /'
+    echo ""
+    echo "Local configuration files should not be committed."
+    echo "To fix:"
+    echo "  1. git reset HEAD <file>"
+    echo "  2. Add appropriate .gitignore patterns"
+    echo ""
+    exit 1
+fi
+
+# Check 5: Validate package.json files don't reference private packages
+echo "🔍 Checking package.json files for private dependencies..."
+
+package_json_files=$(git diff --cached --name-only | grep "package.json" | grep -v "packages-private" || true)
+if [ ! -z "$package_json_files" ]; then
+    for file in $package_json_files; do
+        if git diff --cached "$file" | grep -q "@tw-enigma-private"; then
+            print_error "Public package.json '$file' contains private package dependencies!"
+            echo ""
+            echo "This would create a dependency on proprietary packages."
+            echo "Private package dependencies should only exist in private packages."
+            echo ""
+            exit 1
+        fi
+    done
+fi
+
+# Final security reminder
+echo ""
+print_success "Security validation passed!"
+echo ""
+print_warning "Remember: Private packages are in packages-private/ and MUST NOT be committed"
+print_warning "Always verify 'git status' before committing"
+echo ""
+
+exit 0 

@@ -1,0 +1,185 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "ui": "tui",
+  "daemon": true,
+  "cacheDir": ".turbo/cache",
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "src/**/*.ts", 
+        "src/**/*.js", 
+        "package.json", 
+        "tsconfig.json",
+        "!**/*.test.*",
+        "!**/*.spec.*",
+        "!README.md"
+      ],
+      "env": ["NODE_ENV", "TURBO_TOKEN", "TURBO_TEAM"]
+    },
+    "packages/core#build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "src/**/*.ts",
+        "package.json",
+        "tsconfig.json",
+        "../../tsconfig.base.json"
+      ]
+    },
+    "packages/cli#build": {
+      "dependsOn": ["^build", "packages/core#build"],
+      "outputs": ["dist/**"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "src/**/*.ts",
+        "package.json", 
+        "tsconfig.json",
+        "../../tsconfig.base.json"
+      ]
+    },
+    "test": {
+      "dependsOn": ["build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "src/**/*.ts", 
+        "tests/**/*.ts", 
+        "src/**/*.js", 
+        "tests/**/*.js",
+        "vitest.config.ts",
+        "vitest.workspace.ts"
+      ],
+      "outputs": ["coverage/**"],
+      "env": ["NODE_ENV", "CI"]
+    },
+    "packages/core#test": {
+      "dependsOn": ["packages/core#build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "src/**/*.ts",
+        "tests/**/*.ts", 
+        "vitest.config.ts",
+        "../../vitest.workspace.ts"
+      ],
+      "outputs": ["coverage/**"]
+    },
+    "packages/cli#test": {
+      "dependsOn": ["packages/cli#build", "packages/core#build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "src/**/*.ts",
+        "tests/**/*.ts",
+        "vitest.config.ts", 
+        "../../vitest.workspace.ts"
+      ],
+      "outputs": ["coverage/**"]
+    },
+    "test:watch": {
+      "cache": false,
+      "persistent": true,
+      "inputs": [
+        "src/**/*.ts",
+        "tests/**/*.ts",
+        "vitest.config.ts"
+      ]
+    },
+    "test:coverage": {
+      "dependsOn": ["build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "src/**/*.ts", 
+        "tests/**/*.ts", 
+        "src/**/*.js", 
+        "tests/**/*.js",
+        "vitest.config.ts",
+        "vitest.workspace.ts"
+      ],
+      "outputs": ["coverage/**"]
+    },
+    "lint": {
+      "dependsOn": ["^lint"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "src/**/*.ts", 
+        "src/**/*.js", 
+        ".eslintrc.js", 
+        "tsconfig.json",
+        "!**/*.test.*",
+        "!**/*.spec.*"
+      ],
+      "outputs": [],
+      "env": ["NODE_ENV"]
+    },
+    "lint:fix": {
+      "dependsOn": ["^lint"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "src/**/*.ts", 
+        "src/**/*.js", 
+        ".eslintrc.js", 
+        "tsconfig.json"
+      ],
+      "outputs": [],
+      "cache": false
+    },
+    "type-check": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "src/**/*.ts", 
+        "tsconfig.json",
+        "tsconfig.base.json"
+      ],
+      "outputs": []
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true,
+      "inputs": [
+        "src/**/*.ts",
+        "package.json"
+      ]
+    },
+    "clean": {
+      "cache": false,
+      "outputs": []
+    },
+    "clean:cache": {
+      "cache": false,
+      "outputs": []
+    },
+    "clean:all": {
+      "dependsOn": ["clean", "clean:cache"],
+      "cache": false,
+      "outputs": []
+    }
+  },
+  "globalDependencies": [
+    ".env", 
+    ".env.local", 
+    "tsconfig.base.json",
+    "pnpm-workspace.yaml",
+    "turbo.json"
+  ],
+  "globalEnv": [
+    "NODE_ENV",
+    "CI", 
+    "TURBO_TOKEN",
+    "TURBO_TEAM"
+  ],
+  "globalPassThroughEnv": [
+    "PATH",
+    "HOME", 
+    "USER",
+    "SHELL"
+  ],
+  "remoteCache": {
+    "signature": false,
+    "enabled": true,
+    "timeout": 30,
+    "uploadTimeout": 60
+  }
+} 

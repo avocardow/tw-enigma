@@ -1,0 +1,142 @@
+{
+  "version": "1.0.0",
+  "description": "GitHub Actions caching configuration for tw-enigma monorepo",
+  "strategies": {
+    "dependencies": {
+      "name": "pnpm-dependencies",
+      "paths": [
+        "~/.pnpm-store/**",
+        "node_modules",
+        "packages/*/node_modules"
+      ],
+      "keyPattern": "${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}",
+      "restoreKeys": [
+        "${{ runner.os }}-pnpm-"
+      ],
+      "ttl": "7d",
+      "compression": "zstd",
+      "maxSize": "2GB"
+    },
+    "turborepo": {
+      "name": "turbo-cache",
+      "paths": [
+        ".turbo/cache/**"
+      ],
+      "keyPattern": "${{ runner.os }}-turbo-${{ github.sha }}",
+      "restoreKeys": [
+        "${{ runner.os }}-turbo-${{ github.ref_name }}-",
+        "${{ runner.os }}-turbo-main-",
+        "${{ runner.os }}-turbo-"
+      ],
+      "ttl": "30d",
+      "compression": "zstd",
+      "maxSize": "5GB"
+    },
+    "build-artifacts": {
+      "name": "build-outputs",
+      "paths": [
+        "packages/*/dist/**",
+        "packages/*/build/**"
+      ],
+      "keyPattern": "${{ runner.os }}-build-${{ github.sha }}-${{ matrix.node-version }}",
+      "restoreKeys": [
+        "${{ runner.os }}-build-${{ github.ref_name }}-${{ matrix.node-version }}-",
+        "${{ runner.os }}-build-main-${{ matrix.node-version }}-"
+      ],
+      "ttl": "14d",
+      "compression": "gzip",
+      "maxSize": "1GB"
+    },
+    "typescript": {
+      "name": "typescript-cache",
+      "paths": [
+        "packages/*/tsconfig.tsbuildinfo",
+        "node_modules/.cache/typescript/**"
+      ],
+      "keyPattern": "${{ runner.os }}-ts-${{ hashFiles('**/tsconfig.json', '**/tsconfig.base.json') }}",
+      "restoreKeys": [
+        "${{ runner.os }}-ts-"
+      ],
+      "ttl": "14d",
+      "compression": "gzip",
+      "maxSize": "500MB"
+    },
+    "eslint": {
+      "name": "eslint-cache", 
+      "paths": [
+        "node_modules/.cache/eslint/**",
+        ".eslintcache"
+      ],
+      "keyPattern": "${{ runner.os }}-eslint-${{ hashFiles('.eslintrc.js', '**/eslint.config.*') }}",
+      "restoreKeys": [
+        "${{ runner.os }}-eslint-"
+      ],
+      "ttl": "7d",
+      "compression": "gzip",
+      "maxSize": "100MB"
+    },
+    "vitest": {
+      "name": "vitest-cache",
+      "paths": [
+        "node_modules/.cache/vitest/**",
+        "packages/*/node_modules/.cache/vitest/**"
+      ],
+      "keyPattern": "${{ runner.os }}-vitest-${{ hashFiles('**/vitest.config.*', '**/vitest.workspace.*') }}",
+      "restoreKeys": [
+        "${{ runner.os }}-vitest-"
+      ],
+      "ttl": "7d",
+      "compression": "gzip",
+      "maxSize": "200MB"
+    }
+  },
+  "optimization": {
+    "parallel": {
+      "enabled": true,
+      "maxJobs": 4,
+      "strategy": "fan-out"
+    },
+    "compression": {
+      "algorithm": "zstd",
+      "level": 3,
+      "fallback": "gzip"
+    },
+    "cleanup": {
+      "onPRClose": true,
+      "oldBranches": true,
+      "maxAge": "30d"
+    },
+    "metrics": {
+      "trackHitRate": true,
+      "trackSize": true,
+      "trackTiming": true
+    }
+  },
+  "invalidation": {
+    "triggers": [
+      "package.json",
+      "pnpm-lock.yaml", 
+      "tsconfig.json",
+      "tsconfig.base.json",
+      ".eslintrc.js",
+      "vitest.config.ts",
+      "vitest.workspace.ts",
+      "turbo.json"
+    ],
+    "patterns": [
+      "src/**/*.ts",
+      "tests/**/*.ts"
+    ]
+  },
+  "monitoring": {
+    "alerts": {
+      "hitRateBelow": 70,
+      "sizeExceeds": "10GB",
+      "timeExceeds": "300s"
+    },
+    "reporting": {
+      "frequency": "weekly",
+      "metrics": ["hitRate", "totalSize", "avgTime"]
+    }
+  }
+} 

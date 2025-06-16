@@ -1,0 +1,73 @@
+{
+  "name": "@tw-enigma/cli",
+  "version": "0.1.0",
+  "description": "Command-line interface for tw-enigma CSS optimization",
+  "bin": {
+    "enigma": "dist/enigma.js"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint src bin --ext .ts",
+    "lint:fix": "eslint src bin --ext .ts --fix",
+    "type-check": "tsc --noEmit",
+    "clean": "rimraf dist",
+    "clean:coverage": "rimraf coverage",
+    "clean:cache": "rimraf node_modules/.cache",
+    "clean:all": "rimraf dist coverage node_modules/.cache",
+    "start": "node dist/bin/enigma.js"
+  },
+  "keywords": [
+    "cli",
+    "css",
+    "optimization",
+    "tailwind",
+    "performance",
+    "build-tools"
+  ],
+  "author": "Rowan Cardow",
+  "license": "MIT",
+  "homepage": "https://github.com/avocardow/tw-enigma",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/avocardow/tw-enigma.git",
+    "directory": "packages/cli"
+  },
+  "bugs": {
+    "url": "https://github.com/avocardow/tw-enigma/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.54.0",
+    "@tw-enigma/core": "workspace:*",
+    "boxen": "^8.0.1",
+    "chalk": "^5.3.0",
+    "cli-table3": "^0.6.5",
+    "commander": "^11.1.0",
+    "dotenv": "^16.3.1",
+    "fastmcp": "^1.20.5",
+    "figlet": "^1.8.0",
+    "gradient-string": "^3.0.0",
+    "inquirer": "^12.5.0",
+    "ora": "^8.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.1",
+    "@types/uuid": "^10.0.0",
+    "@types/write-file-atomic": "^4.0.3",
+    "@types/ws": "^8.5.10"
+  }
+}

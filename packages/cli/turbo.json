@@ -1,0 +1,51 @@
+{
+  "extends": ["//"],
+  "tasks": {
+    "build": {
+      "dependsOn": ["@tw-enigma/core#build"],
+      "outputs": ["dist/**"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "src/**/*.ts",
+        "bin/**/*.ts",
+        "package.json",
+        "tsconfig.json",
+        "../../tsconfig.base.json",
+        "!src/**/*.test.ts",
+        "!src/**/*.spec.ts"
+      ]
+    },
+    "test": {
+      "dependsOn": ["@tw-enigma/core#build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "src/**/*.ts",
+        "tests/**/*.ts",
+        "vitest.config.ts",
+        "../../vitest.workspace.ts"
+      ],
+      "outputs": ["coverage/**"]
+    },
+    "lint": {
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "src/**/*.ts",
+        "bin/**/*.ts",
+        ".eslintrc.js",
+        "../../.eslintrc.js",
+        "tsconfig.json",
+        "!src/**/*.test.ts",
+        "!src/**/*.spec.ts"
+      ]
+    },
+    "type-check": {
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "src/**/*.ts",
+        "bin/**/*.ts",
+        "tsconfig.json",
+        "../../tsconfig.base.json"
+      ]
+    }
+  }
+} 

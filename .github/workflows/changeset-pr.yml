@@ -1,0 +1,362 @@
+name: Changeset PR Management
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+env:
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+
+jobs:
+  # Job 1: Validate changesets
+  validate-changesets:
+    name: Validate Changesets
+    runs-on: ubuntu-latest
+    outputs:
+      has-changesets: ${{ steps.changeset-check.outputs.has-changesets }}
+      needs-changeset: ${{ steps.changeset-check.outputs.needs-changeset }}
+      changeset-summary: ${{ steps.changeset-check.outputs.summary }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8
+
+      - name: Restore node_modules cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            packages/*/node_modules
+          key: ${{ runner.os }}-node-modules-8-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-node-modules-8-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check for changesets
+        id: changeset-check
+        run: |
+          # Check if PR has changeset files
+          changeset_files=$(find .changeset -name "*.md" -not -name "README.md" | wc -l)
+          echo "changeset_files=${changeset_files}" >> $GITHUB_OUTPUT
+          
+          # Check if changes require a changeset
+          git fetch origin main
+          changed_files=$(git diff --name-only origin/main...HEAD)
+          
+          # Check if any package source files were changed
+          package_changes=$(echo "$changed_files" | grep -E "^packages/.+/src/.+" | wc -l)
+          api_changes=$(echo "$changed_files" | grep -E "^packages/.+/(index|api|main)\." | wc -l)
+          
+          # Determine if changeset is needed
+          if [ "$package_changes" -gt 0 ] || [ "$api_changes" -gt 0 ]; then
+            needs_changeset=true
+          else
+            needs_changeset=false
+          fi
+          
+          # Check for skip labels
+          skip_changeset=$(gh pr view ${{ github.event.pull_request.number }} --json labels --jq '.labels[].name' | grep -c "skip-changeset" || echo "0")
+          
+          if [ "$skip_changeset" -gt 0 ]; then
+            needs_changeset=false
+            echo "Changeset requirement skipped due to skip-changeset label"
+          fi
+          
+          # Set outputs
+          if [ "$changeset_files" -gt 0 ]; then
+            echo "has-changesets=true" >> $GITHUB_OUTPUT
+          else
+            echo "has-changesets=false" >> $GITHUB_OUTPUT
+          fi
+          
+          echo "needs-changeset=${needs_changeset}" >> $GITHUB_OUTPUT
+          
+          # Generate changeset status summary
+          if [ "$changeset_files" -gt 0 ]; then
+            echo "summary=Found $changeset_files changeset file(s)" >> $GITHUB_OUTPUT
+            
+            # Get detailed changeset info
+            changeset status --output=json > changeset-status.json
+            releases=$(cat changeset-status.json | jq -r '.releases | length')
+            echo "This PR includes changesets affecting $releases package(s)"
+          else
+            if [ "$needs_changeset" = "true" ]; then
+              echo "summary=⚠️ This PR modifies package code but has no changesets" >> $GITHUB_OUTPUT
+            else
+              echo "summary=✅ No changesets needed for this PR" >> $GITHUB_OUTPUT
+            fi
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Validate changeset format
+        if: steps.changeset-check.outputs.has-changesets == 'true'
+        run: |
+          echo "Validating changeset format..."
+          
+          # Check each changeset file
+          for changeset in .changeset/*.md; do
+            if [ "$(basename "$changeset")" = "README.md" ]; then
+              continue
+            fi
+            
+            echo "Validating $changeset"
+            
+            # Check for frontmatter
+            if ! head -n 1 "$changeset" | grep -q "^---$"; then
+              echo "❌ $changeset: Missing frontmatter"
+              exit 1
+            fi
+            
+            # Check for package references
+            if ! grep -q "@tw-enigma/" "$changeset"; then
+              echo "⚠️ $changeset: No package references found"
+            fi
+            
+            # Check for valid bump types
+            if ! grep -E "(patch|minor|major)" "$changeset" > /dev/null; then
+              echo "❌ $changeset: Invalid or missing bump type"
+              exit 1
+            fi
+            
+            echo "✅ $changeset is valid"
+          done
+
+  # Job 2: Generate changeset preview
+  preview-release:
+    name: Preview Release Impact
+    runs-on: ubuntu-latest
+    needs: validate-changesets
+    if: needs.validate-changesets.outputs.has-changesets == 'true'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8
+
+      - name: Restore node_modules cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            packages/*/node_modules
+          key: ${{ runner.os }}-node-modules-8-${{ hashFiles('**/pnpm-lock.yaml') }}
+          fail-on-cache-miss: true
+
+      - name: Generate release preview
+        id: preview
+        run: |
+          echo "Generating release preview..."
+          
+          # Get current versions
+          echo "## 📦 Current Package Versions" > preview.md
+          echo "| Package | Current Version |" >> preview.md
+          echo "|---------|-----------------|" >> preview.md
+          
+          for package in packages/*; do
+            if [ -d "$package" ] && [ -f "$package/package.json" ]; then
+              name=$(node -p "require('$package/package.json').name")
+              version=$(node -p "require('$package/package.json').version")
+              echo "| $name | v$version |" >> preview.md
+            fi
+          done
+          
+          echo "" >> preview.md
+          echo "## 🔄 Proposed Changes" >> preview.md
+          
+          # Get changeset status
+          changeset status --output=json > status.json
+          
+          if [ -s status.json ]; then
+            echo "| Package | Change Type | New Version |" >> preview.md
+            echo "|---------|-------------|-------------|" >> preview.md
+            
+            cat status.json | jq -r '.releases[] | "| \(.name) | \(.type) | v\(.newVersion) |"' >> preview.md
+            
+            echo "" >> preview.md
+            echo "## 📝 Changeset Summary" >> preview.md
+            
+            # List changeset files and their content
+            for changeset in .changeset/*.md; do
+              if [ "$(basename "$changeset")" = "README.md" ]; then
+                continue
+              fi
+              
+              echo "### $(basename "$changeset" .md)" >> preview.md
+              echo '```' >> preview.md
+              cat "$changeset" >> preview.md
+              echo '```' >> preview.md
+              echo "" >> preview.md
+            done
+          else
+            echo "No release changes detected" >> preview.md
+          fi
+          
+          # Set output for comment
+          {
+            echo "preview<<EOF"
+            cat preview.md
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
+
+      - name: Comment on PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const preview = `${{ steps.preview.outputs.preview }}`;
+            
+            // Check if we already have a comment
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            
+            const botComment = comments.data.find(comment => 
+              comment.user.type === 'Bot' && 
+              comment.body.includes('📦 Release Preview')
+            );
+            
+            const commentBody = `## 📦 Release Preview
+            
+            ${preview}
+            
+            ---
+            *This preview is automatically generated based on changesets in this PR*`;
+            
+            if (botComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: commentBody,
+              });
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: commentBody,
+              });
+            }
+
+  # Job 3: Validate PR requirements
+  check-requirements:
+    name: Check PR Requirements
+    runs-on: ubuntu-latest
+    needs: validate-changesets
+    steps:
+      - name: Check changeset requirement
+        if: needs.validate-changesets.outputs.needs-changeset == 'true' && needs.validate-changesets.outputs.has-changesets == 'false'
+        run: |
+          echo "## ❌ Missing Changeset" >> $GITHUB_STEP_SUMMARY
+          echo "This PR modifies package source code but doesn't include a changeset." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### How to add a changeset:" >> $GITHUB_STEP_SUMMARY
+          echo "1. Run \`pnpm changeset\` in your local repository" >> $GITHUB_STEP_SUMMARY
+          echo "2. Select the packages that changed" >> $GITHUB_STEP_SUMMARY
+          echo "3. Choose the type of change (patch/minor/major)" >> $GITHUB_STEP_SUMMARY
+          echo "4. Write a summary of the changes" >> $GITHUB_STEP_SUMMARY
+          echo "5. Commit the generated changeset file" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Or add the 'skip-changeset' label if no release is needed" >> $GITHUB_STEP_SUMMARY
+          
+          exit 1
+
+      - name: Success summary
+        if: needs.validate-changesets.outputs.needs-changeset == 'false' || needs.validate-changesets.outputs.has-changesets == 'true'
+        run: |
+          echo "## ✅ Changeset Requirements Met" >> $GITHUB_STEP_SUMMARY
+          echo "${{ needs.validate-changesets.outputs.changeset-summary }}" >> $GITHUB_STEP_SUMMARY
+
+  # Job 4: Auto-label based on changesets
+  auto-label:
+    name: Auto-label PR
+    runs-on: ubuntu-latest
+    needs: validate-changesets
+    if: needs.validate-changesets.outputs.has-changesets == 'true'
+    steps:
+      - name: Add release labels
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            
+            // Parse changeset information
+            const hasChangesets = '${{ needs.validate-changesets.outputs.has-changesets }}' === 'true';
+            
+            if (hasChangesets) {
+              // Add release label
+              await github.rest.issues.addLabels({
+                owner,
+                repo,
+                issue_number,
+                labels: ['release']
+              });
+              
+              console.log('Added release label to PR');
+            }
+
+  # Job 5: Clean up stale comments
+  cleanup:
+    name: Cleanup
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Remove outdated preview comments
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Remove old preview comments if no changesets
+            const needsChangeset = '${{ needs.validate-changesets.outputs.needs-changeset }}' === 'true';
+            const hasChangesets = '${{ needs.validate-changesets.outputs.has-changesets }}' === 'true';
+            
+            if (!hasChangesets) {
+              const comments = await github.rest.issues.listComments({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+              });
+              
+              const previewComments = comments.data.filter(comment => 
+                comment.user.type === 'Bot' && 
+                comment.body.includes('📦 Release Preview')
+              );
+              
+              for (const comment of previewComments) {
+                await github.rest.issues.deleteComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: comment.id,
+                });
+                console.log('Removed outdated preview comment');
+              }
+            } 

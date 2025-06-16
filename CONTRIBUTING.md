@@ -1,591 +1,841 @@
-# Contributing to Tailwind Enigma Core
+# Contributing to tw-enigma
 
-Thank you for your interest in contributing to Tailwind Enigma Core! This document provides comprehensive guidelines for contributors to help you get started and ensure your contributions align with the project's standards.
+[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)
+[![GitHub Issues](https://img.shields.io/github/issues/avocardow/tw-enigma.svg)](https://github.com/avocardow/tw-enigma/issues)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
+
+Thank you for your interest in contributing to tw-enigma! This document provides comprehensive guidelines for contributing to our CSS optimization toolkit. We welcome contributions from developers of all skill levels.
+
+## 🎯 Quick Start for Contributors
+
+1. **🍴 Fork the repository** on GitHub
+2. **📥 Clone your fork** locally
+3. **🔧 Set up the development environment**
+4. **🌿 Create a feature branch**
+5. **💻 Make your changes**
+6. **🧪 Test your changes**
+7. **📤 Submit a pull request**
+
+Detailed instructions for each step are provided below.
 
 ## 📋 Table of Contents
 
-- [Project Overview](#project-overview)
-- [Getting Started](#getting-started)
-- [Development Environment Setup](#development-environment-setup)
+- [Code of Conduct](#code-of-conduct)
+- [Ways to Contribute](#ways-to-contribute)
+- [Development Setup](#development-setup)
 - [Project Structure](#project-structure)
 - [Development Workflow](#development-workflow)
 - [Coding Standards](#coding-standards)
 - [Testing Guidelines](#testing-guidelines)
-- [Commit Message Format](#commit-message-format)
 - [Pull Request Process](#pull-request-process)
-- [Issue Reporting](#issue-reporting)
-- [Code Review Guidelines](#code-review-guidelines)
+- [Issue Guidelines](#issue-guidelines)
+- [Documentation](#documentation)
 - [Release Process](#release-process)
 - [Community Guidelines](#community-guidelines)
+- [Getting Help](#getting-help)
 
-## 🎯 Project Overview
+## 📜 Code of Conduct
 
-**Tailwind Enigma Core** is an intelligent CSS optimization engine that automatically detects, extracts, and optimizes Tailwind CSS classes from various file formats and frameworks to dramatically reduce bundle sizes while maintaining functionality.
+This project follows the [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior to [conduct@tw-enigma.dev](mailto:conduct@tw-enigma.dev).
 
-### Mission
+## 🤝 Ways to Contribute
 
-- Provide the most efficient CSS optimization for Tailwind CSS projects
-- Maintain zero-configuration usability while offering extensive customization
-- Support all major frameworks and file formats out of the box
-- Deliver measurable performance improvements in production environments
+### 🐛 Bug Reports
 
-### Key Technologies
+Help us improve by reporting bugs:
 
-- **TypeScript** (primary language with strict type checking)
-- **Node.js 18+** (runtime environment)
-- **Vitest** (testing framework)
-- **ESLint 9.x** (linting with flat config)
-- **Prettier** (code formatting)
-- **Changesets** (release management)
-- **PostCSS** (CSS processing)
-- **pnpm** (package manager)
+- **Search existing issues** first to avoid duplicates
+- **Use the bug report template** when creating new issues
+- **Provide detailed reproduction steps**
+- **Include environment information** (Node.js version, OS, etc.)
+- **Share minimal code examples** that demonstrate the issue
 
-## 🚀 Getting Started
+### 💡 Feature Requests
+
+Suggest new features or improvements:
+
+- **Check the roadmap** to see if it's already planned
+- **Use the feature request template**
+- **Explain the use case** and why it would be valuable
+- **Consider implementation complexity** and breaking changes
+- **Propose API design** if applicable
+
+### 📝 Documentation
+
+Improve our documentation:
+
+- **Fix typos and grammar errors**
+- **Add missing documentation**
+- **Improve clarity and examples**
+- **Translate documentation** (contact us first)
+- **Create tutorials and guides**
+
+### 🔧 Code Contributions
+
+Contribute code improvements:
+
+- **Core optimization algorithms**
+- **Build tool integrations**
+- **CLI commands and features**
+- **Performance optimizations**
+- **Framework-specific adapters**
+- **Testing utilities**
+
+### 🧪 Testing
+
+Help improve our test coverage:
+
+- **Add unit tests** for existing features
+- **Create integration tests** for build tool plugins
+- **Develop performance benchmarks**
+- **Test on different platforms** and environments
+- **Report and fix test failures**
+
+## 🛠️ Development Setup
 
 ### Prerequisites
 
-Before contributing, ensure you have the following installed:
+- **Node.js** >= 18.0.0
+- **pnpm** >= 7.0.0 (recommended package manager)
+- **Git** >= 2.0.0
 
-- **Node.js** >= 18.0.0 (LTS recommended)
-- **pnpm** >= 8.0.0 (preferred package manager)
-- **Git** >= 2.20.0
-- A modern code editor (VS Code recommended with TypeScript support)
+### Initial Setup
 
-### Installation
-
-1. **Fork and Clone the Repository**
-
+1. **Fork and clone the repository:**
    ```bash
-   git clone https://github.com/your-username/tw-enigma.git
+   # Fork on GitHub, then clone your fork
+   git clone https://github.com/YOUR_USERNAME/tw-enigma.git
    cd tw-enigma
+   
+   # Add upstream remote
+   git remote add upstream https://github.com/avocardow/tw-enigma.git
    ```
 
-2. **Install Dependencies**
-
+2. **Install dependencies:**
    ```bash
+   # Install all dependencies for the monorepo
    pnpm install
    ```
 
-3. **Verify Setup**
-
+3. **Build all packages:**
    ```bash
-   pnpm test
+   # Build all packages
    pnpm build
-   pnpm type-check
+   
+   # Or build specific packages
+   pnpm --filter @tw-enigma/core build
+   pnpm --filter @tw-enigma/cli build
    ```
 
-4. **Run Development Commands**
-
+4. **Run tests to verify setup:**
    ```bash
-   # Start development mode with watch
-   pnpm dev
-
-   # Run tests in watch mode
-   pnpm test:watch
-
-   # Run linting
-   pnpm lint
+   # Run all tests
+   pnpm test
+   
+   # Run tests for specific package
+   pnpm --filter @tw-enigma/core test
    ```
 
-## 🏗️ Development Environment Setup
+5. **Start development mode:**
+   ```bash
+   # Watch mode for all packages
+   pnpm dev
+   
+   # Watch mode for specific package
+   pnpm --filter @tw-enigma/core dev
+   ```
 
-### Environment Configuration
+### Development Environment
 
-1. **Environment Variables**
+#### Recommended VSCode Extensions
 
-   - No environment variables are required for basic development
-   - For AI-powered features, set `ANTHROPIC_API_KEY` in a `.env` file
-   - See [Environment Variables](#environment-variables) section for details
-
-2. **Editor Configuration**
-
-   - Install TypeScript and ESLint extensions
-   - Enable format-on-save with Prettier
-   - Configure TypeScript strict mode support
-
-3. **Git Hooks**
-   - Pre-commit hooks automatically run ESLint and Prettier
-   - Commit message validation enforces conventional commit format
-
-### Available Scripts
-
-| Command              | Description                               |
-| -------------------- | ----------------------------------------- |
-| `pnpm dev`           | Start development mode with file watching |
-| `pnpm build`         | Build the project for production          |
-| `pnpm test`          | Run all tests once                        |
-| `pnpm test:watch`    | Run tests in watch mode                   |
-| `pnpm test:ui`       | Open Vitest UI for interactive testing    |
-| `pnpm test:coverage` | Run tests with coverage reporting         |
-| `pnpm type-check`    | Run TypeScript type checking              |
-| `pnpm lint`          | Run ESLint linting                        |
-| `pnpm lint:fix`      | Run ESLint with automatic fixes           |
-| `pnpm format`        | Format code with Prettier                 |
-| `pnpm format:check`  | Check code formatting                     |
-| `pnpm changeset`     | Create a new changeset for releases       |
-
-### Troubleshooting Common Issues
-
-**Node.js Version Issues**
-
-```bash
-# Check your Node.js version
-node --version
-
-# If using nvm, install and use Node 18+
-nvm install 18
-nvm use 18
+```json
+{
+  "recommendations": [
+    "bradlc.vscode-tailwindcss",
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "ms-vscode.vscode-typescript-next",
+    "vitest.explorer",
+    "ms-vscode.vscode-json"
+  ]
+}
 ```
 
-**pnpm Installation Issues**
+#### Environment Variables
+
+Create a `.env.local` file for development:
 
 ```bash
-# Install pnpm globally
-npm install -g pnpm
+# Debug mode
+ENIGMA_DEBUG=true
 
-# Or use corepack (Node.js 16+)
-corepack enable
-corepack prepare pnpm@latest --activate
+# Log level
+ENIGMA_LOG_LEVEL=debug
+
+# Test configuration
+NODE_ENV=development
 ```
 
-**TypeScript Errors**
-
-```bash
-# Clear TypeScript cache
-rm -rf node_modules/.cache
-pnpm install
-
-# Run type checking explicitly
-pnpm type-check
-```
-
-## 📁 Project Structure
+## 🏗️ Project Structure
 
 ```
 tw-enigma/
-├── bin/                    # CLI entry points
-├── src/                    # Source code
-│   ├── core/              # Core optimization engines
-│   │   ├── plugins/       # Built-in optimization plugins
-│   │   └── pluginManager.ts
-│   ├── detectors/         # File format detectors
-│   ├── integrations/      # Framework integrations
-│   ├── output/            # Output optimization system
-│   ├── types/             # TypeScript type definitions
-│   └── utils/             # Shared utilities
-├── tests/                 # Test files
-│   ├── fixtures/          # Test data and mock files
-│   ├── integration/       # Integration tests
-│   └── unit/              # Unit tests
-├── tasks/                 # Task management (development)
-├── scripts/               # Development and build scripts
-└── docs/                  # Documentation
+├── packages/
+│   ├── core/                 # Core optimization engine
+│   │   ├── src/
+│   │   │   ├── analyzer/     # Pattern analysis
+│   │   │   ├── generator/    # CSS generation
+│   │   │   ├── optimizer/    # Optimization algorithms
+│   │   │   ├── plugins/      # Build tool plugins
+│   │   │   └── utils/        # Shared utilities
+│   │   ├── tests/           # Package tests
+│   │   └── package.json
+│   └── cli/                  # Command-line interface
+│       ├── src/
+│       │   ├── commands/     # CLI commands
+│       │   ├── config/       # Configuration management
+│       │   └── utils/        # CLI utilities
+│       ├── bin/             # Executable files
+│       ├── tests/           # Package tests
+│       └── package.json
+├── docs/                     # Documentation
+├── examples/                 # Usage examples
+├── .github/                  # GitHub workflows and templates
+├── .changeset/              # Changeset configuration
+├── scripts/                 # Build and utility scripts
+└── turbo.json               # Turborepo configuration
 ```
 
-### Key Modules
+### Package Architecture
 
-- **Core Engines** (`src/core/`): CSS optimization and processing logic
-- **File Processing** (`src/detectors/`, `src/utils/`): File discovery and parsing
-- **Framework Integration** (`src/integrations/`): Framework-specific optimizations
-- **Output System** (`src/output/`): CSS bundling, chunking, and performance optimization
-- **Plugin System** (`src/core/plugins/`): Extensible optimization plugins
+#### Core Package (`@tw-enigma/core`)
+
+- **Analyzer**: Pattern detection and frequency analysis
+- **Generator**: CSS generation with multiple strategies
+- **Optimizer**: Optimization algorithms and rule engines
+- **Plugins**: Build tool integrations (Vite, Webpack, PostCSS)
+- **Utils**: Shared utilities and helper functions
+
+#### CLI Package (`@tw-enigma/cli`)
+
+- **Commands**: Individual CLI command implementations
+- **Config**: Configuration file management
+- **Utils**: CLI-specific utilities and helpers
 
 ## 🔄 Development Workflow
 
 ### Branch Strategy
 
-1. **Main Branch** (`main`): Production-ready code
-2. **Feature Branches** (`feature/description`): New features and enhancements
-3. **Bugfix Branches** (`fix/description`): Bug fixes
-4. **Documentation Branches** (`docs/description`): Documentation updates
+We use a feature branch workflow:
 
-### Workflow Steps
+```bash
+# Create feature branch from main
+git checkout main
+git pull upstream main
+git checkout -b feature/your-feature-name
 
-1. **Create Feature Branch**
+# Make changes and commit
+git add .
+git commit -m "feat: add your feature"
 
-   ```bash
-   git checkout -b feature/your-feature-name
-   ```
+# Push to your fork
+git push origin feature/your-feature-name
 
-2. **Make Changes**
+# Create pull request on GitHub
+```
 
-   - Follow coding standards
-   - Write comprehensive tests
-   - Update documentation as needed
+### Branch Naming
 
-3. **Test Thoroughly**
+Use descriptive branch names with prefixes:
 
-   ```bash
-   pnpm test
-   pnpm type-check
-   pnpm lint
-   ```
+- **Features**: `feature/add-vue-plugin`
+- **Bug fixes**: `fix/memory-leak-in-analyzer`
+- **Documentation**: `docs/update-contributing-guide`
+- **Refactoring**: `refactor/optimizer-architecture`
+- **Performance**: `perf/improve-pattern-matching`
+- **Tests**: `test/add-integration-tests`
 
-4. **Commit Changes**
+### Commit Messages
 
-   ```bash
-   git add .
-   git commit -m "feat: add new optimization algorithm"
-   ```
+We follow [Conventional Commits](https://conventionalcommits.org/):
 
-5. **Push and Create PR**
-   ```bash
-   git push origin feature/your-feature-name
-   ```
+```bash
+# Format
+type(scope): description
 
-## 📝 Coding Standards
+# Examples
+feat(core): add Vue.js framework support
+fix(cli): resolve memory leak in watch mode
+docs(readme): update installation instructions
+test(analyzer): add unit tests for pattern detection
+perf(optimizer): improve CSS generation speed by 40%
+refactor(generator): simplify atomic class naming
+```
+
+#### Commit Types
+
+- **feat**: New features
+- **fix**: Bug fixes
+- **docs**: Documentation changes
+- **style**: Code style changes (formatting, etc.)
+- **refactor**: Code refactoring
+- **perf**: Performance improvements
+- **test**: Adding or updating tests
+- **chore**: Maintenance tasks
+- **ci**: CI/CD changes
+- **revert**: Reverting previous commits
+
+### Syncing with Upstream
+
+Keep your fork up to date:
+
+```bash
+# Fetch upstream changes
+git fetch upstream
+
+# Merge upstream main into your main
+git checkout main
+git merge upstream/main
+git push origin main
+
+# Rebase your feature branch on latest main
+git checkout feature/your-feature-name
+git rebase main
+```
+
+## 📏 Coding Standards
 
 ### TypeScript Guidelines
 
-- **Strict Mode**: All code must pass TypeScript strict mode checking
-- **Type Safety**: Prefer explicit types over `any`
-- **Interfaces**: Use interfaces for object shapes, types for unions/primitives
-- **Null Safety**: Handle null/undefined cases explicitly
-
 ```typescript
-// ✅ Good
-interface OptimizationResult {
-  readonly sizeSavings: number;
-  readonly optimizedClasses: string[];
-  readonly errors?: string[];
+// ✅ Good: Use explicit types
+interface OptimizationConfig {
+  strategy: 'atomic' | 'chunked' | 'hybrid';
+  threshold: number;
+  minify: boolean;
 }
 
-// ❌ Avoid
-const result: any = optimize();
-```
+// ✅ Good: Use descriptive names
+function analyzePatternFrequency(patterns: Pattern[]): FrequencyMap {
+  // Implementation
+}
 
-### Code Style
+// ❌ Avoid: Implicit any types
+function processData(data: any): any {
+  // Avoid this
+}
 
-- **ESLint 9.x**: All code must pass ESLint with flat config
-- **Prettier**: Automatic formatting enforced
-- **Naming Conventions**:
-  - Variables/Functions: `camelCase`
-  - Classes/Interfaces: `PascalCase`
-  - Constants: `UPPER_SNAKE_CASE`
-  - Files: `kebab-case` or `camelCase`
-
-```typescript
-// ✅ Good naming
-class CssOptimizer {
-  private readonly MAX_CHUNK_SIZE = 50 * 1024;
-
-  public optimizeCss(input: CssInput): OptimizationResult {
-    const processedClasses = this.processClasses(input);
-    return this.generateResult(processedClasses);
-  }
+// ✅ Good: Use proper error handling
+try {
+  const result = await processFile(filePath);
+  return result;
+} catch (error) {
+  logger.error('Failed to process file', { filePath, error });
+  throw new ProcessingError('File processing failed', { cause: error });
 }
 ```
 
-### Error Handling
+### ESLint Configuration
 
-- Use custom error classes with descriptive messages
-- Provide actionable error information
-- Log errors appropriately for debugging
+We use ESLint 9.x with TypeScript support:
+
+```bash
+# Lint all packages
+pnpm lint
+
+# Fix auto-fixable issues
+pnpm lint:fix
+
+# Lint specific package
+pnpm --filter @tw-enigma/core lint
+```
+
+### Prettier Configuration
+
+Code formatting is handled by Prettier:
+
+```bash
+# Format all files
+pnpm format
+
+# Check formatting
+pnpm format:check
+```
+
+### Code Structure Guidelines
+
+#### File Organization
 
 ```typescript
-// ✅ Good error handling
+// File header with description
+/**
+ * Pattern analyzer for detecting Tailwind CSS usage patterns
+ * @author tw-enigma team
+ * @since 1.0.0
+ */
+
+// Imports (external libraries first, then internal)
+import { readFile } from 'fs/promises';
+import { glob } from 'glob';
+
+import { Logger } from '../utils/logger';
+import { PatternCache } from './cache';
+
+// Types and interfaces
+interface AnalyzerOptions {
+  threshold: number;
+  includeVariants: boolean;
+}
+
+// Constants
+const DEFAULT_THRESHOLD = 2;
+const PATTERN_REGEX = /class[Name]*=['"`]([^'"`]+)['"`]/g;
+
+// Main class/function implementation
+export class PatternAnalyzer {
+  // Implementation
+}
+```
+
+#### Error Handling
+
+```typescript
+// ✅ Good: Custom error classes
 export class OptimizationError extends Error {
   constructor(
     message: string,
     public readonly code: string,
-    public readonly cause?: unknown,
+    public readonly details?: Record<string, unknown>
   ) {
     super(message);
-    this.name = "OptimizationError";
+    this.name = 'OptimizationError';
   }
 }
 
-// Usage
-if (!isValidInput(input)) {
-  throw new OptimizationError(
-    "Invalid CSS input: missing required properties",
-    "INVALID_INPUT",
-  );
+// ✅ Good: Proper error context
+async function analyzeFile(filePath: string): Promise<Pattern[]> {
+  try {
+    const content = await readFile(filePath, 'utf-8');
+    return extractPatterns(content);
+  } catch (error) {
+    throw new OptimizationError(
+      `Failed to analyze file: ${filePath}`,
+      'FILE_ANALYSIS_FAILED',
+      { filePath, originalError: error }
+    );
+  }
 }
 ```
 
-### Performance Considerations
+#### Logging
 
-- Profile performance-critical code paths
-- Use efficient algorithms for CSS processing
-- Implement proper caching where appropriate
-- Monitor memory usage in long-running operations
+```typescript
+import { createLogger } from '../utils/logger';
+
+const logger = createLogger('PatternAnalyzer');
+
+export class PatternAnalyzer {
+  async analyze(): Promise<void> {
+    logger.info('Starting pattern analysis', { fileCount: this.files.length });
+    
+    try {
+      const patterns = await this.extractPatterns();
+      logger.debug('Patterns extracted', { patternCount: patterns.length });
+    } catch (error) {
+      logger.error('Pattern analysis failed', { error });
+      throw error;
+    }
+  }
+}
+```
 
 ## 🧪 Testing Guidelines
 
-### Testing Strategy
-
-Our testing approach ensures reliability across different use cases:
-
-- **Unit Tests**: Test individual functions and classes
-- **Integration Tests**: Test component interactions
-- **CLI Tests**: Test command-line interface behavior
-- **Performance Tests**: Validate optimization performance
-
 ### Test Structure
 
-```typescript
-// test file: src/utils/cssParser.test.ts
-import { describe, it, expect, beforeEach } from "vitest";
-import { CssParser } from "./cssParser.js";
+We use Vitest for testing with comprehensive coverage requirements:
 
-describe("CssParser", () => {
-  let parser: CssParser;
+```typescript
+// test-utils.ts - Shared test utilities
+export function createMockConfig(overrides: Partial<Config> = {}): Config {
+  return {
+    strategy: 'atomic',
+    threshold: 2,
+    minify: false,
+    ...overrides
+  };
+}
+
+// analyzer.test.ts - Unit tests
+describe('PatternAnalyzer', () => {
+  let analyzer: PatternAnalyzer;
+  let mockConfig: Config;
 
   beforeEach(() => {
-    parser = new CssParser({
-      optimizationLevel: 2,
-    });
+    mockConfig = createMockConfig();
+    analyzer = new PatternAnalyzer(mockConfig);
   });
 
-  describe("parseClasses", () => {
-    it("should extract Tailwind classes from CSS content", () => {
-      const css = ".bg-blue-500 { background-color: blue; }";
-      const result = parser.parseClasses(css);
-
-      expect(result).toEqual(["bg-blue-500"]);
+  describe('analyze()', () => {
+    it('should extract patterns from HTML files', async () => {
+      const mockHtml = '<div class="flex items-center justify-center"></div>';
+      const patterns = await analyzer.analyze([mockHtml]);
+      
+      expect(patterns).toHaveLength(1);
+      expect(patterns[0].classes).toEqual(['flex', 'items-center', 'justify-center']);
     });
 
-    it("should handle malformed CSS gracefully", () => {
-      const malformedCss = ".bg-blue-500 { background-color: blue";
-      const result = parser.parseClasses(malformedCss);
-
-      expect(result).toEqual([]);
+    it('should handle empty files gracefully', async () => {
+      const patterns = await analyzer.analyze(['']);
+      expect(patterns).toHaveLength(0);
     });
+
+    it('should throw error for invalid input', async () => {
+      await expect(analyzer.analyze(null as any)).rejects.toThrow(OptimizationError);
+    });
+  });
+});
+```
+
+### Test Categories
+
+#### Unit Tests
+
+Test individual functions and classes in isolation:
+
+```bash
+# Run unit tests
+pnpm test:unit
+
+# Run with coverage
+pnpm test:unit --coverage
+
+# Watch mode
+pnpm test:unit --watch
+```
+
+#### Integration Tests
+
+Test package interactions and build tool plugins:
+
+```bash
+# Run integration tests
+pnpm test:integration
+
+# Test specific integration
+pnpm test:integration --grep "Vite plugin"
+```
+
+#### End-to-End Tests
+
+Test complete workflows and CLI commands:
+
+```bash
+# Run E2E tests
+pnpm test:e2e
+
+# Test CLI commands
+pnpm test:e2e --grep "CLI"
+```
+
+### Performance Tests
+
+Benchmark critical operations:
+
+```typescript
+// performance.test.ts
+import { performance } from 'perf_hooks';
+
+describe('Performance', () => {
+  it('should analyze 1000 patterns in under 100ms', async () => {
+    const patterns = generateMockPatterns(1000);
+    
+    const start = performance.now();
+    await analyzer.analyze(patterns);
+    const end = performance.now();
+    
+    expect(end - start).toBeLessThan(100);
   });
 });
 ```
 
 ### Coverage Requirements
 
-- **Minimum Coverage**: 80% overall, 90% for core optimization logic
-- **Critical Paths**: 95% coverage for CSS processing and file operations
-- **New Features**: All new code must include comprehensive tests
-
-### Running Tests
+- **Overall coverage**: >= 80%
+- **Core package**: >= 85%
+- **Critical paths**: >= 95%
+- **New features**: >= 90%
 
 ```bash
-# Run all tests
-pnpm test
-
-# Run tests in watch mode
-pnpm test:watch
-
-# Run tests with coverage
+# Generate coverage report
 pnpm test:coverage
 
-# Run specific test file
-pnpm test cssParser
-
-# Run tests in interactive UI
-pnpm test:ui
-```
-
-### Test Best Practices
-
-- Write descriptive test names that explain the expected behavior
-- Use the AAA pattern (Arrange, Act, Assert)
-- Test both success and failure scenarios
-- Mock external dependencies appropriately
-- Use fixtures for complex test data
-
-## 📝 Commit Message Format
-
-We follow the [Conventional Commits](https://conventionalcommits.org/) specification:
-
-### Format
-
-```
-<type>[optional scope]: <description>
-
-[optional body]
-
-[optional footer(s)]
-```
-
-### Types
-
-- `feat`: New feature or enhancement
-- `fix`: Bug fix
-- `docs`: Documentation changes
-- `style`: Code formatting (not affecting functionality)
-- `refactor`: Code restructuring without functional changes
-- `perf`: Performance improvements
-- `test`: Adding or updating tests
-- `chore`: Build process, dependency updates, etc.
-
-### Examples
-
-```bash
-# New feature
-git commit -m "feat(optimizer): add CSS chunking strategy"
-
-# Bug fix
-git commit -m "fix(parser): handle nested CSS selectors correctly"
-
-# Documentation
-git commit -m "docs: update API documentation for new features"
-
-# Breaking change
-git commit -m "feat!: redesign configuration API
-
-BREAKING CHANGE: Configuration format has changed.
-See MIGRATION.md for upgrade instructions."
+# View coverage report
+open coverage/index.html
 ```
 
 ## 🔄 Pull Request Process
 
 ### Before Submitting
 
-1. **Ensure Code Quality**
+1. **📝 Update documentation** if needed
+2. **🧪 Add tests** for new functionality
+3. **🔍 Run linting and formatting** (`pnpm lint && pnpm format`)
+4. **✅ Ensure all tests pass** (`pnpm test`)
+5. **📊 Check test coverage** meets requirements
+6. **📋 Update CHANGELOG.md** if needed
 
-   ```bash
-   pnpm lint
-   pnpm type-check
-   pnpm test
-   pnpm format:check
-   ```
+### Pull Request Template
 
-2. **Update Documentation**
+When creating a PR, please include:
 
-   - Update README if adding new features
-   - Add/update JSDoc comments for public APIs
-   - Update type definitions if needed
+```markdown
+## Description
+Brief description of changes
 
-3. **Add Changeset** (for user-facing changes)
-   ```bash
-   pnpm changeset
-   ```
+## Type of Change
+- [ ] 🐛 Bug fix
+- [ ] ✨ New feature
+- [ ] 💥 Breaking change
+- [ ] 📝 Documentation update
+- [ ] 🎨 Style/formatting
+- [ ] ♻️ Refactoring
+- [ ] ⚡ Performance improvement
+- [ ] 🧪 Test changes
 
-### PR Template Checklist
+## Testing
+- [ ] Unit tests added/updated
+- [ ] Integration tests added/updated
+- [ ] E2E tests added/updated
+- [ ] Manual testing performed
 
-When creating a PR, ensure you address:
-
-- [ ] **Description**: Clear description of changes and motivation
-- [ ] **Type**: Bug fix, feature, documentation, etc.
-- [ ] **Testing**: All tests pass, new tests added if needed
-- [ ] **Documentation**: Updated relevant documentation
-- [ ] **Breaking Changes**: Called out with migration guide
-- [ ] **Changeset**: Added for user-facing changes
+## Checklist
+- [ ] Code follows project style guidelines
+- [ ] Self-review completed
+- [ ] Documentation updated
+- [ ] Tests added for new functionality
+- [ ] All tests pass
+- [ ] No breaking changes (or properly documented)
+```
 
 ### Review Process
 
-1. **Automated Checks**: All CI checks must pass
-2. **Code Review**: At least one maintainer approval required
-3. **Testing**: Verify functionality works as described
-4. **Documentation**: Ensure changes are properly documented
+1. **🤖 Automated checks** must pass (CI, linting, tests)
+2. **👥 Code review** by at least one maintainer
+3. **✅ All feedback addressed**
+4. **🔀 Merge** when approved
 
-## 🐛 Issue Reporting
+### Merge Strategy
 
-### Before Reporting
+- **Squash and merge** for feature branches
+- **Rebase and merge** for hotfixes
+- **Merge commit** for release branches
 
-1. **Search Existing Issues**: Check if the issue already exists
-2. **Verify Bug**: Confirm the issue is reproducible
-3. **Minimal Reproduction**: Create the smallest possible example
+## 🐛 Issue Guidelines
 
 ### Bug Reports
 
 Use the bug report template and include:
 
-- **Environment Details**: Node.js version, OS, package versions
-- **Expected Behavior**: What should happen
-- **Actual Behavior**: What actually happens
-- **Reproduction Steps**: Clear steps to reproduce
-- **Code Examples**: Minimal reproducible code
-- **Error Messages**: Full error messages and stack traces
+- **Environment details** (Node.js version, OS, package versions)
+- **Steps to reproduce** the issue
+- **Expected vs actual behavior**
+- **Minimal code example** that demonstrates the bug
+- **Error messages and stack traces**
+- **Screenshots** if applicable
 
 ### Feature Requests
 
 Use the feature request template and include:
 
-- **Problem Statement**: What problem does this solve?
-- **Proposed Solution**: How should it work?
-- **Alternatives**: Other solutions considered
-- **Use Cases**: Real-world scenarios where this is needed
+- **Problem statement** - what problem does this solve?
+- **Proposed solution** - how should it work?
+- **Alternatives considered** - other approaches you've thought of
+- **Use cases** - specific scenarios where this would be helpful
+- **Implementation ideas** - if you have technical suggestions
 
-## 👥 Code Review Guidelines
+### Issue Labels
 
-### As a Reviewer
+We use labels to categorize issues:
 
-- **Be Constructive**: Provide actionable feedback
-- **Focus on Code Quality**: Maintainability, performance, correctness
-- **Security**: Check for potential security issues
-- **Test Coverage**: Ensure adequate testing
-- **Documentation**: Verify public APIs are documented
+- **Type**: `bug`, `feature`, `documentation`, `question`
+- **Priority**: `critical`, `high`, `medium`, `low`
+- **Complexity**: `trivial`, `easy`, `medium`, `hard`
+- **Package**: `core`, `cli`, `docs`
+- **Status**: `needs-triage`, `in-progress`, `blocked`, `needs-review`
 
-### Review Checklist
+## 📚 Documentation
 
-- [ ] **Functionality**: Does the code work as intended?
-- [ ] **Tests**: Are there sufficient tests with good coverage?
-- [ ] **Performance**: Are there any performance concerns?
-- [ ] **Security**: Are there potential security vulnerabilities?
-- [ ] **Style**: Does the code follow project conventions?
-- [ ] **Documentation**: Is the code and changes well-documented?
+### Documentation Types
+
+- **API Documentation**: Generated from TSDoc comments
+- **User Guides**: Step-by-step instructions
+- **Tutorials**: Learning-oriented content
+- **Reference**: Information-oriented content
+
+### Writing Guidelines
+
+#### API Documentation
+
+Use TSDoc comments for all public APIs:
+
+```typescript
+/**
+ * Analyzes Tailwind CSS usage patterns in the provided files
+ * 
+ * @param files - Array of file paths or content to analyze
+ * @param options - Configuration options for analysis
+ * @returns Promise resolving to array of detected patterns
+ * 
+ * @example
+ * ```typescript
+ * const analyzer = new PatternAnalyzer();
+ * const patterns = await analyzer.analyze(['src/**\/*.tsx'], {
+ *   threshold: 3,
+ *   includeVariants: true
+ * });
+ * ```
+ * 
+ * @throws {OptimizationError} When file analysis fails
+ * @since 1.0.0
+ */
+async analyze(
+  files: string[],
+  options: AnalyzerOptions = {}
+): Promise<Pattern[]>
+```
+
+#### User Documentation
+
+- **Use clear, concise language**
+- **Include working code examples**
+- **Provide context and rationale**
+- **Use consistent formatting**
+- **Test all examples**
+
+### Documentation Commands
+
+```bash
+# Generate API documentation
+pnpm docs:api
+
+# Build documentation site
+pnpm docs:build
+
+# Serve documentation locally
+pnpm docs:serve
+
+# Lint documentation
+pnpm docs:lint
+```
 
 ## 🚀 Release Process
 
-### Changesets Workflow
+### Changesets
 
-1. **Create Changeset**
+We use changesets for version management:
 
-   ```bash
-   pnpm changeset
-   ```
+```bash
+# Add a changeset
+pnpm changeset
 
-2. **Select Change Type**
+# Version packages
+pnpm changeset version
 
-   - `major`: Breaking changes
-   - `minor`: New features (backward compatible)
-   - `patch`: Bug fixes
+# Publish packages
+pnpm changeset publish
+```
 
-3. **Version and Release**
-   ```bash
-   pnpm version    # Creates version PR
-   pnpm release    # Publishes to npm
-   ```
+### Release Types
+
+- **Patch** (1.0.1): Bug fixes, documentation updates
+- **Minor** (1.1.0): New features, non-breaking changes
+- **Major** (2.0.0): Breaking changes
 
 ### Release Checklist
 
-- [ ] All tests pass
-- [ ] Documentation updated
-- [ ] Changelog reviewed
-- [ ] Breaking changes documented
-- [ ] Migration guide provided (if needed)
+1. **📝 Update documentation**
+2. **🧪 All tests passing**
+3. **📋 Update CHANGELOG.md**
+4. **🏷️ Create changeset**
+5. **🔖 Tag release**
+6. **📦 Publish to npm**
+7. **📢 Announce release**
 
-## 🤝 Community Guidelines
+## 👥 Community Guidelines
 
-### Code of Conduct
+### Communication Channels
 
-- **Be Respectful**: Treat all contributors with respect
-- **Be Inclusive**: Welcome developers of all skill levels
-- **Be Constructive**: Provide helpful feedback and suggestions
-- **Be Patient**: Remember that everyone is learning
+- **GitHub Issues**: Bug reports, feature requests
+- **GitHub Discussions**: General questions, ideas
+- **Discord**: Real-time chat (coming soon)
+- **Twitter**: [@tw_enigma](https://twitter.com/tw_enigma) - announcements
 
-### Getting Help
+### Community Standards
 
-- **GitHub Issues**: For bugs and feature requests
-- **GitHub Discussions**: For questions and community discussion
-- **Code Review**: For specific code-related questions
+- **Be respectful** and inclusive
+- **Help others** learn and grow
+- **Share knowledge** and experiences
+- **Provide constructive feedback**
+- **Follow the code of conduct**
 
 ### Recognition
 
-We value all contributions, including:
+We recognize contributors through:
 
-- Code contributions (features, bug fixes, optimizations)
-- Documentation improvements
-- Bug reports and testing
-- Community support and discussions
-- Performance benchmarking and optimization suggestions
+- **All Contributors** specification
+- **Contributor highlights** in releases
+- **Special thanks** in documentation
+- **Maintainer invitations** for consistent contributors
 
-## 📚 Additional Resources
+## 🆘 Getting Help
 
-- [Project README](./README.md)
-- [API Documentation](./docs/api.md)
-- [Performance Guide](./docs/performance.md)
-- [Migration Guide](./docs/migration.md)
-- [Conventional Commits](https://conventionalcommits.org/)
-- [Semantic Versioning](https://semver.org/)
+### Before Asking for Help
+
+1. **📖 Check the documentation**
+2. **🔍 Search existing issues**
+3. **💬 Look through discussions**
+4. **🧪 Try the examples**
+
+### How to Ask for Help
+
+When asking for help:
+
+- **Be specific** about the problem
+- **Include relevant code** and configuration
+- **Describe what you've tried**
+- **Provide environment details**
+- **Use proper formatting** for code blocks
+
+### Response Expectations
+
+- **Issues**: Response within 2-3 business days
+- **Pull requests**: Review within 1 week
+- **Discussions**: Community-driven, varies
+- **Security issues**: Response within 24 hours
+
+## 🏆 Recognition
+
+### Contributors
+
+All contributors are recognized in our [All Contributors](https://allcontributors.org/) section. Contributions of all kinds are welcome and acknowledged.
+
+### Maintainers
+
+Current maintainers:
+
+- **[@maintainer1](https://github.com/maintainer1)** - Core development
+- **[@maintainer2](https://github.com/maintainer2)** - CLI and tooling
+- **[@maintainer3](https://github.com/maintainer3)** - Documentation
+
+## 📄 License
+
+By contributing to tw-enigma, you agree that your contributions will be licensed under the [MIT License](LICENSE).
 
 ---
 
-Thank you for contributing to Tailwind Enigma Core! Your contributions help make CSS optimization more efficient and accessible for developers worldwide. 🎉
+<div align="center">
+  <p><strong>Thank you for contributing to tw-enigma! 🎉</strong></p>
+  <p>Your contributions help make CSS optimization better for everyone.</p>
+</div>
