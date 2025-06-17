@@ -196,9 +196,20 @@ async function main(): Promise<void> {
     // Register all commands with error protection
     try {
       registerCommands(program);
+
+      // Verify commands were registered (for CI debugging)
+      if (process.env.CI) {
+        const commandNames = program.commands.map((cmd: any) => cmd.name());
+        if (!commandNames.includes('init-config')) {
+          console.error(
+            'ERROR: init-config command not registered! Available commands:',
+            commandNames
+          );
+        }
+      }
     } catch (commandError: any) {
-      if (process.env.DEBUG_CLI) {
-        console.error('Failed to register commands:', commandError);
+      console.error('CRITICAL: Failed to register commands:', commandError);
+      if (process.env.DEBUG_CLI || process.env.CI) {
         console.error('Command registration error details:', commandError.stack);
       }
       // Don't exit here - continue with basic functionality

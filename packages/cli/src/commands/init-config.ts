@@ -13,6 +13,18 @@ import { addCommonOptions, createLoggerFromArgv, handleCLIError } from '../utils
  * Create and configure the init-config command
  */
 export function createInitConfigCommand(): Command {
+  // Test core import immediately for CI debugging
+  if (process.env.CI) {
+    try {
+      const testConfig = createSampleConfig();
+      if (!testConfig || typeof testConfig !== 'string') {
+        console.error('ERROR: createSampleConfig import failed or returned invalid data');
+      }
+    } catch (importError) {
+      console.error('CRITICAL: @tw-enigma/core import failed in init-config:', importError);
+    }
+  }
+
   const command = new Command('init-config')
     .description('Create a sample configuration file')
     .action(async (options, cmd) => {
