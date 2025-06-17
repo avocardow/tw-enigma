@@ -73,10 +73,10 @@ async function safeImport<T = any>(modulePath: string, fallback: T): Promise<T> 
 // Main CLI function with improved error handling
 async function main(): Promise<void> {
   // Always log basic info for CI debugging - this should always appear
-  console.error(`[CLI-DEBUG] Starting CLI with args: [${process.argv.slice(2).join(', ')}]`);
-  console.error(`[CLI-DEBUG] Process argv length: ${process.argv.length}`);
-  console.error(`[CLI-DEBUG] CI environment: ${process.env.CI || 'not set'}`);
-  console.error(`[CLI-DEBUG] Node version: ${process.version}`);
+  console.log(`[CLI-DEBUG] Starting CLI with args: [${process.argv.slice(2).join(', ')}]`);
+  console.log(`[CLI-DEBUG] Process argv length: ${process.argv.length}`);
+  console.log(`[CLI-DEBUG] CI environment: ${process.env.CI || 'not set'}`);
+  console.log(`[CLI-DEBUG] Node version: ${process.version}`);
 
   try {
     // Load external dependencies with fallbacks
@@ -91,7 +91,7 @@ async function main(): Promise<void> {
     const chalkDefault = chalk.default || chalk;
 
     // Commander.js should be available as CommonJS
-    console.error('[CLI-DEBUG] Attempting to load commander.js...');
+    console.log('[CLI-DEBUG] Attempting to load commander.js...');
     const commanderModule = safeRequire<CommanderModule>('commander', {
       Command: class MockCommand {
         commands: any[] = [];
@@ -126,7 +126,7 @@ async function main(): Promise<void> {
         }
       } as any,
     });
-    console.error('[CLI-DEBUG] Commander module loaded:', !!commanderModule.Command);
+    console.log('[CLI-DEBUG] Commander module loaded:', !!commanderModule.Command);
     const { Command } = commanderModule;
 
     // Load internal modules with safe paths - determine correct path
@@ -381,21 +381,21 @@ async function main(): Promise<void> {
 
     // Parse arguments with error handling
     try {
-      console.error(`[CLI-DEBUG] About to parse args. Length: ${process.argv.length}`);
-      console.error(
+      console.log(`[CLI-DEBUG] About to parse args. Length: ${process.argv.length}`);
+      console.log(
         `[CLI-DEBUG] Available commands: ${program.commands.map((cmd: any) => cmd.name()).join(', ')}`
       );
 
       // Handle case where no arguments are provided
       if (process.argv.length <= 2) {
-        console.error(`[CLI-DEBUG] No args provided, showing help`);
+        console.log(`[CLI-DEBUG] No args provided, showing help`);
         // No arguments provided, run default action
         program.parse([process.argv[0], process.argv[1], '--help']);
       } else {
-        console.error(`[CLI-DEBUG] Parsing args: ${process.argv.slice(2).join(' ')}`);
-        console.error(`[CLI-DEBUG] Full argv: ${JSON.stringify(process.argv)}`);
+        console.log(`[CLI-DEBUG] Parsing args: ${process.argv.slice(2).join(' ')}`);
+        console.log(`[CLI-DEBUG] Full argv: ${JSON.stringify(process.argv)}`);
         program.parse(process.argv);
-        console.error(`[CLI-DEBUG] Parse completed, command should have executed by now`);
+        console.log(`[CLI-DEBUG] Parse completed, command should have executed by now`);
       }
     } catch (parseError) {
       console.error('Failed to parse CLI arguments:', parseError);

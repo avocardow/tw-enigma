@@ -28,7 +28,7 @@ export function createInitConfigCommand(): Command {
   const command = new Command('init-config')
     .description('Create a sample configuration file')
     .action(async (options, cmd) => {
-      console.error('[CLI-DEBUG] init-config action executing!');
+      console.log('[CLI-DEBUG] init-config action executing!');
       const logger = createLoggerFromArgv(cmd.optsWithGlobals());
 
       try {
