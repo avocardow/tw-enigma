@@ -1,0 +1,336 @@
+2025-06-17T13:32:06.2881778Z Current runner version: '2.325.0'
+2025-06-17T13:32:06.2906929Z ##[group]Runner Image Provisioner
+2025-06-17T13:32:06.2907958Z Hosted Compute Agent
+2025-06-17T13:32:06.2908597Z Version: 20250529.345
+2025-06-17T13:32:06.2909215Z Commit: 22237e57af968c281070ffa8ed912c1b754f9a23
+2025-06-17T13:32:06.2909908Z Build Date: 2025-05-29T20:18:30Z
+2025-06-17T13:32:06.2910448Z ##[endgroup]
+2025-06-17T13:32:06.2911136Z ##[group]Operating System
+2025-06-17T13:32:06.2911994Z Ubuntu
+2025-06-17T13:32:06.2912507Z 24.04.2
+2025-06-17T13:32:06.2913080Z LTS
+2025-06-17T13:32:06.2913582Z ##[endgroup]
+2025-06-17T13:32:06.2914036Z ##[group]Runner Image
+2025-06-17T13:32:06.2914680Z Image: ubuntu-24.04
+2025-06-17T13:32:06.2915181Z Version: 20250602.3.0
+2025-06-17T13:32:06.2916201Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20250602.3/images/ubuntu/Ubuntu2404-Readme.md
+2025-06-17T13:32:06.2918167Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20250602.3
+2025-06-17T13:32:06.2919108Z ##[endgroup]
+2025-06-17T13:32:06.2920337Z ##[group]GITHUB_TOKEN Permissions
+2025-06-17T13:32:06.2922583Z Contents: read
+2025-06-17T13:32:06.2923260Z Metadata: read
+2025-06-17T13:32:06.2923786Z Packages: read
+2025-06-17T13:32:06.2924253Z ##[endgroup]
+2025-06-17T13:32:06.2926340Z Secret source: Actions
+2025-06-17T13:32:06.2927074Z Prepare workflow directory
+2025-06-17T13:32:06.3601801Z Prepare all required actions
+2025-06-17T13:32:06.3655882Z Getting action download info
+2025-06-17T13:32:06.7329041Z ##[group]Download immutable action package 'actions/checkout@v4'
+2025-06-17T13:32:06.7330149Z Version: 4.2.2
+2025-06-17T13:32:06.7331314Z Digest: sha256:ccb2698953eaebd21c7bf6268a94f9c26518a7e38e27e0b83c1fe1ad049819b1
+2025-06-17T13:32:06.7333160Z Source commit SHA: 11bd71901bbe5b1630ceea73d27597364c9af683
+2025-06-17T13:32:06.7333965Z ##[endgroup]
+2025-06-17T13:32:07.3535014Z ##[group]Download immutable action package 'actions/setup-node@v4'
+2025-06-17T13:32:07.3536462Z Version: 4.4.0
+2025-06-17T13:32:07.3537889Z Digest: sha256:9427cefe82346e992fb5b949e3569b39d537ae41aa3086483b14eceebfc16bc1
+2025-06-17T13:32:07.3539816Z Source commit SHA: 49933ea5288caeca8642d1e84afbd3f7d6820020
+2025-06-17T13:32:07.3541155Z ##[endgroup]
+2025-06-17T13:32:07.5045917Z Download action repository 'pnpm/action-setup@v3' (SHA:a3252b78c470c02df07e9d59298aecedc3ccdd6d)
+2025-06-17T13:32:07.9686653Z ##[group]Download immutable action package 'actions/cache@v4'
+2025-06-17T13:32:07.9688362Z Version: 4.2.3
+2025-06-17T13:32:07.9689960Z Digest: sha256:c8a3bb963e1f1826d8fcc8d1354f0dd29d8ac1db1d4f6f20247055ae11b81ed9
+2025-06-17T13:32:07.9692508Z Source commit SHA: 5a3ec84eff668545956fd18022155c47e93e2684
+2025-06-17T13:32:07.9694014Z ##[endgroup]
+2025-06-17T13:32:08.2537591Z Complete job name: Pre-Release Tests (20.x)
+2025-06-17T13:32:08.3266158Z ##[group]Run actions/checkout@v4
+2025-06-17T13:32:08.3267431Z with:
+2025-06-17T13:32:08.3268128Z   fetch-depth: 0
+2025-06-17T13:32:08.3268942Z   repository: avocardow/tw-enigma
+2025-06-17T13:32:08.3270198Z   token: ***
+2025-06-17T13:32:08.3270934Z   ssh-strict: true
+2025-06-17T13:32:08.3271971Z   ssh-user: git
+2025-06-17T13:32:08.3272759Z   persist-credentials: true
+2025-06-17T13:32:08.3273656Z   clean: true
+2025-06-17T13:32:08.3274446Z   sparse-checkout-cone-mode: true
+2025-06-17T13:32:08.3275386Z   fetch-tags: false
+2025-06-17T13:32:08.3276175Z   show-progress: true
+2025-06-17T13:32:08.3277004Z   lfs: false
+2025-06-17T13:32:08.3277757Z   submodules: false
+2025-06-17T13:32:08.3278559Z   set-safe-directory: true
+2025-06-17T13:32:08.3279717Z env:
+2025-06-17T13:32:08.3280446Z   TURBO_TOKEN:
+2025-06-17T13:32:08.3281227Z   TURBO_TEAM:
+2025-06-17T13:32:08.3282165Z   NPM_TOKEN:
+2025-06-17T13:32:08.3283179Z   GITHUB_TOKEN: ***
+2025-06-17T13:32:08.3283937Z ##[endgroup]
+2025-06-17T13:32:08.4356608Z Syncing repository: avocardow/tw-enigma
+2025-06-17T13:32:08.4359114Z ##[group]Getting Git version info
+2025-06-17T13:32:08.4360395Z Working directory is '/home/runner/work/tw-enigma/tw-enigma'
+2025-06-17T13:32:08.4362877Z [command]/usr/bin/git version
+2025-06-17T13:32:08.5763220Z git version 2.49.0
+2025-06-17T13:32:08.5793035Z ##[endgroup]
+2025-06-17T13:32:08.5808911Z Temporarily overriding HOME='/home/runner/work/_temp/130290d8-41fc-4c43-90d6-d8a9b56d003b' before making global git config changes
+2025-06-17T13:32:08.5811929Z Adding repository directory to the temporary git global config as a safe directory
+2025-06-17T13:32:08.5822820Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/tw-enigma/tw-enigma
+2025-06-17T13:32:08.5918657Z Deleting the contents of '/home/runner/work/tw-enigma/tw-enigma'
+2025-06-17T13:32:08.5922332Z ##[group]Initializing the repository
+2025-06-17T13:32:08.5926581Z [command]/usr/bin/git init /home/runner/work/tw-enigma/tw-enigma
+2025-06-17T13:32:08.6671768Z hint: Using 'master' as the name for the initial branch. This default branch name
+2025-06-17T13:32:08.6674322Z hint: is subject to change. To configure the initial branch name to use in all
+2025-06-17T13:32:08.6676458Z hint: of your new repositories, which will suppress this warning, call:
+2025-06-17T13:32:08.6677843Z hint:
+2025-06-17T13:32:08.6678847Z hint: 	git config --global init.defaultBranch <name>
+2025-06-17T13:32:08.6680006Z hint:
+2025-06-17T13:32:08.6681095Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2025-06-17T13:32:08.6683154Z hint: 'development'. The just-created branch can be renamed via this command:
+2025-06-17T13:32:08.6684558Z hint:
+2025-06-17T13:32:08.6685363Z hint: 	git branch -m <name>
+2025-06-17T13:32:08.6795230Z Initialized empty Git repository in /home/runner/work/tw-enigma/tw-enigma/.git/
+2025-06-17T13:32:08.6809587Z [command]/usr/bin/git remote add origin https://github.com/avocardow/tw-enigma
+2025-06-17T13:32:08.6923948Z ##[endgroup]
+2025-06-17T13:32:08.6926286Z ##[group]Disabling automatic garbage collection
+2025-06-17T13:32:08.6928451Z [command]/usr/bin/git config --local gc.auto 0
+2025-06-17T13:32:08.6959053Z ##[endgroup]
+2025-06-17T13:32:08.6961306Z ##[group]Setting up auth
+2025-06-17T13:32:08.6967062Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2025-06-17T13:32:08.7000169Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2025-06-17T13:32:08.9176026Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2025-06-17T13:32:08.9206115Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2025-06-17T13:32:08.9424274Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2025-06-17T13:32:08.9465582Z ##[endgroup]
+2025-06-17T13:32:08.9466416Z ##[group]Fetching the repository
+2025-06-17T13:32:08.9474567Z [command]/usr/bin/git -c protocol.version=2 fetch --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*
+2025-06-17T13:32:13.3747908Z From https://github.com/avocardow/tw-enigma
+2025-06-17T13:32:13.3749090Z  * [new branch]      dependabot/github_actions/pnpm/action-setup-4 -> origin/dependabot/github_actions/pnpm/action-setup-4
+2025-06-17T13:32:13.3750101Z  * [new branch]      dependabot/npm_and_yarn/commander-14.0.0 -> origin/dependabot/npm_and_yarn/commander-14.0.0
+2025-06-17T13:32:13.3751323Z  * [new branch]      dependabot/npm_and_yarn/cosmiconfig-9.0.0 -> origin/dependabot/npm_and_yarn/cosmiconfig-9.0.0
+2025-06-17T13:32:13.3753542Z  * [new branch]      dependabot/npm_and_yarn/fastmcp-3.3.0 -> origin/dependabot/npm_and_yarn/fastmcp-3.3.0
+2025-06-17T13:32:13.3755588Z  * [new branch]      dependabot/npm_and_yarn/glob-11.0.3 -> origin/dependabot/npm_and_yarn/glob-11.0.3
+2025-06-17T13:32:13.3757769Z  * [new branch]      dependabot/npm_and_yarn/lru-cache-11.1.0 -> origin/dependabot/npm_and_yarn/lru-cache-11.1.0
+2025-06-17T13:32:13.3760342Z  * [new branch]      dependabot/npm_and_yarn/production-dependencies-93d9f17379 -> origin/dependabot/npm_and_yarn/production-dependencies-93d9f17379
+2025-06-17T13:32:13.3762313Z  * [new branch]      dependabot/npm_and_yarn/tailwindcss-4.1.10 -> origin/dependabot/npm_and_yarn/tailwindcss-4.1.10
+2025-06-17T13:32:13.3764117Z  * [new branch]      main       -> origin/main
+2025-06-17T13:32:13.3765689Z  * [new tag]         v1.0.0     -> v1.0.0
+2025-06-17T13:32:13.3766748Z  * [new tag]         v1.0.1     -> v1.0.1
+2025-06-17T13:32:13.3768284Z  * [new tag]         v1.0.2     -> v1.0.2
+2025-06-17T13:32:13.3769531Z  * [new tag]         v1.0.3     -> v1.0.3
+2025-06-17T13:32:13.3872954Z [command]/usr/bin/git branch --list --remote origin/main
+2025-06-17T13:32:13.3896691Z   origin/main
+2025-06-17T13:32:13.3905182Z [command]/usr/bin/git rev-parse refs/remotes/origin/main
+2025-06-17T13:32:13.3924464Z afcc061597edca69c9aaad5f7210b7970035fa32
+2025-06-17T13:32:13.3929820Z ##[endgroup]
+2025-06-17T13:32:13.3930415Z ##[group]Determining the checkout info
+2025-06-17T13:32:13.3931052Z ##[endgroup]
+2025-06-17T13:32:13.3935276Z [command]/usr/bin/git sparse-checkout disable
+2025-06-17T13:32:13.4041183Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2025-06-17T13:32:13.4065444Z ##[group]Checking out the ref
+2025-06-17T13:32:13.4068931Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+2025-06-17T13:32:13.7733455Z Switched to a new branch 'main'
+2025-06-17T13:32:13.7734650Z branch 'main' set up to track 'origin/main'.
+2025-06-17T13:32:13.7765702Z ##[endgroup]
+2025-06-17T13:32:13.7807123Z [command]/usr/bin/git log -1 --format=%H
+2025-06-17T13:32:13.7831452Z afcc061597edca69c9aaad5f7210b7970035fa32
+2025-06-17T13:32:13.8034536Z ##[group]Run actions/setup-node@v4
+2025-06-17T13:32:13.8034819Z with:
+2025-06-17T13:32:13.8035002Z   node-version: 20.x
+2025-06-17T13:32:13.8035203Z   always-auth: false
+2025-06-17T13:32:13.8035390Z   check-latest: false
+2025-06-17T13:32:13.8035745Z   token: ***
+2025-06-17T13:32:13.8035917Z env:
+2025-06-17T13:32:13.8036082Z   TURBO_TOKEN:
+2025-06-17T13:32:13.8036255Z   TURBO_TEAM:
+2025-06-17T13:32:13.8036431Z   NPM_TOKEN:
+2025-06-17T13:32:13.8036710Z   GITHUB_TOKEN: ***
+2025-06-17T13:32:13.8036892Z ##[endgroup]
+2025-06-17T13:32:14.0384828Z Found in cache @ /opt/hostedtoolcache/node/20.19.2/x64
+2025-06-17T13:32:14.0389943Z ##[group]Environment details
+2025-06-17T13:32:16.7254676Z node: v20.19.2
+2025-06-17T13:32:16.7255017Z npm: 10.8.2
+2025-06-17T13:32:16.7255305Z yarn: 1.22.22
+2025-06-17T13:32:16.7256078Z ##[endgroup]
+2025-06-17T13:32:16.7432178Z ##[group]Run pnpm/action-setup@v3
+2025-06-17T13:32:16.7432486Z with:
+2025-06-17T13:32:16.7432677Z   version: 10.10.0
+2025-06-17T13:32:16.7432881Z   dest: ~/setup-pnpm
+2025-06-17T13:32:16.7433090Z   run_install: null
+2025-06-17T13:32:16.7433294Z   package_json_file: package.json
+2025-06-17T13:32:16.7433538Z   standalone: false
+2025-06-17T13:32:16.7433723Z env:
+2025-06-17T13:32:16.7433895Z   TURBO_TOKEN:
+2025-06-17T13:32:16.7434088Z   TURBO_TEAM:
+2025-06-17T13:32:16.7434270Z   NPM_TOKEN:
+2025-06-17T13:32:16.7434732Z   GITHUB_TOKEN: ***
+2025-06-17T13:32:16.7434934Z ##[endgroup]
+2025-06-17T13:32:16.8294305Z ##[group]Running self-installer...
+2025-06-17T13:32:17.3531088Z Progress: resolved 1, reused 0, downloaded 0, added 0
+2025-06-17T13:32:17.3611447Z Packages: +1
+2025-06-17T13:32:17.3612282Z +
+2025-06-17T13:32:17.7643093Z Progress: resolved 1, reused 0, downloaded 1, added 1, done
+2025-06-17T13:32:17.7923561Z
+2025-06-17T13:32:17.7923895Z dependencies:
+2025-06-17T13:32:17.7924351Z + pnpm 10.10.0 (10.12.1 is available)
+2025-06-17T13:32:17.7924557Z
+2025-06-17T13:32:17.7956097Z Done in 798ms
+2025-06-17T13:32:17.8138363Z ##[endgroup]
+2025-06-17T13:32:17.8145429Z Installation Completed!
+2025-06-17T13:32:18.0002853Z ##[group]Run actions/cache@v4
+2025-06-17T13:32:18.0003123Z with:
+2025-06-17T13:32:18.0003348Z   path: node_modules
+packages/*/node_modules
+
+2025-06-17T13:32:18.0003830Z   key: Linux-node-modules-8-fd3a02ebc9ba621f71be89706760f724e41ae39a2ce7ee3cb88fd9ea1def9630
+2025-06-17T13:32:18.0004516Z   fail-on-cache-miss: true
+2025-06-17T13:32:18.0004756Z   enableCrossOsArchive: false
+2025-06-17T13:32:18.0004980Z   lookup-only: false
+2025-06-17T13:32:18.0005170Z   save-always: false
+2025-06-17T13:32:18.0005344Z env:
+2025-06-17T13:32:18.0005501Z   TURBO_TOKEN:
+2025-06-17T13:32:18.0005664Z   TURBO_TEAM:
+2025-06-17T13:32:18.0005832Z   NPM_TOKEN:
+2025-06-17T13:32:18.0006517Z   GITHUB_TOKEN: ***
+2025-06-17T13:32:18.0006778Z   PNPM_HOME: /home/runner/setup-pnpm/node_modules/.bin
+2025-06-17T13:32:18.0007065Z ##[endgroup]
+2025-06-17T13:32:18.2995151Z Cache hit for: Linux-node-modules-8-fd3a02ebc9ba621f71be89706760f724e41ae39a2ce7ee3cb88fd9ea1def9630
+2025-06-17T13:32:19.1618001Z Received 60182730 of 60182730 (100.0%), 84.9 MBs/sec
+2025-06-17T13:32:19.1618847Z Cache Size: ~57 MB (60182730 B)
+2025-06-17T13:32:19.1655067Z [command]/usr/bin/tar -xf /home/runner/work/_temp/735a3aae-22b7-4ac0-9118-b9d149002c0b/cache.tzst -P -C /home/runner/work/tw-enigma/tw-enigma --use-compress-program unzstd
+2025-06-17T13:32:20.5799767Z Cache restored successfully
+2025-06-17T13:32:20.6006198Z Cache restored from key: Linux-node-modules-8-fd3a02ebc9ba621f71be89706760f724e41ae39a2ce7ee3cb88fd9ea1def9630
+2025-06-17T13:32:20.6125490Z ##[group]Run actions/cache@v4
+2025-06-17T13:32:20.6125752Z with:
+2025-06-17T13:32:20.6125973Z   path: packages/*/dist
+packages/*/build
+
+2025-06-17T13:32:20.6126367Z   key: Linux-build-afcc061597edca69c9aaad5f7210b7970035fa32-20.x
+2025-06-17T13:32:20.6126751Z   restore-keys: Linux-build-main-20.x-
+
+2025-06-17T13:32:20.6127047Z   enableCrossOsArchive: false
+2025-06-17T13:32:20.6127302Z   fail-on-cache-miss: false
+2025-06-17T13:32:20.6127542Z   lookup-only: false
+2025-06-17T13:32:20.6127752Z   save-always: false
+2025-06-17T13:32:20.6127938Z env:
+2025-06-17T13:32:20.6128111Z   TURBO_TOKEN:
+2025-06-17T13:32:20.6128296Z   TURBO_TEAM:
+2025-06-17T13:32:20.6128471Z   NPM_TOKEN:
+2025-06-17T13:32:20.6128853Z   GITHUB_TOKEN: ***
+2025-06-17T13:32:20.6129146Z   PNPM_HOME: /home/runner/setup-pnpm/node_modules/.bin
+2025-06-17T13:32:20.6129445Z ##[endgroup]
+2025-06-17T13:32:20.8443627Z Cache not found for input keys: Linux-build-afcc061597edca69c9aaad5f7210b7970035fa32-20.x, Linux-build-main-20.x-
+2025-06-17T13:32:20.8532995Z ##[group]Run pnpm turbo build
+2025-06-17T13:32:20.8533323Z [36;1mpnpm turbo build[0m
+2025-06-17T13:32:20.8660564Z shell: /usr/bin/bash -e {0}
+2025-06-17T13:32:20.8660844Z env:
+2025-06-17T13:32:20.8661046Z   TURBO_TOKEN:
+2025-06-17T13:32:20.8661259Z   TURBO_TEAM:
+2025-06-17T13:32:20.8661467Z   NPM_TOKEN:
+2025-06-17T13:32:20.8662176Z   GITHUB_TOKEN: ***
+2025-06-17T13:32:20.8662477Z   PNPM_HOME: /home/runner/setup-pnpm/node_modules/.bin
+2025-06-17T13:32:20.8662817Z ##[endgroup]
+2025-06-17T13:32:21.4822816Z
+2025-06-17T13:32:21.4823444Z Attention:
+2025-06-17T13:32:21.4824248Z Turborepo now collects completely anonymous telemetry regarding usage.
+2025-06-17T13:32:21.4825494Z This information is used to shape the Turborepo roadmap and prioritize features.
+2025-06-17T13:32:21.4827008Z You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+2025-06-17T13:32:21.4828263Z https://turborepo.com/docs/telemetry
+2025-06-17T13:32:21.4828610Z
+2025-06-17T13:32:21.5349061Z • Packages in scope: @tw-enigma/cli, @tw-enigma/core
+2025-06-17T13:32:21.5349854Z • Running build in 2 packages
+2025-06-17T13:32:21.5350360Z • Remote caching disabled
+2025-06-17T13:32:30.1166718Z ##[group]@tw-enigma/core:build
+2025-06-17T13:32:30.1176983Z cache miss, executing 9b2fff969c2fb035
+2025-06-17T13:32:30.1177512Z
+2025-06-17T13:32:30.1179042Z > @tw-enigma/core@0.1.0 build /home/runner/work/tw-enigma/tw-enigma/packages/core
+2025-06-17T13:32:30.1180823Z > tsup
+2025-06-17T13:32:30.1181807Z
+2025-06-17T13:32:30.1183413Z [34mCLI[39m Building entry: src/index.ts
+2025-06-17T13:32:30.1185111Z [34mCLI[39m Using tsconfig: tsconfig.json
+2025-06-17T13:32:30.1186638Z [34mCLI[39m tsup v8.5.0
+2025-06-17T13:32:30.1190051Z [34mCLI[39m Using tsup config: /home/runner/work/tw-enigma/tw-enigma/packages/core/tsup.config.ts
+2025-06-17T13:32:30.1193254Z [34mCLI[39m Target: es2020
+2025-06-17T13:32:30.1194777Z [34mCLI[39m Cleaning output folder
+2025-06-17T13:32:30.1196369Z [34mCJS[39m Build start
+2025-06-17T13:32:30.1198019Z [34mESM[39m Build start
+2025-06-17T13:32:30.1198720Z [32mCJS[39m [1mdist/index.js     [22m[32m1.19 MB[39m
+2025-06-17T13:32:30.1216119Z [32mCJS[39m [1mdist/index.js.map [22m[32m2.31 MB[39m
+2025-06-17T13:32:30.1216999Z [32mCJS[39m ⚡️ Build success in 296ms
+2025-06-17T13:32:30.1217803Z [32mESM[39m [1mdist/index.mjs     [22m[32m1.17 MB[39m
+2025-06-17T13:32:30.1218686Z [32mESM[39m [1mdist/index.mjs.map [22m[32m2.31 MB[39m
+2025-06-17T13:32:30.1219410Z [32mESM[39m ⚡️ Build success in 318ms
+2025-06-17T13:32:30.1219975Z [34mDTS[39m Build start
+2025-06-17T13:32:30.1220541Z [32mDTS[39m ⚡️ Build success in 7139ms
+2025-06-17T13:32:30.1221322Z [32mDTS[39m [1mdist/index.d.ts  [22m[32m384.54 KB[39m
+2025-06-17T13:32:30.1222451Z [32mDTS[39m [1mdist/index.d.mts [22m[32m384.54 KB[39m
+2025-06-17T13:32:30.1223327Z ##[endgroup]
+2025-06-17T13:32:33.6292764Z [;31m@tw-enigma/cli:build[;0m
+2025-06-17T13:32:33.6293240Z cache miss, executing 54c13fdb92dee84a
+2025-06-17T13:32:33.6293456Z
+2025-06-17T13:32:33.6293884Z > @tw-enigma/cli@0.1.0 build /home/runner/work/tw-enigma/tw-enigma/packages/cli
+2025-06-17T13:32:33.6294509Z > tsup
+2025-06-17T13:32:33.6294676Z
+2025-06-17T13:32:33.6295058Z [34mCLI[39m Building entry: src/index.ts
+2025-06-17T13:32:33.6295707Z [34mCLI[39m Using tsconfig: tsconfig.json
+2025-06-17T13:32:33.6296262Z [34mCLI[39m tsup v8.5.0
+2025-06-17T13:32:33.6297309Z [34mCLI[39m Using tsup config: /home/runner/work/tw-enigma/tw-enigma/packages/cli/tsup.config.ts
+2025-06-17T13:32:33.6297963Z [34mCLI[39m Building entry: bin/enigma.ts
+2025-06-17T13:32:33.6298356Z [34mCLI[39m Using tsconfig: tsconfig.json
+2025-06-17T13:32:33.6298711Z [34mCLI[39m tsup v8.5.0
+2025-06-17T13:32:33.6299308Z [34mCLI[39m Using tsup config: /home/runner/work/tw-enigma/tw-enigma/packages/cli/tsup.config.ts
+2025-06-17T13:32:33.6299816Z [34mCLI[39m Target: es2020
+2025-06-17T13:32:33.6300100Z [34mESM[39m Build start
+2025-06-17T13:32:33.6300675Z [34mCLI[39m Target: es2020
+2025-06-17T13:32:33.6301029Z [34mESM[39m Build start
+2025-06-17T13:32:33.6301410Z ✘ [ERROR] Could not resolve "../dist/index.mjs"
+2025-06-17T13:32:33.6320100Z ##[error]@tw-enigma/cli#build: command (/home/runner/work/tw-enigma/tw-enigma/packages/cli) /home/runner/setup-pnpm/node_modules/.bin/pnpm run build exited (1)
+2025-06-17T13:32:33.6329643Z
+2025-06-17T13:32:33.6329816Z     bin/enigma.ts:4:20:
+2025-06-17T13:32:33.6330301Z       4 │ import { cli } from '../dist/index.mjs';
+2025-06-17T13:32:33.6330702Z         ╵                     ~~~~~~~~~~~~~~~~~~~
+2025-06-17T13:32:33.6330891Z
+2025-06-17T13:32:33.6331089Z [31mESM[39m [31mBuild failed[39m
+2025-06-17T13:32:33.6331467Z [31mError: Build failed with 1 error:
+2025-06-17T13:32:33.6332170Z bin/enigma.ts:4:20: ERROR: Could not resolve "../dist/index.mjs"
+2025-06-17T13:32:33.6332963Z     at failureErrorWithLog (/home/runner/work/tw-enigma/tw-enigma/node_modules/.pnpm/esbuild@0.25.5/node_modules/esbuild/lib/main.js:1463:15)
+2025-06-17T13:32:33.6333878Z     at /home/runner/work/tw-enigma/tw-enigma/node_modules/.pnpm/esbuild@0.25.5/node_modules/esbuild/lib/main.js:924:25
+2025-06-17T13:32:33.6334756Z     at runOnEndCallbacks (/home/runner/work/tw-enigma/tw-enigma/node_modules/.pnpm/esbuild@0.25.5/node_modules/esbuild/lib/main.js:1303:45)
+2025-06-17T13:32:33.6335723Z     at buildResponseToResult (/home/runner/work/tw-enigma/tw-enigma/node_modules/.pnpm/esbuild@0.25.5/node_modules/esbuild/lib/main.js:922:7)
+2025-06-17T13:32:33.6337203Z     at /home/runner/work/tw-enigma/tw-enigma/node_modules/.pnpm/esbuild@0.25.5/node_modules/esbuild/lib/main.js:949:16
+2025-06-17T13:32:33.6338845Z     at responseCallbacks.<computed> (/home/runner/work/tw-enigma/tw-enigma/node_modules/.pnpm/esbuild@0.25.5/node_modules/esbuild/lib/main.js:601:9)
+2025-06-17T13:32:33.6341042Z     at handleIncomingPacket (/home/runner/work/tw-enigma/tw-enigma/node_modules/.pnpm/esbuild@0.25.5/node_modules/esbuild/lib/main.js:656:12)
+2025-06-17T13:32:33.6343156Z     at Socket.readFromStdout (/home/runner/work/tw-enigma/tw-enigma/node_modules/.pnpm/esbuild@0.25.5/node_modules/esbuild/lib/main.js:579:7)
+2025-06-17T13:32:33.6343946Z     at Socket.emit (node:events:524:28)
+2025-06-17T13:32:33.6344765Z     at addChunk (node:internal/streams/readable:561:12)[39m
+2025-06-17T13:32:33.6345589Z [32mESM[39m [1mdist/index.js     [22m[32m41.03 KB[39m
+2025-06-17T13:32:33.6346367Z [32mESM[39m [1mdist/index.js.map [22m[32m81.40 KB[39m
+2025-06-17T13:32:33.6347043Z [32mESM[39m ⚡️ Build success in 37ms
+2025-06-17T13:32:33.6347549Z [34mDTS[39m Build start
+2025-06-17T13:32:33.6347980Z [34mDTS[39m Build start
+2025-06-17T13:32:33.6366826Z ##[error]bin/enigma.ts(4,21): error TS2307: Cannot find module '../dist/index.mjs' or its corresponding type declarations.
+2025-06-17T13:32:33.6367864Z
+2025-06-17T13:32:33.6368152Z [31mDTS[39m [31mBuild error[39m
+2025-06-17T13:32:33.6368550Z [32mDTS[39m ⚡️ Build success in 2360ms
+2025-06-17T13:32:33.6369000Z [32mDTS[39m [1mdist/index.d.ts [22m[32m11.94 KB[39m
+2025-06-17T13:32:33.6369618Z  ELIFECYCLE  Command failed with exit code 1.
+2025-06-17T13:32:33.6370562Z [ERROR] command finished with error: command (/home/runner/work/tw-enigma/tw-enigma/packages/cli) /home/runner/setup-pnpm/node_modules/.bin/pnpm run build exited (1)
+2025-06-17T13:32:33.6371329Z  ERROR  run failed: command  exited (1)
+2025-06-17T13:32:33.6371786Z
+2025-06-17T13:32:33.6371949Z  Tasks:    1 successful, 2 total
+2025-06-17T13:32:33.6372249Z Cached:    0 cached, 2 total
+2025-06-17T13:32:33.6372518Z   Time:    12.125s
+2025-06-17T13:32:33.6372783Z Failed:    @tw-enigma/cli#build
+2025-06-17T13:32:33.6372944Z
+2025-06-17T13:32:33.6478134Z ##[error]Process completed with exit code 1.
+2025-06-17T13:32:33.6539655Z Post job cleanup.
+2025-06-17T13:32:33.7394200Z Pruning is unnecessary.
+2025-06-17T13:32:33.7497607Z Post job cleanup.
+2025-06-17T13:32:33.8446829Z [command]/usr/bin/git version
+2025-06-17T13:32:33.8482148Z git version 2.49.0
+2025-06-17T13:32:33.8524856Z Temporarily overriding HOME='/home/runner/work/_temp/94129bef-b50a-4522-8fbf-f5d81c478c6a' before making global git config changes
+2025-06-17T13:32:33.8526011Z Adding repository directory to the temporary git global config as a safe directory
+2025-06-17T13:32:33.8530150Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/tw-enigma/tw-enigma
+2025-06-17T13:32:33.8565140Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2025-06-17T13:32:33.8597302Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2025-06-17T13:32:33.8879537Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2025-06-17T13:32:33.8900258Z http.https://github.com/.extraheader
+2025-06-17T13:32:33.8912500Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2025-06-17T13:32:33.8942091Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2025-06-17T13:32:33.9261471Z Cleaning up orphan processes

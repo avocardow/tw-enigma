@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-// ES module import - should work with chalk v4.1.2
-import { cli } from '../dist/index.mjs';
+// Import from source file, not dist (which doesn't exist during build)
+import { cli } from '../src/index.js';
 
 // Start the CLI
 cli();
