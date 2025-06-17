@@ -78,7 +78,7 @@
     "ws": "^8.18.0",
     "xxhash-wasm": "^1.1.0",
     "zlib": "^1.0.5",
-    "zod": "^3.25.63"
+    "zod": "^3.25.67"
   },
   "devDependencies": {
     "@babel/generator": "^7.27.5",
@@ -90,7 +90,7 @@
     "@types/write-file-atomic": "^4.0.3",
     "@types/ws": "^8.18.1",
     "memfs": "^4.17.2",
-    "postcss": "^8.5.5",
+    "postcss": "^8.5.6",
     "tailwindcss": "^4.1.10"
   }
 }

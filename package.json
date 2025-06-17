@@ -90,7 +90,7 @@
     "globals": "^16.2.0",
     "http-server": "^14.1.1",
     "madge": "^8.0.0",
-    "postcss": "^8.5.5",
+    "postcss": "^8.5.6",
     "prettier": "^3.3.1",
     "rimraf": "^6.0.1",
     "tailwindcss": "^4.1.10",
