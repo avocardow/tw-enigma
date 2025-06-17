@@ -196,9 +196,10 @@ async function main(): Promise<void> {
     // Register all commands with error protection
     try {
       registerCommands(program);
-    } catch (commandError) {
-      if (process.env.DEBUG_CLI || process.env.CI) {
+    } catch (commandError: any) {
+      if (process.env.DEBUG_CLI) {
         console.error('Failed to register commands:', commandError);
+        console.error('Command registration error details:', commandError.stack);
       }
       // Don't exit here - continue with basic functionality
     }
