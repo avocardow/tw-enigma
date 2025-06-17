@@ -564,7 +564,7 @@ export default class Reporter {
     }
   }
 
-  displayReport(report: GeneratedReport, format?: string): string {
+  displayReport(report: GeneratedReport, format?: string): string | Record<string, string> {
     const outputFormat = format || this.config.format;
 
     switch (outputFormat) {
@@ -577,12 +577,12 @@ export default class Reporter {
       case 'html':
         return this.generateHTML(report);
       case 'all':
-        return JSON.stringify({
+        return {
           console: this.generateSummary(report.rawData || report),
           json: JSON.stringify(report, null, 2),
           markdown: this.generateMarkdown(report),
           html: this.generateHTML(report),
-        });
+        };
       default:
         if (outputFormat !== 'console') {
           throw new Error(`Unsupported format: ${outputFormat}`);

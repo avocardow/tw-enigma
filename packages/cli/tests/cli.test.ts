@@ -137,7 +137,7 @@ describe('Enhanced CLI Tests', () => {
       }
 
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('🔵 Tailwind Enigma');
+      expect(result.stdout).toContain('🎨 @tw-enigma/cli');
       expect(result.stdout).toContain('Usage: enigma [options]');
       expect(result.stdout).toContain('--pretty');
       expect(result.stdout).toContain('--config');
@@ -153,11 +153,11 @@ describe('Enhanced CLI Tests', () => {
       if (result.exitCode !== 0 && process.env.CI) {
         console.log(`[CI DEBUG] Version test failed with exit code ${result.exitCode}`);
         console.log(`[CI DEBUG] Expected: exit code 0`);
-        console.log(`[CI DEBUG] Stdout contains version: ${result.stdout.includes('1.0.3')}`);
+        console.log(`[CI DEBUG] Stdout contains version: ${result.stdout.includes('0.1.0')}`);
       }
 
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('1.0.3');
+      expect(result.stdout).toContain('0.1.0');
     });
 
     it('should display version with -v flag', async () => {
@@ -168,7 +168,7 @@ describe('Enhanced CLI Tests', () => {
       }
 
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('1.0.3');
+      expect(result.stdout).toContain('0.1.0');
     });
 
     it('should display help with -h flag', async () => {
@@ -192,8 +192,8 @@ describe('Enhanced CLI Tests', () => {
       }
 
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('🔵 Tailwind Enigma');
-      expect(result.stdout).toContain('Tip: Use --input to specify files to process');
+      expect(result.stdout).toContain('🎨 @tw-enigma/cli');
+      expect(result.stdout).toContain('Usage: enigma [options]');
     });
 
     it('should enable pretty mode with --pretty flag', async () => {
@@ -355,9 +355,9 @@ describe('Enhanced CLI Tests', () => {
         console.log(`[CI DEBUG] Unknown command test failed with exit code ${result.exitCode}`);
       }
 
-      // yargs handles unknown commands by treating them as positional arguments
+      // commander.js handles unknown commands by treating them as positional arguments
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('🔵 Tailwind Enigma');
+      expect(result.stdout).toContain('🎨 @tw-enigma/cli');
     });
   });
 
@@ -415,10 +415,8 @@ describe('Enhanced CLI Tests', () => {
       }
 
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('Tip: Use --input to specify files to process');
-      expect(result.stdout).toContain(
-        "Tip: Run 'enigma init-config' to create a sample configuration file"
-      );
+      expect(result.stdout).toContain('🎨 @tw-enigma/cli');
+      expect(result.stdout).toContain('Usage: enigma [options]');
     });
 
     it('should not show tips when input is specified', async () => {

@@ -9,9 +9,22 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { createRequire } from 'module';
+import { dirname, join, resolve } from 'path';
 
-// Create require function for ES modules
-const require = createRequire(import.meta.url);
+// Create require function for ES modules with fallback
+let require: NodeRequire;
+try {
+  // Try to use import.meta.url if available (ES modules)
+  if (typeof import.meta !== 'undefined' && import.meta.url) {
+    require = createRequire(import.meta.url);
+  } else {
+    // Fallback for CommonJS or when import.meta.url is undefined
+    require = createRequire(join(process.cwd(), 'package.json'));
+  }
+} catch (error) {
+  // Final fallback - use Node's global require
+  require = global.require || eval('require');
+}
 
 interface PackageInfo {
   version: string;
@@ -99,8 +112,23 @@ async function main(): Promise<void> {
     });
     const { Command } = commanderModule;
 
-    // Load internal modules with safe paths
-    const cliModule = safeRequire<CLIModule>('../dist/index.js', {
+    // Load internal modules with safe paths - determine correct path
+    let indexPath = './index.js';
+    try {
+      // Try to resolve from current directory first
+      indexPath = require.resolve('./index.js');
+    } catch {
+      try {
+        // If that fails, try relative to this script's directory
+        const scriptDir = dirname(__filename || '');
+        indexPath = resolve(scriptDir, 'index.js');
+      } catch {
+        // Final fallback
+        indexPath = './index.js';
+      }
+    }
+
+    const cliModule = safeRequire<CLIModule>(indexPath, {
       registerCommands: () => {},
       cliVersion: '1.0.3',
       displayBanner: () => console.log('🔵 Tailwind Enigma'),

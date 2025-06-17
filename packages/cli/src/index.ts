@@ -11,9 +11,18 @@ import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 import { registerCommands } from './commands/index';
 
-// Get current directory for ES modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+// Get current directory for ES modules with fallback
+let __filename: string = '';
+let __dirname: string = process.cwd();
+
+try {
+  if (typeof import.meta !== 'undefined' && import.meta.url) {
+    __filename = fileURLToPath(import.meta.url);
+    __dirname = dirname(__filename);
+  }
+} catch (error) {
+  // Use defaults already set above
+}
 
 // Get package version information - ESM compatible approach
 interface PackageJson {
