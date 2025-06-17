@@ -129,7 +129,7 @@ describe('Enhanced CLI Tests', () => {
         console.log(`[CI DEBUG] Help test failed with exit code ${result.exitCode}`);
         console.log(`[CI DEBUG] Expected: exit code 0`);
         console.log(
-          `[CI DEBUG] Stdout contains Tailwind Enigma: ${result.stdout.includes('🔵 Tailwind Enigma')}`
+          `[CI DEBUG] Stdout contains new branding: ${result.stdout.includes('🎨 @tw-enigma/cli')}`
         );
         console.log(
           `[CI DEBUG] Stdout contains Usage: ${result.stdout.includes('Usage: enigma [options]')}`

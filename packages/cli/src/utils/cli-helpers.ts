@@ -15,7 +15,7 @@ export function getPackageInfo(): { version: string; name: string } {
   // Return hardcoded values that match the current monorepo structure
   // This avoids path resolution issues in different environments
   return {
-    version: '1.0.3', // Root package version
+    version: '0.1.0', // CLI package version
     name: '@tw-enigma/cli',
   };
 }
@@ -26,10 +26,10 @@ export function getPackageInfo(): { version: string; name: string } {
  */
 export function displayBanner(): void {
   try {
-    console.log(chalk.blue('🔵 Tailwind Enigma'));
+    console.log(chalk.cyan('🎨 @tw-enigma/cli'));
   } catch {
     // Fallback for CI environments where chalk might not work
-    console.log('🔵 Tailwind Enigma');
+    console.log('🎨 @tw-enigma/cli');
   }
 }
 

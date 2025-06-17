@@ -130,9 +130,10 @@ async function main(): Promise<void> {
 
     const cliModule = safeRequire<CLIModule>(indexPath, {
       registerCommands: () => {},
-      cliVersion: '1.0.3',
-      displayBanner: () => console.log('🔵 Tailwind Enigma'),
-      getPackageInfo: () => ({ version: '1.0.3', name: '@tw-enigma/cli' }),
+      cliVersion: '0.1.0',
+      displayBanner: () =>
+        console.log('🎨 @tw-enigma/cli v0.1.0\nIntelligent CSS optimization engine'),
+      getPackageInfo: () => ({ version: '0.1.0', name: '@tw-enigma/cli' }),
     });
 
     const { registerCommands, cliVersion, displayBanner, getPackageInfo } = cliModule;
@@ -158,7 +159,7 @@ async function main(): Promise<void> {
       displayBanner();
     } catch (bannerError) {
       // Always show fallback banner
-      console.log('🔵 Tailwind Enigma');
+      console.log('🎨 @tw-enigma/cli v0.1.0\nIntelligent CSS optimization engine');
       if (process.env.CI || process.env.DEBUG_CLI) {
         console.error('Banner display error:', bannerError);
       }

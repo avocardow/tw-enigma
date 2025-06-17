@@ -1,47 +1,40 @@
 #!/usr/bin/env node
 
-import yargs from "yargs";
-import { hideBin } from "yargs/helpers";
-import chalk from "chalk";
-import { readFileSync, writeFileSync, mkdirSync, statSync } from "fs";
-import { fileURLToPath } from "url";
-import { dirname, join, resolve, basename, extname } from "path";
+import chalk from 'chalk';
+import { mkdirSync, readFileSync, statSync, writeFileSync } from 'fs';
+import { basename, dirname, extname, join, resolve } from 'path';
+import { fileURLToPath } from 'url';
+import yargs from 'yargs';
+import { hideBin } from 'yargs/helpers';
 import {
-  getConfigSync,
+  ConfigError,
   createSampleConfig,
   EnigmaConfigSchema,
+  getConfigSync,
   type CliArguments,
-  ConfigError,
-} from "../src/config";
+} from '../src/config';
+import { discoverFilesFromConfig, FileDiscoveryError } from '../src/fileDiscovery';
+import { Logger, LogLevel, type FileOutputOptions } from '../src/logger';
 import {
-  discoverFilesFromConfig,
-  FileDiscoveryError,
-} from "../src/fileDiscovery";
+  createPerformanceBudget,
+  createProductionConfigManager,
+  generateConfigDocs,
+  validateProductionConfig,
+  type PerformanceBudget,
+} from '../src/output/cssOutputConfig';
 import {
-  Logger,
-  LogLevel,
-  type FileOutputOptions,
-} from "../src/logger";
-import {
-  createProductionOrchestrator,
   createDevelopmentOrchestrator,
+  createProductionOrchestrator,
   type CssBundle,
   type CssProcessingOptions,
-} from "../src/output/cssOutputOrchestrator";
-import {
-  createProductionConfigManager,
-  createPerformanceBudget,
-  validateProductionConfig,
-  generateConfigDocs,
-  type PerformanceBudget,
-} from "../src/output/cssOutputConfig";
+} from '../src/output/cssOutputOrchestrator';
 
 // Get package.json for version information
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 // In built version, we need to go up from dist to project root
-const packageJsonPath = join(__dirname, "..", "package.json");
-const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf8"));
+const packageJsonPath = join(__dirname, '..', 'package.json');
+const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8'));
 
 // Initialize CLI logger (will be reconfigured after argument parsing)
 let cliLogger = new Logger({
@@ -51,7 +44,7 @@ let cliLogger = new Logger({
   quiet: false,
   colorize: process.stdout.isTTY,
   timestamp: true,
-  component: "CLI",
+  component: 'CLI',
   fileOutput: undefined,
   enableProgressTracking: true,
 });
@@ -64,22 +57,22 @@ function updateLoggerFromArgv(argv: Record<string, unknown>): void {
   let level: LogLevel = LogLevel.INFO;
   if (argv.logLevel) {
     switch (argv.logLevel) {
-      case "trace":
+      case 'trace':
         level = LogLevel.TRACE;
         break;
-      case "debug":
+      case 'debug':
         level = LogLevel.DEBUG;
         break;
-      case "info":
+      case 'info':
         level = LogLevel.INFO;
         break;
-      case "warn":
+      case 'warn':
         level = LogLevel.WARN;
         break;
-      case "error":
+      case 'error':
         level = LogLevel.ERROR;
         break;
-      case "fatal":
+      case 'fatal':
         level = LogLevel.FATAL;
         break;
     }
@@ -96,7 +89,7 @@ function updateLoggerFromArgv(argv: Record<string, unknown>): void {
   if (argv.logFile) {
     fileOutput = {
       filePath: argv.logFile as string,
-      format: (argv.logFormat as "human" | "json" | "csv") || "human",
+      format: (argv.logFormat as 'human' | 'json' | 'csv') || 'human',
       maxSize: 10 * 1024 * 1024, // 10MB
       maxFiles: 5,
       compress: true,
@@ -111,7 +104,7 @@ function updateLoggerFromArgv(argv: Record<string, unknown>): void {
     quiet: (argv.quiet as boolean) || false,
     colorize: process.stdout.isTTY,
     timestamp: true,
-    component: "CLI",
+    component: 'CLI',
     fileOutput,
     enableProgressTracking: true,
   });
@@ -119,194 +112,193 @@ function updateLoggerFromArgv(argv: Record<string, unknown>): void {
 
 // Main CLI function
 async function main() {
-  console.log(chalk.blue("🔵 Tailwind Enigma"));
+  console.log(chalk.cyan('🎨 @tw-enigma/cli'));
 
   const argv = await yargs(hideBin(process.argv))
-    .scriptName("enigma")
-    .usage("Usage: $0 [options]")
+    .scriptName('enigma')
+    .usage('Usage: $0 [options]')
     .version(packageJson.version)
-    .alias("version", "v")
-    .option("pretty", {
-      alias: "p",
-      type: "boolean",
-      description: "Enable pretty output formatting",
+    .alias('version', 'v')
+    .option('pretty', {
+      alias: 'p',
+      type: 'boolean',
+      description: 'Enable pretty output formatting',
     })
-    .option("config", {
-      alias: "c",
-      type: "string",
-      description: "Path to configuration file",
+    .option('config', {
+      alias: 'c',
+      type: 'string',
+      description: 'Path to configuration file',
     })
-    .option("verbose", {
-      type: "boolean",
-      description: "Enable verbose logging (shows debug messages)",
+    .option('verbose', {
+      type: 'boolean',
+      description: 'Enable verbose logging (shows debug messages)',
     })
-    .option("very-verbose", {
-      type: "boolean",
+    .option('very-verbose', {
+      type: 'boolean',
       description:
-        "Enable very verbose logging (shows trace messages and detailed file operations)",
+        'Enable very verbose logging (shows trace messages and detailed file operations)',
     })
-    .option("quiet", {
-      type: "boolean",
-      description: "Quiet mode (only warnings and errors)",
+    .option('quiet', {
+      type: 'boolean',
+      description: 'Quiet mode (only warnings and errors)',
     })
-    .option("debug", {
-      type: "boolean",
-      description: "Enable debug mode",
+    .option('debug', {
+      type: 'boolean',
+      description: 'Enable debug mode',
     })
-    .option("log-level", {
-      type: "string",
-      choices: ["trace", "debug", "info", "warn", "error", "fatal"],
-      description: "Set the minimum log level",
+    .option('log-level', {
+      type: 'string',
+      choices: ['trace', 'debug', 'info', 'warn', 'error', 'fatal'],
+      description: 'Set the minimum log level',
     })
-    .option("log-file", {
-      type: "string",
-      description:
-        "Write logs to file (supports JSON, CSV, or human-readable format)",
+    .option('log-file', {
+      type: 'string',
+      description: 'Write logs to file (supports JSON, CSV, or human-readable format)',
     })
-    .option("log-format", {
-      type: "string",
-      choices: ["human", "json", "csv"],
-      description: "Format for file logging (default: human)",
+    .option('log-format', {
+      type: 'string',
+      choices: ['human', 'json', 'csv'],
+      description: 'Format for file logging (default: human)',
     })
-    .option("input", {
-      alias: "i",
-      type: "string",
-      description: "Input file or directory to process",
+    .option('input', {
+      alias: 'i',
+      type: 'string',
+      description: 'Input file or directory to process',
     })
-    .option("output", {
-      alias: "o",
-      type: "string",
-      description: "Output file or directory",
+    .option('output', {
+      alias: 'o',
+      type: 'string',
+      description: 'Output file or directory',
     })
-    .option("minify", {
-      type: "boolean",
-      description: "Minify the output CSS",
+    .option('minify', {
+      type: 'boolean',
+      description: 'Minify the output CSS',
     })
-    .option("remove-unused", {
-      type: "boolean",
-      description: "Remove unused CSS classes",
+    .option('remove-unused', {
+      type: 'boolean',
+      description: 'Remove unused CSS classes',
     })
-    .option("max-concurrency", {
-      type: "number",
-      description: "Maximum concurrent file processing (1-10)",
+    .option('max-concurrency', {
+      type: 'number',
+      description: 'Maximum concurrent file processing (1-10)',
     })
-    .option("class-prefix", {
-      type: "string",
-      description: "Prefix for generated class names",
+    .option('class-prefix', {
+      type: 'string',
+      description: 'Prefix for generated class names',
     })
-    .option("exclude-patterns", {
-      type: "array",
-      description: "Patterns to exclude from processing",
+    .option('exclude-patterns', {
+      type: 'array',
+      description: 'Patterns to exclude from processing',
     })
-    .option("preserve-comments", {
-      type: "boolean",
-      description: "Preserve CSS comments in output",
+    .option('preserve-comments', {
+      type: 'boolean',
+      description: 'Preserve CSS comments in output',
     })
-    .option("source-maps", {
-      type: "boolean",
-      description: "Generate source maps",
+    .option('source-maps', {
+      type: 'boolean',
+      description: 'Generate source maps',
     })
-    .option("follow-symlinks", {
-      type: "boolean",
-      description: "Follow symbolic links during file discovery",
+    .option('follow-symlinks', {
+      type: 'boolean',
+      description: 'Follow symbolic links during file discovery',
     })
-    .option("max-files", {
-      type: "number",
-      description: "Maximum number of files to process",
+    .option('max-files', {
+      type: 'number',
+      description: 'Maximum number of files to process',
     })
-    .option("include-file-types", {
-      type: "array",
-      choices: ["HTML", "JAVASCRIPT", "CSS", "TEMPLATE"],
-      description: "Specific file types to include",
+    .option('include-file-types', {
+      type: 'array',
+      choices: ['HTML', 'JAVASCRIPT', 'CSS', 'TEMPLATE'],
+      description: 'Specific file types to include',
     })
-    .option("exclude-extensions", {
-      type: "array",
-      description: "File extensions to exclude",
+    .option('exclude-extensions', {
+      type: 'array',
+      description: 'File extensions to exclude',
     })
-    .option("dry-run", {
-      alias: "d",
-      type: "boolean",
-      description: "Preview changes without modifying files",
+    .option('dry-run', {
+      alias: 'd',
+      type: 'boolean',
+      description: 'Preview changes without modifying files',
     })
-    .command("init-config", "Create a sample configuration file", {}, () => {
+    .command('init-config', 'Create a sample configuration file', {}, () => {
       const sampleConfig = createSampleConfig();
-      cliLogger.info("Sample configuration file content:");
+      cliLogger.info('Sample configuration file content:');
       console.log(sampleConfig); // Keep raw output for config content
-      cliLogger.info("Save this as enigma.config.js in your project root.");
+      cliLogger.info('Save this as enigma.config.js in your project root.');
     })
     .command(
-      "css-optimize <input>",
-      "Optimize CSS files with comprehensive output management",
+      'css-optimize <input>',
+      'Optimize CSS files with comprehensive output management',
       (yargs) => {
         return yargs
-          .positional("input", {
-            describe: "Input CSS file or directory",
-            type: "string",
+          .positional('input', {
+            describe: 'Input CSS file or directory',
+            type: 'string',
             demandOption: true,
           })
-          .option("env", {
-            alias: "e",
-            choices: ["development", "production", "test"] as const,
-            default: "production",
-            description: "Target environment for optimization",
+          .option('env', {
+            alias: 'e',
+            choices: ['development', 'production', 'test'] as const,
+            default: 'production',
+            description: 'Target environment for optimization',
           })
-          .option("strategy", {
-            alias: "s",
-            choices: ["single", "chunked", "modular"] as const,
-            description: "Output strategy override",
+          .option('strategy', {
+            alias: 's',
+            choices: ['single', 'chunked', 'modular'] as const,
+            description: 'Output strategy override',
           })
-          .option("preset", {
-            choices: ["cdn", "serverless", "spa", "ssr"] as const,
-            description: "Use optimized preset for deployment target",
+          .option('preset', {
+            choices: ['cdn', 'serverless', 'spa', 'ssr'] as const,
+            description: 'Use optimized preset for deployment target',
           })
-          .option("chunk-size", {
-            type: "number",
-            description: "Maximum chunk size in KB",
+          .option('chunk-size', {
+            type: 'number',
+            description: 'Maximum chunk size in KB',
           })
-          .option("critical", {
-            type: "boolean",
-            description: "Enable critical CSS extraction",
+          .option('critical', {
+            type: 'boolean',
+            description: 'Enable critical CSS extraction',
           })
-          .option("compress", {
-            type: "boolean",
-            description: "Enable compression (gzip/brotli)",
+          .option('compress', {
+            type: 'boolean',
+            description: 'Enable compression (gzip/brotli)',
           })
-          .option("budgets", {
-            type: "boolean",
-            description: "Enable performance budget validation",
+          .option('budgets', {
+            type: 'boolean',
+            description: 'Enable performance budget validation',
           })
-          .option("budget-max-size", {
-            type: "number",
+          .option('budget-max-size', {
+            type: 'number',
             default: 500,
-            description: "Maximum total CSS size in KB",
+            description: 'Maximum total CSS size in KB',
           })
-          .option("budget-max-chunks", {
-            type: "number",
+          .option('budget-max-chunks', {
+            type: 'number',
             default: 20,
-            description: "Maximum number of chunks",
+            description: 'Maximum number of chunks',
           })
-          .option("routes", {
-            type: "array",
-            description: "Routes for critical CSS analysis",
+          .option('routes', {
+            type: 'array',
+            description: 'Routes for critical CSS analysis',
           })
-          .option("report", {
-            type: "boolean",
+          .option('report', {
+            type: 'boolean',
             default: true,
-            description: "Generate optimization report",
+            description: 'Generate optimization report',
           })
-          .option("force", {
-            type: "boolean",
-            description: "Force regeneration of output files",
+          .option('force', {
+            type: 'boolean',
+            description: 'Force regeneration of output files',
           })
-          .option("dry-run", {
-            alias: "d",
-            type: "boolean",
-            description: "Preview changes without modifying files",
+          .option('dry-run', {
+            alias: 'd',
+            type: 'boolean',
+            description: 'Preview changes without modifying files',
           });
       },
       async (argv) => {
         try {
-          cliLogger.info("🎯 Starting CSS Output Optimization");
+          cliLogger.info('🎯 Starting CSS Output Optimization');
 
           // First, validate that the input file exists
           const inputPath = resolve(argv.input);
@@ -321,7 +313,7 @@ async function main() {
             if (errorMessage.includes('ENOENT') || errorMessage.includes('no such file')) {
               cliLogger.error(`Input CSS file not found: ${inputPath}`);
             } else {
-              cliLogger.error("Failed to access input CSS file", {
+              cliLogger.error('Failed to access input CSS file', {
                 path: inputPath,
                 error: errorMessage,
               });
@@ -334,25 +326,25 @@ async function main() {
             strategy: argv.strategy,
             environment: argv.env,
             compress: argv.compress,
-            "critical-css": argv.critical,
+            'critical-css': argv.critical,
             outDir: argv.output,
             verbose: argv.verbose,
-            chunkSize: argv["chunk-size"] ? argv["chunk-size"] * 1024 : undefined,
+            chunkSize: argv['chunk-size'] ? argv['chunk-size'] * 1024 : undefined,
             force: argv.force,
             budgets: argv.budgets,
-            dryRun: argv["dry-run"],
+            dryRun: argv['dry-run'],
           };
 
           // Create performance budget if enabled
           let budget: PerformanceBudget | undefined;
           if (argv.budgets) {
             budget = createPerformanceBudget({
-              maxTotalSize: argv["budget-max-size"] * 1024,
-              maxChunks: argv["budget-max-chunks"],
+              maxTotalSize: argv['budget-max-size'] * 1024,
+              maxChunks: argv['budget-max-chunks'],
             });
-            cliLogger.info("📊 Performance budgets enabled", {
-              maxSize: `${argv["budget-max-size"]}KB`,
-              maxChunks: argv["budget-max-chunks"],
+            cliLogger.info('📊 Performance budgets enabled', {
+              maxSize: `${argv['budget-max-size']}KB`,
+              maxChunks: argv['budget-max-chunks'],
             });
           }
 
@@ -362,7 +354,7 @@ async function main() {
 
           // Debug: Log the config object
           if (argv.verbose) {
-            console.log("Generated configuration:", JSON.stringify(config, null, 2));
+            console.log('Generated configuration:', JSON.stringify(config, null, 2));
           }
 
           // Apply preset if specified
@@ -375,15 +367,15 @@ async function main() {
           // Validate production configuration
           const validation = validateProductionConfig(config);
           if (argv.verbose) {
-            console.log("Validation result:", {
+            console.log('Validation result:', {
               valid: validation.isValid,
               errors: validation.errors,
               warnings: validation.warnings,
-              suggestions: validation.suggestions
+              suggestions: validation.suggestions,
             });
           }
           if (!validation.isValid) {
-            cliLogger.error("❌ Configuration validation failed");
+            cliLogger.error('❌ Configuration validation failed');
             validation.errors.forEach((error) => cliLogger.error(`  • ${error}`));
             if (validation.suggestions.length > 0) {
               validation.suggestions.forEach((suggestion) => cliLogger.error(`  💡 ${suggestion}`));
@@ -392,20 +384,16 @@ async function main() {
           }
 
           if (validation.warnings.length > 0) {
-            validation.warnings.forEach((warning) =>
-              cliLogger.warn(`⚠️  ${warning}`),
-            );
+            validation.warnings.forEach((warning) => cliLogger.warn(`⚠️  ${warning}`));
           }
 
           if (validation.suggestions.length > 0) {
-            validation.suggestions.forEach((rec) =>
-              cliLogger.info(`💡 ${rec}`),
-            );
+            validation.suggestions.forEach((rec) => cliLogger.info(`💡 ${rec}`));
           }
 
           // Create orchestrator
           const orchestrator =
-            argv.env === "development"
+            argv.env === 'development'
               ? createDevelopmentOrchestrator(config)
               : createProductionOrchestrator(config);
 
@@ -413,7 +401,7 @@ async function main() {
           const bundles: CssBundle[] = [];
 
           try {
-            const cssContent = readFileSync(inputPath, "utf8");
+            const cssContent = readFileSync(inputPath, 'utf8');
             bundles.push({
               id: basename(inputPath, extname(inputPath)),
               content: cssContent,
@@ -422,13 +410,13 @@ async function main() {
               components: [],
               priority: 1,
               metadata: {
-                originalSize: Buffer.byteLength(cssContent, "utf8"),
-                source: "cli",
+                originalSize: Buffer.byteLength(cssContent, 'utf8'),
+                source: 'cli',
               },
             });
           } catch (error) {
             const errorMessage = error instanceof Error ? error.message : String(error);
-            cliLogger.error("Failed to read input CSS file", {
+            cliLogger.error('Failed to read input CSS file', {
               path: inputPath,
               error: errorMessage,
             });
@@ -437,10 +425,10 @@ async function main() {
 
           // Set up processing options
           const options: CssProcessingOptions = {
-            environment: argv.env as "development" | "production" | "test",
-            sourceMaps: argv["source-maps"] || argv.env === "development",
+            environment: argv.env as 'development' | 'production' | 'test',
+            sourceMaps: argv['source-maps'] || argv.env === 'development',
             outputDir: argv.output || `dist/css-${argv.env}`,
-            baseUrl: "/assets/css/",
+            baseUrl: '/assets/css/',
             routes: argv.routes as string[],
             verbose: argv.verbose,
           };
@@ -452,7 +440,7 @@ async function main() {
             // Ignore if directory already exists
           }
 
-          cliLogger.info("🚀 Processing CSS bundles", {
+          cliLogger.info('🚀 Processing CSS bundles', {
             bundles: bundles.length,
             strategy: config.strategy,
             environment: argv.env,
@@ -460,16 +448,12 @@ async function main() {
           });
 
           // Check if dry run mode is enabled
-          if (argv["dry-run"]) {
+          if (argv['dry-run']) {
             // Import dry run modules
-            const { simulateDryRun } = await import(
-              "../src/dryRun/dryRunSimulator"
-            );
-            const { exportReport } = await import("../src/dryRun/dryRunReport");
+            const { simulateDryRun } = await import('../src/dryRun/dryRunSimulator');
+            const { exportReport } = await import('../src/dryRun/dryRunReport');
 
-            cliLogger.info(
-              "🏃 Running in dry run mode - no files will be modified",
-            );
+            cliLogger.info('🏃 Running in dry run mode - no files will be modified');
 
             // Execute the CSS optimization in dry run simulation
             const { dryRunResult } = await simulateDryRun(
@@ -481,58 +465,48 @@ async function main() {
                 includeContent: true,
                 maxContentPreview: 500,
                 enableMetrics: true,
-                outputFormat: "markdown",
-              },
+                outputFormat: 'markdown',
+              }
             );
 
             // Generate and display dry run report
-            const reportFormat = argv.verbose ? "markdown" : "text";
+            const reportFormat = argv.verbose ? 'markdown' : 'text';
             const reportOutput = exportReport(
               dryRunResult.report,
-              reportFormat as "markdown" | "text",
+              reportFormat as 'markdown' | 'text'
             );
 
             if (argv.verbose) {
-              console.log("\n" + reportOutput);
+              console.log('\n' + reportOutput);
             } else {
               // Show summary for non-verbose mode
-              console.log("\n📋 Dry Run Summary:");
+              console.log('\n📋 Dry Run Summary:');
+              console.log(`- Operations simulated: ${dryRunResult.statistics.totalOperations}`);
+              console.log(`- Files to create: ${dryRunResult.statistics.filesCreated}`);
+              console.log(`- Files to modify: ${dryRunResult.statistics.filesModified}`);
               console.log(
-                `- Operations simulated: ${dryRunResult.statistics.totalOperations}`,
-              );
-              console.log(
-                `- Files to create: ${dryRunResult.statistics.filesCreated}`,
-              );
-              console.log(
-                `- Files to modify: ${dryRunResult.statistics.filesModified}`,
-              );
-              console.log(
-                `- Total size change: ${dryRunResult.statistics.sizeImpact.netSizeChange > 0 ? "+" : ""}${Math.round(dryRunResult.statistics.sizeImpact.netSizeChange / 1024)}KB`,
+                `- Total size change: ${dryRunResult.statistics.sizeImpact.netSizeChange > 0 ? '+' : ''}${Math.round(dryRunResult.statistics.sizeImpact.netSizeChange / 1024)}KB`
               );
               console.log(`- Simulation time: ${dryRunResult.executionTime}ms`);
             }
 
             // Save detailed report to file if requested
             if (argv.report) {
-              const reportPath = resolve(options.outputDir, "dry-run-report.md");
+              const reportPath = resolve(options.outputDir, 'dry-run-report.md');
 
               // Use actual filesystem for report since this is informational
-              const fullReport = exportReport(dryRunResult.report, "markdown");
+              const fullReport = exportReport(dryRunResult.report, 'markdown');
               writeFileSync(reportPath, fullReport);
-              cliLogger.info("📋 Dry run report saved", { path: reportPath });
+              cliLogger.info('📋 Dry run report saved', { path: reportPath });
             }
 
             // Exit with appropriate code
             if (dryRunResult.errors.length > 0) {
-              cliLogger.error("❌ Dry run completed with errors");
-              dryRunResult.errors.forEach((error) =>
-                cliLogger.error(`  • ${error}`),
-              );
+              cliLogger.error('❌ Dry run completed with errors');
+              dryRunResult.errors.forEach((error) => cliLogger.error(`  • ${error}`));
               process.exit(1);
             } else {
-              cliLogger.info(
-                "✅ Dry run completed successfully - no actual changes made",
-              );
+              cliLogger.info('✅ Dry run completed successfully - no actual changes made');
               process.exit(0);
             }
           }
@@ -547,43 +521,32 @@ async function main() {
             const budgetResults = {
               totalSize: result.globalStats.totalOptimizedSize,
               chunkSizes: Array.from(result.results.values()).flatMap((r) =>
-                r.chunks.map((c) => Buffer.byteLength(c.content, "utf8")),
+                r.chunks.map((c) => Buffer.byteLength(c.content, 'utf8'))
               ),
               criticalSize: Array.from(result.results.values()).reduce(
                 (sum, r) =>
-                  sum +
-                  (r.criticalCss
-                    ? Buffer.byteLength(r.criticalCss.inline, "utf8")
-                    : 0),
-                0,
+                  sum + (r.criticalCss ? Buffer.byteLength(r.criticalCss.inline, 'utf8') : 0),
+                0
               ),
               compressionRatio: result.globalStats.overallCompressionRatio,
               loadTime: result.performanceMetrics.estimatedLoadTime,
             };
 
-            const budgetValidation =
-              configManager.validateAgainstBudgets(budgetResults);
+            const budgetValidation = configManager.validateAgainstBudgets(budgetResults);
 
             if (!budgetValidation.passed) {
-              cliLogger.error("💰 Performance budget exceeded!");
-              budgetValidation.errors.forEach((error) =>
-                cliLogger.error(`  • ${error}`),
-              );
+              cliLogger.error('💰 Performance budget exceeded!');
+              budgetValidation.errors.forEach((error) => cliLogger.error(`  • ${error}`));
             } else {
-              cliLogger.info("✅ Performance budgets passed");
+              cliLogger.info('✅ Performance budgets passed');
             }
 
-            budgetValidation.warnings.forEach((warning) =>
-              cliLogger.warn(`📊 ${warning}`),
-            );
+            budgetValidation.warnings.forEach((warning) => cliLogger.warn(`📊 ${warning}`));
           }
 
           // Generate report if enabled
           if (argv.report) {
-            const reportPath = resolve(
-              options.outputDir,
-              "optimization-report.json",
-            );
+            const reportPath = resolve(options.outputDir, 'optimization-report.json');
             const report = {
               timestamp: new Date().toISOString(),
               configuration: config,
@@ -595,13 +558,13 @@ async function main() {
             };
 
             writeFileSync(reportPath, JSON.stringify(report, null, 2));
-            cliLogger.info("📋 Optimization report generated", {
+            cliLogger.info('📋 Optimization report generated', {
               path: reportPath,
             });
           }
 
           // Display results
-          cliLogger.info("✨ CSS Optimization Complete", {
+          cliLogger.info('✨ CSS Optimization Complete', {
             duration: duration,
             totalBundles: result.globalStats.totalBundles,
             totalChunks: result.globalStats.totalChunks,
@@ -620,55 +583,46 @@ async function main() {
           });
 
           if (result.warnings.length > 0) {
-            cliLogger.warn("⚠️  Optimization warnings:");
-            result.warnings.forEach((warning) =>
-              cliLogger.warn(`  • ${warning}`),
-            );
+            cliLogger.warn('⚠️  Optimization warnings:');
+            result.warnings.forEach((warning) => cliLogger.warn(`  • ${warning}`));
           }
 
-          cliLogger.info("📁 Output files written to:", {
+          cliLogger.info('📁 Output files written to:', {
             directory: options.outputDir,
           });
         } catch (error) {
-          cliLogger.error("CSS optimization failed", {
+          cliLogger.error('CSS optimization failed', {
             error: error instanceof Error ? error.message : String(error),
             stack: error instanceof Error ? error.stack : undefined,
           });
           process.exit(1);
         }
-      },
+      }
     )
     .command(
-      "css-config",
-      "Generate and validate CSS output configuration",
+      'css-config',
+      'Generate and validate CSS output configuration',
       (yargs) => {
         return yargs
-          .option("preset", {
-            choices: [
-              "production",
-              "development",
-              "cdn",
-              "serverless",
-              "spa",
-              "ssr",
-            ] as const,
-            description: "Configuration preset to generate",
+          .option('preset', {
+            choices: ['production', 'development', 'cdn', 'serverless', 'spa', 'ssr'] as const,
+            description: 'Configuration preset to generate',
           })
-          .option("validate", {
-            type: "string",
-            description: "Path to configuration file to validate",
+          .option('validate', {
+            type: 'string',
+            description: 'Path to configuration file to validate',
           })
-          .option("docs", {
-            type: "boolean",
-            description: "Generate configuration documentation",
+          .option('docs', {
+            type: 'boolean',
+            description: 'Generate configuration documentation',
           })
-          .option("budget", {
-            type: "boolean",
-            description: "Include performance budget configuration",
+          .option('budget', {
+            type: 'boolean',
+            description: 'Include performance budget configuration',
           })
-          .option("save", {
-            type: "string",
-            description: "Save configuration to file path",
+          .option('save', {
+            type: 'string',
+            description: 'Save configuration to file path',
           });
       },
       async (argv) => {
@@ -676,24 +630,18 @@ async function main() {
           if (argv.validate) {
             // Validate existing configuration
             const configPath = resolve(argv.validate);
-            const configData = JSON.parse(readFileSync(configPath, "utf8"));
+            const configData = JSON.parse(readFileSync(configPath, 'utf8'));
             const validation = validateProductionConfig(configData);
 
             if (validation.isValid) {
-              cliLogger.info("✅ Configuration is valid");
+              cliLogger.info('✅ Configuration is valid');
             } else {
-              cliLogger.error("❌ Configuration validation failed");
-              validation.errors.forEach((error) =>
-                cliLogger.error(`  • ${error}`),
-              );
+              cliLogger.error('❌ Configuration validation failed');
+              validation.errors.forEach((error) => cliLogger.error(`  • ${error}`));
             }
 
-            validation.warnings.forEach((warning) =>
-              cliLogger.warn(`⚠️  ${warning}`),
-            );
-            validation.suggestions.forEach((rec) =>
-              cliLogger.info(`💡 ${rec}`),
-            );
+            validation.warnings.forEach((warning) => cliLogger.warn(`⚠️  ${warning}`));
+            validation.suggestions.forEach((rec) => cliLogger.info(`💡 ${rec}`));
 
             return;
           }
@@ -703,11 +651,11 @@ async function main() {
           let config;
 
           if (argv.preset) {
-            if (argv.preset === "production" || argv.preset === "development") {
+            if (argv.preset === 'production' || argv.preset === 'development') {
               config = manager.applyPreset(argv.preset);
             } else {
               config = manager.createOptimizedPreset(
-                argv.preset as "cdn" | "serverless" | "spa" | "ssr",
+                argv.preset as 'cdn' | 'serverless' | 'spa' | 'ssr'
               );
             }
             cliLogger.info(`📋 Generated ${argv.preset} configuration preset`);
@@ -719,7 +667,7 @@ async function main() {
           if (argv.budget) {
             const budget = createPerformanceBudget({});
             manager.setPerformanceBudget(budget);
-            cliLogger.info("📊 Added performance budget configuration");
+            cliLogger.info('📊 Added performance budget configuration');
           }
 
           // Generate documentation if requested
@@ -733,9 +681,7 @@ async function main() {
             const savePath = resolve(argv.save);
             const output = {
               cssOutput: config,
-              ...(argv.budget
-                ? { performanceBudget: manager.getPerformanceBudget() }
-                : {}),
+              ...(argv.budget ? { performanceBudget: manager.getPerformanceBudget() } : {}),
               generated: {
                 timestamp: new Date().toISOString(),
                 preset: argv.preset,
@@ -744,55 +690,55 @@ async function main() {
             };
 
             writeFileSync(savePath, JSON.stringify(output, null, 2));
-            cliLogger.info("💾 Configuration saved", { path: savePath });
+            cliLogger.info('💾 Configuration saved', { path: savePath });
           } else {
             // Display configuration
             console.log(JSON.stringify(config, null, 2));
           }
         } catch (error) {
-          cliLogger.error("Configuration command failed", {
+          cliLogger.error('Configuration command failed', {
             error: error instanceof Error ? error.message : String(error),
           });
           process.exit(1);
         }
-      },
+      }
     )
     .command(
-      "css-analyze <input>",
-      "Analyze CSS performance and provide optimization recommendations",
+      'css-analyze <input>',
+      'Analyze CSS performance and provide optimization recommendations',
       (yargs) => {
         return yargs
-          .positional("input", {
-            describe: "CSS file to analyze",
-            type: "string",
+          .positional('input', {
+            describe: 'CSS file to analyze',
+            type: 'string',
             demandOption: true,
           })
-          .option("budget", {
-            type: "string",
-            description: "Path to performance budget configuration",
+          .option('budget', {
+            type: 'string',
+            description: 'Path to performance budget configuration',
           })
-          .option("report", {
-            type: "string",
-            description: "Output path for analysis report",
+          .option('report', {
+            type: 'string',
+            description: 'Output path for analysis report',
           })
-          .option("recommendations", {
-            type: "boolean",
+          .option('recommendations', {
+            type: 'boolean',
             default: true,
-            description: "Include optimization recommendations",
+            description: 'Include optimization recommendations',
           });
       },
       async (argv) => {
         try {
-          cliLogger.info("🔍 Analyzing CSS file for optimization opportunities");
+          cliLogger.info('🔍 Analyzing CSS file for optimization opportunities');
 
           const inputPath = resolve(argv.input);
-          const cssContent = readFileSync(inputPath, "utf8");
-          const originalSize = Buffer.byteLength(cssContent, "utf8");
+          const cssContent = readFileSync(inputPath, 'utf8');
+          const originalSize = Buffer.byteLength(cssContent, 'utf8');
 
           // Load budget if provided
           let budget: PerformanceBudget | undefined;
           if (argv.budget) {
-            const budgetData = JSON.parse(readFileSync(resolve(argv.budget), "utf8"));
+            const budgetData = JSON.parse(readFileSync(resolve(argv.budget), 'utf8'));
             budget = createPerformanceBudget(budgetData);
           }
 
@@ -806,9 +752,9 @@ async function main() {
           };
 
           const options: CssProcessingOptions = {
-            environment: "test",
+            environment: 'test',
             sourceMaps: false,
-            outputDir: "/tmp/css-analysis",
+            outputDir: '/tmp/css-analysis',
             verbose: argv.verbose,
           };
 
@@ -822,24 +768,21 @@ async function main() {
               sizeKB: Math.round(originalSize / 1024),
             },
             optimization: {
-              potentialSavings:
-                originalSize - result.globalStats.totalOptimizedSize,
+              potentialSavings: originalSize - result.globalStats.totalOptimizedSize,
               compressionRatio: result.globalStats.overallCompressionRatio,
               estimatedLoadTime: result.performanceMetrics.estimatedLoadTime,
             },
             recommendations: argv.recommendations
               ? [
-                  originalSize > 100 * 1024
-                    ? "Consider chunking large CSS files"
-                    : null,
+                  originalSize > 100 * 1024 ? 'Consider chunking large CSS files' : null,
                   result.globalStats.overallCompressionRatio < 0.3
-                    ? "Enable compression for better performance"
+                    ? 'Enable compression for better performance'
                     : null,
                   result.performanceMetrics.estimatedLoadTime > 3000
-                    ? "CSS size may impact page load time"
+                    ? 'CSS size may impact page load time'
                     : null,
                   !result.performanceMetrics.criticalCssSize
-                    ? "Consider extracting critical CSS"
+                    ? 'Consider extracting critical CSS'
                     : null,
                 ].filter(Boolean)
               : [],
@@ -853,7 +796,7 @@ async function main() {
           };
 
           // Display results
-          cliLogger.info("📊 CSS Analysis Results", {
+          cliLogger.info('📊 CSS Analysis Results', {
             fileSize: analysis.file.sizeKB,
             potentialSavingsKB: Math.round(analysis.optimization.potentialSavings / 1024),
             estimatedLoadTime: analysis.optimization.estimatedLoadTime,
@@ -864,90 +807,84 @@ async function main() {
           });
 
           if (analysis.budget) {
-            const status = analysis.budget.withinBudget ? "✅" : "❌";
+            const status = analysis.budget.withinBudget ? '✅' : '❌';
             cliLogger.info(`${status} Budget: ${analysis.budget.usage}% used`);
           }
 
           if (analysis.recommendations.length > 0) {
-            cliLogger.info("💡 Recommendations:");
-            analysis.recommendations.forEach((rec) =>
-              cliLogger.info(`  • ${rec}`),
-            );
+            cliLogger.info('💡 Recommendations:');
+            analysis.recommendations.forEach((rec) => cliLogger.info(`  • ${rec}`));
           }
 
           // Save report if requested
           if (argv.report) {
             const reportPath = resolve(argv.report);
             writeFileSync(reportPath, JSON.stringify(analysis, null, 2));
-            cliLogger.info("📋 Analysis report saved", { path: reportPath });
+            cliLogger.info('📋 Analysis report saved', { path: reportPath });
           }
         } catch (error) {
-          cliLogger.error("CSS analysis failed", {
+          cliLogger.error('CSS analysis failed', {
             error: error instanceof Error ? error.message : String(error),
           });
           process.exit(1);
         }
-      },
+      }
     )
     .command(
-      "plugin",
-      "Plugin management commands",
+      'plugin',
+      'Plugin management commands',
       (yargs) => {
         return yargs
           .command(
-            "list",
-            "List all available plugins",
+            'list',
+            'List all available plugins',
             {
               verbose: {
-                alias: "v",
-                type: "boolean",
-                description: "Show detailed plugin information",
+                alias: 'v',
+                type: 'boolean',
+                description: 'Show detailed plugin information',
               },
               health: {
-                type: "boolean",
-                description: "Include health status information",
+                type: 'boolean',
+                description: 'Include health status information',
               },
               disabled: {
-                type: "boolean",
-                description: "Show only disabled plugins",
+                type: 'boolean',
+                description: 'Show only disabled plugins',
               },
               enabled: {
-                type: "boolean",
-                description: "Show only enabled plugins",
+                type: 'boolean',
+                description: 'Show only enabled plugins',
               },
             },
             async (argv) => {
               try {
-                cliLogger.info("📦 Listing plugins");
+                cliLogger.info('📦 Listing plugins');
 
                 // Import plugin manager
-                const { createPluginManager } = await import(
-                  "../src/core/pluginManager"
-                );
+                const { createPluginManager } = await import('../src/core/pluginManager');
                 const pluginManager = createPluginManager();
 
                 const plugins = pluginManager.getAllPlugins();
 
                 if (plugins.length === 0) {
-                  cliLogger.warn("No plugins found");
+                  cliLogger.warn('No plugins found');
                   return;
                 }
 
                 cliLogger.info(`Found ${plugins.length} plugin(s)`);
 
                 for (const plugin of plugins) {
-                  let status = "✅ Enabled";
-                  let healthInfo = "";
+                  let status = '✅ Enabled';
+                  let healthInfo = '';
 
                   if (argv.health) {
-                    const health = pluginManager.getPluginHealth(
-                      plugin.meta.name,
-                    );
+                    const health = pluginManager.getPluginHealth(plugin.meta.name);
                     status = health.isDisabled
-                      ? "❌ Disabled"
+                      ? '❌ Disabled'
                       : health.isHealthy
-                        ? "✅ Healthy"
-                        : "⚠️  Unhealthy";
+                        ? '✅ Healthy'
+                        : '⚠️  Unhealthy';
 
                     if (!health.isHealthy) {
                       healthInfo = ` (${health.consecutiveFailures} failures, ${health.circuitState})`;
@@ -960,13 +897,12 @@ async function main() {
 
                   // Filter based on enabled/disabled flags
                   const isDisabled =
-                    argv.health &&
-                    pluginManager.getPluginHealth(plugin.meta.name).isDisabled;
+                    argv.health && pluginManager.getPluginHealth(plugin.meta.name).isDisabled;
                   if (argv.disabled && !isDisabled) continue;
                   if (argv.enabled && isDisabled) continue;
 
                   console.log(
-                    `\n📦 ${plugin.meta.name} v${plugin.meta.version} ${status}${healthInfo}`,
+                    `\n📦 ${plugin.meta.name} v${plugin.meta.version} ${status}${healthInfo}`
                   );
                   console.log(`   ${plugin.meta.description}`);
 
@@ -978,44 +914,40 @@ async function main() {
                       console.log(`   Repository: ${plugin.meta.repository}`);
                     }
                     if (plugin.dependencies && plugin.dependencies.length > 0) {
-                      console.log(
-                        `   Dependencies: ${plugin.dependencies.join(", ")}`,
-                      );
+                      console.log(`   Dependencies: ${plugin.dependencies.join(', ')}`);
                     }
                     if (plugin.conflicts && plugin.conflicts.length > 0) {
-                      console.log(`   Conflicts: ${plugin.conflicts.join(", ")}`);
+                      console.log(`   Conflicts: ${plugin.conflicts.join(', ')}`);
                     }
                   }
                 }
               } catch (error) {
-                cliLogger.error("Failed to list plugins", {
+                cliLogger.error('Failed to list plugins', {
                   error: error instanceof Error ? error.message : String(error),
                 });
                 process.exit(1);
               }
-            },
+            }
           )
           .command(
-            "health [plugin]",
-            "Show plugin health status",
+            'health [plugin]',
+            'Show plugin health status',
             {
               plugin: {
-                type: "string",
-                description: "Specific plugin name to check (optional)",
+                type: 'string',
+                description: 'Specific plugin name to check (optional)',
               },
               verbose: {
-                alias: "v",
-                type: "boolean",
-                description: "Show detailed health information",
+                alias: 'v',
+                type: 'boolean',
+                description: 'Show detailed health information',
               },
             },
             async (argv) => {
               try {
-                cliLogger.info("🩺 Checking plugin health");
+                cliLogger.info('🩺 Checking plugin health');
 
-                const { createPluginManager } = await import(
-                  "../src/core/pluginManager"
-                );
+                const { createPluginManager } = await import('../src/core/pluginManager');
                 const pluginManager = createPluginManager();
 
                 if (argv.plugin) {
@@ -1023,47 +955,35 @@ async function main() {
                   const health = pluginManager.getPluginHealth(argv.plugin);
 
                   console.log(`\n🩺 Health Status: ${argv.plugin}`);
-                  console.log(
-                    `   Status: ${health.isHealthy ? "✅ Healthy" : "❌ Unhealthy"}`,
-                  );
+                  console.log(`   Status: ${health.isHealthy ? '✅ Healthy' : '❌ Unhealthy'}`);
                   console.log(`   Circuit: ${health.circuitState}`);
                   console.log(`   Errors: ${health.errorCount}`);
-                  console.log(
-                    `   Success Rate: ${(health.successRate * 100).toFixed(1)}%`,
-                  );
-                  console.log(
-                    `   Consecutive Failures: ${health.consecutiveFailures}`,
-                  );
+                  console.log(`   Success Rate: ${(health.successRate * 100).toFixed(1)}%`);
+                  console.log(`   Consecutive Failures: ${health.consecutiveFailures}`);
 
                   if (health.isDisabled) {
-                    console.log(
-                      `   Disabled: ${health.disabledReason || "Unknown reason"}`,
-                    );
+                    console.log(`   Disabled: ${health.disabledReason || 'Unknown reason'}`);
                   }
 
                   if (argv.verbose && health.recentErrors.length > 0) {
                     console.log(`   Recent Errors:`);
-                    health.recentErrors.slice(0, 3).forEach((error: { message: string; category: string }, i: number) => {
-                      console.log(
-                        `     ${i + 1}. ${error.message} (${error.category})`,
-                      );
-                    });
+                    health.recentErrors
+                      .slice(0, 3)
+                      .forEach((error: { message: string; category: string }, i: number) => {
+                        console.log(`     ${i + 1}. ${error.message} (${error.category})`);
+                      });
                   }
                 } else {
                   // Show health for all plugins
                   const allHealth = pluginManager.getAllPluginHealth();
 
                   if (allHealth.length === 0) {
-                    cliLogger.warn("No plugins to check");
+                    cliLogger.warn('No plugins to check');
                     return;
                   }
 
-                  const healthy = allHealth.filter(
-                    (h) => h.isHealthy && !h.isDisabled,
-                  );
-                  const unhealthy = allHealth.filter(
-                    (h) => !h.isHealthy && !h.isDisabled,
-                  );
+                  const healthy = allHealth.filter((h) => h.isHealthy && !h.isDisabled);
+                  const unhealthy = allHealth.filter((h) => !h.isHealthy && !h.isDisabled);
                   const disabled = allHealth.filter((h) => h.isDisabled);
 
                   console.log(`\n🩺 Plugin Health Summary:`);
@@ -1076,7 +996,7 @@ async function main() {
                       console.log(`\n⚠️  Unhealthy Plugins:`);
                       unhealthy.forEach((health) => {
                         console.log(
-                          `   • ${health.pluginName}: ${health.consecutiveFailures} failures, ${health.circuitState}`,
+                          `   • ${health.pluginName}: ${health.consecutiveFailures} failures, ${health.circuitState}`
                         );
                       });
                     }
@@ -1085,27 +1005,27 @@ async function main() {
                       console.log(`\n❌ Disabled Plugins:`);
                       disabled.forEach((health) => {
                         console.log(
-                          `   • ${health.pluginName}: ${health.disabledReason || "Unknown reason"}`,
+                          `   • ${health.pluginName}: ${health.disabledReason || 'Unknown reason'}`
                         );
                       });
                     }
                   }
                 }
               } catch (error) {
-                cliLogger.error("Failed to check plugin health", {
+                cliLogger.error('Failed to check plugin health', {
                   error: error instanceof Error ? error.message : String(error),
                 });
                 process.exit(1);
               }
-            },
+            }
           )
           .command(
-            "enable <plugin>",
-            "Enable a disabled plugin",
+            'enable <plugin>',
+            'Enable a disabled plugin',
             {
               plugin: {
-                type: "string",
-                description: "Plugin name to enable",
+                type: 'string',
+                description: 'Plugin name to enable',
                 demandOption: true,
               },
             },
@@ -1113,9 +1033,7 @@ async function main() {
               try {
                 cliLogger.info(`🔓 Enabling plugin: ${argv.plugin}`);
 
-                const { createPluginManager } = await import(
-                  "../src/core/pluginManager"
-                );
+                const { createPluginManager } = await import('../src/core/pluginManager');
                 const pluginManager = createPluginManager();
 
                 if (!pluginManager.hasPlugin(argv.plugin)) {
@@ -1131,30 +1049,28 @@ async function main() {
                 });
                 process.exit(1);
               }
-            },
+            }
           )
           .command(
-            "disable <plugin>",
-            "Disable a plugin",
+            'disable <plugin>',
+            'Disable a plugin',
             {
               plugin: {
-                type: "string",
-                description: "Plugin name to disable",
+                type: 'string',
+                description: 'Plugin name to disable',
                 demandOption: true,
               },
               reason: {
-                alias: "r",
-                type: "string",
-                description: "Reason for disabling the plugin",
+                alias: 'r',
+                type: 'string',
+                description: 'Reason for disabling the plugin',
               },
             },
             async (argv) => {
               try {
                 cliLogger.info(`🔒 Disabling plugin: ${argv.plugin}`);
 
-                const { createPluginManager } = await import(
-                  "../src/core/pluginManager"
-                );
+                const { createPluginManager } = await import('../src/core/pluginManager');
                 const pluginManager = createPluginManager();
 
                 if (!pluginManager.hasPlugin(argv.plugin)) {
@@ -1162,47 +1078,46 @@ async function main() {
                   process.exit(1);
                 }
 
-                const reason = argv.reason || "Manually disabled via CLI";
+                const reason = argv.reason || 'Manually disabled via CLI';
                 pluginManager.disablePlugin(argv.plugin, reason);
-                cliLogger.info(
-                  `🔒 Plugin "${argv.plugin}" disabled successfully`,
-                );
+                cliLogger.info(`🔒 Plugin "${argv.plugin}" disabled successfully`);
               } catch (error) {
                 cliLogger.error(`Failed to disable plugin "${argv.plugin}"`, {
                   error: error instanceof Error ? error.message : String(error),
                 });
                 process.exit(1);
               }
-            },
+            }
           )
           .command(
-            "discover [paths..]",
-            "Discover plugins from specified paths",
+            'discover [paths..]',
+            'Discover plugins from specified paths',
             {
               paths: {
-                type: "array",
-                description: "Paths to search for plugins",
+                type: 'array',
+                description: 'Paths to search for plugins',
               },
-              "include-npm": {
-                type: "boolean",
-                description: "Include npm package discovery",
+              'include-npm': {
+                type: 'boolean',
+                description: 'Include npm package discovery',
               },
-              "include-builtin": {
-                type: "boolean",
+              'include-builtin': {
+                type: 'boolean',
                 default: true,
-                description: "Include built-in plugins",
+                description: 'Include built-in plugins',
               },
               register: {
-                type: "boolean",
-                description: "Automatically register discovered plugins",
+                type: 'boolean',
+                description: 'Automatically register discovered plugins',
               },
             },
             async (argv) => {
               try {
-                cliLogger.info("🔍 Discovering plugins");
+                cliLogger.info('🔍 Discovering plugins');
 
-                const { createPluginManager, createDefaultDiscoveryOptions } =
-                  await import("../src/core/pluginManager");
+                const { createPluginManager, createDefaultDiscoveryOptions } = await import(
+                  '../src/core/pluginManager'
+                );
                 const pluginManager = createPluginManager();
 
                 const options = createDefaultDiscoveryOptions();
@@ -1211,22 +1126,20 @@ async function main() {
                   options.searchPaths = argv.paths as string[];
                 }
 
-                options.includeBuiltins = argv["include-builtin"];
+                options.includeBuiltins = argv['include-builtin'];
 
-                if (argv["include-npm"]) {
-                  options.npmPrefixes = ["enigma-plugin-", "postcss-enigma-"];
+                if (argv['include-npm']) {
+                  options.npmPrefixes = ['enigma-plugin-', 'postcss-enigma-'];
                 } else {
                   options.npmPrefixes = [];
                 }
 
                 const discovered = await pluginManager.discoverPlugins(options);
 
-                cliLogger.info(
-                  `🔍 Discovery completed: ${discovered.length} plugins found`,
-                );
+                cliLogger.info(`🔍 Discovery completed: ${discovered.length} plugins found`);
 
                 if (discovered.length === 0) {
-                  cliLogger.warn("No plugins discovered");
+                  cliLogger.warn('No plugins discovered');
                   return;
                 }
 
@@ -1236,54 +1149,51 @@ async function main() {
                 });
 
                 if (argv.register) {
-                  cliLogger.info("📋 Registering discovered plugins");
+                  cliLogger.info('📋 Registering discovered plugins');
                   discovered.forEach((plugin) => {
                     try {
                       pluginManager.register(plugin);
                       cliLogger.debug(`Registered: ${plugin.meta.name}`);
                     } catch (error) {
                       cliLogger.warn(`Failed to register ${plugin.meta.name}`, {
-                        error:
-                          error instanceof Error ? error.message : String(error),
+                        error: error instanceof Error ? error.message : String(error),
                       });
                     }
                   });
-                  cliLogger.info("✅ Plugin registration completed");
+                  cliLogger.info('✅ Plugin registration completed');
                 }
               } catch (error) {
-                cliLogger.error("Plugin discovery failed", {
+                cliLogger.error('Plugin discovery failed', {
                   error: error instanceof Error ? error.message : String(error),
                 });
                 process.exit(1);
               }
-            },
+            }
           )
           .command(
-            "test [plugin]",
-            "Test plugin functionality",
+            'test [plugin]',
+            'Test plugin functionality',
             {
               plugin: {
-                type: "string",
-                description: "Specific plugin to test (optional)",
+                type: 'string',
+                description: 'Specific plugin to test (optional)',
               },
               timeout: {
-                type: "number",
+                type: 'number',
                 default: 30000,
-                description: "Test timeout in milliseconds",
+                description: 'Test timeout in milliseconds',
               },
               verbose: {
-                alias: "v",
-                type: "boolean",
-                description: "Show detailed test output",
+                alias: 'v',
+                type: 'boolean',
+                description: 'Show detailed test output',
               },
             },
             async (argv) => {
               try {
-                cliLogger.info("🧪 Testing plugin functionality");
+                cliLogger.info('🧪 Testing plugin functionality');
 
-                const { createPluginManager } = await import(
-                  "../src/core/pluginManager"
-                );
+                const { createPluginManager } = await import('../src/core/pluginManager');
                 const pluginManager = createPluginManager();
 
                 const plugins = argv.plugin
@@ -1291,7 +1201,7 @@ async function main() {
                   : pluginManager.getAllPlugins().map((p) => p.meta.name);
 
                 if (plugins.length === 0) {
-                  cliLogger.warn("No plugins to test");
+                  cliLogger.warn('No plugins to test');
                   return;
                 }
 
@@ -1306,14 +1216,10 @@ async function main() {
                   try {
                     // Basic health check
                     const health = pluginManager.getPluginHealth(pluginName);
-                    console.log(
-                      `   Health: ${health.isHealthy ? "✅ Healthy" : "❌ Unhealthy"}`,
-                    );
+                    console.log(`   Health: ${health.isHealthy ? '✅ Healthy' : '❌ Unhealthy'}`);
 
                     if (health.isDisabled) {
-                      console.log(
-                        `   Status: ❌ Disabled (${health.disabledReason})`,
-                      );
+                      console.log(`   Status: ❌ Disabled (${health.disabledReason})`);
                       continue;
                     }
 
@@ -1329,110 +1235,103 @@ async function main() {
                         timeout: argv.timeout,
                         sandbox: true,
                         retryOnFailure: false,
-                      },
+                      }
                     );
 
                     const duration = Date.now() - startTime;
                     console.log(`   Execution: ✅ Success (${duration}ms)`);
 
                     if (argv.verbose) {
-                      const resourceStats =
-                        pluginManager.getResourceStats()[pluginName];
+                      const resourceStats = pluginManager.getResourceStats()[pluginName];
                       if (resourceStats) {
-                        console.log(
-                          `   Memory: ${Math.round(resourceStats.memoryUsage / 1024)}KB`,
-                        );
-                        console.log(
-                          `   Last Execution: ${resourceStats.executionTime}ms`,
-                        );
+                        console.log(`   Memory: ${Math.round(resourceStats.memoryUsage / 1024)}KB`);
+                        console.log(`   Last Execution: ${resourceStats.executionTime}ms`);
                       }
                     }
                   } catch (error) {
                     console.log(`   Execution: ❌ Failed`);
                     if (argv.verbose) {
                       console.log(
-                        `   Error: ${error instanceof Error ? error.message : String(error)}`,
+                        `   Error: ${error instanceof Error ? error.message : String(error)}`
                       );
                     }
                   }
                 }
 
-                cliLogger.info("🧪 Plugin testing completed");
+                cliLogger.info('🧪 Plugin testing completed');
               } catch (error) {
-                cliLogger.error("Plugin testing failed", {
+                cliLogger.error('Plugin testing failed', {
                   error: error instanceof Error ? error.message : String(error),
                 });
                 process.exit(1);
               }
-            },
+            }
           )
-          .demandCommand(1, "Please specify a plugin command")
+          .demandCommand(1, 'Please specify a plugin command')
           .help();
       },
       () => {
         // This handler runs when no subcommand is provided
         cliLogger.error(
-          "Please specify a plugin command (list, health, enable, disable, discover, test)",
+          'Please specify a plugin command (list, health, enable, disable, discover, test)'
         );
         process.exit(1);
-      },
+      }
     )
     .command(
-      "marketplace <command>",
-      "Plugin marketplace operations",
+      'marketplace <command>',
+      'Plugin marketplace operations',
       (yargs) => {
         return yargs
           .command(
-            "search [query]",
-            "Search for plugins in the marketplace",
+            'search [query]',
+            'Search for plugins in the marketplace',
             (yargs) => {
               return yargs
-                .positional("query", {
-                  describe: "Search query for plugins",
-                  type: "string",
+                .positional('query', {
+                  describe: 'Search query for plugins',
+                  type: 'string',
                 })
-                .option("tags", {
-                  type: "array",
-                  description: "Filter by tags",
+                .option('tags', {
+                  type: 'array',
+                  description: 'Filter by tags',
                 })
-                .option("author", {
-                  type: "string",
-                  description: "Filter by author",
+                .option('author', {
+                  type: 'string',
+                  description: 'Filter by author',
                 })
-                .option("verified", {
-                  type: "boolean",
-                  description: "Show only verified plugins",
+                .option('verified', {
+                  type: 'boolean',
+                  description: 'Show only verified plugins',
                 })
-                .option("min-rating", {
-                  type: "number",
-                  description: "Minimum rating filter",
+                .option('min-rating', {
+                  type: 'number',
+                  description: 'Minimum rating filter',
                 })
-                .option("sort", {
-                  choices: ["downloads", "rating", "updated", "name"] as const,
-                  default: "downloads",
-                  description: "Sort results by",
+                .option('sort', {
+                  choices: ['downloads', 'rating', 'updated', 'name'] as const,
+                  default: 'downloads',
+                  description: 'Sort results by',
                 })
-                .option("order", {
-                  choices: ["asc", "desc"] as const,
-                  default: "desc",
-                  description: "Sort order",
+                .option('order', {
+                  choices: ['asc', 'desc'] as const,
+                  default: 'desc',
+                  description: 'Sort order',
                 })
-                .option("limit", {
-                  type: "number",
+                .option('limit', {
+                  type: 'number',
                   default: 20,
-                  description: "Maximum number of results",
+                  description: 'Maximum number of results',
                 });
             },
             async (argv) => {
               try {
-                cliLogger.info("🔍 Searching marketplace for plugins");
+                cliLogger.info('🔍 Searching marketplace for plugins');
 
                 // Import marketplace modules
-                const { createPluginRegistry } = await import(
-                  "../src/registry/pluginRegistry"
-                );
+                const { createPluginRegistry } = await import('../src/registry/pluginRegistry');
                 const { createPluginMarketplace } = await import(
-                  "../src/marketplace/pluginMarketplace"
+                  '../src/marketplace/pluginMarketplace'
                 );
 
                 // Create registry and marketplace
@@ -1445,14 +1344,14 @@ async function main() {
                   tags: argv.tags as string[],
                   author: argv.author,
                   verified: argv.verified,
-                  minRating: argv["min-rating"],
-                  sortBy: argv.sort as "name" | "downloads" | "rating" | "updated",
-                  sortOrder: argv.order as "asc" | "desc",
+                  minRating: argv['min-rating'],
+                  sortBy: argv.sort as 'name' | 'downloads' | 'rating' | 'updated',
+                  sortOrder: argv.order as 'asc' | 'desc',
                   limit: argv.limit,
                 });
 
                 if (results.length === 0) {
-                  cliLogger.info("No plugins found matching your criteria");
+                  cliLogger.info('No plugins found matching your criteria');
                   return;
                 }
 
@@ -1462,49 +1361,45 @@ async function main() {
                   console.log(`🔌 ${plugin.name} v${plugin.version}`);
                   console.log(`   ${plugin.description}`);
                   console.log(`   👤 Author: ${plugin.author}`);
-                  console.log(
-                    `   ⭐ Rating: ${plugin.rating}/5 (${plugin.downloads} downloads)`,
-                  );
-                  console.log(`   🏷️  Tags: ${plugin.tags.join(", ")}`);
-                  console.log(
-                    `   ${plugin.verified ? "✅ Verified" : "⚠️  Unverified"}`,
-                  );
+                  console.log(`   ⭐ Rating: ${plugin.rating}/5 (${plugin.downloads} downloads)`);
+                  console.log(`   🏷️  Tags: ${plugin.tags.join(', ')}`);
+                  console.log(`   ${plugin.verified ? '✅ Verified' : '⚠️  Unverified'}`);
                   console.log(`   📅 Updated: ${plugin.lastUpdated}`);
-                  console.log("");
+                  console.log('');
                 }
               } catch (error) {
-                cliLogger.error("Marketplace search failed", {
+                cliLogger.error('Marketplace search failed', {
                   error: error instanceof Error ? error.message : String(error),
                 });
                 process.exit(1);
               }
-            },
+            }
           )
           .command(
-            "install <name>",
-            "Install a plugin from the marketplace",
+            'install <name>',
+            'Install a plugin from the marketplace',
             (yargs) => {
               return yargs
-                .positional("name", {
-                  describe: "Plugin name to install",
-                  type: "string",
+                .positional('name', {
+                  describe: 'Plugin name to install',
+                  type: 'string',
                   demandOption: true,
                 })
-                .option("version", {
-                  type: "string",
-                  description: "Specific version to install",
+                .option('version', {
+                  type: 'string',
+                  description: 'Specific version to install',
                 })
-                .option("force", {
-                  type: "boolean",
-                  description: "Force reinstall if already installed",
+                .option('force', {
+                  type: 'boolean',
+                  description: 'Force reinstall if already installed',
                 })
-                .option("skip-deps", {
-                  type: "boolean",
-                  description: "Skip dependency installation",
+                .option('skip-deps', {
+                  type: 'boolean',
+                  description: 'Skip dependency installation',
                 })
-                .option("install-path", {
-                  type: "string",
-                  description: "Custom installation path",
+                .option('install-path', {
+                  type: 'string',
+                  description: 'Custom installation path',
                 });
             },
             async (argv) => {
@@ -1512,11 +1407,9 @@ async function main() {
                 cliLogger.info(`📦 Installing plugin: ${argv.name}`);
 
                 // Import marketplace modules
-                const { createPluginRegistry } = await import(
-                  "../src/registry/pluginRegistry"
-                );
+                const { createPluginRegistry } = await import('../src/registry/pluginRegistry');
                 const { createPluginMarketplace } = await import(
-                  "../src/marketplace/pluginMarketplace"
+                  '../src/marketplace/pluginMarketplace'
                 );
 
                 // Create registry and marketplace
@@ -1527,41 +1420,41 @@ async function main() {
                 const plugin = await marketplace.installPlugin(argv.name, {
                   version: argv.version,
                   force: argv.force,
-                  skipDependencies: argv["skip-deps"],
-                  installPath: argv["install-path"],
+                  skipDependencies: argv['skip-deps'],
+                  installPath: argv['install-path'],
                 });
 
                 console.log(
-                  `\n✅ Successfully installed ${plugin.meta.name} v${plugin.meta.version}`,
+                  `\n✅ Successfully installed ${plugin.meta.name} v${plugin.meta.version}`
                 );
                 console.log(`   📝 ${plugin.meta.description}`);
                 console.log(`   👤 Author: ${plugin.meta.author}`);
 
                 if (plugin.meta.tags && plugin.meta.tags.length > 0) {
-                  console.log(`   🏷️  Tags: ${plugin.meta.tags.join(", ")}`);
+                  console.log(`   🏷️  Tags: ${plugin.meta.tags.join(', ')}`);
                 }
               } catch (error) {
-                cliLogger.error("Plugin installation failed", {
+                cliLogger.error('Plugin installation failed', {
                   plugin: argv.name,
                   error: error instanceof Error ? error.message : String(error),
                 });
                 process.exit(1);
               }
-            },
+            }
           )
           .command(
-            "uninstall <name>",
-            "Uninstall a plugin",
+            'uninstall <name>',
+            'Uninstall a plugin',
             (yargs) => {
               return yargs
-                .positional("name", {
-                  describe: "Plugin name to uninstall",
-                  type: "string",
+                .positional('name', {
+                  describe: 'Plugin name to uninstall',
+                  type: 'string',
                   demandOption: true,
                 })
-                .option("version", {
-                  type: "string",
-                  description: "Specific version to uninstall",
+                .option('version', {
+                  type: 'string',
+                  description: 'Specific version to uninstall',
                 });
             },
             async (argv) => {
@@ -1569,11 +1462,9 @@ async function main() {
                 cliLogger.info(`🗑️  Uninstalling plugin: ${argv.name}`);
 
                 // Import marketplace modules
-                const { createPluginRegistry } = await import(
-                  "../src/registry/pluginRegistry"
-                );
+                const { createPluginRegistry } = await import('../src/registry/pluginRegistry');
                 const { createPluginMarketplace } = await import(
-                  "../src/marketplace/pluginMarketplace"
+                  '../src/marketplace/pluginMarketplace'
                 );
 
                 // Create registry and marketplace
@@ -1584,34 +1475,32 @@ async function main() {
                 await marketplace.uninstallPlugin(argv.name, argv.version);
 
                 console.log(
-                  `\n✅ Successfully uninstalled ${argv.name}${argv.version ? ` v${argv.version}` : ""}`,
+                  `\n✅ Successfully uninstalled ${argv.name}${argv.version ? ` v${argv.version}` : ''}`
                 );
               } catch (error) {
-                cliLogger.error("Plugin uninstallation failed", {
+                cliLogger.error('Plugin uninstallation failed', {
                   plugin: argv.name,
                   error: error instanceof Error ? error.message : String(error),
                 });
                 process.exit(1);
               }
-            },
+            }
           )
           .command(
-            "update [name]",
-            "Update plugins to latest versions",
+            'update [name]',
+            'Update plugins to latest versions',
             (yargs) => {
-              return yargs.positional("name", {
-                describe: "Plugin name to update (updates all if not specified)",
-                type: "string",
+              return yargs.positional('name', {
+                describe: 'Plugin name to update (updates all if not specified)',
+                type: 'string',
               });
             },
             async (argv) => {
               try {
                 // Import marketplace modules
-                const { createPluginRegistry } = await import(
-                  "../src/registry/pluginRegistry"
-                );
+                const { createPluginRegistry } = await import('../src/registry/pluginRegistry');
                 const { createPluginMarketplace } = await import(
-                  "../src/marketplace/pluginMarketplace"
+                  '../src/marketplace/pluginMarketplace'
                 );
 
                 // Create registry and marketplace
@@ -1626,28 +1515,25 @@ async function main() {
 
                   if (updatedPlugin) {
                     console.log(
-                      `\n✅ Updated ${updatedPlugin.meta.name} to v${updatedPlugin.meta.version}`,
+                      `\n✅ Updated ${updatedPlugin.meta.name} to v${updatedPlugin.meta.version}`
                     );
                   } else {
                     console.log(`\n✅ ${argv.name} is already up to date`);
                   }
                 } else {
                   // Update all plugins
-                  cliLogger.info("🔄 Checking for plugin updates");
+                  cliLogger.info('🔄 Checking for plugin updates');
 
-                  const installedPlugins =
-                    await marketplace.listInstalledPlugins();
-                  const updatesAvailable = installedPlugins.filter(
-                    (p) => p.updateAvailable,
-                  );
+                  const installedPlugins = await marketplace.listInstalledPlugins();
+                  const updatesAvailable = installedPlugins.filter((p) => p.updateAvailable);
 
                   if (updatesAvailable.length === 0) {
-                    console.log("\n✅ All plugins are up to date");
+                    console.log('\n✅ All plugins are up to date');
                     return;
                   }
 
                   console.log(
-                    `\n📦 Found ${updatesAvailable.length} plugin(s) with updates available:\n`,
+                    `\n📦 Found ${updatesAvailable.length} plugin(s) with updates available:\n`
                   );
 
                   for (const pluginInfo of updatesAvailable) {
@@ -1656,119 +1542,98 @@ async function main() {
 
                     console.log(`🔌 ${plugin.meta.name}`);
                     console.log(`   Current: v${plugin.meta.version}`);
-                    console.log(
-                      `   Latest: v${marketplace_info?.version || "unknown"}`,
-                    );
+                    console.log(`   Latest: v${marketplace_info?.version || 'unknown'}`);
 
                     try {
-                      await marketplace.updatePlugin(
-                        plugin.meta.name,
-                      );
+                      await marketplace.updatePlugin(plugin.meta.name);
                       console.log(`   ✅ Updated successfully`);
                     } catch (error) {
                       console.log(
-                        `   ❌ Update failed: ${error instanceof Error ? error.message : String(error)}`,
+                        `   ❌ Update failed: ${error instanceof Error ? error.message : String(error)}`
                       );
                     }
-                    console.log("");
+                    console.log('');
                   }
                 }
               } catch (error) {
-                cliLogger.error("Plugin update failed", {
+                cliLogger.error('Plugin update failed', {
                   error: error instanceof Error ? error.message : String(error),
                 });
                 process.exit(1);
               }
-            },
+            }
           )
-          .command(
-            "list",
-            "List installed plugins with marketplace info",
-            {},
-            async (_argv) => {
-              try {
-                cliLogger.info("📋 Listing installed plugins");
+          .command('list', 'List installed plugins with marketplace info', {}, async (_argv) => {
+            try {
+              cliLogger.info('📋 Listing installed plugins');
 
-                // Import marketplace modules
-                const { createPluginRegistry } = await import(
-                  "../src/registry/pluginRegistry"
-                );
-                const { createPluginMarketplace } = await import(
-                  "../src/marketplace/pluginMarketplace"
-                );
+              // Import marketplace modules
+              const { createPluginRegistry } = await import('../src/registry/pluginRegistry');
+              const { createPluginMarketplace } = await import(
+                '../src/marketplace/pluginMarketplace'
+              );
 
-                // Create registry and marketplace
-                const registry = createPluginRegistry();
-                const marketplace = createPluginMarketplace(registry);
+              // Create registry and marketplace
+              const registry = createPluginRegistry();
+              const marketplace = createPluginMarketplace(registry);
 
-                // Get installed plugins with marketplace info
-                const installedPlugins = await marketplace.listInstalledPlugins();
+              // Get installed plugins with marketplace info
+              const installedPlugins = await marketplace.listInstalledPlugins();
 
-                if (installedPlugins.length === 0) {
-                  console.log("\n📦 No plugins installed");
+              if (installedPlugins.length === 0) {
+                console.log('\n📦 No plugins installed');
+                console.log("   Use 'enigma marketplace search' to find plugins");
+                console.log("   Use 'enigma marketplace install <name>' to install plugins");
+                return;
+              }
+
+              console.log(`\n📦 Installed plugins (${installedPlugins.length}):\n`);
+
+              for (const pluginInfo of installedPlugins) {
+                const plugin = pluginInfo.plugin;
+                const marketplace_info = pluginInfo.marketplaceInfo;
+
+                console.log(`🔌 ${plugin.meta.name} v${plugin.meta.version}`);
+                console.log(`   📝 ${plugin.meta.description}`);
+                console.log(`   👤 Author: ${plugin.meta.author}`);
+
+                if (marketplace_info) {
                   console.log(
-                    "   Use 'enigma marketplace search' to find plugins",
+                    `   ⭐ Rating: ${marketplace_info.rating}/5 (${marketplace_info.downloads} downloads)`
                   );
-                  console.log(
-                    "   Use 'enigma marketplace install <name>' to install plugins",
-                  );
-                  return;
-                }
+                  console.log(`   ${marketplace_info.verified ? '✅ Verified' : '⚠️  Unverified'}`);
 
-                console.log(
-                  `\n📦 Installed plugins (${installedPlugins.length}):\n`,
-                );
-
-                for (const pluginInfo of installedPlugins) {
-                  const plugin = pluginInfo.plugin;
-                  const marketplace_info = pluginInfo.marketplaceInfo;
-
-                  console.log(`🔌 ${plugin.meta.name} v${plugin.meta.version}`);
-                  console.log(`   📝 ${plugin.meta.description}`);
-                  console.log(`   👤 Author: ${plugin.meta.author}`);
-
-                  if (marketplace_info) {
-                    console.log(
-                      `   ⭐ Rating: ${marketplace_info.rating}/5 (${marketplace_info.downloads} downloads)`,
-                    );
-                    console.log(
-                      `   ${marketplace_info.verified ? "✅ Verified" : "⚠️  Unverified"}`,
-                    );
-
-                    if (pluginInfo.updateAvailable) {
-                      console.log(
-                        `   🔄 Update available: v${marketplace_info.version}`,
-                      );
-                    } else {
-                      console.log(`   ✅ Up to date`);
-                    }
+                  if (pluginInfo.updateAvailable) {
+                    console.log(`   🔄 Update available: v${marketplace_info.version}`);
                   } else {
-                    console.log(`   📦 Local plugin (not in marketplace)`);
+                    console.log(`   ✅ Up to date`);
                   }
-
-                  console.log("");
+                } else {
+                  console.log(`   📦 Local plugin (not in marketplace)`);
                 }
-              } catch (error) {
-                cliLogger.error("Failed to list installed plugins", {
-                  error: error instanceof Error ? error.message : String(error),
-                });
-                process.exit(1);
+
+                console.log('');
               }
-            },
-          )
+            } catch (error) {
+              cliLogger.error('Failed to list installed plugins', {
+                error: error instanceof Error ? error.message : String(error),
+              });
+              process.exit(1);
+            }
+          })
           .command(
-            "info <name>",
-            "Get detailed information about a plugin",
+            'info <name>',
+            'Get detailed information about a plugin',
             (yargs) => {
               return yargs
-                .positional("name", {
-                  describe: "Plugin name to get info for",
-                  type: "string",
+                .positional('name', {
+                  describe: 'Plugin name to get info for',
+                  type: 'string',
                   demandOption: true,
                 })
-                .option("version", {
-                  type: "string",
-                  description: "Specific version to get info for",
+                .option('version', {
+                  type: 'string',
+                  description: 'Specific version to get info for',
                 });
             },
             async (argv) => {
@@ -1776,11 +1641,9 @@ async function main() {
                 cliLogger.info(`ℹ️  Getting plugin info: ${argv.name}`);
 
                 // Import marketplace modules
-                const { createPluginRegistry } = await import(
-                  "../src/registry/pluginRegistry"
-                );
+                const { createPluginRegistry } = await import('../src/registry/pluginRegistry');
                 const { createPluginMarketplace } = await import(
-                  "../src/marketplace/pluginMarketplace"
+                  '../src/marketplace/pluginMarketplace'
                 );
 
                 // Create registry and marketplace
@@ -1788,15 +1651,10 @@ async function main() {
                 const marketplace = createPluginMarketplace(registry);
 
                 // Get plugin info
-                const pluginInfo = await marketplace.getPluginInfo(
-                  argv.name,
-                  argv.version,
-                );
+                const pluginInfo = await marketplace.getPluginInfo(argv.name, argv.version);
 
                 if (!pluginInfo) {
-                  console.log(
-                    `\n❌ Plugin "${argv.name}" not found in marketplace`,
-                  );
+                  console.log(`\n❌ Plugin "${argv.name}" not found in marketplace`);
                   return;
                 }
 
@@ -1804,23 +1662,19 @@ async function main() {
                 console.log(`📝 ${pluginInfo.description}`);
                 console.log(`👤 Author: ${pluginInfo.author}`);
                 console.log(
-                  `⭐ Rating: ${pluginInfo.rating}/5 (${pluginInfo.downloads} downloads)`,
+                  `⭐ Rating: ${pluginInfo.rating}/5 (${pluginInfo.downloads} downloads)`
                 );
                 console.log(`📦 Size: ${Math.round(pluginInfo.size / 1024)}KB`);
                 console.log(`📄 License: ${pluginInfo.license}`);
-                console.log(
-                  `${pluginInfo.verified ? "✅ Verified" : "⚠️  Unverified"}`,
-                );
+                console.log(`${pluginInfo.verified ? '✅ Verified' : '⚠️  Unverified'}`);
                 console.log(`📅 Last Updated: ${pluginInfo.lastUpdated}`);
 
                 if (pluginInfo.tags.length > 0) {
-                  console.log(`🏷️  Tags: ${pluginInfo.tags.join(", ")}`);
+                  console.log(`🏷️  Tags: ${pluginInfo.tags.join(', ')}`);
                 }
 
                 if (pluginInfo.dependencies.length > 0) {
-                  console.log(
-                    `🔗 Dependencies: ${pluginInfo.dependencies.join(", ")}`,
-                  );
+                  console.log(`🔗 Dependencies: ${pluginInfo.dependencies.join(', ')}`);
                 }
 
                 if (pluginInfo.homepage) {
@@ -1832,39 +1686,36 @@ async function main() {
                 }
 
                 // Check if installed
-                const installedPlugin = registry.getPlugin(
-                  pluginInfo.name,
-                  pluginInfo.version,
-                );
+                const installedPlugin = registry.getPlugin(pluginInfo.name, pluginInfo.version);
                 if (installedPlugin) {
                   console.log(`\n✅ This plugin is installed`);
                 } else {
                   console.log(
-                    `\n📦 Use 'enigma marketplace install ${pluginInfo.name}' to install`,
+                    `\n📦 Use 'enigma marketplace install ${pluginInfo.name}' to install`
                   );
                 }
               } catch (error) {
-                cliLogger.error("Failed to get plugin info", {
+                cliLogger.error('Failed to get plugin info', {
                   plugin: argv.name,
                   error: error instanceof Error ? error.message : String(error),
                 });
                 process.exit(1);
               }
-            },
+            }
           )
-          .demandCommand(1, "Please specify a marketplace command")
+          .demandCommand(1, 'Please specify a marketplace command')
           .help();
       },
       () => {
         // This handler runs when no subcommand is provided
         cliLogger.error(
-          "Please specify a marketplace command (search, install, uninstall, update, list, info)",
+          'Please specify a marketplace command (search, install, uninstall, update, list, info)'
         );
         process.exit(1);
-      },
+      }
     )
     .help()
-    .alias("help", "h")
+    .alias('help', 'h')
     .parseAsync();
 
   // Convert kebab-case arguments to camelCase for configuration
@@ -1872,31 +1723,33 @@ async function main() {
     pretty: argv.pretty,
     config: argv.config,
     verbose: argv.verbose,
-    veryVerbose: argv["very-verbose"],
+    veryVerbose: argv['very-verbose'],
     quiet: argv.quiet,
     debug: argv.debug,
-    logLevel: argv["log-level"] as "error" | "debug" | "trace" | "info" | "warn" | "fatal" | undefined,
-    logFile: argv["log-file"],
-    logFormat: argv["log-format"] as "human" | "json" | "csv" | undefined,
+    logLevel: argv['log-level'] as
+      | 'error'
+      | 'debug'
+      | 'trace'
+      | 'info'
+      | 'warn'
+      | 'fatal'
+      | undefined,
+    logFile: argv['log-file'],
+    logFormat: argv['log-format'] as 'human' | 'json' | 'csv' | undefined,
     input: argv.input,
     output: argv.output,
     minify: argv.minify,
-    removeUnused: argv["remove-unused"],
-    maxConcurrency: argv["max-concurrency"],
-    classPrefix: argv["class-prefix"],
-    excludePatterns: argv["exclude-patterns"] as string[],
-    followSymlinks: argv["follow-symlinks"],
-    maxFiles: argv["max-files"],
-    includeFileTypes: argv["include-file-types"] as (
-      | "HTML"
-      | "JAVASCRIPT"
-      | "CSS"
-      | "TEMPLATE"
-    )[],
-    excludeExtensions: argv["exclude-extensions"] as string[],
-    preserveComments: argv["preserve-comments"],
-    sourceMaps: argv["source-maps"],
-    dryRun: argv["dry-run"],
+    removeUnused: argv['remove-unused'],
+    maxConcurrency: argv['max-concurrency'],
+    classPrefix: argv['class-prefix'],
+    excludePatterns: argv['exclude-patterns'] as string[],
+    followSymlinks: argv['follow-symlinks'],
+    maxFiles: argv['max-files'],
+    includeFileTypes: argv['include-file-types'] as ('HTML' | 'JAVASCRIPT' | 'CSS' | 'TEMPLATE')[],
+    excludeExtensions: argv['exclude-extensions'] as string[],
+    preserveComments: argv['preserve-comments'],
+    sourceMaps: argv['source-maps'],
+    dryRun: argv['dry-run'],
   };
 
   // Update logger configuration based on parsed arguments
@@ -1909,25 +1762,23 @@ async function main() {
     // Configure logger based on CLI arguments and config
     if (argv.debug || configResult.debug) {
       cliLogger.setLevel(LogLevel.DEBUG);
-      cliLogger.debug("Debug mode enabled");
-      cliLogger.debug("Final configuration:", configResult);
+      cliLogger.debug('Debug mode enabled');
+      cliLogger.debug('Final configuration:', configResult);
     } else if (argv.verbose || configResult.verbose) {
       cliLogger.setLevel(LogLevel.INFO);
     }
 
-    cliLogger.info("Configuration loaded successfully");
+    cliLogger.info('Configuration loaded successfully');
     if (configResult.input) {
-      cliLogger.info("Input configured", { input: configResult.input });
+      cliLogger.info('Input configured', { input: configResult.input });
     }
     if (configResult.output) {
-      cliLogger.info("Output configured", { output: configResult.output });
+      cliLogger.info('Output configured', { output: configResult.output });
     }
 
     // Main processing logic would go here
     if (configResult.pretty) {
-      cliLogger.info(
-        "Pretty mode enabled - output will be formatted for readability",
-      );
+      cliLogger.info('Pretty mode enabled - output will be formatted for readability');
     }
 
     // File discovery
@@ -1935,87 +1786,81 @@ async function main() {
       try {
         const discoveryResult = discoverFilesFromConfig(configResult);
 
-        cliLogger.info("File Discovery Results", {
+        cliLogger.info('File Discovery Results', {
           count: discoveryResult.count,
           duration: discoveryResult.duration,
         });
 
         if (Object.keys(discoveryResult.breakdown).length > 0) {
-          cliLogger.debug("File type breakdown", discoveryResult.breakdown);
+          cliLogger.debug('File type breakdown', discoveryResult.breakdown);
         }
 
         if (discoveryResult.emptyPatterns.length > 0) {
-          cliLogger.warn("No files found for patterns", {
+          cliLogger.warn('No files found for patterns', {
             patterns: discoveryResult.emptyPatterns,
           });
         }
 
         if (configResult.debug) {
-          cliLogger.debug("Files found", { files: discoveryResult.files });
+          cliLogger.debug('Files found', { files: discoveryResult.files });
         }
 
         if (discoveryResult.count === 0) {
-          cliLogger.warn("No files found matching the specified patterns");
-          cliLogger.info("Patterns searched", {
-            patterns: Array.isArray(configResult.input)
-              ? configResult.input
-              : [configResult.input],
+          cliLogger.warn('No files found matching the specified patterns');
+          cliLogger.info('Patterns searched', {
+            patterns: Array.isArray(configResult.input) ? configResult.input : [configResult.input],
           });
         } else {
-          cliLogger.info("Files ready for processing", {
+          cliLogger.info('Files ready for processing', {
             count: discoveryResult.count,
           });
         }
       } catch (error) {
         if (error instanceof FileDiscoveryError) {
-          cliLogger.error("File Discovery Error", {
+          cliLogger.error('File Discovery Error', {
             message: error.message,
             patterns: error.patterns,
           });
           process.exit(1);
         } else {
           throw error; // Re-throw unexpected errors
-             }
-   }
- }
+        }
+      }
+    }
 
     // For now, just display the configuration for demonstration
-    cliLogger.info("Tailwind Enigma is ready to optimize your CSS!");
+    cliLogger.info('Tailwind Enigma is ready to optimize your CSS!');
 
     if (!argv.input && !argv._.length) {
-      cliLogger.info("Tip: Use --input to specify files to process");
-      cliLogger.info(
-        "Tip: Run 'enigma init-config' to create a sample configuration file",
-      );
+      cliLogger.info('Tip: Use --input to specify files to process');
+      cliLogger.info("Tip: Run 'enigma init-config' to create a sample configuration file");
     }
   } catch (error) {
     if (error instanceof ConfigError) {
       // Log the config error but continue with defaults for missing files
-      cliLogger.info("Failed to load configuration file", {
+      cliLogger.info('Failed to load configuration file', {
         message: error.message,
         filepath: error.filepath,
       });
-      
+
       // Try to get a default config and continue
       try {
         EnigmaConfigSchema.parse({});
-        cliLogger.info("Configuration loaded successfully");
-        cliLogger.info("Tailwind Enigma is ready to optimize your CSS!");
-        
+        cliLogger.info('Configuration loaded successfully');
+        cliLogger.info('Tailwind Enigma is ready to optimize your CSS!');
+
         if (!argv.input && !argv._.length) {
-          cliLogger.info("Tip: Use --input to specify files to process");
-          cliLogger.info(
-            "Tip: Run 'enigma init-config' to create a sample configuration file",
-          );
+          cliLogger.info('Tip: Use --input to specify files to process');
+          cliLogger.info("Tip: Run 'enigma init-config' to create a sample configuration file");
         }
       } catch (defaultError) {
-        cliLogger.fatal("Failed to create default configuration", {
+        cliLogger.fatal('Failed to create default configuration', {
           message: defaultError instanceof Error ? defaultError.message : String(defaultError),
         });
         process.exit(1);
       }
     } else {
-      cliLogger.fatal("Unexpected Error", {
+      cliLogger.fatal('Unexpected Error', {
         message: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
       });
@@ -2026,6 +1871,6 @@ async function main() {
 
 // Call the main function and handle any errors
 main().catch((error) => {
-  console.error("Fatal error:", error);
+  console.error('Fatal error:', error);
   process.exit(1);
 });

@@ -231,6 +231,67 @@
       "compressed": true,
       "deduplicated": false,
       "timeSinceFullBackup": 0.10380527777777777
+    },
+    {
+      "id": "backup_1750144912308_9uosmq",
+      "type": "differential",
+      "baseFullBackupId": "backup_1750142571452_wewy6i",
+      "backupPath": "/tmp/compression-test-1750144912305/integration-tests/.backups-combo2/integration-test-7.2025-06-17T07-21-52-308Z.txt.backup.br",
+      "originalPath": "/tmp/compression-test-1750144912305/integration-tests/integration-test-7.txt",
+      "createdAt": "2025-06-17T07:21:52.308Z",
+      "cumulativeFiles": [
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142571449/integration-tests/integration-test-7.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142571449/integration-tests/integration-test-8.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142627175/integration-tests/integration-test-7.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142627175/integration-tests/integration-test-8.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142660334/integration-tests/integration-test-7.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142660334/integration-tests/integration-test-8.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142857121/integration-tests/integration-test-7.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142857121/integration-tests/integration-test-8.txt",
+        "/tmp/compression-test-1750142945136/integration-tests/integration-test-7.txt",
+        "/tmp/compression-test-1750142945136/integration-tests/integration-test-8.txt",
+        "/tmp/compression-test-1750144912305/integration-tests/integration-test-7.txt"
+      ],
+      "cumulativeSize": 435,
+      "currentFiles": [
+        "/tmp/compression-test-1750144912305/integration-tests/integration-test-7.txt"
+      ],
+      "currentSize": 53,
+      "changeDetectionMethod": "checksum",
+      "compressed": true,
+      "deduplicated": false,
+      "timeSinceFullBackup": 0.6502377777777778
+    },
+    {
+      "id": "backup_1750144912321_cd42fb",
+      "type": "differential",
+      "baseFullBackupId": "backup_1750142571452_wewy6i",
+      "backupPath": "/tmp/compression-test-1750144912305/integration-tests/.backups-combo2/integration-test-8.2025-06-17T07-21-52-320Z.txt.backup.br",
+      "originalPath": "/tmp/compression-test-1750144912305/integration-tests/integration-test-8.txt",
+      "createdAt": "2025-06-17T07:21:52.321Z",
+      "cumulativeFiles": [
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142571449/integration-tests/integration-test-7.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142571449/integration-tests/integration-test-8.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142627175/integration-tests/integration-test-7.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142627175/integration-tests/integration-test-8.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142660334/integration-tests/integration-test-7.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142660334/integration-tests/integration-test-8.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142857121/integration-tests/integration-test-7.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142857121/integration-tests/integration-test-8.txt",
+        "/tmp/compression-test-1750142945136/integration-tests/integration-test-7.txt",
+        "/tmp/compression-test-1750142945136/integration-tests/integration-test-8.txt",
+        "/tmp/compression-test-1750144912305/integration-tests/integration-test-7.txt",
+        "/tmp/compression-test-1750144912305/integration-tests/integration-test-8.txt"
+      ],
+      "cumulativeSize": 469,
+      "currentFiles": [
+        "/tmp/compression-test-1750144912305/integration-tests/integration-test-8.txt"
+      ],
+      "currentSize": 34,
+      "changeDetectionMethod": "checksum",
+      "compressed": true,
+      "deduplicated": false,
+      "timeSinceFullBackup": 0.6502411111111112
     }
   ],
   "cumulativeFileStates": {
@@ -313,16 +374,32 @@
       "contentHash": "ff24c5ca757065f96c7c1fd81ab172f7b46a897496695999d352aaf933db6d43",
       "lastBackup": "2025-06-17T06:49:05.152Z",
       "hasChanged": true
+    },
+    "/tmp/compression-test-1750144912305/integration-tests/integration-test-7.txt": {
+      "filePath": "/tmp/compression-test-1750144912305/integration-tests/integration-test-7.txt",
+      "size": 5040,
+      "mtime": "2025-06-17T07:21:52.307Z",
+      "contentHash": "c5af0a58a5babf28f45c0efdb6e78b904d9e4176394a98b1f977dac345aaf95b",
+      "lastBackup": "2025-06-17T07:21:52.308Z",
+      "hasChanged": true
+    },
+    "/tmp/compression-test-1750144912305/integration-tests/integration-test-8.txt": {
+      "filePath": "/tmp/compression-test-1750144912305/integration-tests/integration-test-8.txt",
+      "size": 3024,
+      "mtime": "2025-06-17T07:21:52.320Z",
+      "contentHash": "ff24c5ca757065f96c7c1fd81ab172f7b46a897496695999d352aaf933db6d43",
+      "lastBackup": "2025-06-17T07:21:52.321Z",
+      "hasChanged": true
     }
   },
   "stats": {
-    "totalDifferentials": 9,
-    "currentChainLength": 9,
-    "cumulativeSize": 382,
-    "cumulativeSizeRatio": 7.2075471698113205,
+    "totalDifferentials": 11,
+    "currentChainLength": 11,
+    "cumulativeSize": 469,
+    "cumulativeSizeRatio": 8.849056603773585,
     "totalSpaceSaved": 0,
-    "lastBackupAt": "2025-06-17T06:49:05.152Z",
-    "timeSinceFullBackup": 0.10380527777777777
+    "lastBackupAt": "2025-06-17T07:21:52.321Z",
+    "timeSinceFullBackup": 0.6502411111111112
   },
-  "lastUpdated": "2025-06-17T06:49:05.152Z"
+  "lastUpdated": "2025-06-17T07:21:52.321Z"
 }
