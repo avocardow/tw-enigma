@@ -9,6 +9,12 @@ import { createSampleConfig } from '@tw-enigma/core';
 import { Command } from 'commander';
 import { addCommonOptions, createLoggerFromArgv, handleCLIError } from '../utils';
 
+// Interface for init-config command options
+interface InitConfigOptions {
+  config?: string;
+  optsWithGlobals(): any;
+}
+
 /**
  * Create and configure the init-config command
  */
@@ -28,7 +34,8 @@ export function createInitConfigCommand(): Command {
   const command = new Command('init-config')
     .description('Create a sample configuration file')
     .action(async (options, cmd) => {
-      console.log('[CLI-DEBUG] init-config action executing!');
+      console.error('[CLI-DEBUG] init-config action executing!');
+
       const logger = createLoggerFromArgv(cmd.optsWithGlobals());
 
       try {

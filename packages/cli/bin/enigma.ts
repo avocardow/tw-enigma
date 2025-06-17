@@ -50,32 +50,30 @@ interface CommanderModule {
 function safeRequire<T = any>(modulePath: string, fallback: T): T {
   try {
     if (process.env.CI) {
-      console.log(`[CLI-DEBUG] safeRequire: Attempting to load ${modulePath}`);
+      console.error(`[CLI-DEBUG] safeRequire: Attempting to load ${modulePath}`);
     }
 
     const loadedModule = require(modulePath) as T;
 
     if (process.env.CI) {
-      console.log(`[CLI-DEBUG] safeRequire: Successfully loaded ${modulePath}`);
-      console.log(`[CLI-DEBUG] safeRequire: Module type: ${typeof loadedModule}`);
-      console.log(`[CLI-DEBUG] safeRequire: Module keys:`, Object.keys(loadedModule || {}));
+      console.error(`[CLI-DEBUG] safeRequire: Successfully loaded ${modulePath}`);
+      console.error(`[CLI-DEBUG] safeRequire: Module type: ${typeof loadedModule}`);
+      console.error(`[CLI-DEBUG] safeRequire: Module keys:`, Object.keys(loadedModule || {}));
 
       // Check specifically for registerCommands export
       if (loadedModule && typeof loadedModule === 'object' && 'registerCommands' in loadedModule) {
-        console.log(`[CLI-DEBUG] safeRequire: Found registerCommands export`);
-        console.log(
+        console.error(`[CLI-DEBUG] safeRequire: Found registerCommands export`);
+        console.error(
           `[CLI-DEBUG] safeRequire: registerCommands type: ${typeof (loadedModule as any).registerCommands}`
         );
       } else {
-        console.log(`[CLI-DEBUG] safeRequire: registerCommands export NOT found in module`);
+        console.error(`[CLI-DEBUG] safeRequire: registerCommands export NOT found in module`);
       }
     }
 
     return loadedModule;
   } catch (error) {
-    if (process.env.DEBUG_CLI || process.env.CI) {
-      console.error(`[CLI-DEBUG] safeRequire: Failed to load module ${modulePath}:`, error);
-    }
+    console.error(`[CLI-DEBUG] safeRequire: Failed to load module ${modulePath}:`, error);
     return fallback;
   }
 }
@@ -94,11 +92,13 @@ async function safeImport<T = any>(modulePath: string, fallback: T): Promise<T> 
 
 // Main CLI function with improved error handling
 async function main(): Promise<void> {
-  // Always log basic info for CI debugging - this should always appear
-  console.log(`[CLI-DEBUG] Starting CLI with args: [${process.argv.slice(2).join(', ')}]`);
-  console.log(`[CLI-DEBUG] Process argv length: ${process.argv.length}`);
-  console.log(`[CLI-DEBUG] CI environment: ${process.env.CI || 'not set'}`);
-  console.log(`[CLI-DEBUG] Node version: ${process.version}`);
+  // CLI startup debug logging
+  if (process.env.CI) {
+    console.error(`[CLI-DEBUG] Starting CLI with args: [${process.argv.slice(2).join(', ')}]`);
+    console.error(`[CLI-DEBUG] Process argv length: ${process.argv.length}`);
+    console.error(`[CLI-DEBUG] CI environment: ${process.env.CI || 'not set'}`);
+    console.error(`[CLI-DEBUG] Node version: ${process.version}`);
+  }
 
   try {
     // Load external dependencies with fallbacks
@@ -113,7 +113,7 @@ async function main(): Promise<void> {
     const chalkDefault = chalk.default || chalk;
 
     // Commander.js should be available as CommonJS
-    console.log('[CLI-DEBUG] Attempting to load commander.js...');
+    console.error('[CLI-DEBUG] Attempting to load commander.js...');
     const commanderModule = safeRequire<CommanderModule>('commander', {
       Command: class MockCommand {
         commands: any[] = [];
@@ -148,7 +148,7 @@ async function main(): Promise<void> {
         }
       } as any,
     });
-    console.log('[CLI-DEBUG] Commander module loaded:', !!commanderModule.Command);
+    console.error('[CLI-DEBUG] Commander module loaded:', !!commanderModule.Command);
     const { Command } = commanderModule;
 
     // Load internal modules with safe paths - determine correct path
@@ -167,38 +167,38 @@ async function main(): Promise<void> {
       }
     }
 
-    console.log(`[CLI-DEBUG] Attempting to load CLI module from: ${indexPath}`);
+    console.error(`[CLI-DEBUG] Attempting to load CLI module from: ${indexPath}`);
     const cliModule = safeRequire<CLIModule>(indexPath, {
       registerCommands: () => {
-        console.log('[CLI-DEBUG] FALLBACK: Using empty registerCommands (module load failed)');
+        console.error('[CLI-DEBUG] FALLBACK: Using empty registerCommands (module load failed)');
       },
       cliVersion: '0.1.0',
       displayBanner: () =>
-        console.log('🎨 @tw-enigma/cli v0.1.0\nIntelligent CSS optimization engine'),
+        console.log('🎨 @tw-enigma/cli v0.1.0\\nIntelligent CSS optimization engine'),
       getPackageInfo: () => ({ version: '0.1.0', name: '@tw-enigma/cli' }),
     });
-    console.log(`[CLI-DEBUG] CLI module loaded successfully: ${!!cliModule.registerCommands}`);
+    console.error(`[CLI-DEBUG] CLI module loaded successfully: ${!!cliModule.registerCommands}`);
 
     // Debug: Check what exports are actually available
     if (process.env.CI) {
-      console.log('[CLI-DEBUG] Module loading debug info:');
-      console.log(`[CLI-DEBUG] - Module exists: ${!!cliModule}`);
-      console.log(`[CLI-DEBUG] - registerCommands exists: ${!!cliModule.registerCommands}`);
-      console.log(`[CLI-DEBUG] - registerCommands type: ${typeof cliModule.registerCommands}`);
-      console.log(
+      console.error('[CLI-DEBUG] Module loading debug info:');
+      console.error(`[CLI-DEBUG] - Module exists: ${!!cliModule}`);
+      console.error(`[CLI-DEBUG] - registerCommands exists: ${!!cliModule.registerCommands}`);
+      console.error(`[CLI-DEBUG] - registerCommands type: ${typeof cliModule.registerCommands}`);
+      console.error(
         `[CLI-DEBUG] - registerCommands is function: ${typeof cliModule.registerCommands === 'function'}`
       );
-      console.log(`[CLI-DEBUG] - Available exports:`, Object.keys(cliModule || {}));
+      console.error(`[CLI-DEBUG] - Available exports:`, Object.keys(cliModule || {}));
 
-      // Test if it's the real function by checking if it contains our debug logs
-      const funcString = cliModule.registerCommands.toString();
-      const isRealFunction = funcString.includes('Creating init-config command');
-      console.log(`[CLI-DEBUG] - registerCommands is real function: ${isRealFunction}`);
-      console.log(`[CLI-DEBUG] - Function length: ${funcString.length} chars`);
-
-      if (!isRealFunction) {
-        console.log('[CLI-DEBUG] - Function source preview:', funcString.substring(0, 200));
-        console.log(
+      // Check if registerCommands is the real function or fallback
+      const funcString = cliModule.registerCommands?.toString() || '';
+      const isRealFunction = !funcString.includes('FALLBACK: Using empty registerCommands');
+      console.error(`[CLI-DEBUG] - registerCommands is real function: ${isRealFunction}`);
+      console.error(`[CLI-DEBUG] - Function length: ${funcString.length} chars`);
+      if (isRealFunction && funcString.length > 50) {
+        console.error('[CLI-DEBUG] - Function source preview:', funcString.substring(0, 200));
+      } else if (!isRealFunction) {
+        console.error(
           '[CLI-DEBUG] ERROR: registerCommands is the fallback function, not the real one!'
         );
       }
@@ -263,9 +263,9 @@ async function main(): Promise<void> {
 
     // Register all commands with error protection
     try {
-      console.log('[CLI-DEBUG] Calling registerCommands...');
+      console.error('[CLI-DEBUG] Calling registerCommands...');
       registerCommands(program);
-      console.log('[CLI-DEBUG] registerCommands completed');
+      console.error('[CLI-DEBUG] registerCommands completed');
 
       // Verify commands were registered (for CI debugging)
       if (process.env.CI) {
@@ -434,21 +434,28 @@ async function main(): Promise<void> {
 
     // Parse arguments with error handling
     try {
-      console.log(`[CLI-DEBUG] About to parse args. Length: ${process.argv.length}`);
-      console.log(
-        `[CLI-DEBUG] Available commands: ${program.commands.map((cmd: any) => cmd.name()).join(', ')}`
-      );
+      if (process.env.CI) {
+        console.error(`[CLI-DEBUG] About to parse args. Length: ${process.argv.length}`);
+        console.error(
+          `[CLI-DEBUG] Available commands: ${program.commands.map((cmd: any) => cmd.name()).join(', ')}`
+        );
+      }
 
       // Handle case where no arguments are provided
       if (process.argv.length <= 2) {
-        console.log(`[CLI-DEBUG] No args provided, showing help`);
-        // No arguments provided, run default action
-        program.parse([process.argv[0], process.argv[1], '--help']);
+        if (process.env.CI) {
+          console.error(`[CLI-DEBUG] No args provided, showing help`);
+        }
+        program.help();
       } else {
-        console.log(`[CLI-DEBUG] Parsing args: ${process.argv.slice(2).join(' ')}`);
-        console.log(`[CLI-DEBUG] Full argv: ${JSON.stringify(process.argv)}`);
+        if (process.env.CI) {
+          console.error(`[CLI-DEBUG] Parsing args: ${process.argv.slice(2).join(' ')}`);
+          console.error(`[CLI-DEBUG] Full argv: ${JSON.stringify(process.argv)}`);
+        }
         program.parse(process.argv);
-        console.log(`[CLI-DEBUG] Parse completed, command should have executed by now`);
+        if (process.env.CI) {
+          console.error(`[CLI-DEBUG] Parse completed, command should have executed by now`);
+        }
       }
     } catch (parseError) {
       console.error('Failed to parse CLI arguments:', parseError);
