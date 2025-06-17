@@ -5,8 +5,8 @@
  */
 
 import { Command } from 'commander';
-import { createCssConfigCommand } from './css-config.js';
-import { createInitConfigCommand } from './init-config.js';
+import { createCssConfigCommand } from './css-config';
+import { createInitConfigCommand } from './init-config';
 
 /**
  * Register all commands with the main program

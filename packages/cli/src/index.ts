@@ -7,14 +7,13 @@
 
 import { Command } from 'commander';
 import { readFileSync } from 'fs';
-import { join } from 'path';
-import { analyzeCommand } from './commands/analyze.js';
-import { initConfigCommand } from './commands/init-config.js';
-import { optimizeCommand } from './commands/optimize.js';
-import { processCommand } from './commands/process.js';
-import { reportCommand } from './commands/report.js';
-import { validateCommand } from './commands/validate.js';
-import { displayBanner, getPackageInfo } from './utils.js';
+import { dirname, join } from 'path';
+import { fileURLToPath } from 'url';
+import { registerCommands } from './commands/index';
+
+// Get current directory for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // Get package version information - ESM compatible approach
 interface PackageJson {
@@ -41,7 +40,7 @@ export const version = packageJson.version;
 /**
  * CLI version alias for compatibility
  */
-export const cliVersion = '1.0.3';
+export const cliVersion = packageJson.version;
 
 /**
  * CLI package name
@@ -75,17 +74,19 @@ export { default as Reporter } from './reporter.js';
 // Export type definitions
 export type { CssOutputConfig, CssPerformanceReport } from '@tw-enigma/core';
 
-export function registerCommands(program: Command): void {
-  // Register all commands
-  initConfigCommand(program);
-  processCommand(program);
-  analyzeCommand(program);
-  optimizeCommand(program);
-  validateCommand(program);
-  reportCommand(program);
+export function registerAllCommands(program: Command): void {
+  // Register all available commands
+  registerCommands(program);
 }
 
-export { displayBanner, getPackageInfo };
+export function displayBanner(): void {
+  console.log(`\n🎨 ${packageJson.name} v${packageJson.version}`);
+  console.log('Intelligent CSS optimization engine\n');
+}
+
+export function getPackageInfo(): PackageJson {
+  return packageJson;
+}
 
 /**
  * Default export with essential CLI information
