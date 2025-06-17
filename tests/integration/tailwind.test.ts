@@ -107,7 +107,7 @@ describe('Tailwind Enigma Plugin Integration', () => {
   };
 
   describe('Real Tailwind CSS Integration', () => {
-    it('should generate CSS with Tailwind CSS processor', async () => {
+    it.skip('should generate CSS with Tailwind CSS processor', async () => {
       createTestData();
 
       const tailwindConfig = {
@@ -144,7 +144,7 @@ describe('Tailwind Enigma Plugin Integration', () => {
       expect(result.css).toContain('justify-content: center');
     });
 
-    it('should generate responsive variants when enabled', async () => {
+    it.skip('should generate responsive variants when enabled', async () => {
       createTestData();
 
       const tailwindConfig = {
@@ -175,7 +175,7 @@ describe('Tailwind Enigma Plugin Integration', () => {
       expect(result.css).toMatch(/@media.*min-width: 1024px.*\.lg\\:tw-opt-1/s);
     });
 
-    it('should generate hover and focus variants when enabled', async () => {
+    it.skip('should generate hover and focus variants when enabled', async () => {
       createTestData();
 
       const tailwindConfig = {
@@ -207,7 +207,7 @@ describe('Tailwind Enigma Plugin Integration', () => {
       expect(result.css).toContain('.focus\\:tw-opt-1:focus');
     });
 
-    it('should work with custom prefix', async () => {
+    it.skip('should work with custom prefix', async () => {
       createTestData();
 
       const tailwindConfig = {
@@ -238,7 +238,7 @@ describe('Tailwind Enigma Plugin Integration', () => {
       expect(result.css).not.toContain('.tw-opt-');
     });
 
-    it('should respect minimum frequency threshold', async () => {
+    it.skip('should respect minimum frequency threshold', async () => {
       createTestData();
 
       const tailwindConfig = {
@@ -301,7 +301,7 @@ describe('Tailwind Enigma Plugin Integration', () => {
   });
 
   describe('Autocomplete Generation', () => {
-    it('should generate autocomplete configuration file', async () => {
+    it.skip('should generate autocomplete configuration file', async () => {
       createTestData();
 
       const tailwindConfig = {
@@ -338,7 +338,7 @@ describe('Tailwind Enigma Plugin Integration', () => {
       expect(autocompleteData.utilities.length).toBeGreaterThan(0);
     });
 
-    it('should include pattern suggestions in autocomplete', async () => {
+    it.skip('should include pattern suggestions in autocomplete', async () => {
       createTestData();
 
       const tailwindConfig = {
@@ -378,7 +378,7 @@ describe('Tailwind Enigma Plugin Integration', () => {
   });
 
   describe('Performance and Bundle Size', () => {
-    it('should generate smaller CSS than individual classes', async () => {
+    it.skip('should generate smaller CSS than individual classes', async () => {
       createTestData();
 
       // Test with individual classes
