@@ -132,7 +132,13 @@ jobs:
             node_modules
             packages/*/node_modules
           key: ${{ runner.os }}-node-modules-${{ needs.install.outputs.pnpm-version }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-          fail-on-cache-miss: true
+          restore-keys: |
+            ${{ runner.os }}-node-modules-${{ needs.install.outputs.pnpm-version }}-
+            ${{ runner.os }}-node-modules-
+
+      - name: Install dependencies if cache miss
+        if: steps.cache-deps.outputs.cache-hit != 'true'
+        run: pnpm install --frozen-lockfile
 
       - name: Restore ESLint cache
         uses: actions/cache@v4
@@ -176,12 +182,19 @@ jobs:
 
       - name: Restore node_modules
         uses: actions/cache@v4
+        id: cache-deps
         with:
           path: |
             node_modules
             packages/*/node_modules
           key: ${{ runner.os }}-node-modules-${{ needs.install.outputs.pnpm-version }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-          fail-on-cache-miss: true
+          restore-keys: |
+            ${{ runner.os }}-node-modules-${{ needs.install.outputs.pnpm-version }}-
+            ${{ runner.os }}-node-modules-
+
+      - name: Install dependencies if cache miss
+        if: steps.cache-deps.outputs.cache-hit != 'true'
+        run: pnpm install --frozen-lockfile
 
       - name: Restore TypeScript cache
         uses: actions/cache@v4
@@ -222,12 +235,19 @@ jobs:
 
       - name: Restore node_modules
         uses: actions/cache@v4
+        id: cache-deps
         with:
           path: |
             node_modules
             packages/*/node_modules
           key: ${{ runner.os }}-node-modules-${{ needs.install.outputs.pnpm-version }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-          fail-on-cache-miss: true
+          restore-keys: |
+            ${{ runner.os }}-node-modules-${{ needs.install.outputs.pnpm-version }}-
+            ${{ runner.os }}-node-modules-
+
+      - name: Install dependencies if cache miss
+        if: steps.cache-deps.outputs.cache-hit != 'true'
+        run: pnpm install --frozen-lockfile
 
       - name: Restore TypeScript cache
         uses: actions/cache@v4
@@ -299,21 +319,35 @@ jobs:
 
       - name: Restore node_modules
         uses: actions/cache@v4
+        id: cache-deps
         with:
           path: |
             node_modules
             packages/*/node_modules
           key: ${{ runner.os }}-node-modules-${{ needs.install.outputs.pnpm-version }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-          fail-on-cache-miss: true
+          restore-keys: |
+            ${{ runner.os }}-node-modules-${{ needs.install.outputs.pnpm-version }}-
+            ${{ runner.os }}-node-modules-
+
+      - name: Install dependencies if cache miss
+        if: steps.cache-deps.outputs.cache-hit != 'true'
+        run: pnpm install --frozen-lockfile
 
       - name: Restore build artifacts
         uses: actions/cache@v4
+        id: cache-build
         with:
           path: |
             packages/*/dist
             packages/*/build
           key: ${{ runner.os }}-build-${{ github.sha }}-${{ matrix.node-version }}
-          fail-on-cache-miss: true
+          restore-keys: |
+            ${{ runner.os }}-build-${{ github.ref_name }}-${{ matrix.node-version }}-
+            ${{ runner.os }}-build-main-${{ matrix.node-version }}-
+
+      - name: Build packages if cache miss
+        if: steps.cache-build.outputs.cache-hit != 'true'
+        run: pnpm turbo build
 
       - name: Restore Vitest cache
         uses: actions/cache@v4
