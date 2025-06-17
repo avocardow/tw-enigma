@@ -1,296 +1,296 @@
 {
   "metrics": [
     {
-      "duration": 0.7982910000000629,
+      "duration": 1.659917000000405,
       "memoryUsage": {
-        "rss": 957874176,
-        "heapTotal": 168820736,
-        "heapUsed": 105247992,
-        "external": 5251464,
-        "arrayBuffers": 204703
+        "rss": 624951296,
+        "heapTotal": 133758976,
+        "heapUsed": 82977600,
+        "external": 5266781,
+        "arrayBuffers": 220020
       },
       "cpuUsage": {
-        "user": 0.834,
-        "system": 0.014
+        "user": 1.704,
+        "system": 0.039
       },
-      "timestamp": 1750125985017,
+      "timestamp": 1750178470231,
       "operation": "extract-nextjs-simple"
     },
     {
-      "duration": 0.0641659999996591,
+      "duration": 0.10245799999984229,
       "memoryUsage": {
-        "rss": 957874176,
-        "heapTotal": 168820736,
-        "heapUsed": 105297976,
-        "external": 5251464,
-        "arrayBuffers": 204703
+        "rss": 624951296,
+        "heapTotal": 133758976,
+        "heapUsed": 83024280,
+        "external": 5266781,
+        "arrayBuffers": 220020
       },
       "cpuUsage": {
-        "user": 0.077,
-        "system": 0.004
+        "user": 0.125,
+        "system": 0.022
       },
-      "timestamp": 1750125985017,
+      "timestamp": 1750178470231,
       "operation": "generate-nextjs-simple"
     },
     {
-      "duration": 0.29516700000021956,
+      "duration": 0.5451660000003358,
       "memoryUsage": {
-        "rss": 957874176,
-        "heapTotal": 168820736,
-        "heapUsed": 105466184,
-        "external": 5259856,
-        "arrayBuffers": 213095
+        "rss": 624951296,
+        "heapTotal": 133758976,
+        "heapUsed": 83192496,
+        "external": 5275173,
+        "arrayBuffers": 228412
       },
       "cpuUsage": {
-        "user": 0.293,
-        "system": 0.019
+        "user": 0.554,
+        "system": 0.015
       },
-      "timestamp": 1750125985017,
+      "timestamp": 1750178470232,
       "operation": "extract-react-simple"
     },
     {
-      "duration": 0.026124999999865395,
+      "duration": 0.042374999999992724,
       "memoryUsage": {
-        "rss": 957874176,
-        "heapTotal": 168820736,
-        "heapUsed": 105486384,
-        "external": 5259856,
-        "arrayBuffers": 213095
+        "rss": 624967680,
+        "heapTotal": 133758976,
+        "heapUsed": 83212696,
+        "external": 5275173,
+        "arrayBuffers": 228412
       },
       "cpuUsage": {
-        "user": 0.035,
-        "system": 0.003
+        "user": 0.04,
+        "system": 0.006
       },
-      "timestamp": 1750125985018,
+      "timestamp": 1750178470232,
       "operation": "generate-react-simple"
     },
     {
-      "duration": 0.9986249999997199,
+      "duration": 1.890292000000045,
       "memoryUsage": {
-        "rss": 957890560,
-        "heapTotal": 168820736,
-        "heapUsed": 105985560,
-        "external": 5260056,
-        "arrayBuffers": 213295
+        "rss": 624967680,
+        "heapTotal": 133758976,
+        "heapUsed": 83704536,
+        "external": 5275373,
+        "arrayBuffers": 228612
       },
       "cpuUsage": {
-        "user": 1.487,
-        "system": 0.007
+        "user": 1.821,
+        "system": 0.07
       },
-      "timestamp": 1750125985019,
+      "timestamp": 1750178470234,
       "operation": "extract-vite-simple"
     },
     {
-      "duration": 0.0597909999996773,
+      "duration": 0.11649999999963256,
       "memoryUsage": {
-        "rss": 957890560,
-        "heapTotal": 168820736,
-        "heapUsed": 106042512,
-        "external": 5260056,
-        "arrayBuffers": 213295
+        "rss": 624967680,
+        "heapTotal": 133758976,
+        "heapUsed": 83761488,
+        "external": 5275373,
+        "arrayBuffers": 228612
       },
       "cpuUsage": {
-        "user": 0.086,
-        "system": 0.002
+        "user": 0.152,
+        "system": 0.004
       },
-      "timestamp": 1750125985019,
+      "timestamp": 1750178470234,
       "operation": "generate-vite-simple"
     },
     {
-      "duration": 0.7574170000002596,
+      "duration": 1.5651670000002014,
       "memoryUsage": {
-        "rss": 957890560,
-        "heapTotal": 168820736,
-        "heapUsed": 106438664,
-        "external": 5260256,
-        "arrayBuffers": 213495
+        "rss": 624967680,
+        "heapTotal": 133758976,
+        "heapUsed": 84157624,
+        "external": 5275573,
+        "arrayBuffers": 228812
       },
       "cpuUsage": {
-        "user": 0.757,
-        "system": 0
+        "user": 1.56,
+        "system": 0.006
       },
-      "timestamp": 1750125985020,
+      "timestamp": 1750178470236,
       "operation": "extract-nextjs-complex"
     },
     {
-      "duration": 0.032167000000299595,
+      "duration": 0.05875000000014552,
       "memoryUsage": {
-        "rss": 957890560,
-        "heapTotal": 168820736,
-        "heapUsed": 106470040,
-        "external": 5260256,
-        "arrayBuffers": 213495
+        "rss": 624967680,
+        "heapTotal": 133758976,
+        "heapUsed": 84197360,
+        "external": 5275573,
+        "arrayBuffers": 228812
       },
       "cpuUsage": {
-        "user": 0.056,
-        "system": 0.001
+        "user": 0.098,
+        "system": 0.005
       },
-      "timestamp": 1750125985020,
+      "timestamp": 1750178470236,
       "operation": "generate-nextjs-complex"
     },
     {
-      "duration": 0.6191669999998339,
+      "duration": 1.1275840000002972,
       "memoryUsage": {
-        "rss": 957890560,
-        "heapTotal": 168820736,
-        "heapUsed": 106786072,
-        "external": 5260456,
-        "arrayBuffers": 213695
+        "rss": 624967680,
+        "heapTotal": 133758976,
+        "heapUsed": 84514600,
+        "external": 5275773,
+        "arrayBuffers": 229012
       },
       "cpuUsage": {
-        "user": 0.615,
-        "system": 0.003
+        "user": 1.264,
+        "system": 0.011
       },
-      "timestamp": 1750125985020,
+      "timestamp": 1750178470237,
       "operation": "extract-react-complex"
     },
     {
-      "duration": 0.03179199999976845,
+      "duration": 0.0498330000000351,
       "memoryUsage": {
-        "rss": 957906944,
-        "heapTotal": 168820736,
-        "heapUsed": 106818608,
-        "external": 5260456,
-        "arrayBuffers": 213695
+        "rss": 624967680,
+        "heapTotal": 133758976,
+        "heapUsed": 84547136,
+        "external": 5275773,
+        "arrayBuffers": 229012
       },
       "cpuUsage": {
-        "user": 0.032,
-        "system": 0.001
+        "user": 0.072,
+        "system": 0.005
       },
-      "timestamp": 1750125985021,
+      "timestamp": 1750178470237,
       "operation": "generate-react-complex"
     },
     {
-      "duration": 1.674250000000029,
+      "duration": 2.9802080000004025,
       "memoryUsage": {
-        "rss": 957906944,
-        "heapTotal": 168820736,
-        "heapUsed": 107791168,
-        "external": 5260656,
-        "arrayBuffers": 213895
+        "rss": 624967680,
+        "heapTotal": 133758976,
+        "heapUsed": 85519728,
+        "external": 5275973,
+        "arrayBuffers": 229212
       },
       "cpuUsage": {
-        "user": 1.659,
-        "system": 0.016
+        "user": 2.968,
+        "system": 0.013
       },
-      "timestamp": 1750125985022,
+      "timestamp": 1750178470241,
       "operation": "extract-vite-complex"
     },
     {
-      "duration": 0.07849999999962165,
+      "duration": 0.12766699999974662,
       "memoryUsage": {
-        "rss": 957906944,
-        "heapTotal": 168820736,
-        "heapUsed": 107870248,
-        "external": 5260656,
-        "arrayBuffers": 213895
+        "rss": 624967680,
+        "heapTotal": 133758976,
+        "heapUsed": 85598808,
+        "external": 5275973,
+        "arrayBuffers": 229212
       },
       "cpuUsage": {
-        "user": 0.1,
-        "system": 0.002
+        "user": 0.141,
+        "system": 0.005
       },
-      "timestamp": 1750125985022,
+      "timestamp": 1750178470241,
       "operation": "generate-vite-complex"
     },
     {
-      "duration": 0.39712499999996,
+      "duration": 0.5728749999998399,
       "memoryUsage": {
-        "rss": 957906944,
-        "heapTotal": 168820736,
-        "heapUsed": 108047880,
-        "external": 5260856,
-        "arrayBuffers": 214095
+        "rss": 624967680,
+        "heapTotal": 133758976,
+        "heapUsed": 85776408,
+        "external": 5276173,
+        "arrayBuffers": 229412
       },
       "cpuUsage": {
-        "user": 0.396,
-        "system": 0.002
+        "user": 0.555,
+        "system": 0.018
       },
-      "timestamp": 1750125985023,
+      "timestamp": 1750178470241,
       "operation": "extract-nextjs-edge-cases"
     },
     {
-      "duration": 0.022457999999915046,
+      "duration": 0.027916999999888503,
       "memoryUsage": {
-        "rss": 957906944,
-        "heapTotal": 168820736,
-        "heapUsed": 108064896,
-        "external": 5260856,
-        "arrayBuffers": 214095
+        "rss": 624967680,
+        "heapTotal": 133758976,
+        "heapUsed": 85793424,
+        "external": 5276173,
+        "arrayBuffers": 229412
       },
       "cpuUsage": {
-        "user": 0.022,
-        "system": 0.002
+        "user": 0.05,
+        "system": 0.006
       },
-      "timestamp": 1750125985023,
+      "timestamp": 1750178470242,
       "operation": "generate-nextjs-edge-cases"
     },
     {
-      "duration": 0.5343330000000606,
+      "duration": 0.9405830000000606,
       "memoryUsage": {
-        "rss": 957906944,
-        "heapTotal": 168820736,
-        "heapUsed": 108368824,
-        "external": 5261056,
-        "arrayBuffers": 214295
+        "rss": 624967680,
+        "heapTotal": 133758976,
+        "heapUsed": 86094408,
+        "external": 5276373,
+        "arrayBuffers": 229612
       },
       "cpuUsage": {
-        "user": 0.675,
-        "system": 0.006
+        "user": 0.94,
+        "system": 0.001
       },
-      "timestamp": 1750125985024,
+      "timestamp": 1750178470243,
       "operation": "extract-react-edge-cases"
     },
     {
-      "duration": 0.021041999999852123,
+      "duration": 0.03054100000008475,
       "memoryUsage": {
-        "rss": 957906944,
-        "heapTotal": 168820736,
-        "heapUsed": 108394520,
-        "external": 5261056,
-        "arrayBuffers": 214295
+        "rss": 624967680,
+        "heapTotal": 133758976,
+        "heapUsed": 86120104,
+        "external": 5276373,
+        "arrayBuffers": 229612
       },
       "cpuUsage": {
-        "user": 0.041,
-        "system": 0.001
+        "user": 0.046,
+        "system": 0.006
       },
-      "timestamp": 1750125985024,
+      "timestamp": 1750178470243,
       "operation": "generate-react-edge-cases"
     },
     {
-      "duration": 0.6700409999998556,
+      "duration": 1.1087499999998727,
       "memoryUsage": {
-        "rss": 957906944,
-        "heapTotal": 168820736,
-        "heapUsed": 108851576,
-        "external": 5261256,
-        "arrayBuffers": 214495
+        "rss": 624967680,
+        "heapTotal": 133758976,
+        "heapUsed": 86577176,
+        "external": 5276573,
+        "arrayBuffers": 229812
       },
       "cpuUsage": {
-        "user": 0.669,
-        "system": 0
+        "user": 1.108,
+        "system": 0.001
       },
-      "timestamp": 1750125985025,
+      "timestamp": 1750178470244,
       "operation": "extract-vite-edge-cases"
     },
     {
-      "duration": 0.03720800000019153,
+      "duration": 0.059416999999939435,
       "memoryUsage": {
-        "rss": 957906944,
-        "heapTotal": 168820736,
-        "heapUsed": 108888528,
-        "external": 5261256,
-        "arrayBuffers": 214495
+        "rss": 624967680,
+        "heapTotal": 133758976,
+        "heapUsed": 86614128,
+        "external": 5276573,
+        "arrayBuffers": 229812
       },
       "cpuUsage": {
-        "user": 0.049,
-        "system": 0.001
+        "user": 0.072,
+        "system": 0.009
       },
-      "timestamp": 1750125985025,
+      "timestamp": 1750178470244,
       "operation": "generate-vite-edge-cases"
     }
   ],
   "baselines": {},
-  "timestamp": 1750125985038,
+  "timestamp": 1750178470259,
   "systemInfo": {
     "nodeVersion": "v24.1.0",
     "platform": "darwin",

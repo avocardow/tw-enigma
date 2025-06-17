@@ -74,13 +74,14 @@
     "postinstall": "echo 'Skipping postinstall build due to known core package issues'"
   },
   "dependencies": {
-    "@tw-enigma/core": "workspace:*",
-    "@tw-enigma/cli": "workspace:*"
+    "@tw-enigma/cli": "workspace:*",
+    "@tw-enigma/core": "workspace:*"
   },
   "devDependencies": {
     "@changesets/changelog-github": "^0.5.0",
     "@changesets/cli": "^2.29.4",
     "@eslint/js": "^9.28.0",
+    "@tailwindcss/postcss": "^4.1.10",
     "@typescript-eslint/eslint-plugin": "^8.34.0",
     "@typescript-eslint/parser": "^8.34.0",
     "@vitest/coverage-v8": "^3.2.3",

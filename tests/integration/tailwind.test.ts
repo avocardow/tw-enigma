@@ -9,11 +9,11 @@
  * Integration tests for Tailwind Enigma Plugin with real Tailwind CSS
  */
 
+import tailwindcss from '@tailwindcss/postcss';
 import fs from 'fs';
 import { tmpdir } from 'os';
 import path from 'path';
 import postcss from 'postcss';
-import tailwindcss from 'tailwindcss';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 // Import the plugin
