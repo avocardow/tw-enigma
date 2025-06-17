@@ -76,11 +76,11 @@ jobs:
           # Check if there are any changeset files
           changeset_files=$(find .changeset -name "*.md" -not -name "README.md" | wc -l)
           echo "changeset_files=${changeset_files}" >> $GITHUB_OUTPUT
-          
+
           # Check changeset status
           if [ "$changeset_files" -gt 0 ] || [ "${{ github.event.inputs.release_type }}" != "auto" ]; then
             echo "should-release=true" >> $GITHUB_OUTPUT
-            
+
             # Get version information
             if [ "${{ github.event.inputs.release_type }}" != "auto" ]; then
               echo "version-bump=${{ github.event.inputs.release_type }}" >> $GITHUB_OUTPUT
@@ -90,7 +90,7 @@ jobs:
               version_bump=$(cat changeset-status.json | jq -r '.releases[0].type // "patch"')
               echo "version-bump=${version_bump}" >> $GITHUB_OUTPUT
             fi
-            
+
             # Get packages that will be released
             packages=$(changeset status --output=json | jq -r '.releases | map(.name) | join(",")')
             echo "packages=${packages}" >> $GITHUB_OUTPUT
@@ -104,7 +104,7 @@ jobs:
         run: |
           echo "Validating package.json files..."
           pnpm turbo lint:packages || exit 0  # Non-blocking for now
-          
+
           echo "Checking for missing dependencies..."
           pnpm exec dependency-check || exit 0  # Non-blocking for now
 
@@ -167,8 +167,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: [validate, test]
     if: |
-      always() && 
-      needs.validate.outputs.should-release == 'true' && 
+      always() &&
+      needs.validate.outputs.should-release == 'true' &&
       (needs.test.result == 'success' || needs.test.result == 'skipped')
     steps:
       - name: Checkout repository
@@ -235,8 +235,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: [validate, test, build]
     if: |
-      always() && 
-      needs.validate.outputs.should-release == 'true' && 
+      always() &&
+      needs.validate.outputs.should-release == 'true' &&
       (needs.test.result == 'success' || needs.test.result == 'skipped') &&
       needs.build.result == 'success'
     outputs:
@@ -299,14 +299,14 @@ jobs:
             echo "" >> .changeset/manual-release.md
             echo "Manual release triggered via workflow dispatch" >> .changeset/manual-release.md
           fi
-          
+
           # Apply version changes
           pnpm changeset version
-          
+
           # Get new version for tagging
           new_version=$(node -p "require('./package.json').version")
           echo "version=${new_version}" >> $GITHUB_OUTPUT
-          
+
           # Generate changelog for release notes
           if [ -f "CHANGELOG.md" ]; then
             # Extract latest changelog entry
@@ -330,8 +330,14 @@ jobs:
 
       - name: Create Git tag
         run: |
-          git tag "v${{ steps.version.outputs.version }}"
-          git push origin "v${{ steps.version.outputs.version }}"
+          version="v${{ steps.version.outputs.version }}"
+          if git rev-parse "$version" >/dev/null 2>&1; then
+            echo "Tag $version already exists, skipping tag creation"
+          else
+            echo "Creating new tag $version"
+            git tag "$version"
+            git push origin "$version"
+          fi
 
       - name: Publish to npm
         id: publish
@@ -339,17 +345,17 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           echo "Publishing packages to npm..."
-          
+
           # Publish packages
           published_packages=""
           for package in packages/*; do
             if [ -d "$package" ] && [ -f "$package/package.json" ]; then
               package_name=$(node -p "require('$package/package.json').name")
               package_version=$(node -p "require('$package/package.json').version")
-              
+
               echo "Publishing $package_name@$package_version..."
               cd "$package"
-              
+
               # Check if version already exists
               if npm view "$package_name@$package_version" > /dev/null 2>&1; then
                 echo "Version $package_version already exists for $package_name, skipping..."
@@ -357,11 +363,11 @@ jobs:
                 pnpm publish --access public --no-git-checks
                 published_packages="$published_packages$package_name@$package_version "
               fi
-              
+
               cd ../..
             fi
           done
-          
+
           if [ -n "$published_packages" ]; then
             echo "published=true" >> $GITHUB_OUTPUT
             echo "Published packages: $published_packages"
@@ -393,27 +399,27 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: "v${{ needs.release.outputs.version }}"
-          release_name: "Release v${{ needs.release.outputs.version }}"
+          tag_name: 'v${{ needs.release.outputs.version }}'
+          release_name: 'Release v${{ needs.release.outputs.version }}'
           body: |
             ## 🎉 Release v${{ needs.release.outputs.version }}
-            
+
             ### 📦 Published Packages
             - `@tw-enigma/core@${{ needs.release.outputs.version }}`
             - `@tw-enigma/cli@${{ needs.release.outputs.version }}`
-            
+
             ### 📝 Changes
             ${{ needs.release.outputs.changelog }}
-            
+
             ### 🛠️ Installation
             ```bash
             # Install CLI globally
             npm install -g @tw-enigma/cli@${{ needs.release.outputs.version }}
-            
+
             # Or use in project
             npm install @tw-enigma/core@${{ needs.release.outputs.version }}
             ```
-            
+
             ### 🔗 Links
             - [NPM: @tw-enigma/core](https://www.npmjs.com/package/@tw-enigma/core)
             - [NPM: @tw-enigma/cli](https://www.npmjs.com/package/@tw-enigma/cli)
@@ -446,7 +452,7 @@ jobs:
           echo "| Release | ✅ Success | v${{ needs.release.outputs.version }} |" >> $GITHUB_STEP_SUMMARY
           echo "| NPM Publish | ✅ Published | ${{ needs.release.outputs.version }} |" >> $GITHUB_STEP_SUMMARY
           echo "| GitHub Release | ✅ Created | v${{ needs.release.outputs.version }} |" >> $GITHUB_STEP_SUMMARY
-          
+
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 📦 Published Packages" >> $GITHUB_STEP_SUMMARY
           echo "- [@tw-enigma/core@${{ needs.release.outputs.version }}](https://www.npmjs.com/package/@tw-enigma/core)" >> $GITHUB_STEP_SUMMARY
