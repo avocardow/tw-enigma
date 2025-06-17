@@ -49,10 +49,32 @@ interface CommanderModule {
 // Helper function for safe module loading with better typing
 function safeRequire<T = any>(modulePath: string, fallback: T): T {
   try {
-    return require(modulePath) as T;
+    if (process.env.CI) {
+      console.log(`[CLI-DEBUG] safeRequire: Attempting to load ${modulePath}`);
+    }
+
+    const loadedModule = require(modulePath) as T;
+
+    if (process.env.CI) {
+      console.log(`[CLI-DEBUG] safeRequire: Successfully loaded ${modulePath}`);
+      console.log(`[CLI-DEBUG] safeRequire: Module type: ${typeof loadedModule}`);
+      console.log(`[CLI-DEBUG] safeRequire: Module keys:`, Object.keys(loadedModule || {}));
+
+      // Check specifically for registerCommands export
+      if (loadedModule && typeof loadedModule === 'object' && 'registerCommands' in loadedModule) {
+        console.log(`[CLI-DEBUG] safeRequire: Found registerCommands export`);
+        console.log(
+          `[CLI-DEBUG] safeRequire: registerCommands type: ${typeof (loadedModule as any).registerCommands}`
+        );
+      } else {
+        console.log(`[CLI-DEBUG] safeRequire: registerCommands export NOT found in module`);
+      }
+    }
+
+    return loadedModule;
   } catch (error) {
     if (process.env.DEBUG_CLI || process.env.CI) {
-      console.error(`Failed to load module ${modulePath}:`, error);
+      console.error(`[CLI-DEBUG] safeRequire: Failed to load module ${modulePath}:`, error);
     }
     return fallback;
   }
@@ -156,6 +178,31 @@ async function main(): Promise<void> {
       getPackageInfo: () => ({ version: '0.1.0', name: '@tw-enigma/cli' }),
     });
     console.log(`[CLI-DEBUG] CLI module loaded successfully: ${!!cliModule.registerCommands}`);
+
+    // Debug: Check what exports are actually available
+    if (process.env.CI) {
+      console.log('[CLI-DEBUG] Module loading debug info:');
+      console.log(`[CLI-DEBUG] - Module exists: ${!!cliModule}`);
+      console.log(`[CLI-DEBUG] - registerCommands exists: ${!!cliModule.registerCommands}`);
+      console.log(`[CLI-DEBUG] - registerCommands type: ${typeof cliModule.registerCommands}`);
+      console.log(
+        `[CLI-DEBUG] - registerCommands is function: ${typeof cliModule.registerCommands === 'function'}`
+      );
+      console.log(`[CLI-DEBUG] - Available exports:`, Object.keys(cliModule || {}));
+
+      // Test if it's the real function by checking if it contains our debug logs
+      const funcString = cliModule.registerCommands.toString();
+      const isRealFunction = funcString.includes('Creating init-config command');
+      console.log(`[CLI-DEBUG] - registerCommands is real function: ${isRealFunction}`);
+      console.log(`[CLI-DEBUG] - Function length: ${funcString.length} chars`);
+
+      if (!isRealFunction) {
+        console.log('[CLI-DEBUG] - Function source preview:', funcString.substring(0, 200));
+        console.log(
+          '[CLI-DEBUG] ERROR: registerCommands is the fallback function, not the real one!'
+        );
+      }
+    }
 
     const { registerCommands, cliVersion, displayBanner, getPackageInfo } = cliModule;
 
