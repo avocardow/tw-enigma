@@ -53,6 +53,10 @@ export const commonOptions = {
     flags: '--debug',
     description: 'Enable debug mode',
   },
+  pretty: {
+    flags: '--pretty',
+    description: 'Enable pretty mode for formatted output',
+  },
   logLevel: {
     flags: '--log-level <level>',
     description: 'Set the minimum log level',
@@ -90,6 +94,8 @@ export function addCommonOptions(command: Command): Command {
     .option(commonOptions.veryVerbose.flags, commonOptions.veryVerbose.description)
     .option(commonOptions.quiet.flags, commonOptions.quiet.description)
     .option(commonOptions.debug.flags, commonOptions.debug.description)
+    .option(commonOptions.pretty.flags, commonOptions.pretty.description)
+    .option(commonOptions.config.flags, commonOptions.config.description)
     .option(commonOptions.logLevel.flags, commonOptions.logLevel.description)
     .option(commonOptions.logFile.flags, commonOptions.logFile.description)
     .option(commonOptions.logFormat.flags, commonOptions.logFormat.description);
