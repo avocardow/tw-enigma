@@ -21,6 +21,12 @@ on:
         default: false
         type: boolean
 
+# Grant required permissions for the workflow
+permissions:
+  contents: write # Required for creating releases and pushing tags
+  packages: write # Required for publishing packages
+  pull-requests: write # Required for updating PRs with changesets
+
 env:
   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
   TURBO_TEAM: ${{ vars.TURBO_TEAM }}
@@ -339,19 +345,22 @@ jobs:
             git push origin "$version"
           fi
 
-      - name: Debug NPM Authentication
+      - name: Check NPM Authentication
+        id: npm-auth
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          echo "Debugging NPM authentication..."
-          echo "NODE_AUTH_TOKEN length: ${#NODE_AUTH_TOKEN}"
+          echo "Checking NPM authentication..."
 
           # Check if token exists
           if [ -z "$NODE_AUTH_TOKEN" ]; then
-            echo "❌ NODE_AUTH_TOKEN is empty or not set"
-            echo "Please ensure NPM_TOKEN secret is configured in repository settings"
-            exit 1
+            echo "❌ NPM_TOKEN secret is not configured"
+            echo "🚧 SKIPPING NPM PUBLISH - Configure NPM_TOKEN secret to enable publishing"
+            echo "auth_available=false" >> $GITHUB_OUTPUT
+            exit 0
           fi
+
+          echo "NODE_AUTH_TOKEN length: ${#NODE_AUTH_TOKEN}"
 
           # Configure npm registry with token
           echo "Configuring npm registry..."
@@ -363,14 +372,16 @@ jobs:
           echo "Testing npm authentication..."
           if npm whoami; then
             echo "✅ NPM authentication successful"
+            echo "auth_available=true" >> $GITHUB_OUTPUT
           else
-            echo "❌ NPM authentication failed"
-            echo "Token may be invalid or expired"
+            echo "❌ NPM authentication failed - token may be invalid or expired"
+            echo "auth_available=false" >> $GITHUB_OUTPUT
             exit 1
           fi
 
       - name: Publish to npm
         id: publish
+        if: steps.npm-auth.outputs.auth_available == 'true'
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
@@ -439,12 +450,10 @@ jobs:
           path: release-artifacts/
 
       - name: Create GitHub Release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: 'v${{ needs.release.outputs.version }}'
-          release_name: 'Release v${{ needs.release.outputs.version }}'
+          name: 'Release v${{ needs.release.outputs.version }}'
           body: |
             ## 🎉 Release v${{ needs.release.outputs.version }}
 
@@ -470,16 +479,8 @@ jobs:
             - [Documentation](https://github.com/avocardow/tw-enigma#readme)
           draft: false
           prerelease: false
-
-      - name: Upload release assets
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: release-artifacts/
-          asset_name: tw-enigma-packages-v${{ needs.release.outputs.version }}.tar.gz
-          asset_content_type: application/gzip
+          files: release-artifacts/*
+          generate_release_notes: true
 
   # Job 6: Post-release notifications and cleanup
   post-release:
