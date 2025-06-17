@@ -5,8 +5,9 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { EnigmaConfig } from '../src/config';
+import type { OptimizationCacheIntegration } from '../src/engine/optimizationCacheIntegration';
 import type { OptimizationResult } from '../src/output/assetHasher';
 
 describe('OptimizationCacheIntegration', () => {
@@ -22,7 +23,7 @@ describe('OptimizationCacheIntegration', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     vi.resetModules();
-    
+
     // Create fresh mock instance that behaves like the real cache
     mockCacheInstance = {
       get: vi.fn().mockImplementation(async (_inputFiles, _config, _framework) => {
@@ -47,13 +48,13 @@ describe('OptimizationCacheIntegration', () => {
           hitCount: 0,
           lastAccessed: new Date(),
         };
-        
+
         // Store for later retrieval
         if (!mockCacheInstance._storedResults) {
           mockCacheInstance._storedResults = new Map();
         }
         mockCacheInstance._storedResults.set(cacheKey, cachedResult);
-        
+
         return true;
       }),
       generateCacheKey: vi.fn().mockResolvedValue('mock-cache-key-123'),
@@ -83,13 +84,13 @@ describe('OptimizationCacheIntegration', () => {
       destroy: vi.fn(),
       _storedResults: new Map(), // Internal storage for mock
     };
-    
-    // Set up mock using doMock for better control
-    vi.doMock('../src/optimizationCache', () => ({
+
+    // Set up mock using doMock for better control - fix the path
+    vi.doMock('../src/engine/optimizationCache', () => ({
       getOptimizationCache: vi.fn().mockReturnValue(mockCacheInstance),
       OptimizationCache: vi.fn().mockImplementation(() => mockCacheInstance),
     }));
-    
+
     // Import after mocking
     const module = await import('../src/engine/optimizationCacheIntegration');
     createOptimizationCacheIntegration = module.createOptimizationCacheIntegration;
@@ -160,10 +161,7 @@ describe('OptimizationCacheIntegration', () => {
       // Store the result in the mock cache first
       mockCache._storedResults.set('mock-cache-key-123', cachedResult);
 
-      const result = await integration.retrieveOptimizationResult(
-        ['src/styles.css'],
-        mockConfig
-      );
+      const result = await integration.retrieveOptimizationResult(['src/styles.css'], mockConfig);
 
       expect(result).toBeTruthy();
       expect(result?.optimizedCSS).toBe(mockOptimizationResult.optimizedCSS);
@@ -197,18 +195,20 @@ describe('OptimizationCacheIntegration', () => {
         mockOptimizationResult,
         undefined
       );
-      
+
       // Verify the result was stored with cache metadata
       const storedResult = mockCache._storedResults.get('mock-cache-key-123');
-      expect(storedResult).toEqual(expect.objectContaining({
-        ...mockOptimizationResult,
-        cachedAt: expect.any(Date),
-        cacheKey: 'mock-cache-key-123',
-        inputFiles: ['src/styles.css'],
-        configSnapshot: mockConfig,
-        hitCount: 0,
-        lastAccessed: expect.any(Date),
-      }));
+      expect(storedResult).toEqual(
+        expect.objectContaining({
+          ...mockOptimizationResult,
+          cachedAt: expect.any(Date),
+          cacheKey: 'mock-cache-key-123',
+          inputFiles: ['src/styles.css'],
+          configSnapshot: mockConfig,
+          hitCount: 0,
+          lastAccessed: expect.any(Date),
+        })
+      );
     });
 
     it('should handle framework-specific operations', async () => {
@@ -216,11 +216,7 @@ describe('OptimizationCacheIntegration', () => {
       mockCache.set.mockResolvedValue(true);
 
       // Test with framework
-      await integration.retrieveOptimizationResult(
-        ['src/component.vue'],
-        mockConfig,
-        'vue'
-      );
+      await integration.retrieveOptimizationResult(['src/component.vue'], mockConfig, 'vue');
 
       await integration.storeOptimizationResult(
         ['src/component.vue'],
@@ -264,19 +260,19 @@ describe('OptimizationCacheIntegration', () => {
     it('should transition to half-open after timeout', async () => {
       // Create integration with short reset timeout for testing
       const shortTimeoutIntegration = createOptimizationCacheIntegration();
-      
+
       // Override circuit breaker config for testing
       (shortTimeoutIntegration as any).circuitBreakerConfig.resetTimeout = 100; // 100ms
       (shortTimeoutIntegration as any).circuitBreakerConfig.failureThreshold = 2;
 
       // Trigger failures to open circuit
       mockCache.get.mockRejectedValue(new Error('Cache failure'));
-      
+
       await shortTimeoutIntegration.retrieveOptimizationResult(['test.css'], mockConfig);
       await shortTimeoutIntegration.retrieveOptimizationResult(['test.css'], mockConfig);
 
       // Wait for timeout
-      await new Promise(resolve => setTimeout(resolve, 150));
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
       // Should transition to half-open on next operation
       mockCache.get.mockResolvedValue(null);
@@ -287,7 +283,7 @@ describe('OptimizationCacheIntegration', () => {
 
     it('should close circuit after successful operations in half-open state', async () => {
       const testIntegration = createOptimizationCacheIntegration();
-      
+
       // Set circuit to half-open manually
       (testIntegration as any).circuitBreakerState = 'half-open';
 
@@ -326,10 +322,7 @@ describe('OptimizationCacheIntegration', () => {
       (integration as any).circuitBreakerConfig.operationTimeout = 50; // 50ms
 
       const startTime = Date.now();
-      const result = await integration.retrieveOptimizationResult(
-        ['src/slow.css'],
-        mockConfig
-      );
+      const result = await integration.retrieveOptimizationResult(['src/slow.css'], mockConfig);
       const duration = Date.now() - startTime;
 
       expect(result).toBeNull();
@@ -340,12 +333,9 @@ describe('OptimizationCacheIntegration', () => {
       mockCache.get.mockResolvedValue(null);
 
       const operationId = 'test-operation';
-      await integration.retrieveOptimizationResult(
-        ['src/test.css'],
-        mockConfig,
-        undefined,
-        { operationId }
-      );
+      await integration.retrieveOptimizationResult(['src/test.css'], mockConfig, undefined, {
+        operationId,
+      });
 
       // Timer should be cleaned up
       const timers = (integration as any).operationTimers;
@@ -361,7 +351,7 @@ describe('OptimizationCacheIntegration', () => {
       // Perform operations
       await integration.retrieveOptimizationResult(['test1.css'], mockConfig);
       await integration.storeOptimizationResult(['test1.css'], mockConfig, mockOptimizationResult);
-      
+
       // Hit
       const cachedResult = {
         ...mockOptimizationResult,
@@ -384,8 +374,8 @@ describe('OptimizationCacheIntegration', () => {
     });
 
     it('should track timing metrics', async () => {
-      mockCache.get.mockImplementation(() => 
-        new Promise(resolve => setTimeout(() => resolve(null), 10))
+      mockCache.get.mockImplementation(
+        () => new Promise((resolve) => setTimeout(() => resolve(null), 10))
       );
 
       await integration.retrieveOptimizationResult(['test.css'], mockConfig);
@@ -442,10 +432,7 @@ describe('OptimizationCacheIntegration', () => {
     it('should handle cache retrieval errors gracefully', async () => {
       mockCache.get.mockRejectedValue(new Error('Cache error'));
 
-      const result = await integration.retrieveOptimizationResult(
-        ['src/error.css'],
-        mockConfig
-      );
+      const result = await integration.retrieveOptimizationResult(['src/error.css'], mockConfig);
 
       expect(result).toBeNull(); // Should fallback gracefully
     });
@@ -536,7 +523,7 @@ describe('OptimizationCacheIntegration', () => {
 
       // Trigger circuit breaker opening
       mockCache.get = vi.fn().mockRejectedValue(new Error('Cache failure'));
-      
+
       for (let i = 0; i < 5; i++) {
         await integration.retrieveOptimizationResult(['test.css'], mockConfig);
       }
@@ -573,9 +560,9 @@ describe('OptimizationCacheIntegration', () => {
       const testIntegration = createOptimizationCacheIntegration();
 
       // Add some operations to create timers
-      mockCache.get.mockImplementation(() => new Promise(resolve => 
-        setTimeout(() => resolve(null), 100)
-      ));
+      mockCache.get.mockImplementation(
+        () => new Promise((resolve) => setTimeout(() => resolve(null), 100))
+      );
 
       // Start some operations
       const operation1 = testIntegration.retrieveOptimizationResult(['test1.css'], mockConfig);
@@ -590,7 +577,7 @@ describe('OptimizationCacheIntegration', () => {
 
     it('should handle destroy with no active operations', async () => {
       const testIntegration = createOptimizationCacheIntegration();
-      
+
       // Destroy immediately
       await expect(testIntegration.destroy()).resolves.not.toThrow();
     });
@@ -604,7 +591,11 @@ describe('OptimizationCacheIntegration', () => {
       const result = await integration.retrieveOptimizationResult([], mockConfig);
       expect(result).toBeNull();
 
-      const stored = await integration.storeOptimizationResult([], mockConfig, mockOptimizationResult);
+      const stored = await integration.storeOptimizationResult(
+        [],
+        mockConfig,
+        mockOptimizationResult
+      );
       expect(stored).toBe(true);
     });
 
@@ -613,16 +604,13 @@ describe('OptimizationCacheIntegration', () => {
 
       mockCache.get.mockResolvedValue(null);
 
-      const result = await integration.retrieveOptimizationResult(
-        ['test.css'],
-        malformedConfig
-      );
+      const result = await integration.retrieveOptimizationResult(['test.css'], malformedConfig);
       expect(result).toBeNull();
     });
 
     it('should generate unique operation IDs', async () => {
       const operationIds = new Set<string>();
-      
+
       // Mock to capture operation IDs
       const originalGet = mockCache.get;
       mockCache.get.mockImplementation(async () => {
@@ -645,4 +633,4 @@ describe('OptimizationCacheIntegration', () => {
       mockCache.get = originalGet;
     });
   });
-}); 
+});

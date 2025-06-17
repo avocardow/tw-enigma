@@ -258,7 +258,7 @@ export function createMyPostCSSPlugin(options: MyPostCSSPluginOptions = {}): MyP
 /**
  * Plugin metadata for discovery
  */
-export const postcssPluginInfo = {
+export const pluginInfo = {
   name: 'my-postcss-plugin',
   version: '1.0.0',
   description: 'A template for creating PostCSS-based Enigma plugins',

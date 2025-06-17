@@ -19,10 +19,10 @@
  * @version 1.0.0
  */
 
+import generate from '@babel/generator';
 import { parse, ParserOptions } from '@babel/parser';
 import traverse, { NodePath, Visitor } from '@babel/traverse';
 import * as t from '@babel/types';
-import generate from '@babel/generator';
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -400,14 +400,28 @@ export class JSRewriter {
     switch (ext) {
       case '.jsx':
         return 'jsx';
-      case '.ts':
-        return 'ts';
       case '.tsx':
         return 'tsx';
       case '.mjs':
         return 'mjs';
       case '.cjs':
         return 'cjs';
+      case '.ts':
+        // For .ts files, check content for JSX to determine if it should be .tsx
+        if (content) {
+          const hasJSX =
+            (content.includes('<') &&
+              content.includes('>') &&
+              (content.includes('className') ||
+                content.includes('jsx') ||
+                /<[A-Z]\w*/.test(content) ||
+                content.includes('<div'))) ||
+            content.includes('</') ||
+            content.includes('/>');
+
+          if (hasJSX) return 'tsx';
+        }
+        return 'ts';
       case '.js':
       default:
         // Check content for JSX or TypeScript syntax if available

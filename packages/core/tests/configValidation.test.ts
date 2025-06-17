@@ -5,24 +5,30 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { describe, test, expect, beforeEach, afterEach } from 'vitest';
-import { readFileSync, writeFileSync, existsSync, mkdirSync, rmSync } from 'fs';
-import { join } from 'path';
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs';
 import { tmpdir } from 'os';
+import { join } from 'path';
+import { afterEach, beforeEach, describe, expect, test } from 'vitest';
 
 // Import all validation components
-import { createConfigValidator, validateConfigSchema } from '../src/config/configValidator.ts';
-import { createRuntimeValidator, validateConfigRuntime } from '../src/runtimeValidator';
-import { watchConfigFile } from '../src/config/configWatcher.ts';
+import { backupConfig, createConfigBackup, restoreConfig } from '../src/config/configBackup.ts';
 import { createConfigDefaults, getEnvironmentDefaults } from '../src/config/configDefaults.ts';
 import { createConfigMigration, migrateConfig } from '../src/config/configMigration.ts';
-import { createPerformanceValidator, analyzeConfigPerformance } from '../src/config/performanceValidator.ts';
-import { createConfigBackup, backupConfig, restoreConfig } from '../src/config/configBackup.ts';
+import { createConfigValidator, validateConfigSchema } from '../src/config/configValidator.ts';
+import { watchConfigFile } from '../src/config/configWatcher.ts';
 import { type EnigmaConfig } from '../src/config/index.ts';
+import {
+  analyzeConfigPerformance,
+  createPerformanceValidator,
+} from '../src/performanceValidator.ts';
+import { createRuntimeValidator, validateConfigRuntime } from '../src/runtimeValidator';
 
 // Test utilities
 function createTempDir(): string {
-  const tempDir = join(tmpdir(), `tw-enigma-test-${Date.now()}-${Math.random().toString(36).substring(2)}`);
+  const tempDir = join(
+    tmpdir(),
+    `tw-enigma-test-${Date.now()}-${Math.random().toString(36).substring(2)}`
+  );
   mkdirSync(tempDir, { recursive: true });
   return tempDir;
 }
@@ -118,8 +124,8 @@ function createTestConfig(overrides: Partial<EnigmaConfig> = {}): EnigmaConfig {
       validateOnChange: true,
       backupOnChange: true,
       maxBackups: 10,
-      watchPatterns: ["**/.enigmarc*", "**/enigma.config.*", "**/package.json"],
-      ignorePatterns: ["**/node_modules/**", "**/.git/**", "**/dist/**"],
+      watchPatterns: ['**/.enigmarc*', '**/enigma.config.*', '**/package.json'],
+      ignorePatterns: ['**/node_modules/**', '**/.git/**', '**/dist/**'],
     },
     safeUpdates: {
       enabled: true,
@@ -132,7 +138,7 @@ function createTestConfig(overrides: Partial<EnigmaConfig> = {}): EnigmaConfig {
       retryAttempts: 3,
       retryDelay: 100,
     },
-    ...overrides
+    ...overrides,
   };
 }
 
@@ -168,7 +174,7 @@ describe('Configuration Validation System', () => {
       const invalidConfig = {
         input: 123, // Should be string
         output: [], // Should be string
-        maxConcurrency: 'invalid' // Should be number
+        maxConcurrency: 'invalid', // Should be number
       };
       writeFileSync(configPath, JSON.stringify(invalidConfig, null, 2));
 
@@ -177,9 +183,21 @@ describe('Configuration Validation System', () => {
 
       expect(result.isValid).toBe(false);
       expect(result.errors.length).toBeGreaterThan(0);
-      expect(result.errors.some(e => (typeof e === 'string' ? e : e.message || e.toString()).includes('input'))).toBe(true);
-      expect(result.errors.some(e => (typeof e === 'string' ? e : e.message || e.toString()).includes('output'))).toBe(true);
-      expect(result.errors.some(e => (typeof e === 'string' ? e : e.message || e.toString()).includes('maxConcurrency'))).toBe(true);
+      expect(
+        result.errors.some((e) =>
+          (typeof e === 'string' ? e : e.message || e.toString()).includes('input')
+        )
+      ).toBe(true);
+      expect(
+        result.errors.some((e) =>
+          (typeof e === 'string' ? e : e.message || e.toString()).includes('output')
+        )
+      ).toBe(true);
+      expect(
+        result.errors.some((e) =>
+          (typeof e === 'string' ? e : e.message || e.toString()).includes('maxConcurrency')
+        )
+      ).toBe(true);
     });
 
     test('should validate configuration with custom schema', async () => {
@@ -197,7 +215,11 @@ describe('Configuration Validation System', () => {
       const result = await validator.validateFile(configPath);
 
       expect(result.isValid).toBe(false);
-      expect(result.errors.some(e => (typeof e === 'string' ? e : e.message || e.toString()).includes('JSON'))).toBe(true);
+      expect(
+        result.errors.some((e) =>
+          (typeof e === 'string' ? e : e.message || e.toString()).includes('JSON')
+        )
+      ).toBe(true);
     });
 
     test('should validate nested configuration objects', async () => {
@@ -239,7 +261,7 @@ describe('Configuration Validation System', () => {
             showLogs: true,
             maxLogEntries: 100,
           },
-        }
+        },
       });
 
       const result = await validateConfigSchema(config);
@@ -251,7 +273,7 @@ describe('Configuration Validation System', () => {
     test('should validate file system paths', async () => {
       const config = createTestConfig({
         input: tempDir, // Valid existing directory
-        output: join(tempDir, 'output')
+        output: join(tempDir, 'output'),
       });
 
       const validator = createRuntimeValidator(config);
@@ -263,14 +285,18 @@ describe('Configuration Validation System', () => {
 
     test('should detect invalid input paths', async () => {
       const config = createTestConfig({
-        input: '/nonexistent/path'
+        input: '/nonexistent/path',
       });
 
       const validator = createRuntimeValidator(config);
       const result = await validator.validatePaths();
 
       expect(result.isValid).toBe(false);
-      expect(result.errors.some(e => (typeof e === 'string' ? e : e.message || e.toString()).includes('nonexistent'))).toBe(true);
+      expect(
+        result.errors.some((e) =>
+          (typeof e === 'string' ? e : e.message || e.toString()).includes('nonexistent')
+        )
+      ).toBe(true);
     });
 
     test('should validate resource constraints', async () => {
@@ -289,24 +315,34 @@ describe('Configuration Validation System', () => {
             maxAttempts: 3,
             fallbackToDefaults: true,
           },
-        }
+        },
       });
 
       const validator = createRuntimeValidator(config);
       const result = await validator.validateConstraints();
 
-      expect(result.warnings.some(w => (typeof w === 'string' ? w : w.message || w.toString()).includes('memory') || (typeof w === 'string' ? w : w.message || w.toString()).includes('threshold'))).toBe(true);
+      expect(
+        result.warnings.some(
+          (w) =>
+            (typeof w === 'string' ? w : w.message || w.toString()).includes('memory') ||
+            (typeof w === 'string' ? w : w.message || w.toString()).includes('threshold')
+        )
+      ).toBe(true);
     });
 
     test('should validate concurrency settings', async () => {
       const config = createTestConfig({
-        maxConcurrency: 1000 // Too high
+        maxConcurrency: 1000, // Too high
       });
 
       const validator = createRuntimeValidator(config);
       const result = await validator.validateConstraints();
 
-      expect(result.warnings.some(w => (typeof w === 'string' ? w : w.message || w.toString()).includes('concurrency'))).toBe(true);
+      expect(
+        result.warnings.some((w) =>
+          (typeof w === 'string' ? w : w.message || w.toString()).includes('concurrency')
+        )
+      ).toBe(true);
     });
 
     test('should validate complete configuration', async () => {
@@ -327,7 +363,7 @@ describe('Configuration Validation System', () => {
         const timeout = setTimeout(() => {
           reject(new Error('Test timeout: No change event received within 5 seconds'));
         }, 5000);
-        
+
         watcher.on('config-changed', () => {
           clearTimeout(timeout);
           resolve(true);
@@ -351,14 +387,14 @@ describe('Configuration Validation System', () => {
       writeFileSync(configPath, JSON.stringify(config, null, 2));
 
       const watcher = await watchConfigFile(configPath, {
-        validateOnChange: true
+        validateOnChange: true,
       });
 
       const validationPromise = new Promise((resolve, reject) => {
         const timeout = setTimeout(() => {
           reject(new Error('Test timeout: No validation event received within 5 seconds'));
         }, 5000);
-        
+
         watcher.on('config-validated', (result) => {
           clearTimeout(timeout);
           resolve(result);
@@ -399,7 +435,7 @@ describe('Configuration Validation System', () => {
 
     test('should create configuration with fallbacks', () => {
       const partialConfig = {
-        input: './custom/src'
+        input: './custom/src',
       };
 
       const defaultsManager = createConfigDefaults('development');
@@ -427,11 +463,11 @@ describe('Configuration Validation System', () => {
         input: './src',
         output: './dist',
         removeUnused: true, // Old format
-        mergeDuplicates: false // Old format
+        mergeDuplicates: false, // Old format
       };
 
       writeFileSync(configPath, JSON.stringify(oldConfig, null, 2));
-      
+
       const migration = createConfigMigration(configPath);
       expect(migration.needsMigration(oldConfig)).toBe(true);
     });
@@ -442,18 +478,18 @@ describe('Configuration Validation System', () => {
         output: './dist',
         removeUnused: true,
         mergeDuplicates: false,
-        minifyClassNames: true
+        minifyClassNames: true,
       };
       writeFileSync(configPath, JSON.stringify(oldConfig, null, 2));
 
       const result = await migrateConfig(configPath, {
         autoMigrate: true,
-        createBackup: false
+        createBackup: false,
       });
 
       if (!result.success) {
         // Log migration errors for debugging
-         
+
         console.error('Migration errors:', result.errors);
       }
       expect(result.success).toBe(true);
@@ -461,7 +497,7 @@ describe('Configuration Validation System', () => {
 
       const migratedContent = readFileSync(configPath, 'utf-8');
       const migratedConfig = JSON.parse(migratedContent);
-      
+
       expect(migratedConfig.validation).toBeDefined();
       expect(migratedConfig.runtime).toBeDefined();
     });
@@ -470,13 +506,13 @@ describe('Configuration Validation System', () => {
       const oldConfig = {
         input: './src',
         output: './dist',
-        removeUnused: true
+        removeUnused: true,
       };
       writeFileSync(configPath, JSON.stringify(oldConfig, null, 2));
 
       const result = await migrateConfig(configPath, {
         autoMigrate: true,
-        createBackup: true
+        createBackup: true,
       });
 
       expect(result.success).toBe(true);
@@ -488,7 +524,7 @@ describe('Configuration Validation System', () => {
       writeFileSync(configPath, '{ invalid json }');
 
       const result = await migrateConfig(configPath, {
-        autoMigrate: true
+        autoMigrate: true,
       });
 
       expect(result.success).toBe(false);
@@ -514,7 +550,7 @@ describe('Configuration Validation System', () => {
             maxAttempts: 3,
             fallbackToDefaults: true,
           },
-        }
+        },
       });
 
       const metrics = await analyzeConfigPerformance(config);
@@ -566,7 +602,7 @@ describe('Configuration Validation System', () => {
             showLogs: true,
             maxLogEntries: 1000,
           },
-        }
+        },
       });
 
       const validator = createPerformanceValidator(config);
@@ -586,7 +622,11 @@ describe('Configuration Validation System', () => {
       const metrics = await analyzeConfigPerformance(config);
 
       expect(metrics.recommendations.length).toBeGreaterThan(0);
-      expect(metrics.recommendations.some(r => r.title.includes('Concurrency') || r.title.includes('concurrency'))).toBe(true);
+      expect(
+        metrics.recommendations.some(
+          (r) => r.title.includes('Concurrency') || r.title.includes('concurrency')
+        )
+      ).toBe(true);
     });
 
     test('should calculate performance scores correctly', async () => {
@@ -606,7 +646,7 @@ describe('Configuration Validation System', () => {
             maxAttempts: 3,
             fallbackToDefaults: true,
           },
-        }
+        },
       });
 
       const badConfig = createTestConfig({
@@ -625,7 +665,7 @@ describe('Configuration Validation System', () => {
             maxAttempts: 3,
             fallbackToDefaults: true,
           },
-        }
+        },
       });
 
       const goodMetrics = await analyzeConfigPerformance(goodConfig);
@@ -642,7 +682,7 @@ describe('Configuration Validation System', () => {
 
       const backup = await backupConfig(configPath, {
         description: 'Test backup',
-        tags: ['test']
+        tags: ['test'],
       });
 
       expect(backup.id).toBeDefined();
@@ -659,7 +699,7 @@ describe('Configuration Validation System', () => {
       // Create backup
       const backupManager = createConfigBackup(configPath);
       const backup = await backupManager.createBackup({
-        description: 'Original config'
+        description: 'Original config',
       });
 
       // Modify configuration
@@ -709,7 +749,11 @@ describe('Configuration Validation System', () => {
 
       expect(verification.isValid).toBe(false);
       expect(verification.checksumMatch).toBe(false);
-      expect(verification.errors.some(e => (typeof e === 'string' ? e : e.message || e.toString()).toLowerCase().includes('checksum'))).toBe(true);
+      expect(
+        verification.errors.some((e) =>
+          (typeof e === 'string' ? e : e.message || e.toString()).toLowerCase().includes('checksum')
+        )
+      ).toBe(true);
     });
 
     test('should apply retention policy', async () => {
@@ -718,7 +762,7 @@ describe('Configuration Validation System', () => {
 
       const backupManager = createConfigBackup(configPath, undefined, {
         maxBackups: 2,
-        autoCleanup: true
+        autoCleanup: true,
       });
 
       // Create multiple automatic backups (no description)
@@ -738,7 +782,7 @@ describe('Configuration Validation System', () => {
 
       await backupManager.createBackup({
         description: 'Manual backup',
-        tags: ['manual', 'important']
+        tags: ['manual', 'important'],
       });
       await backupManager.createBackup(); // Automatic backup
 
@@ -809,7 +853,7 @@ describe('Configuration Validation System', () => {
             maxAttempts: 3,
             fallbackToDefaults: true,
           },
-        }
+        },
       });
 
       // Test all validation systems
@@ -833,9 +877,9 @@ describe('Configuration Validation System', () => {
         maxConcurrency: -1, // Invalid value
         runtime: {
           resourceThresholds: {
-            memory: 'invalid' // Invalid type
-          }
-        }
+            memory: 'invalid', // Invalid type
+          },
+        },
       };
 
       const defaultsManager = createConfigDefaults('development');
@@ -878,7 +922,7 @@ describe('Configuration Validation Edge Cases', () => {
   test('should handle very large configuration files', async () => {
     const largeConfig = createTestConfig({
       excludePatterns: new Array(1000).fill('node_modules/**'),
-      excludeExtensions: new Array(100).fill('.test.js')
+      excludeExtensions: new Array(100).fill('.test.js'),
     });
 
     writeFileSync(configPath, JSON.stringify(largeConfig, null, 2));
@@ -894,22 +938,20 @@ describe('Configuration Validation Edge Cases', () => {
     writeFileSync(configPath, JSON.stringify(config, null, 2));
 
     const validator = createConfigValidator();
-    
+
     // Run multiple validations concurrently
-    const promises = Array.from({ length: 10 }, () => 
-      validator.validateFile(configPath)
-    );
+    const promises = Array.from({ length: 10 }, () => validator.validateFile(configPath));
 
     const results = await Promise.all(promises);
-    
-    results.forEach(result => {
+
+    results.forEach((result) => {
       expect(result.isValid).toBe(true);
     });
   });
 
   test('should handle file system permission errors', async () => {
     const config = createTestConfig({
-      input: '/root/restricted' // Likely to cause permission error
+      input: '/root/restricted', // Likely to cause permission error
     });
 
     const runtimeValidator = createRuntimeValidator(config);
@@ -936,12 +978,18 @@ describe('Configuration Validation Edge Cases', () => {
           maxAttempts: 0, // No retries
           fallbackToDefaults: true,
         },
-      }
+      },
     });
 
     const performanceValidator = createPerformanceValidator(config);
     const metrics = await performanceValidator.analyzePerformance();
 
-    expect(metrics.warnings.some(w => (typeof w === 'string' ? w : w.message || w.toString()).includes('interval') || (typeof w === 'string' ? w : w.message || w.toString()).includes('frequent'))).toBe(true);
+    expect(
+      metrics.warnings.some(
+        (w) =>
+          (typeof w === 'string' ? w : w.message || w.toString()).includes('interval') ||
+          (typeof w === 'string' ? w : w.message || w.toString()).includes('frequent')
+      )
+    ).toBe(true);
   });
-}); 
+});

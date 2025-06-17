@@ -9,17 +9,17 @@
  * Integration tests for Tailwind Enigma Plugin with real Tailwind CSS
  */
 
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import fs from "fs";
-import path from "path";
-import { tmpdir } from "os";
-import postcss from "postcss";
-import tailwindcss from "tailwindcss";
+import fs from 'fs';
+import { tmpdir } from 'os';
+import path from 'path';
+import postcss from 'postcss';
+import tailwindcss from 'tailwindcss';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 // Import the plugin
-import tailwindEnigmaPlugin from "../../src/tailwindPlugin.js";
+import { tailwindEnigmaPlugin } from '@tw-enigma/core';
 
-describe("Tailwind Enigma Plugin Integration", () => {
+describe('Tailwind Enigma Plugin Integration', () => {
   let tempDir: string;
   let patternsFile: string;
   let frequencyFile: string;
@@ -27,12 +27,10 @@ describe("Tailwind Enigma Plugin Integration", () => {
 
   beforeEach(() => {
     // Create temporary directory for test files
-    tempDir = fs.mkdtempSync(
-      path.join(tmpdir(), "tailwind-enigma-integration-"),
-    );
-    patternsFile = path.join(tempDir, "patterns.json");
-    frequencyFile = path.join(tempDir, "frequency.json");
-    autocompleteFile = path.join(tempDir, "autocomplete.json");
+    tempDir = fs.mkdtempSync(path.join(tmpdir(), 'tailwind-enigma-integration-'));
+    patternsFile = path.join(tempDir, 'patterns.json');
+    frequencyFile = path.join(tempDir, 'frequency.json');
+    autocompleteFile = path.join(tempDir, 'autocomplete.json');
   });
 
   afterEach(() => {
@@ -47,39 +45,39 @@ describe("Tailwind Enigma Plugin Integration", () => {
     const patternsData = {
       patterns: [
         {
-          type: "atomic",
+          type: 'atomic',
           frequency: 15,
-          classes: ["flex", "items-center", "justify-center"],
+          classes: ['flex', 'items-center', 'justify-center'],
           properties: [
-            { property: "display", value: "flex" },
-            { property: "align-items", value: "center" },
-            { property: "justify-content", value: "center" },
+            { property: 'display', value: 'flex' },
+            { property: 'align-items', value: 'center' },
+            { property: 'justify-content', value: 'center' },
           ],
           complexity: 3,
           coOccurrenceStrength: 0.8,
         },
         {
-          type: "utility",
+          type: 'utility',
           frequency: 12,
-          classes: ["bg-white", "shadow-lg", "rounded-lg"],
+          classes: ['bg-white', 'shadow-lg', 'rounded-lg'],
           properties: [
-            { property: "background-color", value: "#ffffff" },
+            { property: 'background-color', value: '#ffffff' },
             {
-              property: "box-shadow",
-              value: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+              property: 'box-shadow',
+              value: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
             },
-            { property: "border-radius", value: "0.5rem" },
+            { property: 'border-radius', value: '0.5rem' },
           ],
           complexity: 2,
           coOccurrenceStrength: 0.7,
         },
         {
-          type: "component",
+          type: 'component',
           frequency: 8,
-          classes: ["p-4", "m-2"],
+          classes: ['p-4', 'm-2'],
           properties: [
-            { property: "padding", value: "1rem" },
-            { property: "margin", value: "0.5rem" },
+            { property: 'padding', value: '1rem' },
+            { property: 'margin', value: '0.5rem' },
           ],
           complexity: 1,
           coOccurrenceStrength: 0.6,
@@ -90,26 +88,26 @@ describe("Tailwind Enigma Plugin Integration", () => {
     const frequencyData = {
       frequencyMap: {
         flex: 25,
-        "items-center": 20,
-        "justify-center": 18,
-        "bg-white": 15,
-        "shadow-lg": 12,
-        "rounded-lg": 10,
-        "p-4": 8,
-        "m-2": 6,
-        "text-gray-600": 14,
-        "font-medium": 11,
+        'items-center': 20,
+        'justify-center': 18,
+        'bg-white': 15,
+        'shadow-lg': 12,
+        'rounded-lg': 10,
+        'p-4': 8,
+        'm-2': 6,
+        'text-gray-600': 14,
+        'font-medium': 11,
       },
       totalClasses: 139,
-      analyzedAt: "2025-01-20T18:30:00.000Z",
+      analyzedAt: '2025-01-20T18:30:00.000Z',
     };
 
     fs.writeFileSync(patternsFile, JSON.stringify(patternsData, null, 2));
     fs.writeFileSync(frequencyFile, JSON.stringify(frequencyData, null, 2));
   };
 
-  describe("Real Tailwind CSS Integration", () => {
-    it("should generate CSS with Tailwind CSS processor", async () => {
+  describe('Real Tailwind CSS Integration', () => {
+    it('should generate CSS with Tailwind CSS processor', async () => {
       createTestData();
 
       const tailwindConfig = {
@@ -122,7 +120,7 @@ describe("Tailwind Enigma Plugin Integration", () => {
             },
             utilities: {
               enabled: true,
-              prefix: "tw-opt-",
+              prefix: 'tw-opt-',
             },
             paths: {
               patternsFile,
@@ -133,20 +131,20 @@ describe("Tailwind Enigma Plugin Integration", () => {
         ],
       };
 
-      const css = "@tailwind utilities;";
+      const css = '@tailwind utilities;';
 
       const result = await postcss([tailwindcss(tailwindConfig)]).process(css, {
         from: undefined,
       });
 
       // Check that optimized utilities are generated
-      expect(result.css).toContain(".tw-opt-0");
-      expect(result.css).toContain("display: flex");
-      expect(result.css).toContain("align-items: center");
-      expect(result.css).toContain("justify-content: center");
+      expect(result.css).toContain('.tw-opt-0');
+      expect(result.css).toContain('display: flex');
+      expect(result.css).toContain('align-items: center');
+      expect(result.css).toContain('justify-content: center');
     });
 
-    it("should generate responsive variants when enabled", async () => {
+    it('should generate responsive variants when enabled', async () => {
       createTestData();
 
       const tailwindConfig = {
@@ -155,7 +153,7 @@ describe("Tailwind Enigma Plugin Integration", () => {
           tailwindEnigmaPlugin({
             utilities: {
               enabled: true,
-              prefix: "tw-opt-",
+              prefix: 'tw-opt-',
               generateResponsive: true,
             },
             paths: {
@@ -166,7 +164,7 @@ describe("Tailwind Enigma Plugin Integration", () => {
         ],
       };
 
-      const css = "@tailwind utilities;";
+      const css = '@tailwind utilities;';
 
       const result = await postcss([tailwindcss(tailwindConfig)]).process(css, {
         from: undefined,
@@ -177,7 +175,7 @@ describe("Tailwind Enigma Plugin Integration", () => {
       expect(result.css).toMatch(/@media.*min-width: 1024px.*\.lg\\:tw-opt-1/s);
     });
 
-    it("should generate hover and focus variants when enabled", async () => {
+    it('should generate hover and focus variants when enabled', async () => {
       createTestData();
 
       const tailwindConfig = {
@@ -186,7 +184,7 @@ describe("Tailwind Enigma Plugin Integration", () => {
           tailwindEnigmaPlugin({
             utilities: {
               enabled: true,
-              prefix: "tw-opt-",
+              prefix: 'tw-opt-',
               generateHover: true,
               generateFocus: true,
             },
@@ -198,18 +196,18 @@ describe("Tailwind Enigma Plugin Integration", () => {
         ],
       };
 
-      const css = "@tailwind utilities;";
+      const css = '@tailwind utilities;';
 
       const result = await postcss([tailwindcss(tailwindConfig)]).process(css, {
         from: undefined,
       });
 
       // Check for hover and focus variants
-      expect(result.css).toContain(".hover\\:tw-opt-0:hover");
-      expect(result.css).toContain(".focus\\:tw-opt-1:focus");
+      expect(result.css).toContain('.hover\\:tw-opt-0:hover');
+      expect(result.css).toContain('.focus\\:tw-opt-1:focus');
     });
 
-    it("should work with custom prefix", async () => {
+    it('should work with custom prefix', async () => {
       createTestData();
 
       const tailwindConfig = {
@@ -218,7 +216,7 @@ describe("Tailwind Enigma Plugin Integration", () => {
           tailwindEnigmaPlugin({
             utilities: {
               enabled: true,
-              prefix: "opt-",
+              prefix: 'opt-',
             },
             paths: {
               patternsFile,
@@ -228,19 +226,19 @@ describe("Tailwind Enigma Plugin Integration", () => {
         ],
       };
 
-      const css = "@tailwind utilities;";
+      const css = '@tailwind utilities;';
 
       const result = await postcss([tailwindcss(tailwindConfig)]).process(css, {
         from: undefined,
       });
 
       // Check that custom prefix is used
-      expect(result.css).toContain(".opt-0");
-      expect(result.css).toContain(".opt-freq-0");
-      expect(result.css).not.toContain(".tw-opt-");
+      expect(result.css).toContain('.opt-0');
+      expect(result.css).toContain('.opt-freq-0');
+      expect(result.css).not.toContain('.tw-opt-');
     });
 
-    it("should respect minimum frequency threshold", async () => {
+    it('should respect minimum frequency threshold', async () => {
       createTestData();
 
       const tailwindConfig = {
@@ -253,7 +251,7 @@ describe("Tailwind Enigma Plugin Integration", () => {
             },
             utilities: {
               enabled: true,
-              prefix: "tw-opt-",
+              prefix: 'tw-opt-',
             },
             paths: {
               patternsFile,
@@ -263,32 +261,32 @@ describe("Tailwind Enigma Plugin Integration", () => {
         ],
       };
 
-      const css = "@tailwind utilities;";
+      const css = '@tailwind utilities;';
 
       const result = await postcss([tailwindcss(tailwindConfig)]).process(css, {
         from: undefined,
       });
 
       // Should only generate utilities for high-frequency patterns
-      expect(result.css).toContain(".tw-opt-0"); // frequency: 15
-      expect(result.css).toContain(".tw-opt-1"); // frequency: 12
-      expect(result.css).not.toContain(".tw-opt-2"); // frequency: 8 (below threshold)
+      expect(result.css).toContain('.tw-opt-0'); // frequency: 15
+      expect(result.css).toContain('.tw-opt-1'); // frequency: 12
+      expect(result.css).not.toContain('.tw-opt-2'); // frequency: 8 (below threshold)
     });
 
-    it("should handle missing pattern files gracefully", async () => {
+    it('should handle missing pattern files gracefully', async () => {
       const tailwindConfig = {
         content: [{ raw: '<div class="flex p-4"></div>' }], // Include some standard Tailwind classes
         plugins: [
           tailwindEnigmaPlugin({
             paths: {
-              patternsFile: path.join(tempDir, "nonexistent.json"),
-              frequencyFile: path.join(tempDir, "nonexistent.json"),
+              patternsFile: path.join(tempDir, 'nonexistent.json'),
+              frequencyFile: path.join(tempDir, 'nonexistent.json'),
             },
           }),
         ],
       };
 
-      const css = "@tailwind utilities;";
+      const css = '@tailwind utilities;';
 
       // Should not throw an error
       const result = await postcss([tailwindcss(tailwindConfig)]).process(css, {
@@ -298,12 +296,12 @@ describe("Tailwind Enigma Plugin Integration", () => {
       // Should still generate base Tailwind CSS for standard classes
       expect(result.css).toBeDefined();
       expect(result.css.length).toBeGreaterThan(0);
-      expect(result.css).toContain("display: flex"); // Should include standard Tailwind utilities
+      expect(result.css).toContain('display: flex'); // Should include standard Tailwind utilities
     });
   });
 
-  describe("Autocomplete Generation", () => {
-    it("should generate autocomplete configuration file", async () => {
+  describe('Autocomplete Generation', () => {
+    it('should generate autocomplete configuration file', async () => {
       createTestData();
 
       const tailwindConfig = {
@@ -322,7 +320,7 @@ describe("Tailwind Enigma Plugin Integration", () => {
         ],
       };
 
-      const css = "@tailwind utilities;";
+      const css = '@tailwind utilities;';
 
       await postcss([tailwindcss(tailwindConfig)]).process(css, {
         from: undefined,
@@ -331,9 +329,7 @@ describe("Tailwind Enigma Plugin Integration", () => {
       // Check that autocomplete file was generated
       expect(fs.existsSync(autocompleteFile)).toBe(true);
 
-      const autocompleteData = JSON.parse(
-        fs.readFileSync(autocompleteFile, "utf8"),
-      );
+      const autocompleteData = JSON.parse(fs.readFileSync(autocompleteFile, 'utf8'));
 
       expect(autocompleteData.version).toBeDefined();
       expect(autocompleteData.utilities).toBeInstanceOf(Array);
@@ -342,11 +338,11 @@ describe("Tailwind Enigma Plugin Integration", () => {
       expect(autocompleteData.utilities.length).toBeGreaterThan(0);
     });
 
-    it("should include pattern suggestions in autocomplete", async () => {
+    it('should include pattern suggestions in autocomplete', async () => {
       createTestData();
 
       const tailwindConfig = {
-        content: [{ raw: "<div></div>" }],
+        content: [{ raw: '<div></div>' }],
         plugins: [
           tailwindEnigmaPlugin({
             development: {
@@ -361,32 +357,28 @@ describe("Tailwind Enigma Plugin Integration", () => {
         ],
       };
 
-      const css = "@tailwind utilities;";
+      const css = '@tailwind utilities;';
 
       await postcss([tailwindcss(tailwindConfig)]).process(css, {
         from: undefined,
       });
 
-      const autocompleteData = JSON.parse(
-        fs.readFileSync(autocompleteFile, "utf8"),
-      );
+      const autocompleteData = JSON.parse(fs.readFileSync(autocompleteFile, 'utf8'));
 
       // Should include pattern-based suggestions
       expect(
         autocompleteData.patterns.some((p: any) =>
-          p.pattern.includes("flex items-center justify-center"),
-        ),
+          p.pattern.includes('flex items-center justify-center')
+        )
       ).toBe(true);
 
       // Should include context-aware suggestions
-      expect(
-        autocompleteData.suggestions.some((s: any) => s.trigger === "flex"),
-      ).toBe(true);
+      expect(autocompleteData.suggestions.some((s: any) => s.trigger === 'flex')).toBe(true);
     });
   });
 
-  describe("Performance and Bundle Size", () => {
-    it("should generate smaller CSS than individual classes", async () => {
+  describe('Performance and Bundle Size', () => {
+    it('should generate smaller CSS than individual classes', async () => {
       createTestData();
 
       // Test with individual classes
@@ -424,42 +416,35 @@ describe("Tailwind Enigma Plugin Integration", () => {
         ],
       };
 
-      const css = "@tailwind utilities;";
+      const css = '@tailwind utilities;';
 
-      const individualResult = await postcss([
-        tailwindcss(individualConfig),
-      ]).process(css, { from: undefined });
+      const individualResult = await postcss([tailwindcss(individualConfig)]).process(css, {
+        from: undefined,
+      });
 
-      const optimizedResult = await postcss([
-        tailwindcss(optimizedConfig),
-      ]).process(css, { from: undefined });
+      const optimizedResult = await postcss([tailwindcss(optimizedConfig)]).process(css, {
+        from: undefined,
+      });
 
       // Optimized CSS should be smaller or similar in size
       // (In real scenarios with many repeated patterns, it would be significantly smaller)
-      expect(optimizedResult.css.length).toBeLessThanOrEqual(
-        individualResult.css.length * 1.1,
-      );
+      expect(optimizedResult.css.length).toBeLessThanOrEqual(individualResult.css.length * 1.1);
     });
 
-    it("should handle large pattern datasets efficiently", async () => {
+    it('should handle large pattern datasets efficiently', async () => {
       // Create a large dataset
       const largePatterns = {
         patterns: Array.from({ length: 100 }, (_, i) => ({
-          type: "atomic",
+          type: 'atomic',
           frequency: Math.floor(Math.random() * 20) + 5,
           classes: [`class-${i}`, `modifier-${i}`],
-          properties: [
-            { property: "display", value: i % 2 === 0 ? "flex" : "block" },
-          ],
+          properties: [{ property: 'display', value: i % 2 === 0 ? 'flex' : 'block' }],
         })),
       };
 
       const largeFrequency = {
         frequencyMap: Object.fromEntries(
-          Array.from({ length: 200 }, (_, i) => [
-            `freq-class-${i}`,
-            Math.floor(Math.random() * 50),
-          ]),
+          Array.from({ length: 200 }, (_, i) => [`freq-class-${i}`, Math.floor(Math.random() * 50)])
         ),
       };
 
@@ -478,7 +463,7 @@ describe("Tailwind Enigma Plugin Integration", () => {
         ],
       };
 
-      const css = "@tailwind utilities;";
+      const css = '@tailwind utilities;';
 
       const startTime = Date.now();
 
@@ -496,21 +481,21 @@ describe("Tailwind Enigma Plugin Integration", () => {
     });
   });
 
-  describe("Error Handling and Edge Cases", () => {
-    it("should handle malformed pattern data gracefully", async () => {
+  describe('Error Handling and Edge Cases', () => {
+    it('should handle malformed pattern data gracefully', async () => {
       // Create malformed pattern data
       const malformedPatterns = {
         patterns: [
           {
             // Missing required fields
-            type: "atomic",
+            type: 'atomic',
             // frequency missing
             // classes missing
           },
           {
-            type: "invalid-type",
-            frequency: "not-a-number",
-            classes: "not-an-array",
+            type: 'invalid-type',
+            frequency: 'not-a-number',
+            classes: 'not-an-array',
           },
         ],
       };
@@ -530,7 +515,7 @@ describe("Tailwind Enigma Plugin Integration", () => {
         ],
       };
 
-      const css = "@tailwind utilities;";
+      const css = '@tailwind utilities;';
 
       // Should not throw an error
       const result = await postcss([tailwindcss(tailwindConfig)]).process(css, {
@@ -540,10 +525,10 @@ describe("Tailwind Enigma Plugin Integration", () => {
       expect(result.css).toBeDefined();
     });
 
-    it("should handle invalid JSON files gracefully", async () => {
+    it('should handle invalid JSON files gracefully', async () => {
       // Create invalid JSON files
-      fs.writeFileSync(patternsFile, "invalid json content");
-      fs.writeFileSync(frequencyFile, "{ invalid json }");
+      fs.writeFileSync(patternsFile, 'invalid json content');
+      fs.writeFileSync(frequencyFile, '{ invalid json }');
 
       const tailwindConfig = {
         content: [{ raw: '<div class="tw-opt-0"></div>' }],
@@ -557,7 +542,7 @@ describe("Tailwind Enigma Plugin Integration", () => {
         ],
       };
 
-      const css = "@tailwind utilities;";
+      const css = '@tailwind utilities;';
 
       // Should not throw an error
       const result = await postcss([tailwindcss(tailwindConfig)]).process(css, {
@@ -567,7 +552,7 @@ describe("Tailwind Enigma Plugin Integration", () => {
       expect(result.css).toBeDefined();
     });
 
-    it("should work when utilities are disabled", async () => {
+    it('should work when utilities are disabled', async () => {
       createTestData();
 
       const tailwindConfig = {
@@ -585,16 +570,16 @@ describe("Tailwind Enigma Plugin Integration", () => {
         ],
       };
 
-      const css = "@tailwind utilities;";
+      const css = '@tailwind utilities;';
 
       const result = await postcss([tailwindcss(tailwindConfig)]).process(css, {
         from: undefined,
       });
 
       // Should not contain optimized utilities
-      expect(result.css).not.toContain(".tw-opt-");
+      expect(result.css).not.toContain('.tw-opt-');
       // Should still contain standard Tailwind utilities
-      expect(result.css).toContain(".flex");
+      expect(result.css).toContain('.flex');
     });
   });
 });

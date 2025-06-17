@@ -108,6 +108,7 @@ export * from './utils/pathUtils';
 
 // File Discovery
 export {
+  ALL_SUPPORTED_EXTENSIONS,
   deduplicateAndSort,
   discoverFiles,
   discoverFilesFromConfig,
@@ -115,6 +116,7 @@ export {
   discoverFilesSync,
   getFileType,
   shouldIncludeFile,
+  SUPPORTED_FILE_TYPES,
   validateGlobPattern,
   validateOptions,
 } from './utils/fileDiscovery';
@@ -126,11 +128,14 @@ export { FileDiscoveryError } from './utils/fileDiscovery';
 // File Integrity
 export {
   calculateFileChecksum,
+  ChecksumError,
   createFileIntegrityValidator,
   FileIntegrityOptionsSchema,
   FileIntegrityValidator,
   IntegrityError,
+  RollbackError,
   validateFileIntegrity,
+  ValidationError,
 } from './utils/fileIntegrity';
 
 export type { FileIntegrityOptions } from './utils/fileIntegrity';
@@ -147,11 +152,11 @@ export {
   CssProcessingError,
   DependencyError,
   EnigmaError,
+  ValidationError as GeneralValidationError,
   TimeoutError,
   FileDiscoveryError as UtilsFileDiscoveryError,
   HtmlParsingError as UtilsHtmlParsingError,
   JsParsingError as UtilsJsParsingError,
-  ValidationError,
 } from './utils/errors';
 
 // Error Handler
@@ -239,13 +244,23 @@ export * from './integrations/core';
 // FRAMEWORK DETECTION
 // =============================================================================
 
-export { createFrameworkDetector } from './frameworkDetector';
+export { createFrameworkDetector, detectFramework, FrameworkDetector } from './frameworkDetector';
 
 // =============================================================================
 // PERFORMANCE MONITORING
 // =============================================================================
 
 export * from './performance';
+
+// =============================================================================
+// REPORTING & PLUGINS
+// =============================================================================
+
+// Reporter
+export { default as Reporter } from './reporter.js';
+
+// Tailwind Plugin
+export { default as tailwindEnigmaPlugin } from './tailwindPlugin.js';
 
 // =============================================================================
 // DEFAULT EXPORT & MAIN FUNCTIONS
