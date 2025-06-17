@@ -1,15 +1,15 @@
 {
   "version": "1.0.0",
   "totalEntries": 1,
-  "spaceSaved": 507000,
-  "lastUpdated": "2025-06-17T07:21:52.402Z",
+  "spaceSaved": 537000,
+  "lastUpdated": "2025-06-17T12:06:00.848Z",
   "entries": {
     "e1630f843370f402870799e14abbf2b06af2d23b0153658e1211dffabc61ad8f": {
       "hash": "e1630f843370f402870799e14abbf2b06af2d23b0153658e1211dffabc61ad8f",
       "algorithm": "sha256",
       "size": 3000,
       "storagePath": "/Users/rowan/github/tw-enigma/tw-enigma/packages/core/.dedup-savings/e1630f843370f402870799e14abbf2b06af2d23b0153658e1211dffabc61ad8f.txt",
-      "referenceCount": 170,
+      "referenceCount": 180,
       "referencePaths": [
         "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750053713365/integration-tests/duplicate-1.txt",
         "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750053713365/integration-tests/duplicate-2.txt",
@@ -180,17 +180,27 @@
         "/tmp/compression-test-1750144912395/integration-tests/duplicate-2.txt",
         "/tmp/compression-test-1750144912395/integration-tests/duplicate-3.txt",
         "/tmp/compression-test-1750144912395/integration-tests/duplicate-4.txt",
-        "/tmp/compression-test-1750144912395/integration-tests/duplicate-5.txt"
+        "/tmp/compression-test-1750144912395/integration-tests/duplicate-5.txt",
+        "/tmp/compression-test-1750161880395/integration-tests/duplicate-1.txt",
+        "/tmp/compression-test-1750161880395/integration-tests/duplicate-2.txt",
+        "/tmp/compression-test-1750161880395/integration-tests/duplicate-3.txt",
+        "/tmp/compression-test-1750161880395/integration-tests/duplicate-4.txt",
+        "/tmp/compression-test-1750161880395/integration-tests/duplicate-5.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750161960842/integration-tests/duplicate-1.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750161960842/integration-tests/duplicate-2.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750161960842/integration-tests/duplicate-3.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750161960842/integration-tests/duplicate-4.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750161960842/integration-tests/duplicate-5.txt"
       ],
       "firstSeen": "2025-06-16T06:01:53.369Z",
-      "lastAccessed": "2025-06-17T07:21:52.401Z",
+      "lastAccessed": "2025-06-17T12:06:00.848Z",
       "compressed": false
     }
   },
   "stats": {
-    "totalOriginalSize": 510000,
+    "totalOriginalSize": 540000,
     "totalDeduplicatedSize": 3000,
-    "duplicatesFound": 169,
-    "averageReferenceCount": 170
+    "duplicatesFound": 179,
+    "averageReferenceCount": 180
   }
 }

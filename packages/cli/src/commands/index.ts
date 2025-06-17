@@ -13,8 +13,15 @@ import { createInitConfigCommand } from './init-config';
  */
 export function registerCommands(program: Command): void {
   // Configuration commands
-  program.addCommand(createInitConfigCommand());
-  program.addCommand(createCssConfigCommand());
+  console.error('[CLI-DEBUG] Creating init-config command...');
+  const initConfigCmd = createInitConfigCommand();
+  console.error('[CLI-DEBUG] Adding init-config command to program...');
+  program.addCommand(initConfigCmd);
+
+  console.error('[CLI-DEBUG] Creating css-config command...');
+  const cssConfigCmd = createCssConfigCommand();
+  console.error('[CLI-DEBUG] Adding css-config command to program...');
+  program.addCommand(cssConfigCmd);
 
   // TODO: Add remaining commands as they are migrated
   // program.addCommand(createCssOptimizeCommand());

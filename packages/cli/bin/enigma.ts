@@ -91,8 +91,11 @@ async function main(): Promise<void> {
     const chalkDefault = chalk.default || chalk;
 
     // Commander.js should be available as CommonJS
+    console.error('[CLI-DEBUG] Attempting to load commander.js...');
     const commanderModule = safeRequire<CommanderModule>('commander', {
       Command: class MockCommand {
+        commands: any[] = [];
+
         name(): this {
           return this;
         }
@@ -108,14 +111,22 @@ async function main(): Promise<void> {
         command(): this {
           return this;
         }
+        addCommand(cmd: any): this {
+          this.commands.push(cmd);
+          return this;
+        }
         action(): this {
           return this;
+        }
+        parse(): void {
+          // Mock parse implementation
         }
         outputHelp(): void {
           console.log('Help not available');
         }
       } as any,
     });
+    console.error('[CLI-DEBUG] Commander module loaded:', !!commanderModule.Command);
     const { Command } = commanderModule;
 
     // Load internal modules with safe paths - determine correct path
@@ -382,7 +393,9 @@ async function main(): Promise<void> {
         program.parse([process.argv[0], process.argv[1], '--help']);
       } else {
         console.error(`[CLI-DEBUG] Parsing args: ${process.argv.slice(2).join(' ')}`);
+        console.error(`[CLI-DEBUG] Full argv: ${JSON.stringify(process.argv)}`);
         program.parse(process.argv);
+        console.error(`[CLI-DEBUG] Parse completed, command should have executed by now`);
       }
     } catch (parseError) {
       console.error('Failed to parse CLI arguments:', parseError);

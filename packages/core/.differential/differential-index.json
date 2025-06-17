@@ -1,405 +1,60 @@
 {
   "version": "1.0.0",
   "currentFullBackup": {
-    "id": "backup_1750142571452_wewy6i",
-    "createdAt": "2025-06-17T06:42:51.452Z",
-    "filePath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142571449/integration-tests/.backups-combo2/integration-test-7.2025-06-17T06-42-51-451Z.txt.backup.br",
+    "id": "backup_1750161960753_tlgdft",
+    "createdAt": "2025-06-17T12:06:00.753Z",
+    "filePath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750161960750/integration-tests/.backups-combo2/integration-test-7.2025-06-17T12-06-00-753Z.txt.backup.br",
     "size": 53
   },
   "differentialChain": [
     {
-      "id": "backup_1750142571464_p8g3it",
+      "id": "backup_1750161960766_hgf3kf",
       "type": "differential",
-      "baseFullBackupId": "backup_1750142571452_wewy6i",
-      "backupPath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142571449/integration-tests/.backups-combo2/integration-test-8.2025-06-17T06-42-51-464Z.txt.backup.br",
-      "originalPath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142571449/integration-tests/integration-test-8.txt",
-      "createdAt": "2025-06-17T06:42:51.464Z",
+      "baseFullBackupId": "backup_1750161960753_tlgdft",
+      "backupPath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750161960750/integration-tests/.backups-combo2/integration-test-8.2025-06-17T12-06-00-765Z.txt.backup.br",
+      "originalPath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750161960750/integration-tests/integration-test-8.txt",
+      "createdAt": "2025-06-17T12:06:00.766Z",
       "cumulativeFiles": [
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142571449/integration-tests/integration-test-7.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142571449/integration-tests/integration-test-8.txt"
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750161960750/integration-tests/integration-test-7.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750161960750/integration-tests/integration-test-8.txt"
       ],
       "cumulativeSize": 34,
       "currentFiles": [
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142571449/integration-tests/integration-test-8.txt"
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750161960750/integration-tests/integration-test-8.txt"
       ],
       "currentSize": 34,
       "changeDetectionMethod": "checksum",
       "compressed": true,
       "deduplicated": false,
-      "timeSinceFullBackup": 0.0000030555555555555556
-    },
-    {
-      "id": "backup_1750142627177_4vrztl",
-      "type": "differential",
-      "baseFullBackupId": "backup_1750142571452_wewy6i",
-      "backupPath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142627175/integration-tests/.backups-combo2/integration-test-7.2025-06-17T06-43-47-177Z.txt.backup.br",
-      "originalPath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142627175/integration-tests/integration-test-7.txt",
-      "createdAt": "2025-06-17T06:43:47.177Z",
-      "cumulativeFiles": [
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142571449/integration-tests/integration-test-7.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142571449/integration-tests/integration-test-8.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142627175/integration-tests/integration-test-7.txt"
-      ],
-      "cumulativeSize": 87,
-      "currentFiles": [
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142627175/integration-tests/integration-test-7.txt"
-      ],
-      "currentSize": 53,
-      "changeDetectionMethod": "checksum",
-      "compressed": true,
-      "deduplicated": false,
-      "timeSinceFullBackup": 0.01547888888888889
-    },
-    {
-      "id": "backup_1750142627189_obejjv",
-      "type": "differential",
-      "baseFullBackupId": "backup_1750142571452_wewy6i",
-      "backupPath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142627175/integration-tests/.backups-combo2/integration-test-8.2025-06-17T06-43-47-189Z.txt.backup.br",
-      "originalPath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142627175/integration-tests/integration-test-8.txt",
-      "createdAt": "2025-06-17T06:43:47.189Z",
-      "cumulativeFiles": [
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142571449/integration-tests/integration-test-7.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142571449/integration-tests/integration-test-8.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142627175/integration-tests/integration-test-7.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142627175/integration-tests/integration-test-8.txt"
-      ],
-      "cumulativeSize": 121,
-      "currentFiles": [
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142627175/integration-tests/integration-test-8.txt"
-      ],
-      "currentSize": 34,
-      "changeDetectionMethod": "checksum",
-      "compressed": true,
-      "deduplicated": false,
-      "timeSinceFullBackup": 0.0154825
-    },
-    {
-      "id": "backup_1750142660337_en0dtw",
-      "type": "differential",
-      "baseFullBackupId": "backup_1750142571452_wewy6i",
-      "backupPath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142660334/integration-tests/.backups-combo2/integration-test-7.2025-06-17T06-44-20-336Z.txt.backup.br",
-      "originalPath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142660334/integration-tests/integration-test-7.txt",
-      "createdAt": "2025-06-17T06:44:20.337Z",
-      "cumulativeFiles": [
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142571449/integration-tests/integration-test-7.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142571449/integration-tests/integration-test-8.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142627175/integration-tests/integration-test-7.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142627175/integration-tests/integration-test-8.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142660334/integration-tests/integration-test-7.txt"
-      ],
-      "cumulativeSize": 174,
-      "currentFiles": [
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142660334/integration-tests/integration-test-7.txt"
-      ],
-      "currentSize": 53,
-      "changeDetectionMethod": "checksum",
-      "compressed": true,
-      "deduplicated": false,
-      "timeSinceFullBackup": 0.02469
-    },
-    {
-      "id": "backup_1750142660349_s569lw",
-      "type": "differential",
-      "baseFullBackupId": "backup_1750142571452_wewy6i",
-      "backupPath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142660334/integration-tests/.backups-combo2/integration-test-8.2025-06-17T06-44-20-349Z.txt.backup.br",
-      "originalPath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142660334/integration-tests/integration-test-8.txt",
-      "createdAt": "2025-06-17T06:44:20.349Z",
-      "cumulativeFiles": [
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142571449/integration-tests/integration-test-7.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142571449/integration-tests/integration-test-8.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142627175/integration-tests/integration-test-7.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142627175/integration-tests/integration-test-8.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142660334/integration-tests/integration-test-7.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142660334/integration-tests/integration-test-8.txt"
-      ],
-      "cumulativeSize": 208,
-      "currentFiles": [
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142660334/integration-tests/integration-test-8.txt"
-      ],
-      "currentSize": 34,
-      "changeDetectionMethod": "checksum",
-      "compressed": true,
-      "deduplicated": false,
-      "timeSinceFullBackup": 0.02469361111111111
-    },
-    {
-      "id": "backup_1750142857123_a3b4sk",
-      "type": "differential",
-      "baseFullBackupId": "backup_1750142571452_wewy6i",
-      "backupPath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142857121/integration-tests/.backups-combo2/integration-test-7.2025-06-17T06-47-37-123Z.txt.backup.br",
-      "originalPath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142857121/integration-tests/integration-test-7.txt",
-      "createdAt": "2025-06-17T06:47:37.123Z",
-      "cumulativeFiles": [
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142571449/integration-tests/integration-test-7.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142571449/integration-tests/integration-test-8.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142627175/integration-tests/integration-test-7.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142627175/integration-tests/integration-test-8.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142660334/integration-tests/integration-test-7.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142660334/integration-tests/integration-test-8.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142857121/integration-tests/integration-test-7.txt"
-      ],
-      "cumulativeSize": 261,
-      "currentFiles": [
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142857121/integration-tests/integration-test-7.txt"
-      ],
-      "currentSize": 53,
-      "changeDetectionMethod": "checksum",
-      "compressed": true,
-      "deduplicated": false,
-      "timeSinceFullBackup": 0.07935305555555555
-    },
-    {
-      "id": "backup_1750142857135_yqbqhw",
-      "type": "differential",
-      "baseFullBackupId": "backup_1750142571452_wewy6i",
-      "backupPath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142857121/integration-tests/.backups-combo2/integration-test-8.2025-06-17T06-47-37-135Z.txt.backup.br",
-      "originalPath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142857121/integration-tests/integration-test-8.txt",
-      "createdAt": "2025-06-17T06:47:37.135Z",
-      "cumulativeFiles": [
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142571449/integration-tests/integration-test-7.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142571449/integration-tests/integration-test-8.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142627175/integration-tests/integration-test-7.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142627175/integration-tests/integration-test-8.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142660334/integration-tests/integration-test-7.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142660334/integration-tests/integration-test-8.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142857121/integration-tests/integration-test-7.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142857121/integration-tests/integration-test-8.txt"
-      ],
-      "cumulativeSize": 295,
-      "currentFiles": [
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142857121/integration-tests/integration-test-8.txt"
-      ],
-      "currentSize": 34,
-      "changeDetectionMethod": "checksum",
-      "compressed": true,
-      "deduplicated": false,
-      "timeSinceFullBackup": 0.07935638888888889
-    },
-    {
-      "id": "backup_1750142945139_e1c2jo",
-      "type": "differential",
-      "baseFullBackupId": "backup_1750142571452_wewy6i",
-      "backupPath": "/tmp/compression-test-1750142945136/integration-tests/.backups-combo2/integration-test-7.2025-06-17T06-49-05-139Z.txt.backup.br",
-      "originalPath": "/tmp/compression-test-1750142945136/integration-tests/integration-test-7.txt",
-      "createdAt": "2025-06-17T06:49:05.139Z",
-      "cumulativeFiles": [
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142571449/integration-tests/integration-test-7.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142571449/integration-tests/integration-test-8.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142627175/integration-tests/integration-test-7.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142627175/integration-tests/integration-test-8.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142660334/integration-tests/integration-test-7.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142660334/integration-tests/integration-test-8.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142857121/integration-tests/integration-test-7.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142857121/integration-tests/integration-test-8.txt",
-        "/tmp/compression-test-1750142945136/integration-tests/integration-test-7.txt"
-      ],
-      "cumulativeSize": 348,
-      "currentFiles": [
-        "/tmp/compression-test-1750142945136/integration-tests/integration-test-7.txt"
-      ],
-      "currentSize": 53,
-      "changeDetectionMethod": "checksum",
-      "compressed": true,
-      "deduplicated": false,
-      "timeSinceFullBackup": 0.10380166666666667
-    },
-    {
-      "id": "backup_1750142945152_xldzlw",
-      "type": "differential",
-      "baseFullBackupId": "backup_1750142571452_wewy6i",
-      "backupPath": "/tmp/compression-test-1750142945136/integration-tests/.backups-combo2/integration-test-8.2025-06-17T06-49-05-151Z.txt.backup.br",
-      "originalPath": "/tmp/compression-test-1750142945136/integration-tests/integration-test-8.txt",
-      "createdAt": "2025-06-17T06:49:05.152Z",
-      "cumulativeFiles": [
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142571449/integration-tests/integration-test-7.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142571449/integration-tests/integration-test-8.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142627175/integration-tests/integration-test-7.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142627175/integration-tests/integration-test-8.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142660334/integration-tests/integration-test-7.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142660334/integration-tests/integration-test-8.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142857121/integration-tests/integration-test-7.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142857121/integration-tests/integration-test-8.txt",
-        "/tmp/compression-test-1750142945136/integration-tests/integration-test-7.txt",
-        "/tmp/compression-test-1750142945136/integration-tests/integration-test-8.txt"
-      ],
-      "cumulativeSize": 382,
-      "currentFiles": [
-        "/tmp/compression-test-1750142945136/integration-tests/integration-test-8.txt"
-      ],
-      "currentSize": 34,
-      "changeDetectionMethod": "checksum",
-      "compressed": true,
-      "deduplicated": false,
-      "timeSinceFullBackup": 0.10380527777777777
-    },
-    {
-      "id": "backup_1750144912308_9uosmq",
-      "type": "differential",
-      "baseFullBackupId": "backup_1750142571452_wewy6i",
-      "backupPath": "/tmp/compression-test-1750144912305/integration-tests/.backups-combo2/integration-test-7.2025-06-17T07-21-52-308Z.txt.backup.br",
-      "originalPath": "/tmp/compression-test-1750144912305/integration-tests/integration-test-7.txt",
-      "createdAt": "2025-06-17T07:21:52.308Z",
-      "cumulativeFiles": [
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142571449/integration-tests/integration-test-7.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142571449/integration-tests/integration-test-8.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142627175/integration-tests/integration-test-7.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142627175/integration-tests/integration-test-8.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142660334/integration-tests/integration-test-7.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142660334/integration-tests/integration-test-8.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142857121/integration-tests/integration-test-7.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142857121/integration-tests/integration-test-8.txt",
-        "/tmp/compression-test-1750142945136/integration-tests/integration-test-7.txt",
-        "/tmp/compression-test-1750142945136/integration-tests/integration-test-8.txt",
-        "/tmp/compression-test-1750144912305/integration-tests/integration-test-7.txt"
-      ],
-      "cumulativeSize": 435,
-      "currentFiles": [
-        "/tmp/compression-test-1750144912305/integration-tests/integration-test-7.txt"
-      ],
-      "currentSize": 53,
-      "changeDetectionMethod": "checksum",
-      "compressed": true,
-      "deduplicated": false,
-      "timeSinceFullBackup": 0.6502377777777778
-    },
-    {
-      "id": "backup_1750144912321_cd42fb",
-      "type": "differential",
-      "baseFullBackupId": "backup_1750142571452_wewy6i",
-      "backupPath": "/tmp/compression-test-1750144912305/integration-tests/.backups-combo2/integration-test-8.2025-06-17T07-21-52-320Z.txt.backup.br",
-      "originalPath": "/tmp/compression-test-1750144912305/integration-tests/integration-test-8.txt",
-      "createdAt": "2025-06-17T07:21:52.321Z",
-      "cumulativeFiles": [
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142571449/integration-tests/integration-test-7.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142571449/integration-tests/integration-test-8.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142627175/integration-tests/integration-test-7.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142627175/integration-tests/integration-test-8.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142660334/integration-tests/integration-test-7.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142660334/integration-tests/integration-test-8.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142857121/integration-tests/integration-test-7.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142857121/integration-tests/integration-test-8.txt",
-        "/tmp/compression-test-1750142945136/integration-tests/integration-test-7.txt",
-        "/tmp/compression-test-1750142945136/integration-tests/integration-test-8.txt",
-        "/tmp/compression-test-1750144912305/integration-tests/integration-test-7.txt",
-        "/tmp/compression-test-1750144912305/integration-tests/integration-test-8.txt"
-      ],
-      "cumulativeSize": 469,
-      "currentFiles": [
-        "/tmp/compression-test-1750144912305/integration-tests/integration-test-8.txt"
-      ],
-      "currentSize": 34,
-      "changeDetectionMethod": "checksum",
-      "compressed": true,
-      "deduplicated": false,
-      "timeSinceFullBackup": 0.6502411111111112
+      "timeSinceFullBackup": 0.0000033333333333333333
     }
   ],
   "cumulativeFileStates": {
-    "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142571449/integration-tests/integration-test-7.txt": {
-      "filePath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142571449/integration-tests/integration-test-7.txt",
+    "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750161960750/integration-tests/integration-test-7.txt": {
+      "filePath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750161960750/integration-tests/integration-test-7.txt",
       "size": 5040,
-      "mtime": "2025-06-17T06:42:51.450Z",
+      "mtime": "2025-06-17T12:06:00.752Z",
       "contentHash": "c5af0a58a5babf28f45c0efdb6e78b904d9e4176394a98b1f977dac345aaf95b",
-      "lastBackup": "2025-06-17T06:42:51.452Z",
+      "lastBackup": "2025-06-17T12:06:00.753Z",
       "hasChanged": false
     },
-    "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142571449/integration-tests/integration-test-8.txt": {
-      "filePath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142571449/integration-tests/integration-test-8.txt",
+    "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750161960750/integration-tests/integration-test-8.txt": {
+      "filePath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750161960750/integration-tests/integration-test-8.txt",
       "size": 3024,
-      "mtime": "2025-06-17T06:42:51.464Z",
+      "mtime": "2025-06-17T12:06:00.765Z",
       "contentHash": "ff24c5ca757065f96c7c1fd81ab172f7b46a897496695999d352aaf933db6d43",
-      "lastBackup": "2025-06-17T06:42:51.464Z",
-      "hasChanged": true
-    },
-    "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142627175/integration-tests/integration-test-7.txt": {
-      "filePath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142627175/integration-tests/integration-test-7.txt",
-      "size": 5040,
-      "mtime": "2025-06-17T06:43:47.176Z",
-      "contentHash": "c5af0a58a5babf28f45c0efdb6e78b904d9e4176394a98b1f977dac345aaf95b",
-      "lastBackup": "2025-06-17T06:43:47.177Z",
-      "hasChanged": true
-    },
-    "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142627175/integration-tests/integration-test-8.txt": {
-      "filePath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142627175/integration-tests/integration-test-8.txt",
-      "size": 3024,
-      "mtime": "2025-06-17T06:43:47.189Z",
-      "contentHash": "ff24c5ca757065f96c7c1fd81ab172f7b46a897496695999d352aaf933db6d43",
-      "lastBackup": "2025-06-17T06:43:47.189Z",
-      "hasChanged": true
-    },
-    "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142660334/integration-tests/integration-test-7.txt": {
-      "filePath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142660334/integration-tests/integration-test-7.txt",
-      "size": 5040,
-      "mtime": "2025-06-17T06:44:20.336Z",
-      "contentHash": "c5af0a58a5babf28f45c0efdb6e78b904d9e4176394a98b1f977dac345aaf95b",
-      "lastBackup": "2025-06-17T06:44:20.337Z",
-      "hasChanged": true
-    },
-    "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142660334/integration-tests/integration-test-8.txt": {
-      "filePath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142660334/integration-tests/integration-test-8.txt",
-      "size": 3024,
-      "mtime": "2025-06-17T06:44:20.349Z",
-      "contentHash": "ff24c5ca757065f96c7c1fd81ab172f7b46a897496695999d352aaf933db6d43",
-      "lastBackup": "2025-06-17T06:44:20.349Z",
-      "hasChanged": true
-    },
-    "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142857121/integration-tests/integration-test-7.txt": {
-      "filePath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142857121/integration-tests/integration-test-7.txt",
-      "size": 5040,
-      "mtime": "2025-06-17T06:47:37.122Z",
-      "contentHash": "c5af0a58a5babf28f45c0efdb6e78b904d9e4176394a98b1f977dac345aaf95b",
-      "lastBackup": "2025-06-17T06:47:37.123Z",
-      "hasChanged": true
-    },
-    "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142857121/integration-tests/integration-test-8.txt": {
-      "filePath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750142857121/integration-tests/integration-test-8.txt",
-      "size": 3024,
-      "mtime": "2025-06-17T06:47:37.135Z",
-      "contentHash": "ff24c5ca757065f96c7c1fd81ab172f7b46a897496695999d352aaf933db6d43",
-      "lastBackup": "2025-06-17T06:47:37.135Z",
-      "hasChanged": true
-    },
-    "/tmp/compression-test-1750142945136/integration-tests/integration-test-7.txt": {
-      "filePath": "/tmp/compression-test-1750142945136/integration-tests/integration-test-7.txt",
-      "size": 5040,
-      "mtime": "2025-06-17T06:49:05.138Z",
-      "contentHash": "c5af0a58a5babf28f45c0efdb6e78b904d9e4176394a98b1f977dac345aaf95b",
-      "lastBackup": "2025-06-17T06:49:05.139Z",
-      "hasChanged": true
-    },
-    "/tmp/compression-test-1750142945136/integration-tests/integration-test-8.txt": {
-      "filePath": "/tmp/compression-test-1750142945136/integration-tests/integration-test-8.txt",
-      "size": 3024,
-      "mtime": "2025-06-17T06:49:05.151Z",
-      "contentHash": "ff24c5ca757065f96c7c1fd81ab172f7b46a897496695999d352aaf933db6d43",
-      "lastBackup": "2025-06-17T06:49:05.152Z",
-      "hasChanged": true
-    },
-    "/tmp/compression-test-1750144912305/integration-tests/integration-test-7.txt": {
-      "filePath": "/tmp/compression-test-1750144912305/integration-tests/integration-test-7.txt",
-      "size": 5040,
-      "mtime": "2025-06-17T07:21:52.307Z",
-      "contentHash": "c5af0a58a5babf28f45c0efdb6e78b904d9e4176394a98b1f977dac345aaf95b",
-      "lastBackup": "2025-06-17T07:21:52.308Z",
-      "hasChanged": true
-    },
-    "/tmp/compression-test-1750144912305/integration-tests/integration-test-8.txt": {
-      "filePath": "/tmp/compression-test-1750144912305/integration-tests/integration-test-8.txt",
-      "size": 3024,
-      "mtime": "2025-06-17T07:21:52.320Z",
-      "contentHash": "ff24c5ca757065f96c7c1fd81ab172f7b46a897496695999d352aaf933db6d43",
-      "lastBackup": "2025-06-17T07:21:52.321Z",
+      "lastBackup": "2025-06-17T12:06:00.766Z",
       "hasChanged": true
     }
   },
   "stats": {
-    "totalDifferentials": 11,
-    "currentChainLength": 11,
-    "cumulativeSize": 469,
-    "cumulativeSizeRatio": 8.849056603773585,
+    "totalDifferentials": 1,
+    "currentChainLength": 1,
+    "cumulativeSize": 34,
+    "cumulativeSizeRatio": 0.6415094339622641,
     "totalSpaceSaved": 0,
-    "lastBackupAt": "2025-06-17T07:21:52.321Z",
-    "timeSinceFullBackup": 0.6502411111111112
+    "lastBackupAt": "2025-06-17T12:06:00.766Z",
+    "timeSinceFullBackup": 0.0000033333333333333333
   },
-  "lastUpdated": "2025-06-17T07:21:52.321Z"
+  "lastUpdated": "2025-06-17T12:06:00.766Z"
 }
