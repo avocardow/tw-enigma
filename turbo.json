@@ -80,11 +80,7 @@
     "test:watch": {
       "cache": false,
       "persistent": true,
-      "inputs": [
-        "src/**/*.ts",
-        "tests/**/*.ts",
-        "vitest.config.ts"
-      ]
+      "inputs": ["src/**/*.ts", "tests/**/*.ts", "vitest.config.ts"]
     },
     "test:coverage": {
       "dependsOn": ["build"],
@@ -98,6 +94,48 @@
         "vitest.workspace.ts"
       ],
       "outputs": ["coverage/**"]
+    },
+    "test:unit": {
+      "dependsOn": ["build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "src/**/*.ts",
+        "tests/**/*.ts",
+        "src/**/*.js",
+        "tests/**/*.js",
+        "vitest.config.ts",
+        "vitest.workspace.ts"
+      ],
+      "outputs": ["coverage/**", "test-results.json"],
+      "env": ["NODE_ENV", "CI"]
+    },
+    "test:integration": {
+      "dependsOn": ["build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "src/**/*.ts",
+        "tests/**/*.ts",
+        "src/**/*.js",
+        "tests/**/*.js",
+        "vitest.config.ts",
+        "vitest.workspace.ts"
+      ],
+      "outputs": ["coverage/**", "test-results.json"],
+      "env": ["NODE_ENV", "CI"]
+    },
+    "test:e2e": {
+      "dependsOn": ["build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "src/**/*.ts",
+        "tests/**/*.ts",
+        "src/**/*.js",
+        "tests/**/*.js",
+        "vitest.config.ts",
+        "vitest.workspace.ts"
+      ],
+      "outputs": ["coverage/**"],
+      "env": ["NODE_ENV", "CI"]
     },
     "lint": {
       "dependsOn": ["^lint"],
@@ -115,52 +153,28 @@
     },
     "lint:fix": {
       "dependsOn": ["^lint"],
-      "inputs": [
-        "$TURBO_DEFAULT$",
-        "src/**/*.ts",
-        "src/**/*.js",
-        ".eslintrc.js",
-        "tsconfig.json"
-      ],
+      "inputs": ["$TURBO_DEFAULT$", "src/**/*.ts", "src/**/*.js", ".eslintrc.js", "tsconfig.json"],
       "outputs": [],
       "cache": false
     },
     "format": {
-      "inputs": [
-        "$TURBO_DEFAULT$",
-        "**/*.{ts,tsx,md,json}",
-        ".prettierrc*",
-        ".prettierignore"
-      ],
+      "inputs": ["$TURBO_DEFAULT$", "**/*.{ts,tsx,md,json}", ".prettierrc*", ".prettierignore"],
       "outputs": [],
       "cache": false
     },
     "format:check": {
-      "inputs": [
-        "$TURBO_DEFAULT$",
-        "**/*.{ts,tsx,md,json}",
-        ".prettierrc*",
-        ".prettierignore"
-      ],
+      "inputs": ["$TURBO_DEFAULT$", "**/*.{ts,tsx,md,json}", ".prettierrc*", ".prettierignore"],
       "outputs": []
     },
     "type-check": {
       "dependsOn": ["^build"],
-      "inputs": [
-        "$TURBO_DEFAULT$",
-        "src/**/*.ts",
-        "tsconfig.json",
-        "tsconfig.base.json"
-      ],
+      "inputs": ["$TURBO_DEFAULT$", "src/**/*.ts", "tsconfig.json", "tsconfig.base.json"],
       "outputs": []
     },
     "dev": {
       "cache": false,
       "persistent": true,
-      "inputs": [
-        "src/**/*.ts",
-        "package.json"
-      ]
+      "inputs": ["src/**/*.ts", "package.json"]
     },
     "clean": {
       "cache": false,
@@ -183,18 +197,8 @@
     "pnpm-workspace.yaml",
     "turbo.json"
   ],
-  "globalEnv": [
-    "NODE_ENV",
-    "CI",
-    "TURBO_TOKEN",
-    "TURBO_TEAM"
-  ],
-  "globalPassThroughEnv": [
-    "PATH",
-    "HOME",
-    "USER",
-    "SHELL"
-  ],
+  "globalEnv": ["NODE_ENV", "CI", "TURBO_TOKEN", "TURBO_TEAM"],
+  "globalPassThroughEnv": ["PATH", "HOME", "USER", "SHELL"],
   "remoteCache": {
     "signature": false,
     "enabled": true,
