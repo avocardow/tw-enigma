@@ -72,6 +72,12 @@ async function safeImport<T = any>(modulePath: string, fallback: T): Promise<T> 
 
 // Main CLI function with improved error handling
 async function main(): Promise<void> {
+  // Always log basic info for CI debugging - this should always appear
+  console.error(`[CLI-DEBUG] Starting CLI with args: [${process.argv.slice(2).join(', ')}]`);
+  console.error(`[CLI-DEBUG] Process argv length: ${process.argv.length}`);
+  console.error(`[CLI-DEBUG] CI environment: ${process.env.CI || 'not set'}`);
+  console.error(`[CLI-DEBUG] Node version: ${process.version}`);
+
   try {
     // Load external dependencies with fallbacks
     const chalk = await safeImport('chalk', {
@@ -364,11 +370,18 @@ async function main(): Promise<void> {
 
     // Parse arguments with error handling
     try {
+      console.error(`[CLI-DEBUG] About to parse args. Length: ${process.argv.length}`);
+      console.error(
+        `[CLI-DEBUG] Available commands: ${program.commands.map((cmd: any) => cmd.name()).join(', ')}`
+      );
+
       // Handle case where no arguments are provided
       if (process.argv.length <= 2) {
+        console.error(`[CLI-DEBUG] No args provided, showing help`);
         // No arguments provided, run default action
         program.parse([process.argv[0], process.argv[1], '--help']);
       } else {
+        console.error(`[CLI-DEBUG] Parsing args: ${process.argv.slice(2).join(' ')}`);
         program.parse(process.argv);
       }
     } catch (parseError) {
