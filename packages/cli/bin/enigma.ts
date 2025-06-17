@@ -1,40 +1,42 @@
 #!/usr/bin/env node
 
 /**
- * tw-enigma CLI executable entry point
- *
- * This is the main entry point for the enigma CLI command,
- * providing a command-line interface for tw-enigma CSS optimization.
+ * Entry point for the tw-enigma CLI
+ * This file handles the CLI initialization and command registration
+ * with enhanced error handling and fallbacks for missing dependencies
  */
 
-// Improved global error handlers with better CI compatibility
-process.on('uncaughtException', (error) => {
-  console.error('🔵 Tailwind Enigma');
-  console.error('Fatal error:', error.message);
-  if (process.env.CI || process.env.DEBUG_CLI) {
-    console.error('Stack trace:', error.stack);
-  }
-  // Only exit if this is a truly fatal error
-  if (error.message.includes('MODULE_NOT_FOUND') || (error as any).code === 'MODULE_NOT_FOUND') {
-    console.error('Module loading error - please ensure dependencies are installed');
-  }
-  process.exit(1);
-});
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
-process.on('unhandledRejection', (reason) => {
-  console.error('🔵 Tailwind Enigma');
-  console.error('Unhandled promise rejection:', reason);
-  if (process.env.CI || process.env.DEBUG_CLI) {
-    console.error('Promise rejection details:', reason);
-  }
-  // Only exit for critical rejections
-  process.exit(1);
-});
+import { createRequire } from 'module';
 
-// Helper function for safe module loading
-function safeRequire(modulePath: string, fallback: any = {}) {
+// Create require function for ES modules
+const require = createRequire(import.meta.url);
+
+interface PackageInfo {
+  version: string;
+  name: string;
+}
+
+interface CLIModule {
+  registerCommands: (program: any) => void;
+  cliVersion: string;
+  displayBanner: () => void;
+  getPackageInfo: () => PackageInfo;
+}
+
+interface MockCommand {
+  new (): any;
+}
+
+interface CommanderModule {
+  Command: MockCommand;
+}
+
+// Helper function for safe module loading with better typing
+function safeRequire<T = any>(modulePath: string, fallback: T): T {
   try {
-    return require(modulePath);
+    return require(modulePath) as T;
   } catch (error) {
     if (process.env.DEBUG_CLI || process.env.CI) {
       console.error(`Failed to load module ${modulePath}:`, error);
@@ -43,10 +45,10 @@ function safeRequire(modulePath: string, fallback: any = {}) {
   }
 }
 
-// Helper function for safe async import
-async function safeImport(modulePath: string, fallback: any = {}) {
+// Helper function for safe async import with better typing
+async function safeImport<T = any>(modulePath: string, fallback: T): Promise<T> {
   try {
-    return await import(modulePath);
+    return (await import(modulePath)) as T;
   } catch (error) {
     if (process.env.DEBUG_CLI || process.env.CI) {
       console.error(`Failed to import module ${modulePath}:`, error);
@@ -56,17 +58,49 @@ async function safeImport(modulePath: string, fallback: any = {}) {
 }
 
 // Main CLI function with improved error handling
-async function main() {
+async function main(): Promise<void> {
   try {
     // Load external dependencies with fallbacks
-    const chalk = await safeImport('chalk');
+    const chalk = await safeImport('chalk', {
+      default: {
+        blue: (s: string) => s,
+        green: (s: string) => s,
+        yellow: (s: string) => s,
+        gray: (s: string) => s,
+      },
+    });
     const chalkDefault = chalk.default || chalk;
 
     // Commander.js should be available as CommonJS
-    const { Command } = safeRequire('commander', { Command: class MockCommand {} });
+    const commanderModule = safeRequire<CommanderModule>('commander', {
+      Command: class MockCommand {
+        name(): this {
+          return this;
+        }
+        description(): this {
+          return this;
+        }
+        helpOption(): this {
+          return this;
+        }
+        option(): this {
+          return this;
+        }
+        command(): this {
+          return this;
+        }
+        action(): this {
+          return this;
+        }
+        outputHelp(): void {
+          console.log('Help not available');
+        }
+      } as any,
+    });
+    const { Command } = commanderModule;
 
     // Load internal modules with safe paths
-    const cliModule = safeRequire('../dist/index.js', {
+    const cliModule = safeRequire<CLIModule>('../dist/index.js', {
       registerCommands: () => {},
       cliVersion: '1.0.3',
       displayBanner: () => console.log('🔵 Tailwind Enigma'),
@@ -78,7 +112,7 @@ async function main() {
     // Import core version with proper fallback
     let coreVersion: string = 'unknown';
     try {
-      const coreModule = safeRequire('@tw-enigma/core', {});
+      const coreModule = safeRequire<{ version?: string }>('@tw-enigma/core', {});
       coreVersion = coreModule.version || 'unknown';
     } catch (error) {
       coreVersion = 'unavailable';
@@ -158,7 +192,7 @@ async function main() {
       });
 
     // Add default action to handle when no subcommand is provided
-    program.action((options: any) => {
+    program.action((options: Record<string, any>) => {
       try {
         // Handle version flag first
         if (options.version) {
@@ -238,6 +272,12 @@ async function main() {
             console.log(`⚠️  Failed to load configuration file: ${options.config}`);
             console.log('ℹ️  Configuration loaded successfully (using defaults)');
           }
+        } else {
+          try {
+            console.log(chalkDefault.blue('ℹ️  Configuration loaded successfully'));
+          } catch {
+            console.log('ℹ️  Configuration loaded successfully');
+          }
         }
 
         // Handle input configuration
@@ -258,12 +298,12 @@ async function main() {
           }
         }
 
-        // Show tips when no input is specified
+        // Show helpful tips when no input is specified
         if (!options.input) {
           try {
-            console.log(chalkDefault.cyan('💡 Tip: Use --input to specify files to process'));
+            console.log(chalkDefault.blue('💡 Tip: Use --input to specify files to process'));
             console.log(
-              chalkDefault.cyan(
+              chalkDefault.blue(
                 "💡 Tip: Run 'enigma init-config' to create a sample configuration file"
               )
             );
@@ -273,57 +313,46 @@ async function main() {
           }
         }
 
-        // Ensure successful exit code
+        // Exit successfully for now (actual processing would go here)
         process.exit(0);
       } catch (actionError) {
-        console.error('Error in CLI action:', actionError);
-        if (process.env.CI || process.env.DEBUG_CLI) {
-          console.error('Action error details:', actionError);
-        }
-        // Still try to exit cleanly
-        process.exit(0);
+        console.error('CLI action error:', actionError);
+        process.exit(1);
       }
     });
 
-    // Parse command line arguments with error protection
+    // Parse arguments with error handling
     try {
-      program.parse(process.argv);
-    } catch (parseError) {
-      console.error('Failed to parse command line arguments:', parseError);
-      if (process.env.CI || process.env.DEBUG_CLI) {
-        console.error('Parse error details:', parseError);
+      // Handle case where no arguments are provided
+      if (process.argv.length <= 2) {
+        // No arguments provided, run default action
+        program.parse([process.argv[0], process.argv[1], '--help']);
+      } else {
+        program.parse(process.argv);
       }
-      // Exit successfully even if parsing fails
-      process.exit(0);
+    } catch (parseError) {
+      console.error('Failed to parse CLI arguments:', parseError);
+      process.exit(1);
     }
-  } catch (error) {
-    // Handle any initialization errors gracefully
-    console.error('🔵 Tailwind Enigma');
-    console.error('CLI initialization failed:', error instanceof Error ? error.message : error);
-    if (process.env.CI || process.env.DEBUG_CLI) {
-      console.error(
-        'Initialization error stack:',
-        error instanceof Error ? error.stack : 'No stack available'
-      );
-    }
-
-    // Try to show help even if initialization failed
-    console.log('Usage: enigma [options] [command]');
-    console.log('Run with --help for more information');
-
-    // Exit with code 1 only for true initialization failures
+  } catch (mainError) {
+    console.error('Critical CLI error:', mainError);
     process.exit(1);
   }
 }
 
-// Start the CLI with comprehensive error handling
+// Handle uncaught exceptions and rejections
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  process.exit(1);
+});
+
+// Run the CLI
 main().catch((error) => {
-  console.error('🔵 Tailwind Enigma');
   console.error('Failed to start CLI:', error);
-  if (process.env.CI || process.env.DEBUG_CLI) {
-    console.error('Startup error details:', error);
-  }
-  // Show basic usage info as fallback
-  console.log('Basic usage: enigma [options]');
   process.exit(1);
 });

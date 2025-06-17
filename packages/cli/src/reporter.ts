@@ -16,6 +16,15 @@ export interface ReporterConfig {
   includeRecommendations?: boolean;
 }
 
+export interface PatternData {
+  name?: string;
+  frequency?: number;
+  sizeSavings?: number;
+  type?: string;
+  size?: number;
+  [key: string]: unknown;
+}
+
 export interface PatternStats {
   patternName: string;
   frequency: number;
@@ -56,6 +65,41 @@ export interface ReporterStats {
   lastReportTime?: number;
 }
 
+export interface PatternBreakdown {
+  [key: string]: {
+    count: number;
+    totalSavings: number;
+  };
+}
+
+export interface PerformanceMetrics {
+  executionTime: number;
+  memoryUsage: number;
+  filesProcessed: number;
+  throughput: number;
+  avgProcessingTime: number;
+  memoryEfficiency: number;
+}
+
+export interface GeneratedReport {
+  metadata: {
+    timestamp: number;
+    reportId: string;
+    version: string;
+    environment: string;
+    generatorConfig: Required<ReporterConfig>;
+  };
+  sizeMetrics: SizeReduction;
+  compressionMetrics: CompressionMetrics;
+  optimizationSavings: OptimizationSavings;
+  performanceMetrics: PerformanceMetrics;
+  patternStats: PatternStats[];
+  recommendations: string[];
+  warnings: string[];
+  rawData: ReportData;
+  timestamp: number;
+}
+
 export interface ReportData {
   originalSize?: number;
   optimizedSize?: number;
@@ -63,8 +107,9 @@ export interface ReportData {
   executionTime?: number;
   memoryUsage?: number;
   filesProcessed?: number;
-  patterns?: Array<Record<string, unknown>>;
+  patterns?: PatternData[];
   files?: Array<Record<string, number>>;
+  errors?: string[];
   timestamp?: number;
   [key: string]: unknown;
 }
@@ -178,14 +223,17 @@ export default class Reporter {
     try {
       return patterns
         .filter((pattern: unknown) => pattern && typeof pattern === 'object') // Filter out invalid patterns
-        .map((pattern) => ({
-          patternName: ((pattern as any).name as string) || 'Unknown Pattern',
-          frequency: ((pattern as any).frequency as number) || 0,
-          sizeSavings: ((pattern as any).sizeSavings as number) || 0,
-          efficiency: this.calculatePatternEfficiency(pattern as Record<string, unknown>),
-          type: ((pattern as any).type as string) || 'utility',
-          size: ((pattern as any).size as number) || 0,
-        }))
+        .map((pattern) => {
+          const patternData = pattern as PatternData;
+          return {
+            patternName: patternData.name || 'Unknown Pattern',
+            frequency: patternData.frequency || 0,
+            sizeSavings: patternData.sizeSavings || 0,
+            efficiency: this.calculatePatternEfficiency(patternData),
+            type: patternData.type || 'utility',
+            size: patternData.size || 0,
+          };
+        })
         .sort((a: PatternStats, b: PatternStats) => b.sizeSavings - a.sizeSavings); // Sort by savings descending
     } catch {
       // Gracefully handle any errors during pattern processing
@@ -193,13 +241,16 @@ export default class Reporter {
     }
   }
 
-  calculatePatternEfficiency(pattern: Record<string, unknown>): number {
-    if (pattern.frequency === 0 || pattern.size === 0) {
+  calculatePatternEfficiency(pattern: PatternData): number {
+    const frequency = pattern.frequency || 0;
+    const size = pattern.size || 0;
+    const sizeSavings = pattern.sizeSavings || 0;
+
+    if (frequency === 0 || size === 0) {
       return 0;
     }
 
-    const efficiency =
-      (pattern.sizeSavings as number) / (pattern.frequency as number) / (pattern.size as number);
+    const efficiency = sizeSavings / frequency / size;
     return Math.min(efficiency, 1.0); // Cap at 1.0
   }
 
@@ -276,7 +327,7 @@ export default class Reporter {
     return `${size.toFixed(1)}${units[unitIndex]}`;
   }
 
-  report(data: any): string {
+  report(data: ReportData): string {
     this.addReport(data);
 
     switch (this.config.format) {
@@ -289,8 +340,8 @@ export default class Reporter {
     }
   }
 
-  generatePatternBreakdown(patterns: PatternStats[]): any {
-    const breakdown: any = {
+  generatePatternBreakdown(patterns: PatternStats[]): PatternBreakdown {
+    const breakdown: PatternBreakdown = {
       utility: { count: 0, totalSavings: 0 },
       component: { count: 0, totalSavings: 0 },
       layout: { count: 0, totalSavings: 0 },
@@ -310,7 +361,7 @@ export default class Reporter {
     return breakdown;
   }
 
-  calculatePerformanceMetrics(data: any): any {
+  calculatePerformanceMetrics(data: ReportData): PerformanceMetrics {
     const executionTime = data.executionTime || 0;
     const filesProcessed = data.filesProcessed || 0;
     const memoryUsage = data.memoryUsage || process.memoryUsage().heapUsed;
@@ -326,7 +377,7 @@ export default class Reporter {
     };
   }
 
-  generateReport(data: any): any {
+  generateReport(data: ReportData): GeneratedReport {
     if (!data) {
       throw new Error('Failed to generate report: No data provided');
     }
@@ -373,7 +424,7 @@ export default class Reporter {
     return storedReport;
   }
 
-  generateRecommendations(data: any): string[] {
+  generateRecommendations(data: ReportData): string[] {
     const recommendations: string[] = [];
 
     if (!data) {
@@ -425,7 +476,7 @@ export default class Reporter {
     }
 
     // File size based recommendations - check if we have large files OR large total size
-    if (data.files && data.files.some((f: any) => f.originalSize > 100000)) {
+    if (data.files && data.files.some((f: Record<string, number>) => f.originalSize > 100000)) {
       recommendations.push('Large CSS files detected - consider code splitting or lazy loading');
     } else if (data.originalSize && data.originalSize > 500000) {
       // 500KB threshold
@@ -435,7 +486,7 @@ export default class Reporter {
     return recommendations;
   }
 
-  generateWarnings(data: any): string[] {
+  generateWarnings(data: ReportData): string[] {
     const warnings: string[] = [];
 
     if (!data) {
@@ -513,7 +564,7 @@ export default class Reporter {
     }
   }
 
-  displayReport(report: any, format?: string): string {
+  displayReport(report: GeneratedReport, format?: string): string {
     const outputFormat = format || this.config.format;
 
     switch (outputFormat) {
@@ -526,12 +577,12 @@ export default class Reporter {
       case 'html':
         return this.generateHTML(report);
       case 'all':
-        return {
+        return JSON.stringify({
           console: this.generateSummary(report.rawData || report),
           json: JSON.stringify(report, null, 2),
           markdown: this.generateMarkdown(report),
           html: this.generateHTML(report),
-        } as any;
+        });
       default:
         if (outputFormat !== 'console') {
           throw new Error(`Unsupported format: ${outputFormat}`);
@@ -544,7 +595,7 @@ export default class Reporter {
     this.reports.length = 0;
   }
 
-  private generateMarkdown(report: any): string {
+  private generateMarkdown(report: GeneratedReport): string {
     let markdown = '# Optimization Report\n\n';
 
     if (report.sizeMetrics) {
@@ -570,7 +621,7 @@ export default class Reporter {
     return markdown;
   }
 
-  private generateHTML(report: any): string {
+  private generateHTML(report: GeneratedReport): string {
     let html = '<!DOCTYPE html><html><head><title>Optimization Report</title></head><body>';
     html += '<h1>📊 Optimization Report</h1>';
 
@@ -596,7 +647,7 @@ export default class Reporter {
     return html;
   }
 
-  private generateCSV(data: any): string {
+  private generateCSV(data: ReportData): string {
     // Simple CSV generation for basic data
     const headers = ['metric', 'value'];
     const rows = [
