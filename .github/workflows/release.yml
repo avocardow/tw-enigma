@@ -339,6 +339,36 @@ jobs:
             git push origin "$version"
           fi
 
+      - name: Debug NPM Authentication
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          echo "Debugging NPM authentication..."
+          echo "NODE_AUTH_TOKEN length: ${#NODE_AUTH_TOKEN}"
+
+          # Check if token exists
+          if [ -z "$NODE_AUTH_TOKEN" ]; then
+            echo "❌ NODE_AUTH_TOKEN is empty or not set"
+            echo "Please ensure NPM_TOKEN secret is configured in repository settings"
+            exit 1
+          fi
+
+          # Configure npm registry with token
+          echo "Configuring npm registry..."
+          echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > ~/.npmrc
+          echo "registry=https://registry.npmjs.org/" >> ~/.npmrc
+          echo "access=public" >> ~/.npmrc
+
+          # Test npm authentication
+          echo "Testing npm authentication..."
+          if npm whoami; then
+            echo "✅ NPM authentication successful"
+          else
+            echo "❌ NPM authentication failed"
+            echo "Token may be invalid or expired"
+            exit 1
+          fi
+
       - name: Publish to npm
         id: publish
         env:
