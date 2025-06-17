@@ -145,13 +145,17 @@ async function main(): Promise<void> {
       }
     }
 
+    console.log(`[CLI-DEBUG] Attempting to load CLI module from: ${indexPath}`);
     const cliModule = safeRequire<CLIModule>(indexPath, {
-      registerCommands: () => {},
+      registerCommands: () => {
+        console.log('[CLI-DEBUG] FALLBACK: Using empty registerCommands (module load failed)');
+      },
       cliVersion: '0.1.0',
       displayBanner: () =>
         console.log('🎨 @tw-enigma/cli v0.1.0\nIntelligent CSS optimization engine'),
       getPackageInfo: () => ({ version: '0.1.0', name: '@tw-enigma/cli' }),
     });
+    console.log(`[CLI-DEBUG] CLI module loaded successfully: ${!!cliModule.registerCommands}`);
 
     const { registerCommands, cliVersion, displayBanner, getPackageInfo } = cliModule;
 
@@ -212,7 +216,9 @@ async function main(): Promise<void> {
 
     // Register all commands with error protection
     try {
+      console.log('[CLI-DEBUG] Calling registerCommands...');
       registerCommands(program);
+      console.log('[CLI-DEBUG] registerCommands completed');
 
       // Verify commands were registered (for CI debugging)
       if (process.env.CI) {
