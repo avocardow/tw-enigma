@@ -9,12 +9,6 @@ import { createSampleConfig } from '@tw-enigma/core';
 import { Command } from 'commander';
 import { addCommonOptions, createLoggerFromArgv, handleCLIError } from '../utils';
 
-// Interface for init-config command options
-interface InitConfigOptions {
-  config?: string;
-  optsWithGlobals(): any;
-}
-
 /**
  * Create and configure the init-config command
  */

@@ -20,7 +20,7 @@ try {
     __filename = fileURLToPath(import.meta.url);
     __dirname = dirname(__filename);
   }
-} catch (error) {
+} catch {
   // Use defaults already set above
 }
 
