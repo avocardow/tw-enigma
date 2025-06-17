@@ -346,12 +346,24 @@ jobs:
         run: |
           echo "Publishing packages to npm..."
 
+          # Debug: Show current directory and package structure
+          echo "Current directory: $(pwd)"
+          echo "Packages found:"
+          ls -la packages/
+
           # Publish packages
           published_packages=""
           for package in packages/*; do
+            echo "Processing package: $package"
             if [ -d "$package" ] && [ -f "$package/package.json" ]; then
-              package_name=$(node -p "require('$package/package.json').name")
-              package_version=$(node -p "require('$package/package.json').version")
+              echo "Package directory and package.json found for: $package"
+
+              # Use absolute path for require
+              package_json_path="$(pwd)/$package/package.json"
+              echo "Reading package.json from: $package_json_path"
+
+              package_name=$(node -p "require('$package_json_path').name")
+              package_version=$(node -p "require('$package_json_path').version")
 
               echo "Publishing $package_name@$package_version..."
               cd "$package"
@@ -365,6 +377,8 @@ jobs:
               fi
 
               cd ../..
+            else
+              echo "Skipping $package: not a directory or missing package.json"
             fi
           done
 
