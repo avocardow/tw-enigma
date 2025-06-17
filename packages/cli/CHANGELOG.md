@@ -1,5 +1,16 @@
 # Changelog - @tw-enigma/cli
 
+## 1.0.0
+
+### Major Changes
+
+- Manual release triggered via workflow dispatch
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @tw-enigma/core@1.0.0
+
 All notable changes to the @tw-enigma/cli package will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
@@ -8,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
 - Command-line interface migrated to dedicated @tw-enigma/cli package
 - Commander.js-based command structure for better CLI experience
 - Comprehensive utilities for file operations and validation
@@ -17,12 +29,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Progress reporting and verbose output options
 
 ### Changed
+
 - Migrated from yargs to commander.js for improved CLI structure
 - Restructured command organization for better usability
 - Enhanced output formatting and user experience
 - Improved error messages with actionable suggestions
 
 ### Fixed
+
 - Command option parsing edge cases
 - Error handling in file operations
 - Path resolution issues across platforms
@@ -31,25 +45,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0] - 2024-12-XX
 
 ### Added
+
 - **Core CLI Infrastructure**
+
   - Commander.js-based command framework
   - Modular command structure for extensibility
   - Consistent command-line interface patterns
   - Help system with detailed command documentation
 
 - **Configuration Commands**
+
   - `init-config`: Initialize Enigma configuration for projects
   - `css-config`: Configure CSS generation settings
   - Configuration template support
   - Validation and error reporting for configurations
 
 - **Optimization Commands**
+
   - Integration with @tw-enigma/core optimization engine
   - Project-wide CSS optimization
   - Watch mode for development workflows
   - Progress reporting and metrics display
 
 - **Utility Features**
+
   - File discovery and validation utilities
   - Path manipulation and normalization
   - Cross-platform compatibility
@@ -66,6 +85,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Configuration Commands
 
 ##### `init-config`
+
 Initialize Enigma configuration for a project.
 
 ```bash
@@ -79,6 +99,7 @@ Options:
 ```
 
 ##### `css-config`
+
 Configure CSS generation settings.
 
 ```bash
@@ -94,6 +115,7 @@ Options:
 #### Utility Commands
 
 ##### `version`
+
 Display version information.
 
 ```bash
@@ -102,6 +124,7 @@ npx @tw-enigma/cli -V
 ```
 
 ##### `help`
+
 Display help information for commands.
 
 ```bash
@@ -112,6 +135,7 @@ npx @tw-enigma/cli <command> --help
 ### CLI Utilities
 
 #### Version Information
+
 ```typescript
 import { version, cliVersion, name } from '@tw-enigma/cli';
 
@@ -119,6 +143,7 @@ console.log(`${name} v${version}`);
 ```
 
 #### Command Registration
+
 ```typescript
 import { registerCommands } from '@tw-enigma/cli';
 import { Command } from 'commander';
@@ -150,11 +175,11 @@ npx @tw-enigma/cli css-config --strategy mixed
 
 #### Command Mapping
 
-| Legacy Command | New Command | Notes |
-|---|---|---|
-| `tw-enigma init` | `@tw-enigma/cli init-config` | Enhanced configuration options |
-| `tw-enigma optimize` | Integration with @tw-enigma/core | Use programmatic API |
-| `tw-enigma config` | `@tw-enigma/cli css-config` | Separated configuration commands |
+| Legacy Command       | New Command                      | Notes                            |
+| -------------------- | -------------------------------- | -------------------------------- |
+| `tw-enigma init`     | `@tw-enigma/cli init-config`     | Enhanced configuration options   |
+| `tw-enigma optimize` | Integration with @tw-enigma/core | Use programmatic API             |
+| `tw-enigma config`   | `@tw-enigma/cli css-config`      | Separated configuration commands |
 
 ### Installation
 
@@ -228,11 +253,13 @@ npx @tw-enigma/cli css-config \
 ### Dependencies
 
 #### Runtime Dependencies
+
 - `commander`: Command-line interface framework
 - `@tw-enigma/core`: Core optimization engine integration
 - Other utilities for file operations and validation
 
 #### Development Dependencies
+
 - `typescript`: TypeScript compiler
 - `vitest`: Testing framework
 - `@types/node`: Node.js type definitions
@@ -291,4 +318,4 @@ When contributing to the CLI package:
 
 ---
 
-For more information about @tw-enigma/cli, see the [API Reference](../../docs/API_REFERENCE.md) and [CLI Usage Examples](../../examples/cli/README.md). 
+For more information about @tw-enigma/cli, see the [API Reference](../../docs/API_REFERENCE.md) and [CLI Usage Examples](../../examples/cli/README.md).
