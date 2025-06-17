@@ -1,10 +1,10 @@
 import { defineConfig } from 'tsup';
 
 export default defineConfig([
-  // Build src/index.ts without shebang
+  // Build src/index.ts as ES module
   {
     entry: ['src/index.ts'],
-    format: ['cjs'],
+    format: ['esm'],
     dts: {
       compilerOptions: {
         incremental: false,
@@ -18,10 +18,10 @@ export default defineConfig([
     minify: false,
     external: ['@tw-enigma/core'],
   },
-  // Build bin/enigma.ts with shebang
+  // Build bin/enigma.ts as ES module (no banner since source has shebang)
   {
     entry: ['bin/enigma.ts'],
-    format: ['cjs'],
+    format: ['esm'],
     dts: {
       compilerOptions: {
         incremental: false,

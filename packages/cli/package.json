@@ -1,6 +1,7 @@
 {
   "name": "@tw-enigma/cli",
   "version": "0.1.0",
+  "type": "module",
   "description": "Command-line interface for tw-enigma CSS optimization",
   "bin": {
     "enigma": "dist/enigma.js"

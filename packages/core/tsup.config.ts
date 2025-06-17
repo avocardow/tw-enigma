@@ -7,12 +7,27 @@ export default defineConfig({
     compilerOptions: {
       incremental: false,
       composite: false,
-    }
+    },
   },
   splitting: false,
   sourcemap: true,
   clean: true,
   target: 'es2020',
   minify: false,
-  external: [],
-}); 
+  external: [
+    // External dependencies that should not be bundled
+    'postcss',
+    'tailwindcss',
+    '@babel/parser',
+    '@babel/traverse',
+    '@babel/generator',
+    '@babel/types',
+    // Node.js built-ins
+    'fs',
+    'path',
+    'crypto',
+    'util',
+    'stream',
+    'events',
+  ],
+});

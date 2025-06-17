@@ -10,9 +10,9 @@
  * External Tailwind CSS plugin for integrating optimized classes into development workflows
  */
 
-import plugin from 'tailwindcss/plugin';
 import fs from 'fs';
 import path from 'path';
+import plugin from 'tailwindcss/plugin.js';
 
 /**
  * Default configuration for the Tailwind Enigma plugin
@@ -486,4 +486,4 @@ const tailwindEnigmaPlugin = plugin.withOptions((options = {}) => {
 export default tailwindEnigmaPlugin;
 
 // Also export configuration helpers
-export { defaultConfig, loadPatternData, generateUtilitiesFromPatterns };
+export { defaultConfig, generateUtilitiesFromPatterns, loadPatternData };

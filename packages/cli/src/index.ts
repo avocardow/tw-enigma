@@ -98,6 +98,31 @@ export function getPackageInfo(): PackageJson {
 }
 
 /**
+ * Main CLI function that creates and runs the CLI application
+ */
+export async function cli(): Promise<void> {
+  try {
+    // Create the main program
+    const program = new Command();
+
+    // Set program info
+    program
+      .name('enigma')
+      .version(packageJson.version, '-v, --version', 'Display version number')
+      .description(`🎨 ${packageJson.name} - Intelligent CSS optimization engine`);
+
+    // Register all commands
+    registerCommands(program);
+
+    // Parse command line arguments
+    await program.parseAsync(process.argv);
+  } catch (error) {
+    console.error('CLI Error:', error);
+    process.exit(1);
+  }
+}
+
+/**
  * Default export with essential CLI information
  */
 export default {
