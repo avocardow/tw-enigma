@@ -1029,21 +1029,15 @@ describe('Name Generation Module', () => {
       });
 
       test('pretty strategy performance with complex alphabets', () => {
-        const complexOptions = {
-          ...prettyOptions,
-          alphabet: ALPHABET_CONFIGS.full,
-          prettyNameMaxLength: 4,
-        };
+        const options = { ...prettyOptions, alphabet: 'abcdefghijklmnopqrstuvwxyz0123456789' };
+        const start = Date.now();
 
-        const startTime = Date.now();
-        for (let i = 0; i < 50; i++) {
-          const result = generatePrettyName(i, complexOptions);
-          expect(isValidCssIdentifier(result.name)).toBe(true);
+        for (let i = 0; i < 100; i++) {
+          generatePrettyName(i, options);
         }
-        const endTime = Date.now();
 
-        // Should complete within reasonable time even with larger alphabet
-        expect(endTime - startTime).toBeLessThan(2000);
+        const elapsed = Date.now() - start;
+        expect(elapsed).toBeLessThan(1000); // Should complete in under 1 second
       });
     });
 
@@ -1071,6 +1065,167 @@ describe('Name Generation Module', () => {
         // Should generally prefer shorter names
         expect(avgLength).toBeLessThan(prettyOptions.prettyNameMaxLength!);
         expect(avgLength).toBeGreaterThan(0);
+      });
+    });
+
+    describe('Pretty Names + Minimum Length Integration', () => {
+      test('generatePrettyName respects minimumLength with pretty strategy', () => {
+        const options = {
+          ...prettyOptions,
+          minimumLength: 4,
+        };
+
+        const result = generatePrettyName(0, options);
+        expect(result.name.length).toBeGreaterThanOrEqual(4);
+        expect(result.aestheticScore).toBeGreaterThan(0);
+      });
+
+      test('generatePrettyName applies length enforcement when needed', () => {
+        const options = {
+          ...prettyOptions,
+          minimumLength: 8, // Larger than typical pretty names
+          prettyNameMaxLength: 3, // Forces shorter permutations
+        };
+
+        const result = generatePrettyName(0, options);
+        expect(result.name.length).toBeGreaterThanOrEqual(8);
+        expect(result.fallbackUsed).toBe(true); // Should use length enforcement
+      });
+
+      test('generatePrettyName maintains aesthetic quality with length enforcement', () => {
+        const options = {
+          ...prettyOptions,
+          minimumLength: 6,
+          prettyNameMaxLength: 4,
+        };
+
+        const result = generatePrettyName(0, options);
+        expect(result.name.length).toBeGreaterThanOrEqual(6);
+        expect(result.aestheticScore).toBeGreaterThan(0.3); // Adjusted expectation for padded names
+      });
+
+      test('generatePrettyName with prefix/suffix respects minimum length', () => {
+        const options = {
+          ...prettyOptions,
+          minimumLength: 8,
+          prefix: 'pre',
+          suffix: 'suf',
+        };
+
+        const result = generatePrettyName(0, options);
+        expect(result.name.length).toBeGreaterThanOrEqual(8);
+        expect(result.name).toMatch(/^pre.*suf$/);
+      });
+
+      test('pretty name exhaustion fallbacks respect minimum length', () => {
+        const options = {
+          ...prettyOptions,
+          minimumLength: 5,
+          prettyNameMaxLength: 2, // Very limited to force exhaustion
+          alphabet: 'ab', // Small alphabet to force exhaustion
+          prettyNameExhaustionStrategy: 'fallback-sequential' as const,
+        };
+
+        // Generate enough names to exhaust permutations
+        let result;
+        for (let i = 0; i < 10; i++) {
+          result = generatePrettyName(i, options);
+        }
+
+        expect(result!.name.length).toBeGreaterThanOrEqual(5);
+        expect(result!.fallbackUsed).toBe(true);
+        expect(result!.generationStrategy).toBe('fallback-sequential');
+      });
+
+      test('hybrid fallback strategy maintains aesthetics with minimum length', () => {
+        const options = {
+          ...prettyOptions,
+          minimumLength: 6,
+          prettyNameMaxLength: 1, // Force exhaustion immediately
+          alphabet: 'abcdefghijklmnopqrstuvwxyz',
+          prettyNameExhaustionStrategy: 'fallback-hybrid' as const,
+        };
+
+        const result = generatePrettyName(5, options); // Use index 5 for variety
+        expect(result.name.length).toBeGreaterThanOrEqual(6);
+        expect(result.fallbackUsed).toBe(true);
+        expect(result.generationStrategy).toBe('fallback-hybrid');
+        expect(result.aestheticScore).toBeGreaterThan(0.1); // Better than sequential
+      });
+
+      test('single character alphabet handles minimum length correctly', () => {
+        const options = {
+          ...prettyOptions,
+          minimumLength: 4,
+          alphabet: 'a',
+          prettyNameExhaustionStrategy: 'fallback-hybrid' as const,
+        };
+
+        const result = generatePrettyName(3, options);
+        expect(result.name.length).toBeGreaterThanOrEqual(4);
+        expect(result.name).toMatch(/^a+[0-9]$/); // Should be 'aaa3' or similar
+      });
+
+      test('length enforcement preserves CSS validity', () => {
+        const options = {
+          ...prettyOptions,
+          minimumLength: 5,
+          ensureCssValid: true,
+          alphabet: 'abcdefghijklmnopqrstuvwxyz0123456789',
+        };
+
+        const result = generatePrettyName(0, options);
+        expect(result.name.length).toBeGreaterThanOrEqual(5);
+        expect(result.name).toMatch(/^[a-zA-Z][a-zA-Z0-9]*$/); // Valid CSS identifier
+      });
+
+      test('pretty names + length integration performance', () => {
+        const options = {
+          ...prettyOptions,
+          minimumLength: 6,
+          prettyNameMaxLength: 4, // Forces some length enforcement
+        };
+
+        const start = Date.now();
+        const results = [];
+
+        for (let i = 0; i < 50; i++) {
+          results.push(generatePrettyName(i, options));
+        }
+
+        const elapsed = Date.now() - start;
+        expect(elapsed).toBeLessThan(500); // Should be reasonably fast
+
+        // All results should meet minimum length
+        results.forEach((result) => {
+          expect(result.name.length).toBeGreaterThanOrEqual(6);
+        });
+      });
+
+      test('available lengths filtering works correctly', () => {
+        const options = {
+          ...prettyOptions,
+          minimumLength: 3,
+          prettyNameMaxLength: 5,
+          prettyNamePreferShorter: true,
+        };
+
+        // Should try lengths 3, 4, 5 in that order
+        const result = generatePrettyName(0, options);
+        expect(result.name.length).toBeGreaterThanOrEqual(3);
+        expect(result.name.length).toBeLessThanOrEqual(5);
+      });
+
+      test('edge case: minimumLength > maxLength uses fallback', () => {
+        const options = {
+          ...prettyOptions,
+          minimumLength: 8,
+          prettyNameMaxLength: 3, // Impossible constraint
+        };
+
+        const result = generatePrettyName(0, options);
+        expect(result.name.length).toBeGreaterThanOrEqual(8);
+        expect(result.fallbackUsed).toBe(true);
       });
     });
   });

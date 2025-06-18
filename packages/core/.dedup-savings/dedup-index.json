@@ -1,15 +1,15 @@
 {
   "version": "1.0.0",
   "totalEntries": 1,
-  "spaceSaved": 702000,
-  "lastUpdated": "2025-06-18T07:30:59.967Z",
+  "spaceSaved": 717000,
+  "lastUpdated": "2025-06-18T08:31:13.605Z",
   "entries": {
     "e1630f843370f402870799e14abbf2b06af2d23b0153658e1211dffabc61ad8f": {
       "hash": "e1630f843370f402870799e14abbf2b06af2d23b0153658e1211dffabc61ad8f",
       "algorithm": "sha256",
       "size": 3000,
       "storagePath": "/Users/rowan/github/tw-enigma/tw-enigma/packages/core/.dedup-savings/e1630f843370f402870799e14abbf2b06af2d23b0153658e1211dffabc61ad8f.txt",
-      "referenceCount": 235,
+      "referenceCount": 240,
       "referencePaths": [
         "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750053713365/integration-tests/duplicate-1.txt",
         "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750053713365/integration-tests/duplicate-2.txt",
@@ -245,17 +245,22 @@
         "/tmp/compression-test-1750231859960/integration-tests/duplicate-2.txt",
         "/tmp/compression-test-1750231859960/integration-tests/duplicate-3.txt",
         "/tmp/compression-test-1750231859960/integration-tests/duplicate-4.txt",
-        "/tmp/compression-test-1750231859960/integration-tests/duplicate-5.txt"
+        "/tmp/compression-test-1750231859960/integration-tests/duplicate-5.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750235473598/integration-tests/duplicate-1.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750235473598/integration-tests/duplicate-2.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750235473598/integration-tests/duplicate-3.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750235473598/integration-tests/duplicate-4.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750235473598/integration-tests/duplicate-5.txt"
       ],
       "firstSeen": "2025-06-16T06:01:53.369Z",
-      "lastAccessed": "2025-06-18T07:30:59.966Z",
+      "lastAccessed": "2025-06-18T08:31:13.605Z",
       "compressed": false
     }
   },
   "stats": {
-    "totalOriginalSize": 705000,
+    "totalOriginalSize": 720000,
     "totalDeduplicatedSize": 3000,
-    "duplicatesFound": 234,
-    "averageReferenceCount": 235
+    "duplicatesFound": 239,
+    "averageReferenceCount": 240
   }
 }

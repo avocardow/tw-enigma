@@ -1173,23 +1173,53 @@ export function generatePrettyName(
   // Apply prefix/suffix
   const finalName = `${options.prefix || ''}${result.name}${options.suffix || ''}`;
 
+  // Check if final name meets minimum length requirement
+  if (finalName.length < minLength) {
+    try {
+      const paddedName = enforceMinimumLength(finalName, minLength, {
+        alphabet: options.alphabet,
+        ensureCssValid: options.ensureCssValid,
+        maxAttempts: 5,
+      });
+
+      // Update result with padded name
+      result = {
+        ...result,
+        name: paddedName,
+        length: paddedName.length,
+        aestheticScore: Math.min(calculateAestheticScore(paddedName), result.aestheticScore * 0.9),
+        fallbackUsed: true, // Mark as fallback since we had to pad
+      };
+    } catch (error) {
+      // If enforcement fails, return original result and warn
+      console.warn(`Length enforcement failed for pretty name "${finalName}":`, error);
+      result = {
+        ...result,
+        name: finalName,
+      };
+    }
+  } else {
+    // Update result with final name
+    result = {
+      ...result,
+      name: finalName,
+    };
+  }
+
   // Validate CSS compliance
-  if (options.ensureCssValid && !isValidCssIdentifier(finalName)) {
+  if (options.ensureCssValid && !isValidCssIdentifier(result.name)) {
     // Try fallback if CSS validation fails
     if (!result.fallbackUsed) {
       return handlePrettyNameExhaustion(index, options, cache);
     }
     throw new InvalidNameError(
-      `Generated pretty name "${finalName}" is not a valid CSS identifier`,
-      finalName,
+      `Generated pretty name "${result.name}" is not a valid CSS identifier`,
+      result.name,
       'css-invalid'
     );
   }
 
-  return {
-    ...result,
-    name: finalName,
-  };
+  return result;
 }
 
 /**
@@ -1206,6 +1236,7 @@ function handlePrettyNameExhaustion(
   cache: PrettyNameCache
 ): PrettyNameResult {
   const strategy = options.prettyNameExhaustionStrategy || 'fallback-hybrid';
+  const minimumLength = options.minimumLength || 1;
 
   switch (strategy) {
     case 'error':
@@ -1220,7 +1251,8 @@ function handlePrettyNameExhaustion(
       // Handle single-character alphabets specially
       if (options.alphabet.length === 1) {
         const char = options.alphabet[0];
-        const fallbackName = char.repeat(Math.min(index + 1, 6)); // Repeat character
+        const targetLength = Math.max(minimumLength, Math.min(index + 1, 6));
+        const fallbackName = char.repeat(targetLength);
         return {
           name: fallbackName,
           length: fallbackName.length,
@@ -1231,7 +1263,23 @@ function handlePrettyNameExhaustion(
         };
       }
 
-      const sequentialName = generateSequentialName(index, options);
+      let sequentialName = generateSequentialName(index, options);
+
+      // Apply length enforcement if needed
+      if (sequentialName.length < minimumLength) {
+        try {
+          sequentialName = enforceMinimumLength(sequentialName, minimumLength, {
+            alphabet: options.alphabet,
+            ensureCssValid: options.ensureCssValid,
+            maxAttempts: 3, // Conservative for fallback
+          });
+        } catch (error) {
+          // If enforcement fails, create simple repetition
+          const baseChar = sequentialName[0] || options.alphabet[0];
+          sequentialName = baseChar.repeat(minimumLength);
+        }
+      }
+
       return {
         name: sequentialName,
         length: sequentialName.length,
@@ -1247,7 +1295,10 @@ function handlePrettyNameExhaustion(
       // Handle single-character alphabets specially
       if (options.alphabet.length === 1) {
         const char = options.alphabet[0];
-        const fallbackName = char + (index % 10).toString(); // Add number suffix
+        const numberSuffix = (index % 10).toString();
+        const baseLength = Math.max(minimumLength - numberSuffix.length, 1); // Reserve space for suffix
+        const fallbackName = char.repeat(baseLength) + numberSuffix;
+
         return {
           name: fallbackName,
           length: fallbackName.length,
@@ -1259,7 +1310,29 @@ function handlePrettyNameExhaustion(
       }
 
       // Use hybrid approach: try to make sequential names more aesthetic
-      const baseName = generateSequentialName(index, options);
+      let baseName = generateSequentialName(index, options);
+
+      // Apply length enforcement before aesthetic enhancement for better results
+      if (baseName.length < minimumLength) {
+        try {
+          baseName = enforceMinimumLength(baseName, minimumLength, {
+            alphabet: options.alphabet,
+            ensureCssValid: options.ensureCssValid,
+            maxAttempts: 5, // More attempts for hybrid approach
+          });
+        } catch (error) {
+          // If enforcement fails, use simple padding with aesthetic characters
+          const vowels = 'aeiou';
+          const availableVowels = vowels.split('').filter((v) => options.alphabet.includes(v));
+          const padChar =
+            availableVowels.length > 0
+              ? availableVowels[index % availableVowels.length]
+              : options.alphabet[0];
+          const needed = minimumLength - baseName.length;
+          baseName = baseName + padChar.repeat(needed);
+        }
+      }
+
       const enhancedName = enhanceNameAesthetics(baseName, options);
       return {
         name: enhancedName,
@@ -2328,58 +2401,96 @@ function generatePrettyNameFromCache(
   options: NameGenerationOptions,
   cache: PrettyNameCache
 ): PrettyNameResult {
-  const { alphabet, prettyNameMaxLength, prettyNamePreferShorter } = options;
+  const { alphabet, prettyNameMaxLength, prettyNamePreferShorter, minimumLength } = options;
   const maxLength = prettyNameMaxLength || 6;
+  const minLength = minimumLength || 1; // Use minimumLength from options
 
   // Try to generate a pretty name from permutations
   let result: PrettyNameResult | null = null;
 
-  // Strategy: try lengths in order based on preference
-  const lengths = prettyNamePreferShorter
-    ? Array.from({ length: maxLength }, (_, i) => i + 1)
-    : Array.from({ length: maxLength }, (_, i) => maxLength - i);
+  // Strategy: try lengths in order based on preference, but respect minimumLength
+  const availableLengths = Array.from({ length: maxLength }, (_, i) => i + 1).filter(
+    (length) => length >= minLength
+  );
 
-  for (const length of lengths) {
-    const permutation = getNextPermutation(cache, length, alphabet);
-    if (permutation) {
-      const aestheticScore = calculateAestheticScore(permutation);
-      result = {
-        name: permutation,
-        length,
-        aestheticScore,
-        isExhausted: false,
-        fallbackUsed: false,
-        generationStrategy: 'permutation',
-      };
-      break;
-    }
-  }
-
-  // Handle exhaustion with fallback strategies
-  if (!result) {
+  // If no lengths are available (e.g., minLength > maxLength), we'll need fallback
+  if (availableLengths.length === 0) {
     result = handlePrettyNameExhaustion(index, options, cache);
+  } else {
+    const lengths = prettyNamePreferShorter ? availableLengths : availableLengths.reverse();
+
+    for (const length of lengths) {
+      const permutation = getNextPermutation(cache, length, alphabet);
+      if (permutation) {
+        const aestheticScore = calculateAestheticScore(permutation);
+        result = {
+          name: permutation,
+          length,
+          aestheticScore,
+          isExhausted: false,
+          fallbackUsed: false,
+          generationStrategy: 'permutation',
+        };
+        break;
+      }
+    }
+
+    // Handle exhaustion with fallback strategies if no permutation was found
+    if (!result) {
+      result = handlePrettyNameExhaustion(index, options, cache);
+    }
   }
 
   // Apply prefix/suffix
   const finalName = `${options.prefix || ''}${result.name}${options.suffix || ''}`;
 
+  // Check if final name meets minimum length requirement
+  if (finalName.length < minLength) {
+    try {
+      const paddedName = enforceMinimumLength(finalName, minLength, {
+        alphabet: options.alphabet,
+        ensureCssValid: options.ensureCssValid,
+        maxAttempts: 5,
+      });
+
+      // Update result with padded name
+      result = {
+        ...result,
+        name: paddedName,
+        length: paddedName.length,
+        aestheticScore: Math.min(calculateAestheticScore(paddedName), result.aestheticScore * 0.9),
+        fallbackUsed: true, // Mark as fallback since we had to pad
+      };
+    } catch (error) {
+      // If enforcement fails, return original result and warn
+      console.warn(`Length enforcement failed for pretty name "${finalName}":`, error);
+      result = {
+        ...result,
+        name: finalName,
+      };
+    }
+  } else {
+    // Update result with final name
+    result = {
+      ...result,
+      name: finalName,
+    };
+  }
+
   // Validate CSS compliance
-  if (options.ensureCssValid && !isValidCssIdentifier(finalName)) {
+  if (options.ensureCssValid && !isValidCssIdentifier(result.name)) {
     // Try fallback if CSS validation fails
     if (!result.fallbackUsed) {
       return handlePrettyNameExhaustion(index, options, cache);
     }
     throw new InvalidNameError(
-      `Generated pretty name "${finalName}" is not a valid CSS identifier`,
-      finalName,
+      `Generated pretty name "${result.name}" is not a valid CSS identifier`,
+      result.name,
       'css-invalid'
     );
   }
 
-  return {
-    ...result,
-    name: finalName,
-  };
+  return result;
 }
 
 /**
