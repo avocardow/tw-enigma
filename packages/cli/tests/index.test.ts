@@ -3,8 +3,8 @@ import { CLIUtils, cliVersion, version } from '../src/index';
 
 describe('@tw-enigma/cli', () => {
   test('exports version correctly', () => {
-    expect(version).toBe('1.0.0');
-    expect(cliVersion).toBe('1.0.0');
+    expect(version).toBe('1.0.1');
+    expect(cliVersion).toBe('1.0.1');
   });
 
   test('CLIUtils.formatOutput works correctly', () => {
