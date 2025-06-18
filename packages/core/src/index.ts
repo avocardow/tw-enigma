@@ -195,7 +195,47 @@ export {
 
 // Enhanced Error Handling & Validation (Task 13)
 export * from './errors';
-export * from './validation/ValidationChain';
+export {
+  CommonValidationSchemas,
+  createEnhancedSchema,
+  DEFAULT_VALIDATION_CONFIG,
+  validate as validateWithChain,
+  ValidationChain,
+} from './validation/ValidationChain';
+
+export type {
+  ValidationResult as ChainValidationResult,
+  ValidationConfig,
+  ValidationRule,
+} from './validation/ValidationChain';
+
+// Warning System (Task 12)
+export {
+  generateCapacityTable,
+  getDefaultWarningSystem,
+  shouldWarn,
+  warnForHighLength,
+  WarningLevel,
+  WarningSystem,
+} from './utils/warningSystem';
+
+export type {
+  CapacityInfo,
+  LengthWarningData,
+  PerformanceInfo,
+  WarningConfig,
+} from './utils/warningSystem';
+
+// Length Validation with Warnings (Task 12)
+export {
+  createWarningConfig,
+  shouldShowPerformanceWarning,
+  validateCliLength,
+  validateLengthWithWarnings,
+  validateMultipleLengths,
+} from './utils/lengthValidation';
+
+export type { LengthValidationOptions, LengthValidationResult } from './utils/lengthValidation';
 
 // =============================================================================
 // CONFIGURATION EXPORTS
@@ -224,7 +264,7 @@ export type { EnigmaConfig } from './config/config';
 // Config Validator
 export { validateConfig } from './config/configValidator';
 
-export type { ValidationResult } from './config/configValidator';
+export type { ValidationResult as ConfigValidationResult } from './config/configValidator';
 
 // CSS Output Configuration
 export {

@@ -94,6 +94,10 @@ export const commonOptions = {
       return num;
     },
   },
+  quietWarnings: {
+    flags: '--quiet-warnings',
+    description: 'Suppress performance warnings for high length values',
+  },
 };
 
 /**
@@ -157,20 +161,28 @@ export function formatDuration(ms: number): string {
 }
 
 /**
- * Validate length option value
+ * Validate length option value with warning integration
  */
-export function validateLength(value: string | number): number {
-  const num = typeof value === 'string' ? parseInt(value, 10) : value;
+export function validateLength(value: string | number, quietWarnings: boolean = false): number {
+  // Try to import and use the new validation with warnings
+  try {
+    // Import dynamically to avoid circular dependencies
+    const { validateCliLength } = require('@tw-enigma/core/utils/lengthValidation');
+    return validateCliLength(value, quietWarnings);
+  } catch (importError) {
+    // Fallback to basic validation if the import fails
+    const num = typeof value === 'string' ? parseInt(value, 10) : value;
 
-  if (isNaN(num)) {
-    throw new Error(`Invalid length value: ${value}. Must be a number.`);
+    if (isNaN(num)) {
+      throw new Error(`Invalid length value: ${value}. Must be a number.`);
+    }
+
+    if (num < 1 || num > 26) {
+      throw new Error(`Invalid length value: ${value}. Must be a number between 1 and 26.`);
+    }
+
+    return num;
   }
-
-  if (num < 1 || num > 26) {
-    throw new Error(`Invalid length value: ${value}. Must be a number between 1 and 26.`);
-  }
-
-  return num;
 }
 
 /**

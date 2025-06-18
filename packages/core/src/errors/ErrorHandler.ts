@@ -172,7 +172,7 @@ export class ErrorHandler {
       if (recoveryResult.success) {
         return {
           success: true,
-          result: recoveryResult.result,
+          result: recoveryResult.result as T,
           attempts,
           totalTime: Date.now() - startTime,
           wasRecovered: true,

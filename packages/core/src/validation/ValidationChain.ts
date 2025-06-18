@@ -106,8 +106,8 @@ export class ValidationChain {
   /**
    * Add a validation rule to the chain
    */
-  addRule<T>(rule: ValidationRule<T>): ValidationChain {
-    this.rules.push(rule);
+  addRule<T = unknown>(rule: ValidationRule<T>): ValidationChain {
+    this.rules.push(rule as ValidationRule<unknown>);
     return this;
   }
 
@@ -122,7 +122,7 @@ export class ValidationChain {
   /**
    * Validate data against all rules in the chain
    */
-  validate<T>(data: unknown, context?: Partial<ErrorContext>): ValidationResult<T> {
+  validate<T = unknown>(data: unknown, context?: Partial<ErrorContext>): ValidationResult<T> {
     const errors: ValidationError[] = [];
     const constraintViolations: string[] = [];
     const failedPaths: string[] = [];
@@ -158,7 +158,7 @@ export class ValidationChain {
 
         // Store the validated data from the first successful rule
         if (!validatedData) {
-          validatedData = result;
+          validatedData = result as T;
         }
       } catch (error) {
         const validationError = this.handleZodError(error, rule, context);
@@ -226,7 +226,9 @@ export class ValidationChain {
         {
           validationPath: rule.name,
           constraintViolations: violations,
-          receivedValue: this.config.includeReceivedValues ? error.errors[0]?.received : undefined,
+          receivedValue: this.config.includeReceivedValues
+            ? (error.errors[0] as any)?.received
+            : undefined,
         }
       );
     }
