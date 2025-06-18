@@ -10,7 +10,8 @@ import {
 } from '@tw-enigma/core';
 import { existsSync, mkdirSync, rmSync, writeFileSync } from 'fs';
 import { join } from 'path';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { normalizeCliArguments, validateConfig } from '../src/config/config';
 
 const TEST_DIR = join(process.cwd(), 'test-config');
 const TEST_CONFIG_FILE = join(TEST_DIR, '.enigmarc.json');
@@ -622,6 +623,197 @@ describe('Configuration System', () => {
       expect(result.config.pretty).toBe(false);
       expect(result.config.verbose).toBe(true);
       expect(result.config.minify).toBe(false);
+    });
+  });
+});
+
+describe('Name Generation Configuration', () => {
+  describe('Schema Validation', () => {
+    it('should accept valid nameGeneration config', () => {
+      const config = {
+        nameGeneration: {
+          minimumLength: 3,
+          strategy: 'sequential',
+          alphabet: 'abcdefghijklmnopqrstuvwxyz',
+          prefix: 'tw-',
+          suffix: '',
+          numericSuffix: false,
+          ensureCssValid: true,
+        },
+      };
+
+      expect(() => validateConfig(config)).not.toThrow();
+      const validatedConfig = validateConfig(config);
+      expect(validatedConfig.nameGeneration).toEqual(
+        expect.objectContaining({
+          minimumLength: 3,
+          strategy: 'sequential',
+          alphabet: 'abcdefghijklmnopqrstuvwxyz',
+          prefix: 'tw-',
+          suffix: '',
+          numericSuffix: false,
+          ensureCssValid: true,
+        })
+      );
+    });
+
+    it('should apply defaults for nameGeneration when not provided', () => {
+      const config = {};
+      const validatedConfig = validateConfig(config);
+
+      // nameGeneration should be undefined when not provided (optional field)
+      expect(validatedConfig.nameGeneration).toBeUndefined();
+    });
+
+    it('should apply defaults for partial nameGeneration config', () => {
+      const config = {
+        nameGeneration: {
+          minimumLength: 5,
+        },
+      };
+
+      const validatedConfig = validateConfig(config);
+      expect(validatedConfig.nameGeneration?.minimumLength).toBe(5);
+      expect(validatedConfig.nameGeneration?.strategy).toBe('frequency-optimized'); // actual default
+      expect(validatedConfig.nameGeneration?.ensureCssValid).toBe(true); // default
+    });
+
+    it('should reject invalid nameGeneration config', () => {
+      const config = {
+        nameGeneration: {
+          minimumLength: -1, // invalid
+          strategy: 'invalid-strategy', // invalid
+        },
+      };
+
+      expect(() => validateConfig(config)).toThrow();
+    });
+  });
+
+  describe('CLI Argument Mapping', () => {
+    it('should map nameGeneration CLI arguments correctly', () => {
+      const cliArgs = {
+        nameGenerationMinimumLength: 4,
+        nameGenerationStrategy: 'frequency-optimized' as const,
+        nameGenerationAlphabet: 'abcdef',
+        nameGenerationPrefix: 'cls-',
+        nameGenerationSuffix: '-opt',
+        nameGenerationNumericSuffix: true,
+      };
+
+      const normalizedConfig = normalizeCliArguments(cliArgs);
+
+      expect(normalizedConfig.nameGeneration).toEqual(
+        expect.objectContaining({
+          minimumLength: 4,
+          strategy: 'frequency-optimized',
+          alphabet: 'abcdef',
+          prefix: 'cls-',
+          suffix: '-opt',
+          numericSuffix: true,
+          ensureCssValid: true, // default applied by schema
+        })
+      );
+    });
+
+    it('should handle partial nameGeneration CLI arguments', () => {
+      const cliArgs = {
+        nameGenerationMinimumLength: 2,
+      };
+
+      const normalizedConfig = normalizeCliArguments(cliArgs);
+
+      expect(normalizedConfig.nameGeneration?.minimumLength).toBe(2);
+      expect(normalizedConfig.nameGeneration?.strategy).toBe('frequency-optimized'); // actual default
+    });
+
+    it('should not create nameGeneration config when no CLI args provided', () => {
+      const cliArgs = {
+        verbose: true, // other CLI arg
+      };
+
+      const normalizedConfig = normalizeCliArguments(cliArgs);
+
+      expect(normalizedConfig.nameGeneration).toBeUndefined();
+    });
+  });
+
+  describe('Integration with EnigmaConfig', () => {
+    it('should load nameGeneration config from file', async () => {
+      const configContent = {
+        nameGeneration: {
+          minimumLength: 3,
+          strategy: 'hybrid',
+          prefix: 'app-',
+        },
+      };
+
+      // Mock file loading
+      vi.spyOn(require('cosmiconfig'), 'cosmiconfig').mockReturnValue({
+        load: vi.fn().mockResolvedValue({
+          config: configContent,
+          filepath: '/test/enigma.config.js',
+        }),
+        search: vi.fn().mockResolvedValue({
+          config: configContent,
+          filepath: '/test/enigma.config.js',
+        }),
+      });
+
+      const result = await loadConfig();
+      expect(result.config.nameGeneration).toEqual(
+        expect.objectContaining({
+          minimumLength: 3,
+          strategy: 'hybrid',
+          prefix: 'app-',
+          suffix: '', // default
+          ensureCssValid: true, // default
+        })
+      );
+    });
+
+    it('should merge CLI args with file config (CLI takes precedence)', async () => {
+      const fileConfig = {
+        nameGeneration: {
+          minimumLength: 2,
+          strategy: 'sequential',
+          prefix: 'file-',
+        },
+      };
+
+      const cliArgs = {
+        nameGenerationMinimumLength: 5, // should override file config
+        nameGenerationSuffix: '-cli', // should be added
+      };
+
+      // Mock file loading
+      vi.spyOn(require('cosmiconfig'), 'cosmiconfig').mockReturnValue({
+        search: vi.fn().mockResolvedValue({
+          config: fileConfig,
+          filepath: '/test/enigma.config.js',
+        }),
+      });
+
+      const result = await loadConfig(cliArgs);
+      expect(result.config.nameGeneration).toEqual(
+        expect.objectContaining({
+          minimumLength: 5, // from CLI (overrides file)
+          suffix: '-cli', // from CLI (added)
+          ensureCssValid: true, // default
+        })
+      );
+    });
+  });
+
+  describe('Sample Config Generation', () => {
+    it('should include nameGeneration section in sample config', () => {
+      const sampleConfig = createSampleConfig();
+
+      expect(sampleConfig).toContain('nameGeneration');
+      expect(sampleConfig).toContain('minimumLength');
+      expect(sampleConfig).toContain('strategy');
+      expect(sampleConfig).toContain('sequential');
+      expect(sampleConfig).toContain('frequency-optimized');
     });
   });
 });

@@ -19,6 +19,10 @@ import {
   type HtmlExtractionOptions,
 } from '../processors/htmlExtractor';
 import { JsExtractionOptionsSchema, type JsExtractionOptions } from '../processors/jsExtractor';
+import {
+  NameGenerationOptionsSchema,
+  type NameGenerationOptions,
+} from '../processors/nameGeneration';
 import type { RuntimeValidator } from '../runtimeValidator';
 import { createRuntimeValidator } from '../runtimeValidator';
 import { ConfigError, ValidationError } from '../utils/errors';
@@ -189,6 +193,11 @@ export const EnigmaConfigSchema = z.object({
   // Pattern Validator Configuration
   patternValidator: SimpleValidatorConfigSchema.optional().describe(
     'Pattern validation configuration options'
+  ),
+
+  // Name Generation Configuration
+  nameGeneration: NameGenerationOptionsSchema.optional().describe(
+    'Class name generation and optimization configuration options'
   ),
 
   // Enhanced Configuration Validation and Safety System
@@ -413,6 +422,13 @@ export interface CliArguments {
   patternValidatorSkipInvalid?: boolean;
   patternValidatorWarnOnInvalid?: boolean;
   patternValidatorCustomClasses?: string[];
+  // Name Generation CLI options
+  nameGenerationMinimumLength?: number;
+  nameGenerationStrategy?: 'sequential' | 'frequency-optimized' | 'hybrid' | 'pretty';
+  nameGenerationAlphabet?: string;
+  nameGenerationPrefix?: string;
+  nameGenerationSuffix?: string;
+  nameGenerationNumericSuffix?: boolean;
   // Dry run mode option
   dryRun?: boolean;
 
@@ -487,7 +503,7 @@ function isObject(item: unknown): item is Record<string, unknown> {
 /**
  * Convert CLI arguments to configuration format
  */
-function normalizeCliArguments(args: CliArguments): Partial<EnigmaConfig> {
+export function normalizeCliArguments(args: CliArguments): Partial<EnigmaConfig> {
   const config: Partial<EnigmaConfig> = {};
 
   // Map CLI arguments to config properties
@@ -679,6 +695,26 @@ function normalizeCliArguments(args: CliArguments): Partial<EnigmaConfig> {
     config.patternValidator = SimpleValidatorConfigSchema.parse(patternValidatorConfig);
   }
 
+  // Name generation options
+  const nameGenerationConfig: Partial<NameGenerationOptions> = {};
+  if (args.nameGenerationMinimumLength !== undefined)
+    nameGenerationConfig.minimumLength = args.nameGenerationMinimumLength;
+  if (args.nameGenerationStrategy !== undefined)
+    nameGenerationConfig.strategy = args.nameGenerationStrategy;
+  if (args.nameGenerationAlphabet !== undefined)
+    nameGenerationConfig.alphabet = args.nameGenerationAlphabet;
+  if (args.nameGenerationPrefix !== undefined)
+    nameGenerationConfig.prefix = args.nameGenerationPrefix;
+  if (args.nameGenerationSuffix !== undefined)
+    nameGenerationConfig.suffix = args.nameGenerationSuffix;
+  if (args.nameGenerationNumericSuffix !== undefined)
+    nameGenerationConfig.numericSuffix = args.nameGenerationNumericSuffix;
+
+  if (Object.keys(nameGenerationConfig).length > 0) {
+    // Apply defaults using the schema to ensure all fields have proper values
+    config.nameGeneration = NameGenerationOptionsSchema.parse(nameGenerationConfig);
+  }
+
   // Development mode options
   const devConfig: any = {};
   if (args.dev !== undefined) devConfig.enabled = args.dev;
@@ -736,7 +772,7 @@ function normalizeCliArguments(args: CliArguments): Partial<EnigmaConfig> {
 /**
  * Validate configuration using Zod schema
  */
-function validateConfig(config: unknown, filepath?: string): EnigmaConfig {
+export function validateConfig(config: unknown, filepath?: string): EnigmaConfig {
   try {
     const validatedConfig = EnigmaConfigSchema.parse(config);
     // Always return all top-level fields with defaults
@@ -1587,6 +1623,28 @@ module.exports = {
   // Advanced options
   preserveComments: false,
   sourceMaps: false,
+
+  // Name Generation Options
+  // nameGeneration: {
+  //   // Minimum length for generated class names (enforce consistent naming)
+  //   minimumLength: 1,
+  //
+  //   // Strategy for name generation
+  //   strategy: "sequential", // "sequential", "frequency-optimized", "hybrid", "pretty"
+  //
+  //   // Custom alphabet for name generation
+  //   // alphabet: "abcdefghijklmnopqrstuvwxyz",
+  //
+  //   // Prefix and suffix for generated names
+  //   // prefix: "",
+  //   // suffix: "",
+  //
+  //   // Whether to use numeric suffixes (e.g., a1, a2)
+  //   // numericSuffix: false,
+  //
+  //   // Whether generated names must be CSS-valid
+  //   // ensureCssValid: true
+  // },
 };
 `;
 }
