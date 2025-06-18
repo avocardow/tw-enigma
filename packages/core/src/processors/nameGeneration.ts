@@ -443,6 +443,7 @@ export function validateNameGenerationOptions(options: unknown): NameGenerationO
  * This generates the shortest possible names: a, b, c, ..., z, aa, ab, etc.
  *
  * @param num - The number to convert (0-based)
+ * @param minimumLength - Optional minimum length for the result (pads with random characters)
  * @returns Base-26 string representation
  *
  * @example
@@ -450,8 +451,9 @@ export function validateNameGenerationOptions(options: unknown): NameGenerationO
  * toBase26(25) => 'z'
  * toBase26(26) => 'aa'
  * toBase26(51) => 'az'
+ * toBase26(0, 3) => 'aXY' (where XY are cryptographically random)
  */
-export function toBase26(num: number): string {
+export function toBase26(num: number, minimumLength?: number): string {
   if (num < 0) {
     throw new NameGenerationError(
       `Invalid input for base-26 conversion: ${num}. Must be non-negative.`
@@ -463,15 +465,23 @@ export function toBase26(num: number): string {
 
   // Special case for single digit
   if (num < 26) {
-    return alphabet[num];
+    result = alphabet[num];
+  } else {
+    // Convert using bijective base-26 (like Excel column names)
+    let n = num;
+    while (n >= 0) {
+      result = alphabet[n % 26] + result;
+      n = Math.floor(n / 26) - 1;
+      if (n < 0) break;
+    }
   }
 
-  // Convert using bijective base-26 (like Excel column names)
-  let n = num;
-  while (n >= 0) {
-    result = alphabet[n % 26] + result;
-    n = Math.floor(n / 26) - 1;
-    if (n < 0) break;
+  // Apply minimum length enforcement if specified
+  if (minimumLength && minimumLength > 1) {
+    result = enforceMinimumLength(result, minimumLength, {
+      alphabet,
+      ensureCssValid: true,
+    });
   }
 
   return result;
@@ -508,9 +518,10 @@ export function fromBase26(str: string): number {
  *
  * @param num - The number to convert (0-based)
  * @param useNumbers - Whether to include numbers (0-9) in the alphabet
+ * @param minimumLength - Optional minimum length for the result (pads with random characters)
  * @returns Base-36 string representation
  */
-export function toBase36(num: number, useNumbers: boolean = true): string {
+export function toBase36(num: number, useNumbers: boolean = true, minimumLength?: number): string {
   if (num < 0) {
     throw new NameGenerationError(
       `Invalid input for base-36 conversion: ${num}. Must be non-negative.`
@@ -518,32 +529,37 @@ export function toBase36(num: number, useNumbers: boolean = true): string {
   }
 
   const letters = 'abcdefghijklmnopqrstuvwxyz';
-
-  // Always start with letters for CSS validity, then allow numbers
-  if (num < letters.length) {
-    return letters[num];
-  }
-
-  // For larger numbers, use base-26 for first char, then base-36 for rest
-  let remaining = num - letters.length;
   let result = '';
 
-  // Generate with letters first, then append numbers if needed
-  if (useNumbers) {
-    const numbers = '0123456789';
-    const extendedAlphabet = letters + numbers;
+  if (!useNumbers) {
+    // Letters only - use toBase26 with minimumLength passed through
+    return toBase26(num, minimumLength);
+  }
 
-    // Use simple bijective base conversion starting with letters
-    result = letters[remaining % letters.length];
-    remaining = Math.floor(remaining / letters.length);
+  // CSS-compliant base-36: letter first, then numbers+letters for subsequent positions
+  const numbers = '0123456789';
+  const secondPosAlphabet = numbers + letters; // Numbers first for CSS: a0, a1, ..., a9, aa, ab, ...
 
-    while (remaining > 0) {
-      result += extendedAlphabet[remaining % extendedAlphabet.length];
-      remaining = Math.floor(remaining / extendedAlphabet.length);
-    }
+  if (num < letters.length) {
+    // 0-25: a, b, ..., z
+    result = letters[num];
   } else {
-    // Letters only - use toBase26
-    return toBase26(num);
+    // 26+: Two-char pattern starting with letters
+    let remaining = num - letters.length; // 0-based after z
+
+    const firstChar = letters[Math.floor(remaining / secondPosAlphabet.length)];
+    const secondChar = secondPosAlphabet[remaining % secondPosAlphabet.length];
+
+    result = firstChar + secondChar;
+  }
+
+  // Apply minimum length enforcement if specified
+  if (minimumLength && minimumLength > 1) {
+    const alphabet = useNumbers ? letters + numbers : letters;
+    result = enforceMinimumLength(result, minimumLength, {
+      alphabet,
+      ensureCssValid: true,
+    });
   }
 
   return result;
@@ -591,12 +607,14 @@ export function fromBase36(str: string, _useNumbers: boolean = true): number {
  * @param num - The number to convert
  * @param alphabet - Custom alphabet to use
  * @param ensureCssValid - Ensure first character is CSS-valid (letter or underscore)
+ * @param minimumLength - Optional minimum length for the result (pads with random characters)
  * @returns String representation using custom alphabet
  */
 export function toCustomBase(
   num: number,
   alphabet: string,
-  ensureCssValid: boolean = true
+  ensureCssValid: boolean = true,
+  minimumLength?: number
 ): string {
   if (num < 0) {
     throw new NameGenerationError(`Invalid input: ${num}. Must be non-negative.`);
@@ -611,51 +629,64 @@ export function toCustomBase(
   const base = alphabet.length;
   const cssValidStart = /^[a-zA-Z_]$/;
 
+  let result = '';
+
   if (num < alphabet.length) {
     const char = alphabet[num];
     if (ensureCssValid && !cssValidStart.test(char)) {
       // Find first CSS-valid character in alphabet
       for (let i = 0; i < alphabet.length; i++) {
         if (cssValidStart.test(alphabet[i])) {
-          return alphabet[i];
-        }
-      }
-      throw new NameGenerationError(
-        `No CSS-valid starting characters found in alphabet: "${alphabet}"`
-      );
-    }
-    return char;
-  }
-
-  let result = '';
-  let n = num;
-
-  while (n >= 0) {
-    const charIndex = n % base;
-    const char = alphabet[charIndex];
-
-    // For first character, ensure CSS validity
-    if (result === '' && ensureCssValid && !cssValidStart.test(char)) {
-      // Find a valid starting character
-      let validIndex = -1;
-      for (let i = 0; i < alphabet.length; i++) {
-        if (cssValidStart.test(alphabet[i])) {
-          validIndex = i;
+          result = alphabet[i];
           break;
         }
       }
-      if (validIndex === -1) {
+      if (!result) {
         throw new NameGenerationError(
-          `No CSS-valid starting characters in alphabet: "${alphabet}"`
+          `No CSS-valid starting characters found in alphabet: "${alphabet}"`
         );
       }
-      result = alphabet[validIndex] + result;
     } else {
-      result = char + result;
+      result = char;
     }
+  } else {
+    let n = num;
 
-    n = Math.floor(n / base) - 1;
-    if (n < 0) break;
+    while (n >= 0) {
+      const charIndex = n % base;
+      const char = alphabet[charIndex];
+
+      // For first character, ensure CSS validity
+      if (result === '' && ensureCssValid && !cssValidStart.test(char)) {
+        // Find a valid starting character
+        let validIndex = -1;
+        for (let i = 0; i < alphabet.length; i++) {
+          if (cssValidStart.test(alphabet[i])) {
+            validIndex = i;
+            break;
+          }
+        }
+        if (validIndex === -1) {
+          throw new NameGenerationError(
+            `No CSS-valid starting characters in alphabet: "${alphabet}"`
+          );
+        }
+        result = alphabet[validIndex] + result;
+      } else {
+        result = char + result;
+      }
+
+      n = Math.floor(n / base) - 1;
+      if (n < 0) break;
+    }
+  }
+
+  // Apply minimum length enforcement if specified
+  if (minimumLength && minimumLength > 1) {
+    result = enforceMinimumLength(result, minimumLength, {
+      alphabet,
+      ensureCssValid,
+    });
   }
 
   return result;
@@ -796,20 +827,14 @@ export function generateSequentialName(index: number, options: NameGenerationOpt
 
   // Choose conversion method based on alphabet
   if (alphabet === ALPHABET_CONFIGS.minimal) {
-    baseName = toBase26(index);
+    baseName = toBase26(index, minimumLength);
   } else if (numericSuffix && alphabet.includes('0')) {
-    baseName = toBase36(index, true);
+    baseName = toBase36(index, true, minimumLength);
   } else {
-    baseName = toCustomBase(index, alphabet, ensureCssValid);
+    baseName = toCustomBase(index, alphabet, ensureCssValid, minimumLength);
   }
 
-  // Ensure baseName meets minimum length requirement using cryptographically secure padding
-  if (minimumLength && minimumLength > 1) {
-    baseName = enforceMinimumLength(baseName, minimumLength, {
-      alphabet,
-      ensureCssValid,
-    });
-  }
+  // The base conversion functions now handle minimumLength internally
 
   // Apply prefix and suffix
   const fullName = `${prefix}${baseName}${suffix}`;

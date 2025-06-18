@@ -145,7 +145,7 @@ describe('Name Generation Module', () => {
 
       expect(name1).toBe('a');
       expect(name2).toBe('z');
-      expect(name3).toBe('a'); // Implementation uses letters first, then extends
+      expect(name3).toBe('a0'); // After z (25), next is a0
 
       // All names should be CSS-valid
       expect(isValidCssIdentifier(name1)).toBe(true);
@@ -1072,6 +1072,86 @@ describe('Name Generation Module', () => {
         expect(avgLength).toBeLessThan(prettyOptions.prettyNameMaxLength!);
         expect(avgLength).toBeGreaterThan(0);
       });
+    });
+  });
+
+  describe('Base Conversion Functions with minimumLength', () => {
+    test('toBase26 respects minimumLength parameter', () => {
+      const result = toBase26(0, 4);
+      expect(result.length).toBe(4);
+      expect(result[0]).toBe('a');
+      expect(isValidCssIdentifier(result)).toBe(true);
+
+      // Test backwards compatibility
+      expect(toBase26(0)).toBe('a');
+      expect(toBase26(25)).toBe('z');
+    });
+
+    test('toBase36 respects minimumLength parameter', () => {
+      const result = toBase36(0, true, 4);
+      expect(result.length).toBe(4);
+      expect(result[0]).toBe('a');
+      expect(isValidCssIdentifier(result)).toBe(true);
+
+      // Test backwards compatibility
+      expect(toBase36(0, true)).toBe('a');
+      expect(toBase36(26, true)).toBe('a0');
+    });
+
+    test('toCustomBase respects minimumLength parameter', () => {
+      const result = toCustomBase(0, 'xyz', true, 4);
+      expect(result.length).toBe(4);
+      expect(result[0]).toBe('x');
+      expect(isValidCssIdentifier(result)).toBe(true);
+
+      // Test backwards compatibility
+      expect(toCustomBase(0, 'xyz', true)).toBe('x');
+    });
+
+    test('base conversion functions integrate with generateSequentialName', () => {
+      // Test minimal alphabet uses toBase26
+      const minimalOptions = {
+        alphabet: ALPHABET_CONFIGS.minimal,
+        minimumLength: 3,
+        ensureCssValid: true,
+        strategy: 'sequential' as const,
+        numericSuffix: false,
+        startIndex: 0,
+        enableFrequencyOptimization: false,
+        frequencyThreshold: 1,
+        reservedNames: [],
+        avoidConflicts: true,
+        enableCaching: false,
+        batchSize: 100,
+        maxCacheSize: 1000,
+        prefix: '',
+        suffix: '',
+      };
+      const minimalResult = generateSequentialName(0, minimalOptions);
+      expect(minimalResult.length).toBe(3);
+      expect(minimalResult[0]).toBe('a');
+
+      // Test extended alphabet with numbers uses toBase36
+      const extendedOptions = {
+        alphabet: ALPHABET_CONFIGS.full,
+        numericSuffix: true,
+        minimumLength: 3,
+        ensureCssValid: true,
+        strategy: 'sequential' as const,
+        startIndex: 0,
+        enableFrequencyOptimization: false,
+        frequencyThreshold: 1,
+        reservedNames: [],
+        avoidConflicts: true,
+        enableCaching: false,
+        batchSize: 100,
+        maxCacheSize: 1000,
+        prefix: '',
+        suffix: '',
+      };
+      const extendedResult = generateSequentialName(0, extendedOptions);
+      expect(extendedResult.length).toBe(3);
+      expect(extendedResult[0]).toBe('a');
     });
   });
 });
