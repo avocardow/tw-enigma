@@ -5,15 +5,11 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import {
-  CiIntegration,
-  createCiIntegration,
-} from "@tw-enigma/cli";
-import type { CssOutputConfig } from "@tw-enigma/cli";
-import type { CssPerformanceReport } from "@tw-enigma/cli";
+import type { CssOutputConfig, CssPerformanceReport } from '@tw-enigma/cli';
+import { CiIntegration, createCiIntegration } from '@tw-enigma/cli';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-describe("CiIntegration", () => {
+describe('CiIntegration', () => {
   let config: CssOutputConfig;
   let originalEnv: NodeJS.ProcessEnv;
 
@@ -22,9 +18,9 @@ describe("CiIntegration", () => {
     process.env = { ...originalEnv };
 
     config = {
-      strategy: "chunked",
+      strategy: 'chunked',
       chunking: {
-        strategy: "route",
+        strategy: 'route',
         minSize: 10 * 1024,
         maxSize: 100 * 1024,
         targetCount: 5,
@@ -39,7 +35,7 @@ describe("CiIntegration", () => {
         brotli: true,
         level: 9,
       },
-      environment: "production",
+      environment: 'production',
     };
   });
 
@@ -48,108 +44,134 @@ describe("CiIntegration", () => {
     vi.restoreAllMocks();
   });
 
-  describe("CI environment detection", () => {
-    it("should detect GitHub Actions environment", () => {
-      process.env.GITHUB_ACTIONS = "true";
-      process.env.GITHUB_RUN_ID = "123456";
-      process.env.GITHUB_REF_NAME = "main";
-      process.env.GITHUB_SHA = "abcdef123456";
-      process.env.GITHUB_EVENT_NAME = "push";
-      process.env.GITHUB_REPOSITORY = "owner/repo";
+  describe('CI environment detection', () => {
+    it('should detect GitHub Actions environment', () => {
+      process.env.GITHUB_ACTIONS = 'true';
+      process.env.GITHUB_RUN_ID = '123456';
+      process.env.GITHUB_REF_NAME = 'main';
+      process.env.GITHUB_SHA = 'abcdef123456';
+      process.env.GITHUB_EVENT_NAME = 'push';
+      process.env.GITHUB_REPOSITORY = 'owner/repo';
 
       const ci = new CiIntegration(config);
       const env = ci.getCiEnvironment();
 
-      expect(env.provider).toBe("github");
-      expect(env.buildId).toBe("123456");
-      expect(env.branch).toBe("main");
-      expect(env.commit).toBe("abcdef123456");
+      expect(env.provider).toBe('github');
+      expect(env.buildId).toBe('123456');
+      expect(env.branch).toBe('main');
+      expect(env.commit).toBe('abcdef123456');
       expect(env.isCI).toBe(true);
-      expect(env.env.GITHUB_REPOSITORY).toBe("owner/repo");
+      expect(env.env.GITHUB_REPOSITORY).toBe('owner/repo');
     });
 
-    it("should detect GitHub Actions pull request", () => {
-      process.env.GITHUB_ACTIONS = "true";
-      process.env.GITHUB_EVENT_NAME = "pull_request";
-      process.env.GITHUB_EVENT_NUMBER = "42";
+    it('should detect GitHub Actions pull request', () => {
+      process.env.GITHUB_ACTIONS = 'true';
+      process.env.GITHUB_EVENT_NAME = 'pull_request';
+      process.env.GITHUB_EVENT_NUMBER = '42';
 
       const ci = new CiIntegration(config);
       const env = ci.getCiEnvironment();
 
-      expect(env.provider).toBe("github");
-      expect(env.pullRequest).toBe("42");
+      expect(env.provider).toBe('github');
+      expect(env.pullRequest).toBe('42');
     });
 
-    it("should detect GitLab CI environment", () => {
-      process.env.GITLAB_CI = "true";
-      process.env.CI_PIPELINE_ID = "789012";
-      process.env.CI_COMMIT_REF_NAME = "feature/test";
-      process.env.CI_COMMIT_SHA = "def456789012";
-      process.env.CI_MERGE_REQUEST_IID = "15";
+    it('should detect GitLab CI environment', () => {
+      // Clear GitHub Actions environment variables
+      delete process.env.GITHUB_ACTIONS;
+      delete process.env.GITHUB_RUN_ID;
+      delete process.env.GITHUB_REF_NAME;
+      delete process.env.GITHUB_SHA;
+      delete process.env.GITHUB_EVENT_NAME;
+      delete process.env.GITHUB_EVENT_NUMBER;
+
+      process.env.GITLAB_CI = 'true';
+      process.env.CI_PIPELINE_ID = '789012';
+      process.env.CI_COMMIT_REF_NAME = 'feature/test';
+      process.env.CI_COMMIT_SHA = 'def456789012';
+      process.env.CI_MERGE_REQUEST_IID = '15';
 
       const ci = new CiIntegration(config);
       const env = ci.getCiEnvironment();
 
-      expect(env.provider).toBe("gitlab");
-      expect(env.buildId).toBe("789012");
-      expect(env.branch).toBe("feature/test");
-      expect(env.commit).toBe("def456789012");
-      expect(env.pullRequest).toBe("15");
-      expect(env.isCI).toBe(true);
-    });
-
-    it("should detect Jenkins environment", () => {
-      process.env.JENKINS_URL = "https://jenkins.example.com";
-      process.env.BUILD_NUMBER = "42";
-      process.env.GIT_BRANCH = "origin/main";
-      process.env.GIT_COMMIT = "abc123def456";
-
-      const ci = new CiIntegration(config);
-      const env = ci.getCiEnvironment();
-
-      expect(env.provider).toBe("jenkins");
-      expect(env.buildId).toBe("42");
-      expect(env.branch).toBe("origin/main");
-      expect(env.commit).toBe("abc123def456");
-    });
-
-    it("should detect CircleCI environment", () => {
-      process.env.CIRCLECI = "true";
-      process.env.CIRCLE_BUILD_NUM = "999";
-      process.env.CIRCLE_BRANCH = "develop";
-      process.env.CIRCLE_SHA1 = "circle123";
-      process.env.CIRCLE_PULL_REQUEST = "https://github.com/owner/repo/pull/33";
-
-      const ci = new CiIntegration(config);
-      const env = ci.getCiEnvironment();
-
-      expect(env.provider).toBe("circleci");
-      expect(env.buildId).toBe("999");
-      expect(env.branch).toBe("develop");
-      expect(env.commit).toBe("circle123");
-      expect(env.pullRequest).toBe("33"); // Extracted from URL
-    });
-
-    it("should detect generic CI environment", () => {
-      process.env.CI = "true";
-      process.env.BUILD_NUMBER = "100";
-
-      const ci = new CiIntegration(config);
-      const env = ci.getCiEnvironment();
-
-      expect(env.provider).toBe("unknown");
-      expect(env.buildId).toBe("100");
+      expect(env.provider).toBe('gitlab');
+      expect(env.buildId).toBe('789012');
+      expect(env.branch).toBe('feature/test');
+      expect(env.commit).toBe('def456789012');
+      expect(env.pullRequest).toBe('15');
       expect(env.isCI).toBe(true);
     });
 
-    it("should detect non-CI environment", () => {
+    it('should detect Jenkins environment', () => {
+      // Clear GitHub Actions environment variables
+      delete process.env.GITHUB_ACTIONS;
+      delete process.env.GITHUB_RUN_ID;
+      delete process.env.GITHUB_REF_NAME;
+      delete process.env.GITHUB_SHA;
+      delete process.env.GITHUB_EVENT_NAME;
+      delete process.env.GITHUB_EVENT_NUMBER;
+
+      process.env.JENKINS_URL = 'https://jenkins.example.com';
+      process.env.BUILD_NUMBER = '42';
+      process.env.GIT_BRANCH = 'origin/main';
+      process.env.GIT_COMMIT = 'abc123def456';
+
+      const ci = new CiIntegration(config);
+      const env = ci.getCiEnvironment();
+
+      expect(env.provider).toBe('jenkins');
+      expect(env.buildId).toBe('42');
+      expect(env.branch).toBe('origin/main');
+      expect(env.commit).toBe('abc123def456');
+    });
+
+    it('should detect CircleCI environment', () => {
+      // Clear GitHub Actions environment variables
+      delete process.env.GITHUB_ACTIONS;
+      delete process.env.GITHUB_RUN_ID;
+      delete process.env.GITHUB_REF_NAME;
+      delete process.env.GITHUB_SHA;
+      delete process.env.GITHUB_EVENT_NAME;
+      delete process.env.GITHUB_EVENT_NUMBER;
+
+      process.env.CIRCLECI = 'true';
+      process.env.CIRCLE_BUILD_NUM = '999';
+      process.env.CIRCLE_BRANCH = 'develop';
+      process.env.CIRCLE_SHA1 = 'circle123';
+      process.env.CIRCLE_PULL_REQUEST = 'https://github.com/owner/repo/pull/33';
+
+      const ci = new CiIntegration(config);
+      const env = ci.getCiEnvironment();
+
+      expect(env.provider).toBe('circleci');
+      expect(env.buildId).toBe('999');
+      expect(env.branch).toBe('develop');
+      expect(env.commit).toBe('circle123');
+      expect(env.pullRequest).toBe('33'); // Extracted from URL
+    });
+
+    it('should detect generic CI environment', () => {
+      // Clear all specific CI environment variables
+      delete process.env.GITHUB_ACTIONS;
+      delete process.env.GITLAB_CI;
+      delete process.env.JENKINS_URL;
+      delete process.env.CIRCLECI;
+
+      process.env.CI = 'true';
+      process.env.BUILD_NUMBER = '100';
+
+      const ci = new CiIntegration(config);
+      const env = ci.getCiEnvironment();
+
+      expect(env.provider).toBe('unknown');
+      expect(env.buildId).toBe('100');
+      expect(env.isCI).toBe(true);
+    });
+
+    it('should detect non-CI environment', () => {
       // Clear all CI environment variables
       Object.keys(process.env).forEach((key) => {
-        if (
-          key.includes("CI") ||
-          key.includes("GITHUB") ||
-          key.includes("GITLAB")
-        ) {
+        if (key.includes('CI') || key.includes('GITHUB') || key.includes('GITLAB')) {
           delete process.env[key];
         }
       });
@@ -158,20 +180,20 @@ describe("CiIntegration", () => {
       const env = ci.getCiEnvironment();
 
       expect(env.isCI).toBe(false);
-      expect(env.provider).toBe("unknown");
+      expect(env.provider).toBe('unknown');
     });
   });
 
-  describe("processReport", () => {
+  describe('processReport', () => {
     let mockReport: CssPerformanceReport;
 
     beforeEach(() => {
       mockReport = {
         metadata: {
-          timestamp: "2025-01-20T12:00:00.000Z",
-          version: "1.0.0",
-          environment: "production",
-          configHash: "abc123",
+          timestamp: '2025-01-20T12:00:00.000Z',
+          version: '1.0.0',
+          environment: 'production',
+          configHash: 'abc123',
         },
         metrics: {
           totalOriginalSize: 100000,
@@ -198,7 +220,7 @@ describe("CiIntegration", () => {
       };
     });
 
-    it("should pass when performance meets thresholds", async () => {
+    it('should pass when performance meets thresholds', async () => {
       const ci = new CiIntegration(config, {
         minPerformanceScore: 80,
         failOnBudgetViolation: true,
@@ -208,11 +230,11 @@ describe("CiIntegration", () => {
 
       expect(result.success).toBe(true);
       expect(result.exitCode).toBe(0);
-      expect(result.summary).toContain("✅ Performance score: 85/100");
-      expect(result.summary).toContain("✅ All performance budgets passed");
+      expect(result.summary).toContain('✅ Performance score: 85/100');
+      expect(result.summary).toContain('✅ All performance budgets passed');
     });
 
-    it("should fail when performance score below threshold", async () => {
+    it('should fail when performance score below threshold', async () => {
       mockReport.metrics.performanceScore = 60;
 
       const ci = new CiIntegration(config, {
@@ -224,21 +246,19 @@ describe("CiIntegration", () => {
 
       expect(result.success).toBe(false);
       expect(result.exitCode).toBe(1);
-      expect(result.summary).toContain(
-        "❌ Performance score 60 below threshold 70",
-      );
+      expect(result.summary).toContain('❌ Performance score 60 below threshold 70');
     });
 
-    it("should fail when budget violations detected", async () => {
+    it('should fail when budget violations detected', async () => {
       mockReport.budgetAnalysis.passed = false;
       mockReport.budgetAnalysis.violations = [
         {
-          type: "bundle_size",
+          type: 'bundle_size',
           actual: 60000,
           limit: 50000,
-          severity: "error",
-          message: "Bundle exceeds size limit",
-          recommendations: ["Optimize CSS"],
+          severity: 'error',
+          message: 'Bundle exceeds size limit',
+          recommendations: ['Optimize CSS'],
         },
       ];
 
@@ -250,10 +270,10 @@ describe("CiIntegration", () => {
 
       expect(result.success).toBe(false);
       expect(result.exitCode).toBe(1);
-      expect(result.summary).toContain("❌ 1 budget violation(s) detected");
+      expect(result.summary).toContain('❌ 1 budget violation(s) detected');
     });
 
-    it("should handle performance comparison with baseline", async () => {
+    it('should handle performance comparison with baseline', async () => {
       const baseline: CssPerformanceReport = {
         ...mockReport,
         metrics: {
@@ -265,14 +285,14 @@ describe("CiIntegration", () => {
       };
 
       // Mock file system operations
-      vi.doMock("fs/promises", () => ({
+      vi.doMock('fs/promises', () => ({
         readFile: vi.fn().mockResolvedValue(JSON.stringify(baseline)),
         writeFile: vi.fn().mockResolvedValue(undefined),
         mkdir: vi.fn().mockResolvedValue(undefined),
       }));
 
       const ci = new CiIntegration(config, {
-        baselinePath: "./baseline.json",
+        baselinePath: './baseline.json',
         maxSizeIncrease: 15,
       });
 
@@ -284,7 +304,7 @@ describe("CiIntegration", () => {
       expect(result.comparison?.delta.loadTimeChange).toBe(300); // 1500 - 1200
     });
 
-    it("should fail when size increase exceeds threshold", async () => {
+    it('should fail when size increase exceeds threshold', async () => {
       const baseline: CssPerformanceReport = {
         ...mockReport,
         metrics: {
@@ -293,14 +313,14 @@ describe("CiIntegration", () => {
         },
       };
 
-      vi.doMock("fs/promises", () => ({
+      vi.doMock('fs/promises', () => ({
         readFile: vi.fn().mockResolvedValue(JSON.stringify(baseline)),
         writeFile: vi.fn().mockResolvedValue(undefined),
         mkdir: vi.fn().mockResolvedValue(undefined),
       }));
 
       const ci = new CiIntegration(config, {
-        baselinePath: "./baseline.json",
+        baselinePath: './baseline.json',
         maxSizeIncrease: 10, // 10% threshold
       });
 
@@ -308,11 +328,11 @@ describe("CiIntegration", () => {
 
       expect(result.success).toBe(false);
       expect(result.exitCode).toBe(1);
-      expect(result.summary).toContain("Size increase");
-      expect(result.summary).toContain("exceeds threshold 10%");
+      expect(result.summary).toContain('Size increase');
+      expect(result.summary).toContain('exceeds threshold 10%');
     });
 
-    it("should fail when major regressions detected", async () => {
+    it('should fail when major regressions detected', async () => {
       const baseline: CssPerformanceReport = {
         ...mockReport,
         metrics: {
@@ -323,14 +343,14 @@ describe("CiIntegration", () => {
         },
       };
 
-      vi.doMock("fs/promises", () => ({
+      vi.doMock('fs/promises', () => ({
         readFile: vi.fn().mockResolvedValue(JSON.stringify(baseline)),
         writeFile: vi.fn().mockResolvedValue(undefined),
         mkdir: vi.fn().mockResolvedValue(undefined),
       }));
 
       const ci = new CiIntegration(config, {
-        baselinePath: "./baseline.json",
+        baselinePath: './baseline.json',
         failOnRegression: true,
       });
 
@@ -342,28 +362,26 @@ describe("CiIntegration", () => {
 
       // Should detect score decrease regression
       const scoreRegression = result.comparison?.regressions.find(
-        (r) => r.type === "score_decrease",
+        (r) => r.type === 'score_decrease'
       );
       expect(scoreRegression).toBeDefined();
-      expect(scoreRegression?.severity).toBe("minor"); // -10 points
+      expect(scoreRegression?.severity).toBe('minor'); // -10 points
 
       // Should detect size increase regression
-      const sizeRegression = result.comparison?.regressions.find(
-        (r) => r.type === "size_increase",
-      );
+      const sizeRegression = result.comparison?.regressions.find((r) => r.type === 'size_increase');
       expect(sizeRegression).toBeDefined();
-      expect(sizeRegression?.severity).toBe("major"); // 100% increase
+      expect(sizeRegression?.severity).toBe('major'); // 100% increase
     });
   });
 
-  describe("regression detection", () => {
-    it("should detect performance score regression", async () => {
+  describe('regression detection', () => {
+    it('should detect performance score regression', async () => {
       const current: CssPerformanceReport = {
         metadata: {
-          timestamp: "",
-          version: "",
-          environment: "",
-          configHash: "",
+          timestamp: '',
+          version: '',
+          environment: '',
+          configHash: '',
         },
         metrics: {
           performanceScore: 70,
@@ -390,35 +408,35 @@ describe("CiIntegration", () => {
         metrics: { ...current.metrics, performanceScore: 90 },
       };
 
-      vi.doMock("fs/promises", () => ({
+      vi.doMock('fs/promises', () => ({
         readFile: vi.fn().mockResolvedValue(JSON.stringify(baseline)),
         writeFile: vi.fn().mockResolvedValue(undefined),
         mkdir: vi.fn().mockResolvedValue(undefined),
       }));
 
       const ci = new CiIntegration(config, {
-        baselinePath: "./baseline.json",
+        baselinePath: './baseline.json',
       });
 
       const result = await ci.processReport(current);
 
       const scoreRegression = result.comparison?.regressions.find(
-        (r) => r.type === "score_decrease",
+        (r) => r.type === 'score_decrease'
       );
       expect(scoreRegression).toBeDefined();
       expect(scoreRegression?.current).toBe(70);
       expect(scoreRegression?.previous).toBe(90);
       expect(scoreRegression?.changePercent).toBe(-20);
-      expect(scoreRegression?.severity).toBe("major"); // -20 points
+      expect(scoreRegression?.severity).toBe('major'); // -20 points
     });
 
-    it("should detect size increase regression", async () => {
+    it('should detect size increase regression', async () => {
       const current: CssPerformanceReport = {
         metadata: {
-          timestamp: "",
-          version: "",
-          environment: "",
-          configHash: "",
+          timestamp: '',
+          version: '',
+          environment: '',
+          configHash: '',
         },
         metrics: {
           totalCompressedSize: 50000,
@@ -445,35 +463,33 @@ describe("CiIntegration", () => {
         metrics: { ...current.metrics, totalCompressedSize: 40000 },
       };
 
-      vi.doMock("fs/promises", () => ({
+      vi.doMock('fs/promises', () => ({
         readFile: vi.fn().mockResolvedValue(JSON.stringify(baseline)),
         writeFile: vi.fn().mockResolvedValue(undefined),
         mkdir: vi.fn().mockResolvedValue(undefined),
       }));
 
       const ci = new CiIntegration(config, {
-        baselinePath: "./baseline.json",
+        baselinePath: './baseline.json',
       });
 
       const result = await ci.processReport(current);
 
-      const sizeRegression = result.comparison?.regressions.find(
-        (r) => r.type === "size_increase",
-      );
+      const sizeRegression = result.comparison?.regressions.find((r) => r.type === 'size_increase');
       expect(sizeRegression).toBeDefined();
       expect(sizeRegression?.current).toBe(50000);
       expect(sizeRegression?.previous).toBe(40000);
       expect(sizeRegression?.changePercent).toBe(25); // 25% increase
-      expect(sizeRegression?.severity).toBe("major"); // >20%
+      expect(sizeRegression?.severity).toBe('major'); // >20%
     });
 
-    it("should detect load time regression", async () => {
+    it('should detect load time regression', async () => {
       const current: CssPerformanceReport = {
         metadata: {
-          timestamp: "",
-          version: "",
-          environment: "",
-          configHash: "",
+          timestamp: '',
+          version: '',
+          environment: '',
+          configHash: '',
         },
         metrics: {
           averageLoadTime: 3000,
@@ -500,37 +516,37 @@ describe("CiIntegration", () => {
         metrics: { ...current.metrics, averageLoadTime: 1500 },
       };
 
-      vi.doMock("fs/promises", () => ({
+      vi.doMock('fs/promises', () => ({
         readFile: vi.fn().mockResolvedValue(JSON.stringify(baseline)),
         writeFile: vi.fn().mockResolvedValue(undefined),
         mkdir: vi.fn().mockResolvedValue(undefined),
       }));
 
       const ci = new CiIntegration(config, {
-        baselinePath: "./baseline.json",
+        baselinePath: './baseline.json',
       });
 
       const result = await ci.processReport(current);
 
       const loadTimeRegression = result.comparison?.regressions.find(
-        (r) => r.type === "load_time_increase",
+        (r) => r.type === 'load_time_increase'
       );
       expect(loadTimeRegression).toBeDefined();
       expect(loadTimeRegression?.current).toBe(3000);
       expect(loadTimeRegression?.previous).toBe(1500);
       expect(loadTimeRegression?.changePercent).toBe(100); // 100% increase
-      expect(loadTimeRegression?.severity).toBe("major"); // >2000ms increase
+      expect(loadTimeRegression?.severity).toBe('major'); // >2000ms increase
     });
   });
 
-  describe("improvement detection", () => {
-    it("should detect performance improvements", async () => {
+  describe('improvement detection', () => {
+    it('should detect performance improvements', async () => {
       const current: CssPerformanceReport = {
         metadata: {
-          timestamp: "",
-          version: "",
-          environment: "",
-          configHash: "",
+          timestamp: '',
+          version: '',
+          environment: '',
+          configHash: '',
         },
         metrics: {
           performanceScore: 90,
@@ -563,14 +579,14 @@ describe("CiIntegration", () => {
         },
       };
 
-      vi.doMock("fs/promises", () => ({
+      vi.doMock('fs/promises', () => ({
         readFile: vi.fn().mockResolvedValue(JSON.stringify(baseline)),
         writeFile: vi.fn().mockResolvedValue(undefined),
         mkdir: vi.fn().mockResolvedValue(undefined),
       }));
 
       const ci = new CiIntegration(config, {
-        baselinePath: "./baseline.json",
+        baselinePath: './baseline.json',
       });
 
       const result = await ci.processReport(current);
@@ -579,39 +595,39 @@ describe("CiIntegration", () => {
 
       // Should detect score improvement
       const scoreImprovement = result.comparison?.improvements.find(
-        (i) => i.type === "score_increase",
+        (i) => i.type === 'score_increase'
       );
       expect(scoreImprovement).toBeDefined();
       expect(scoreImprovement?.improvementPercent).toBe(10);
 
       // Should detect size reduction
       const sizeImprovement = result.comparison?.improvements.find(
-        (i) => i.type === "size_reduction",
+        (i) => i.type === 'size_reduction'
       );
       expect(sizeImprovement).toBeDefined();
       expect(sizeImprovement?.improvementPercent).toBe(20);
 
       // Should detect load time improvement
       const loadTimeImprovement = result.comparison?.improvements.find(
-        (i) => i.type === "load_time_improvement",
+        (i) => i.type === 'load_time_improvement'
       );
       expect(loadTimeImprovement).toBeDefined();
 
       // Should detect compression improvement
       const compressionImprovement = result.comparison?.improvements.find(
-        (i) => i.type === "compression_improvement",
+        (i) => i.type === 'compression_improvement'
       );
       expect(compressionImprovement).toBeDefined();
     });
   });
 
-  describe("createCiIntegration", () => {
-    it("should create CI integration with default options", () => {
+  describe('createCiIntegration', () => {
+    it('should create CI integration with default options', () => {
       const ci = createCiIntegration(config);
       expect(ci).toBeInstanceOf(CiIntegration);
     });
 
-    it("should create CI integration with custom options", () => {
+    it('should create CI integration with custom options', () => {
       const options = {
         failOnBudgetViolation: false,
         minPerformanceScore: 90,
@@ -623,21 +639,21 @@ describe("CiIntegration", () => {
     });
   });
 
-  describe("webhook notifications", () => {
-    it("should send webhook notification on success", async () => {
+  describe('webhook notifications', () => {
+    it('should send webhook notification on success', async () => {
       const mockFetch = vi.fn().mockResolvedValue({ ok: true });
-      vi.stubGlobal("fetch", mockFetch);
+      vi.stubGlobal('fetch', mockFetch);
 
       const ci = new CiIntegration(config, {
-        webhookUrl: "https://webhook.example.com/css-performance",
+        webhookUrl: 'https://webhook.example.com/css-performance',
       });
 
       const mockReport: CssPerformanceReport = {
         metadata: {
-          timestamp: "",
-          version: "",
-          environment: "",
-          configHash: "",
+          timestamp: '',
+          version: '',
+          environment: '',
+          configHash: '',
         },
         metrics: {
           performanceScore: 85,
@@ -662,12 +678,12 @@ describe("CiIntegration", () => {
       await ci.processReport(mockReport);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        "https://webhook.example.com/css-performance",
+        'https://webhook.example.com/css-performance',
         expect.objectContaining({
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: expect.stringContaining('"performanceScore":85'),
-        }),
+        })
       );
     });
   });
