@@ -145,6 +145,8 @@ describe('Enhanced CLI Tests', () => {
       expect(result.stdout).toContain('--debug');
       expect(result.stdout).toContain('--input');
       expect(result.stdout).toContain('--output');
+      expect(result.stdout).toContain('--length');
+      expect(result.stdout).toContain('Minimum class name length (1-26)');
     });
 
     it('should display version information', async () => {
@@ -358,6 +360,105 @@ describe('Enhanced CLI Tests', () => {
       // commander.js handles unknown commands by treating them as positional arguments
       expect(result.exitCode).toBe(0);
       expect(result.stdout).toContain('🎨 @tw-enigma/cli');
+    });
+  });
+
+  describe('Length Option', () => {
+    it('should accept valid length values', async () => {
+      const result = await runCLI(['--length', '10']);
+
+      if (result.exitCode !== 0 && process.env.CI) {
+        console.log(`[CI DEBUG] Valid length test failed with exit code ${result.exitCode}`);
+      }
+
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('Minimum class name length: 10');
+    });
+
+    it('should accept minimum valid length (1)', async () => {
+      const result = await runCLI(['--length', '1']);
+
+      if (result.exitCode !== 0 && process.env.CI) {
+        console.log(`[CI DEBUG] Minimum length test failed with exit code ${result.exitCode}`);
+      }
+
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('Minimum class name length: 1');
+    });
+
+    it('should accept maximum valid length (26)', async () => {
+      const result = await runCLI(['--length', '26']);
+
+      if (result.exitCode !== 0 && process.env.CI) {
+        console.log(`[CI DEBUG] Maximum length test failed with exit code ${result.exitCode}`);
+      }
+
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('Minimum class name length: 26');
+    });
+
+    it('should reject length value below 1', async () => {
+      const result = await runCLI(['--length', '0']);
+
+      if (process.env.CI) {
+        console.log(`[CI DEBUG] Below minimum length test result: exit code ${result.exitCode}`);
+      }
+
+      expect(result.exitCode).toBe(1);
+      expect(result.stderr).toContain(
+        'Invalid length value: 0. Must be a number between 1 and 26.'
+      );
+    });
+
+    it('should reject length value above 26', async () => {
+      const result = await runCLI(['--length', '27']);
+
+      if (process.env.CI) {
+        console.log(`[CI DEBUG] Above maximum length test result: exit code ${result.exitCode}`);
+      }
+
+      expect(result.exitCode).toBe(1);
+      expect(result.stderr).toContain(
+        'Invalid length value: 27. Must be a number between 1 and 26.'
+      );
+    });
+
+    it('should reject non-numeric length values', async () => {
+      const result = await runCLI(['--length', 'abc']);
+
+      if (process.env.CI) {
+        console.log(`[CI DEBUG] Non-numeric length test result: exit code ${result.exitCode}`);
+      }
+
+      expect(result.exitCode).toBe(1);
+      expect(result.stderr).toContain(
+        'Invalid length value: abc. Must be a number between 1 and 26.'
+      );
+    });
+
+    it('should reject negative length values', async () => {
+      const result = await runCLI(['--length', '-5']);
+
+      if (process.env.CI) {
+        console.log(`[CI DEBUG] Negative length test result: exit code ${result.exitCode}`);
+      }
+
+      expect(result.exitCode).toBe(1);
+      expect(result.stderr).toContain(
+        'Invalid length value: -5. Must be a number between 1 and 26.'
+      );
+    });
+
+    it('should include length in debug output', async () => {
+      const result = await runCLI(['--debug', '--length', '15']);
+
+      if (result.exitCode !== 0 && process.env.CI) {
+        console.log(`[CI DEBUG] Length debug test failed with exit code ${result.exitCode}`);
+      }
+
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('Debug mode enabled');
+      expect(result.stdout).toContain('"length": 15');
     });
   });
 

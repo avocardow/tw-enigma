@@ -82,6 +82,7 @@ export { default as Reporter } from './reporter.js';
 
 // Export type definitions
 export type { CssOutputConfig, CssPerformanceReport } from '@tw-enigma/core';
+export type { GlobalOptions, ValidatedOptions } from './types.js';
 
 export function registerAllCommands(program: Command): void {
   // Register all available commands
@@ -123,7 +124,14 @@ export function cli(): void {
     .option('--quiet', 'Quiet mode (only warnings and errors)')
     .option('--format <format>', 'Output format (json, console, markdown, html, all)')
     .option('--max-concurrency <number>', 'Maximum number of concurrent operations', parseInt)
-    .option('--exclude-patterns <patterns...>', 'Patterns to exclude from processing');
+    .option('--exclude-patterns <patterns...>', 'Patterns to exclude from processing')
+    .option('--length <number>', 'Minimum class name length (1-26)', (value) => {
+      const num = parseInt(value, 10);
+      if (isNaN(num) || num < 1 || num > 26) {
+        throw new Error(`Invalid length value: ${value}. Must be a number between 1 and 26.`);
+      }
+      return num;
+    });
 
   // Set default action to handle case when only flags are passed
   program.action((options) => {
@@ -163,6 +171,7 @@ export function cli(): void {
             maxConcurrency: options.maxConcurrency || 4,
             excludePatterns: options.excludePatterns || [],
             quiet: !!options.quiet,
+            length: options.length,
           },
           null,
           2
@@ -193,6 +202,11 @@ export function cli(): void {
 
     if (options.excludePatterns && options.excludePatterns.length > 0) {
       console.log(`Exclude patterns: ${options.excludePatterns.join(', ')}`);
+      hasOutput = true;
+    }
+
+    if (options.length) {
+      console.log(`Minimum class name length: ${options.length}`);
       hasOutput = true;
     }
 

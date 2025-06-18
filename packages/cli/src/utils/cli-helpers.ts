@@ -83,6 +83,17 @@ export const commonOptions = {
     flags: '-d, --dry-run',
     description: 'Preview changes without modifying files',
   },
+  length: {
+    flags: '--length <number>',
+    description: 'Minimum class name length (1-26)',
+    parser: (value: string) => {
+      const num = parseInt(value, 10);
+      if (isNaN(num) || num < 1 || num > 26) {
+        throw new Error(`Invalid length value: ${value}. Must be a number between 1 and 26.`);
+      }
+      return num;
+    },
+  },
 };
 
 /**
@@ -143,6 +154,23 @@ export function formatDuration(ms: number): string {
   if (ms < 1000) return `${ms}ms`;
   if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`;
   return `${(ms / 60000).toFixed(1)}m`;
+}
+
+/**
+ * Validate length option value
+ */
+export function validateLength(value: string | number): number {
+  const num = typeof value === 'string' ? parseInt(value, 10) : value;
+
+  if (isNaN(num)) {
+    throw new Error(`Invalid length value: ${value}. Must be a number.`);
+  }
+
+  if (num < 1 || num > 26) {
+    throw new Error(`Invalid length value: ${value}. Must be a number between 1 and 26.`);
+  }
+
+  return num;
 }
 
 /**
