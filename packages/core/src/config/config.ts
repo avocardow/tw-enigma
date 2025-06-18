@@ -6,8 +6,9 @@
  */
 
 import { cosmiconfig, cosmiconfigSync } from 'cosmiconfig';
+import dotenv from 'dotenv';
 import { z } from 'zod';
-import { SimpleValidatorConfigSchema, type SimpleValidatorConfig } from '../patternValidator';
+import { SimpleValidatorConfigSchema, type SimpleValidatorConfig } from '../patternValidator.js';
 import {
   createPerformanceValidator,
   type PerformanceMetrics,
@@ -36,6 +37,9 @@ import type { ValidationResult } from './configValidator';
 import { createConfigValidator } from './configValidator';
 import type { ConfigWatcher } from './configWatcher';
 import { createConfigWatcher } from './configWatcher';
+
+// Load environment variables
+dotenv.config();
 
 // Create a logger instance for this module
 const logger = createLogger('config');
@@ -501,6 +505,55 @@ function isObject(item: unknown): item is Record<string, unknown> {
 }
 
 /**
+ * Load nameGeneration configuration from environment variables
+ * Environment variables use the format: TW_ENIGMA_NAME_GENERATION_<OPTION>
+ */
+function loadNameGenerationFromEnv(): Partial<NameGenerationOptions> {
+  const config: Partial<NameGenerationOptions> = {};
+
+  // Parse environment variables with TW_ENIGMA_NAME_GENERATION_ prefix
+  const minimumLength = process.env.TW_ENIGMA_NAME_GENERATION_MINIMUM_LENGTH;
+  if (minimumLength !== undefined) {
+    const parsed = parseInt(minimumLength, 10);
+    if (!isNaN(parsed) && parsed >= 1) {
+      config.minimumLength = parsed;
+    }
+  }
+
+  const strategy = process.env.TW_ENIGMA_NAME_GENERATION_STRATEGY;
+  if (strategy && ['sequential', 'frequency-optimized', 'hybrid', 'pretty'].includes(strategy)) {
+    config.strategy = strategy as NameGenerationOptions['strategy'];
+  }
+
+  const alphabet = process.env.TW_ENIGMA_NAME_GENERATION_ALPHABET;
+  if (alphabet) {
+    config.alphabet = alphabet;
+  }
+
+  const prefix = process.env.TW_ENIGMA_NAME_GENERATION_PREFIX;
+  if (prefix !== undefined) {
+    config.prefix = prefix;
+  }
+
+  const suffix = process.env.TW_ENIGMA_NAME_GENERATION_SUFFIX;
+  if (suffix !== undefined) {
+    config.suffix = suffix;
+  }
+
+  const numericSuffix = process.env.TW_ENIGMA_NAME_GENERATION_NUMERIC_SUFFIX;
+  if (numericSuffix !== undefined) {
+    config.numericSuffix = numericSuffix.toLowerCase() === 'true';
+  }
+
+  const ensureCssValid = process.env.TW_ENIGMA_NAME_GENERATION_ENSURE_CSS_VALID;
+  if (ensureCssValid !== undefined) {
+    config.ensureCssValid = ensureCssValid.toLowerCase() === 'true';
+  }
+
+  return config;
+}
+
+/**
  * Convert CLI arguments to configuration format
  */
 export function normalizeCliArguments(args: CliArguments): Partial<EnigmaConfig> {
@@ -696,7 +749,9 @@ export function normalizeCliArguments(args: CliArguments): Partial<EnigmaConfig>
   }
 
   // Name generation options
-  const nameGenerationConfig: Partial<NameGenerationOptions> = {};
+  const nameGenerationConfig: Partial<NameGenerationOptions> = loadNameGenerationFromEnv();
+
+  // CLI arguments override environment variables (higher priority)
   if (args.nameGenerationMinimumLength !== undefined)
     nameGenerationConfig.minimumLength = args.nameGenerationMinimumLength;
   if (args.nameGenerationStrategy !== undefined)
@@ -772,7 +827,7 @@ export function normalizeCliArguments(args: CliArguments): Partial<EnigmaConfig>
 /**
  * Validate configuration using Zod schema
  */
-export function validateConfig(config: unknown, filepath?: string): EnigmaConfig {
+export function validateBasicConfigSchema(config: unknown, filepath?: string): EnigmaConfig {
   try {
     const validatedConfig = EnigmaConfigSchema.parse(config);
     // Always return all top-level fields with defaults
@@ -1488,7 +1543,7 @@ export async function loadConfig(
     const mergedConfig = deepMerge(fileConfig, cliConfig);
 
     // Validate and apply defaults
-    const config = validateConfig(mergedConfig, filepath);
+    const config = validateBasicConfigSchema(mergedConfig, filepath);
 
     return {
       config,
@@ -1501,7 +1556,7 @@ export async function loadConfig(
     // If loading fails, create default config with CLI args, but only if valid
     try {
       const cliConfig = cliArgs ? normalizeCliArguments(cliArgs) : {};
-      const config = validateConfig(cliConfig);
+      const config = validateBasicConfigSchema(cliConfig);
       return {
         config,
         isEmpty: true,
@@ -1540,7 +1595,7 @@ export function loadConfigSync(cliArgs?: CliArguments, searchFrom?: string): Con
     const mergedConfig = deepMerge(fileConfig, cliConfig);
 
     // Validate and apply defaults
-    const config = validateConfig(mergedConfig, filepath);
+    const config = validateBasicConfigSchema(mergedConfig, filepath);
 
     return {
       config,
@@ -1553,7 +1608,7 @@ export function loadConfigSync(cliArgs?: CliArguments, searchFrom?: string): Con
     // If loading fails, create default config with CLI args, but only if valid
     try {
       const cliConfig = cliArgs ? normalizeCliArguments(cliArgs) : {};
-      const config = validateConfig(cliConfig);
+      const config = validateBasicConfigSchema(cliConfig);
       return {
         config,
         isEmpty: true,
@@ -1645,6 +1700,18 @@ module.exports = {
   //   // Whether generated names must be CSS-valid
   //   // ensureCssValid: true
   // },
+
+  // Environment Variable Support for Name Generation:
+  // You can also configure name generation using environment variables:
+  // TW_ENIGMA_NAME_GENERATION_MINIMUM_LENGTH=3
+  // TW_ENIGMA_NAME_GENERATION_STRATEGY=sequential
+  // TW_ENIGMA_NAME_GENERATION_ALPHABET=abcdefghijklm
+  // TW_ENIGMA_NAME_GENERATION_PREFIX=tw-
+  // TW_ENIGMA_NAME_GENERATION_SUFFIX=-gen
+  // TW_ENIGMA_NAME_GENERATION_NUMERIC_SUFFIX=false
+  // TW_ENIGMA_NAME_GENERATION_ENSURE_CSS_VALID=true
+  //
+  // Configuration Priority: CLI flags > Environment variables > Config file
 };
 `;
 }

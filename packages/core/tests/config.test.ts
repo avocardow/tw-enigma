@@ -642,8 +642,8 @@ describe('Name Generation Configuration', () => {
         },
       };
 
-      expect(() => validateConfig(config)).not.toThrow();
-      const validatedConfig = validateConfig(config);
+      expect(() => validateBasicConfigSchema(config)).not.toThrow();
+      const validatedConfig = validateBasicConfigSchema(config);
       expect(validatedConfig.nameGeneration).toEqual(
         expect.objectContaining({
           minimumLength: 3,
@@ -659,7 +659,7 @@ describe('Name Generation Configuration', () => {
 
     it('should apply defaults for nameGeneration when not provided', () => {
       const config = {};
-      const validatedConfig = validateConfig(config);
+      const validatedConfig = validateBasicConfigSchema(config);
 
       // nameGeneration should be undefined when not provided (optional field)
       expect(validatedConfig.nameGeneration).toBeUndefined();
@@ -672,7 +672,7 @@ describe('Name Generation Configuration', () => {
         },
       };
 
-      const validatedConfig = validateConfig(config);
+      const validatedConfig = validateBasicConfigSchema(config);
       expect(validatedConfig.nameGeneration?.minimumLength).toBe(5);
       expect(validatedConfig.nameGeneration?.strategy).toBe('frequency-optimized'); // actual default
       expect(validatedConfig.nameGeneration?.ensureCssValid).toBe(true); // default
@@ -686,7 +686,7 @@ describe('Name Generation Configuration', () => {
         },
       };
 
-      expect(() => validateConfig(config)).toThrow();
+      expect(() => validateBasicConfigSchema(config)).toThrow();
     });
   });
 
