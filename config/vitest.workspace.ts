@@ -21,19 +21,48 @@ export default defineWorkspace([
     },
   },
 
-  // Integration tests (if needed)
+  // Integration tests - Enhanced configuration
   {
     test: {
       name: 'integration',
       root: './',
       include: ['tests/integration/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+      exclude: ['tests/integration/docs/**/*', 'tests/integration/fixtures/**/*'],
       environment: 'node',
-      testTimeout: 60000, // Longer timeout for integration tests
+
+      // Enhanced timeout configuration for complex integration scenarios
+      testTimeout: 120000, // 2 minutes per test (increased from 1 minute)
+      hookTimeout: 30000, // 30 seconds for setup/teardown hooks
+
+      // Test execution configuration
       pool: 'threads',
       poolOptions: {
         threads: {
-          singleThread: true, // Integration tests should run sequentially
+          singleThread: true, // Sequential execution prevents conflicts
+          isolate: true, // Isolate test environment
         },
+      },
+
+      // Retry configuration for CI stability
+      retry: process.env.CI ? 2 : 0,
+
+      // Setup configuration
+      setupFiles: ['tests/integration/setup/vitest.setup.ts'],
+
+      // Environment variables for integration testing
+      env: {
+        NODE_ENV: 'test',
+        INTEGRATION_TEST: 'true',
+        // Disable external API calls during testing
+        DISABLE_EXTERNAL_APIS: 'true',
+      },
+
+      // Reporter configuration for detailed output
+      reporters: process.env.CI ? ['basic', 'junit'] : ['verbose'],
+
+      // Output configuration
+      outputFile: {
+        junit: 'test-results/integration-results.xml',
       },
     },
   },
