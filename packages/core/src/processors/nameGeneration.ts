@@ -6,7 +6,7 @@
  */
 
 import { z } from 'zod';
-import type { PatternFrequencyMap, AggregatedClassData } from './patternAnalysis.ts';
+import type { AggregatedClassData, PatternFrequencyMap } from './patternAnalysis.ts';
 
 /**
  * Configuration options for name generation
@@ -14,6 +14,23 @@ import type { PatternFrequencyMap, AggregatedClassData } from './patternAnalysis
 export const NameGenerationOptionsSchema = z.object({
   // Base configuration
   alphabet: z.string().min(2).default('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'),
+
+  /**
+   * Minimum length for generated class names
+   *
+   * Ensures all generated names meet a minimum character count.
+   * Names shorter than this will be padded with alphabet characters.
+   * Range: 1-26 characters (integers only)
+   *
+   * @default 1
+   * @example
+   * // With minimumLength: 3
+   * // 'a' becomes 'aaa'
+   * // 'ab' becomes 'aab'
+   * // 'abc' stays 'abc'
+   */
+  minimumLength: z.number().int().min(1).max(26).optional(),
+
   numericSuffix: z.boolean().default(true), // Allow 0-9 in names (but not at start)
 
   // Generation strategy
@@ -372,7 +389,40 @@ export function isReservedName(name: string, additionalReserved: Set<string> = n
 
 export function validateNameGenerationOptions(options: unknown): NameGenerationOptions {
   try {
-    return NameGenerationOptionsSchema.parse(options);
+    // First validate that the input is an object
+    if (typeof options !== 'object' || options === null) {
+      throw new Error('Options must be an object');
+    }
+
+    const inputOptions = options as Record<string, unknown>;
+
+    // If minimumLength is provided, validate it strictly before Zod parsing
+    if ('minimumLength' in inputOptions) {
+      const minLength = inputOptions.minimumLength;
+
+      // Check type first
+      if (typeof minLength !== 'number') {
+        throw new Error(`minimumLength must be a number, received ${typeof minLength}`);
+      }
+
+      // Check if it's an integer
+      if (!Number.isInteger(minLength)) {
+        throw new Error(`minimumLength must be an integer, received ${minLength}`);
+      }
+
+      // Check range
+      if (minLength < 1 || minLength > 26) {
+        throw new Error(`minimumLength must be between 1 and 26, received ${minLength}`);
+      }
+    }
+
+    const parsed = NameGenerationOptionsSchema.parse(options);
+
+    // Handle default values manually to ensure proper validation
+    return {
+      ...parsed,
+      minimumLength: parsed.minimumLength ?? 1, // Set default value manually
+    };
   } catch (error) {
     throw new NameGenerationError(
       `Invalid name generation options: ${error instanceof Error ? error.message : String(error)}`,
@@ -739,7 +789,7 @@ export function generateSequentialName(index: number, options: NameGenerationOpt
     throw new NameGenerationError(`Invalid index: ${index}. Must be non-negative.`);
   }
 
-  const { alphabet, numericSuffix, prefix, suffix, ensureCssValid } = options;
+  const { alphabet, numericSuffix, prefix, suffix, ensureCssValid, minimumLength } = options;
 
   let baseName: string;
 
@@ -750,6 +800,15 @@ export function generateSequentialName(index: number, options: NameGenerationOpt
     baseName = toBase36(index, true);
   } else {
     baseName = toCustomBase(index, alphabet, ensureCssValid);
+  }
+
+  // Ensure baseName meets minimum length requirement
+  // Pad with first character of alphabet if needed
+  const minLength = minimumLength ?? 1; // Use default if undefined
+  if (baseName.length < minLength) {
+    const paddingChar = alphabet[0];
+    const paddingNeeded = minLength - baseName.length;
+    baseName = paddingChar.repeat(paddingNeeded) + baseName;
   }
 
   // Apply prefix and suffix
@@ -1031,7 +1090,7 @@ export function generatePrettyName(
     throw new NameGenerationError(`Invalid index: ${index}. Must be non-negative.`);
   }
 
-  const { alphabet, prettyNameMaxLength, prettyNamePreferShorter } = options;
+  const { alphabet, prettyNameMaxLength, prettyNamePreferShorter, minimumLength } = options;
   const maxLength = prettyNameMaxLength ?? 6; // Use nullish coalescing instead of || to handle 0 properly
 
   // Add validation for invalid options
@@ -1054,10 +1113,13 @@ export function generatePrettyName(
   // Try to generate a pretty name
   let result: PrettyNameResult | null = null;
 
-  // Strategy: try shorter lengths first if preferred
-  const lengths = prettyNamePreferShorter
-    ? Array.from({ length: maxLength }, (_, i) => i + 1)
-    : Array.from({ length: maxLength }, (_, i) => maxLength - i);
+  // Strategy: try shorter lengths first if preferred, but respect minimumLength
+  const minLength = minimumLength ?? 1; // Use default if undefined
+  const availableLengths = Array.from({ length: maxLength }, (_, i) => i + 1).filter(
+    (length) => length >= minLength
+  );
+
+  const lengths = prettyNamePreferShorter ? availableLengths : availableLengths.reverse();
 
   for (const length of lengths) {
     const permutation = getNextPermutation(cache, length, alphabet);
@@ -1967,6 +2029,7 @@ export async function generateOptimizedNames(
     strategy: 'frequency-optimized',
     batchSize: 1000,
     alphabet: 'abcdefghijklmnopqrstuvwxyz',
+    minimumLength: 1,
     numericSuffix: false,
     startIndex: 0,
     enableFrequencyOptimization: true,
@@ -2417,6 +2480,7 @@ export async function generateSimpleNames(
     strategy: 'sequential',
     batchSize: 1000,
     alphabet: 'abcdefghijklmnopqrstuvwxyz',
+    minimumLength: 1,
     numericSuffix: false,
     startIndex: 0,
     enableFrequencyOptimization: false,
