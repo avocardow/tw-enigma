@@ -821,7 +821,10 @@ export function generateSequentialName(index: number, options: NameGenerationOpt
     throw new NameGenerationError(`Invalid index: ${index}. Must be non-negative.`);
   }
 
-  const { alphabet, numericSuffix, prefix, suffix, ensureCssValid, minimumLength } = options;
+  // Ensure options have proper defaults applied
+  const validatedOptions = validateNameGenerationOptions(options);
+  const { alphabet, numericSuffix, prefix, suffix, ensureCssValid, minimumLength } =
+    validatedOptions;
 
   let baseName: string;
 
