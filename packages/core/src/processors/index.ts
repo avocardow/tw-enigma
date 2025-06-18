@@ -14,8 +14,14 @@ export * from './jsExtractor';
 export * from './jsRewriter';
 
 // Pattern Analysis and Name Generation
-export * from './patternAnalysis';
 export * from './nameGeneration';
+export * from './patternAnalysis';
+
+// Length Enforcement
+export * from './lengthEnforcement';
+
+// CSS Injection
+export * from './cssInjector';
 
 // Version export for processors module
 export const processorsVersion = '0.1.0';

@@ -6,6 +6,7 @@
  */
 
 import { z } from 'zod';
+import { enforceMinimumLength } from './lengthEnforcement';
 import type { AggregatedClassData, PatternFrequencyMap } from './patternAnalysis.ts';
 
 /**
@@ -802,13 +803,12 @@ export function generateSequentialName(index: number, options: NameGenerationOpt
     baseName = toCustomBase(index, alphabet, ensureCssValid);
   }
 
-  // Ensure baseName meets minimum length requirement
-  // Pad with first character of alphabet if needed
-  const minLength = minimumLength ?? 1; // Use default if undefined
-  if (baseName.length < minLength) {
-    const paddingChar = alphabet[0];
-    const paddingNeeded = minLength - baseName.length;
-    baseName = paddingChar.repeat(paddingNeeded) + baseName;
+  // Ensure baseName meets minimum length requirement using cryptographically secure padding
+  if (minimumLength && minimumLength > 1) {
+    baseName = enforceMinimumLength(baseName, minimumLength, {
+      alphabet,
+      ensureCssValid,
+    });
   }
 
   // Apply prefix and suffix
