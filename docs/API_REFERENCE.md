@@ -424,6 +424,9 @@ interface EnigmaConfig {
   // CSS generation settings
   css: CssGenerationOptions;
 
+  // Name generation settings
+  nameGeneration?: NameGenerationOptions;
+
   // Performance settings
   performance: {
     maxConcurrency: number;
@@ -431,6 +434,96 @@ interface EnigmaConfig {
     timeout: number;
   };
 }
+```
+
+##### `NameGenerationOptions`
+
+Configuration options for CSS class name generation and optimization.
+
+```typescript
+interface NameGenerationOptions {
+  // Length configuration
+  minimumLength?: number; // Minimum length for generated class names (1-26)
+
+  // Base configuration
+  alphabet?: string; // Character set for name generation
+  strategy?: 'sequential' | 'frequency-optimized' | 'hybrid' | 'pretty';
+  startIndex?: number; // Starting index for sequential generation
+
+  // Name formatting
+  prefix?: string; // Prefix for all generated names
+  suffix?: string; // Suffix for all generated names
+  numericSuffix?: boolean; // Allow 0-9 in names (but not at start)
+
+  // Pretty name generation
+  prettyNameMaxLength?: number; // Maximum length for pretty names (1-10)
+  prettyNamePreferShorter?: boolean; // Prefer shorter names when possible
+  prettyNameExhaustionStrategy?: 'fallback-sequential' | 'fallback-hybrid' | 'error';
+
+  // Optimization settings
+  enableFrequencyOptimization?: boolean;
+  frequencyThreshold?: number; // Minimum frequency for optimization
+
+  // Collision avoidance
+  reservedNames?: string[]; // Names to avoid generating
+  avoidConflicts?: boolean; // Enable collision detection
+
+  // Performance options
+  enableCaching?: boolean;
+  batchSize?: number; // Names to generate per batch
+  maxCacheSize?: number; // Maximum cache entries
+
+  // CSS compliance
+  ensureCssValid?: boolean; // Ensure names are valid CSS identifiers
+}
+```
+
+**Usage Examples:**
+
+```typescript
+// Basic length enforcement
+const config: NameGenerationOptions = {
+  minimumLength: 8, // Generate names at least 8 characters long
+  strategy: 'sequential',
+};
+
+// Enhanced security configuration
+const secureConfig: NameGenerationOptions = {
+  minimumLength: 12,
+  strategy: 'frequency-optimized',
+  alphabet: 'abcdefghijklmnopqrstuvwxyz', // Lowercase only
+  prefix: 'sec-',
+  ensureCssValid: true,
+};
+
+// Pretty names with length constraints
+const prettyConfig: NameGenerationOptions = {
+  minimumLength: 6,
+  strategy: 'pretty',
+  prettyNameMaxLength: 8,
+  prettyNamePreferShorter: false,
+  prettyNameExhaustionStrategy: 'fallback-hybrid',
+};
+```
+
+**Security Benefits of minimumLength:**
+
+The `minimumLength` field provides enhanced security through class name obfuscation:
+
+- **Length 1-3**: Basic obfuscation (18-18K combinations)
+- **Length 4-6**: Moderate security (456K-476M combinations)
+- **Length 7-10**: High security (12B-18.7T combinations)
+- **Length 11+**: Maximum security (487T+ combinations)
+
+**Environment Variable Support:**
+
+```bash
+# Configure via environment variables
+TW_ENIGMA_NAME_GENERATION_MINIMUM_LENGTH=8
+TW_ENIGMA_NAME_GENERATION_STRATEGY=sequential
+TW_ENIGMA_NAME_GENERATION_ALPHABET=abcdefghijklm
+TW_ENIGMA_NAME_GENERATION_PREFIX=tw-
+TW_ENIGMA_NAME_GENERATION_ENSURE_CSS_VALID=true
 ```
 
 ### Utilities

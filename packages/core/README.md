@@ -231,6 +231,13 @@ export default {
     minimumFrequency: 2,
   },
 
+  // Name generation for class name optimization
+  nameGeneration: {
+    minimumLength: 6, // Enhanced security through longer names
+    strategy: 'frequency-optimized',
+    ensureCssValid: true,
+  },
+
   performance: {
     maxConcurrency: 4,
     memoryLimit: 512,
@@ -255,6 +262,85 @@ interface CssGenerationOptions {
   enableOptimizations: boolean;
 }
 ```
+
+### Name Generation Options
+
+The `nameGeneration` configuration controls how optimized CSS class names are generated:
+
+```typescript
+interface NameGenerationOptions {
+  // Length enforcement
+  minimumLength?: number; // 1-26: Minimum class name length for security
+
+  // Generation strategy
+  strategy?: 'sequential' | 'frequency-optimized' | 'hybrid' | 'pretty';
+  alphabet?: string; // Character set for name generation
+  startIndex?: number; // Starting index for sequential generation
+
+  // Name formatting
+  prefix?: string; // Prefix for all generated names
+  suffix?: string; // Suffix for all generated names
+  numericSuffix?: boolean; // Allow numbers in names
+
+  // CSS compliance
+  ensureCssValid?: boolean; // Ensure valid CSS identifiers
+  reservedNames?: string[]; // Names to avoid
+}
+```
+
+**Configuration Examples:**
+
+```javascript
+// enigma.config.js
+export default {
+  // Basic length enforcement for security
+  nameGeneration: {
+    minimumLength: 8,
+    strategy: 'sequential',
+    ensureCssValid: true,
+  },
+
+  // Advanced configuration
+  nameGeneration: {
+    minimumLength: 10,
+    strategy: 'frequency-optimized',
+    alphabet: 'abcdefghijklmnopqrstuvwxyz',
+    prefix: 'tw-',
+    suffix: '',
+    reservedNames: ['auto', 'inherit', 'initial'],
+  },
+
+  // Pretty names with length constraints
+  nameGeneration: {
+    minimumLength: 6,
+    strategy: 'pretty',
+    prettyNameMaxLength: 8,
+    prettyNamePreferShorter: false,
+  },
+};
+```
+
+**Environment Variable Support:**
+
+```bash
+# Configure via environment variables
+export TW_ENIGMA_NAME_GENERATION_MINIMUM_LENGTH=8
+export TW_ENIGMA_NAME_GENERATION_STRATEGY=sequential
+export TW_ENIGMA_NAME_GENERATION_ALPHABET=abcdefghijklm
+export TW_ENIGMA_NAME_GENERATION_PREFIX=tw-
+export TW_ENIGMA_NAME_GENERATION_ENSURE_CSS_VALID=true
+
+# Configuration priority: CLI flags > Environment > Config file
+```
+
+**Security Benefits by Length:**
+
+| Length | Combinations | Security Level | Use Case      |
+| ------ | ------------ | -------------- | ------------- |
+| 1-3    | 18-18K       | Basic          | Development   |
+| 4-6    | 456K-476M    | Moderate       | Internal apps |
+| 7-10   | 12B-18.7T    | High           | Public apps   |
+| 11+    | 487T+        | Maximum        | Enterprise    |
 
 ## 🔧 Advanced Usage
 

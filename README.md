@@ -72,6 +72,65 @@ npx enigma generate
 
 ---
 
+## 🔧 CLI Global Options
+
+The `@tw-enigma/cli` supports several global options that work with all commands:
+
+### Class Name Generation
+
+- **`--length <number>`** - Set minimum class name length (1-26)
+
+  ```bash
+  # Generate longer class names for better obfuscation
+  npx enigma --length 8 init
+  npx enigma --length 12 generate
+
+  # Use with any command
+  npx enigma --length 5 analyze --report
+  ```
+
+### Output Control
+
+- **`--verbose`** - Enable detailed logging and debug information
+- **`--debug`** - Enable debug mode with comprehensive diagnostics
+- **`--pretty`** - Format output for better readability
+- **`--quiet`** - Suppress all output except warnings and errors
+
+### Configuration
+
+- **`--config <path>`** - Specify custom configuration file path
+- **`--input <path>`** - Override input directory
+- **`--output <path>`** - Override output directory
+
+### Performance
+
+- **`--max-concurrency <number>`** - Control parallel processing
+- **`--exclude-patterns <patterns...>`** - Exclude files from processing
+
+### Example Usage
+
+```bash
+# Enhanced security with longer class names
+npx enigma --length 10 --verbose generate
+
+# Custom configuration with performance tuning
+npx enigma --config custom.config.js --max-concurrency 8 analyze
+
+# Development workflow with detailed output
+npx enigma --length 6 --pretty --debug init
+```
+
+**📊 Security Benefits of Longer Class Names:**
+
+| Length | Combinations | Security Level |
+| ------ | ------------ | -------------- |
+| 1-3    | <18K         | Basic          |
+| 4-6    | 18K-17M      | Moderate       |
+| 7-10   | 17M-3.7T     | High           |
+| 11+    | >3.7T        | Maximum        |
+
+---
+
 ### 📦 Packages
 
 This monorepo contains the following packages:

@@ -106,6 +106,76 @@ enigma watch
 enigma watch --hmr --verbose
 ```
 
+## 🔧 Global Options
+
+All `enigma` commands support these global options that can be combined with any command:
+
+### Class Name Generation
+
+- **`--length <number>`** - Set minimum class name length (1-26)
+
+  ```bash
+  # Generate longer class names for enhanced security
+  enigma --length 8 init --framework react
+  enigma --length 12 generate --strategy atomic
+
+  # Use with analysis and reporting
+  enigma --length 6 analyze --report --verbose
+  ```
+
+### Output Control
+
+- **`--verbose`** - Enable detailed logging and debug information
+- **`--debug`** - Enable debug mode with comprehensive diagnostics
+- **`--pretty`** - Format output for better readability
+- **`--quiet`** - Suppress all output except warnings and errors
+
+### Configuration
+
+- **`--config <path>`** - Specify custom configuration file path
+- **`--input <path>`** - Override input directory
+- **`--output <path>`** - Override output directory
+
+### Performance & Processing
+
+- **`--max-concurrency <number>`** - Control parallel processing threads
+- **`--exclude-patterns <patterns...>`** - Exclude files from processing
+- **`--format <format>`** - Output format (json, console, markdown, html, all)
+
+### Usage Examples
+
+```bash
+# Enhanced security with longer class names
+enigma --length 10 --verbose generate --strategy chunked
+
+# Custom configuration with performance tuning
+enigma --config ./config/enigma.config.js --max-concurrency 8 analyze
+
+# Development workflow with detailed output
+enigma --length 6 --pretty --debug init --interactive
+
+# Production build with optimized settings
+enigma --length 12 --quiet generate --minify --sourcemap
+```
+
+### Security & Obfuscation Benefits
+
+The `--length` flag provides enhanced security through class name obfuscation:
+
+| Length | Possible Combinations | Security Level | Use Case                        |
+| ------ | --------------------- | -------------- | ------------------------------- |
+| 1-3    | 18-18,278             | Basic          | Development, small projects     |
+| 4-6    | 456K-476M             | Moderate       | Medium projects, basic security |
+| 7-10   | 12B-18.7T             | High           | Enterprise, security-focused    |
+| 11+    | 487T+                 | Maximum        | High-security, government       |
+
+**Performance Considerations:**
+
+- Longer names increase CSS file size but improve obfuscation
+- Length 6-8 provides excellent security/performance balance
+- Length 10+ recommended for maximum security requirements
+- Use warning system to monitor performance impact
+
 ## 📋 Commands
 
 ### `enigma init`

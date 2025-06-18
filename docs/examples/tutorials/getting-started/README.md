@@ -61,6 +61,12 @@ npm install -D @tw-enigma/webpack-plugin  # For Webpack
 npx tw-enigma --version
 
 # Should output something like: @tw-enigma/cli v1.0.0
+
+# Test global options (like --length)
+npx tw-enigma --help
+
+# Example with --length flag for secure class names
+npx tw-enigma --length 8 --help
 ```
 
 ✅ **Checkpoint:** You should now have tw-enigma installed and ready to use.
@@ -86,6 +92,13 @@ export default defineConfig({
     strategy: 'atomic', // Start with atomic strategy
     threshold: 2, // Remove classes used less than 2 times
     minify: true, // Minify the output CSS
+  },
+
+  // CSS class name generation (security & obfuscation)
+  nameGeneration: {
+    minimumLength: 6, // Generate class names with minimum 6 characters
+    strategy: 'frequency-optimized', // Optimize based on usage frequency
+    ensureCssValid: true, // Ensure CSS-compliant identifiers
   },
 
   // Where to output the optimized CSS
@@ -282,6 +295,12 @@ npm run build
 
 # Analyze the optimization results
 npx tw-enigma analyze
+
+# Security-focused analysis with longer class names
+npx tw-enigma --length 8 analyze --report
+
+# Production optimization with enhanced security
+npx tw-enigma --length 10 generate --minify --sourcemap
 ```
 
 ✅ **Checkpoint:** You should see your app running with tw-enigma analyzing CSS usage.
@@ -296,12 +315,16 @@ Let's examine what tw-enigma found and optimized.
 # Get a quick overview
 npx tw-enigma analyze --summary
 
+# Security-focused analysis with longer class names
+npx tw-enigma --length 8 analyze --summary --verbose
+
 # Example output:
-# ✅ Analysis Complete
+# ✅ Analysis Complete (with 8-character minimum class names)
 # 📊 CSS Classes Found: 1,247
-# 🎯 CSS Classes Used: 89
+# 🎯 CSS Classes Used: 89 (optimized with 8-char names)
 # 🗑️  CSS Classes Removed: 1,158
-# 📉 Size Reduction: 96.2% (3.2MB → 125KB)
+# 📉 Size Reduction: 94.8% (3.2MB → 165KB)
+# 🔒 Security Enhancement: High obfuscation level
 ```
 
 ### Generate Detailed Report
@@ -309,6 +332,9 @@ npx tw-enigma analyze --summary
 ```bash
 # Generate a detailed report
 npx tw-enigma analyze --detailed --output reports/analysis.json
+
+# Generate secure report with class name obfuscation
+npx tw-enigma --length 10 analyze --detailed --output reports/secure-analysis.json
 
 # View the report in browser
 npx tw-enigma serve-report reports/analysis.json
