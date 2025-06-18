@@ -41,7 +41,7 @@ graph TD
     B -->|Push to main| C[CI Workflow]
     B -->|Pull Request| D[Changeset PR Workflow]
     B -->|Manual| E[Release Workflow]
-    
+
     C --> F[Install & Cache]
     C --> G[Lint & Format]
     C --> H[Type Check]
@@ -49,16 +49,16 @@ graph TD
     C --> J[Test]
     C --> K[Security Scan]
     C --> L[Performance Test]
-    
+
     D --> M[Validate Changesets]
     D --> N[Preview Release]
     D --> O[Auto-label PR]
-    
+
     E --> P[Validate Release]
     E --> Q[Build Artifacts]
     E --> R[Publish npm]
     E --> S[GitHub Release]
-    
+
     F --> T[(Multi-layer Cache)]
     T --> U[pnpm Store]
     T --> V[node_modules]
@@ -76,11 +76,13 @@ graph TD
 **Purpose**: Comprehensive testing and validation
 
 #### Jobs Overview
+
 ```yaml
 install → lint, type-check, build → test, e2e → security → performance → validate
 ```
 
 #### Key Features
+
 - **Multi-Node.js Matrix**: Tests on Node.js 18.x and 20.x
 - **Advanced Caching**: 6-layer caching strategy
 - **Parallel Execution**: Jobs run concurrently where possible
@@ -88,6 +90,7 @@ install → lint, type-check, build → test, e2e → security → performance �
 - **Comprehensive Validation**: All aspects tested before merge
 
 #### Performance Targets
+
 - **Dependencies Cache Hit Rate**: 85%+
 - **TypeScript Cache Hit Rate**: 70%+
 - **ESLint Cache Hit Rate**: 80%+
@@ -101,6 +104,7 @@ install → lint, type-check, build → test, e2e → security → performance �
 **Purpose**: Changeset validation and release preview
 
 #### Features
+
 - **Changeset Validation**: Ensures proper format and content
 - **Release Preview**: Shows version impact and changelog
 - **Automatic Labeling**: Adds `release` label for PRs with changesets
@@ -113,6 +117,7 @@ install → lint, type-check, build → test, e2e → security → performance �
 **Purpose**: Automated versioning, building, and publishing
 
 #### Release Pipeline
+
 1. **Validate**: Check changesets and package integrity
 2. **Test**: Optional comprehensive testing (skip for emergencies)
 3. **Build**: Create release artifacts and packages
@@ -121,6 +126,7 @@ install → lint, type-check, build → test, e2e → security → performance �
 6. **Post-Release**: Cleanup and notifications
 
 #### Manual Release Options
+
 - **Release Type**: auto, patch, minor, major
 - **Skip Tests**: For emergency releases
 - **Conditional Execution**: Smart job dependencies
@@ -148,6 +154,7 @@ HUSKY              # Disabled in CI (0)
 ### Security Scanning
 
 #### Dependency Audits
+
 ```yaml
 - name: Run security audit
   run: pnpm audit --audit-level=moderate
@@ -157,6 +164,7 @@ HUSKY              # Disabled in CI (0)
 ```
 
 #### License Compliance
+
 ```yaml
 - name: Check licenses
   run: pnpm licenses list --prod --json
@@ -174,12 +182,14 @@ HUSKY              # Disabled in CI (0)
 ### Caching Strategy
 
 #### 1. pnpm Store Cache
+
 ```yaml
 path: ${{ env.STORE_PATH }}
 key: ${{ runner.os }}-pnpm-store-${{ steps.pnpm-version.outputs.version }}-${{ hashFiles('**/pnpm-lock.yaml') }}
 ```
 
 #### 2. node_modules Cache
+
 ```yaml
 path: |
   node_modules
@@ -188,14 +198,16 @@ key: ${{ runner.os }}-node-modules-${{ needs.install.outputs.pnpm-version }}-${{
 ```
 
 #### 3. TypeScript Cache
+
 ```yaml
 path: |
   packages/*/tsconfig.tsbuildinfo
   node_modules/.cache/typescript/**
-key: ${{ runner.os }}-typescript-${{ hashFiles('**/tsconfig.json', '**/tsconfig.base.json', 'packages/*/src/**/*.ts') }}
+key: ${{ runner.os }}-typescript-${{ hashFiles('**/tsconfig.json', 'config/tsconfig.base.json', 'packages/*/src/**/*.ts') }}
 ```
 
 #### 4. ESLint Cache
+
 ```yaml
 path: |
   node_modules/.cache/eslint/**
@@ -204,6 +216,7 @@ key: ${{ runner.os }}-eslint-${{ hashFiles('.eslintrc.js', '**/eslint.config.*',
 ```
 
 #### 5. Vitest Cache
+
 ```yaml
 path: |
   node_modules/.cache/vitest/**
@@ -212,6 +225,7 @@ key: ${{ runner.os }}-vitest-${{ hashFiles('**/vitest.config.*', '**/vitest.work
 ```
 
 #### 6. Turborepo Cache
+
 ```yaml
 path: .turbo
 key: ${{ runner.os }}-turbo-${{ github.sha }}-${{ matrix.node-version }}
@@ -223,6 +237,7 @@ restore-keys: |
 ### Cache Configuration
 
 See `.github/cache-config.json` for detailed cache settings:
+
 - Compression algorithms (zstd, gzip)
 - Cleanup policies and retention
 - Performance monitoring
@@ -243,24 +258,28 @@ Each workflow run includes metrics in job summaries:
 
 ```markdown
 ## 📊 CI Pipeline Cache Metrics
-| Component | Status | Cache Strategy |
-|-----------|--------|----------------|
-| Dependencies | ✅ | pnpm store + node_modules |
-| TypeScript | ✅ | tsbuildinfo + compiler cache |
-| ESLint | ✅ | eslint cache + results |
-| Vitest | ✅ | test cache + results |
-| Turborepo | ✅ | build cache + artifacts |
+
+| Component    | Status | Cache Strategy               |
+| ------------ | ------ | ---------------------------- |
+| Dependencies | ✅     | pnpm store + node_modules    |
+| TypeScript   | ✅     | tsbuildinfo + compiler cache |
+| ESLint       | ✅     | eslint cache + results       |
+| Vitest       | ✅     | test cache + results         |
+| Turborepo    | ✅     | build cache + artifacts      |
 ```
 
 ### Performance Tracking
 
 #### Build Time Monitoring
+
 - **Target Build Time**: <2 minutes
 - **Test Time**: <2 minutes unit tests, <5 minutes integration
 - **Total CI Time**: <10 minutes for full pipeline
 
 #### Cache Effectiveness
+
 Monitor cache hit rates in action logs:
+
 ```bash
 Cache restored from key: ubuntu-latest-pnpm-store-8-abc123...
 Cache hit rate: 87% (target: 85%+)
@@ -269,6 +288,7 @@ Cache hit rate: 87% (target: 85%+)
 ### Debugging Tools
 
 #### Verbose Logging
+
 ```bash
 # Enable debug mode
 ACTIONS_STEP_DEBUG=true
@@ -278,6 +298,7 @@ npm config set loglevel verbose
 ```
 
 #### Cache Debugging
+
 ```bash
 # List cache contents
 pnpm store status
@@ -287,6 +308,7 @@ pnpm store verify
 ```
 
 #### Workflow Debugging
+
 ```yaml
 - name: Debug Environment
   run: |
@@ -302,16 +324,19 @@ pnpm store verify
 ### Regular Tasks
 
 #### Weekly
+
 - Review cache hit rates and performance metrics
 - Check for security advisories and update dependencies
 - Monitor npm package health and download statistics
 
 #### Monthly
+
 - Update GitHub Actions to latest versions
 - Review and optimize cache strategies
 - Audit CI/CD pipeline performance
 
 #### Quarterly
+
 - Review and update Node.js versions in matrix
 - Evaluate new GitHub Actions features
 - Performance benchmark review
@@ -319,6 +344,7 @@ pnpm store verify
 ### Cache Maintenance
 
 #### Cache Cleanup
+
 ```bash
 # Manual cache cleanup (if needed)
 gh api \
@@ -328,6 +354,7 @@ gh api \
 ```
 
 #### Cache Analytics
+
 ```bash
 # List all caches
 gh api \
@@ -343,11 +370,13 @@ gh api \
 ### Dependency Updates
 
 #### Automated Updates
+
 - Dependabot configured for security updates
 - Regular dependency review in PRs
 - Changesets for dependency updates
 
 #### Manual Updates
+
 ```bash
 # Update all dependencies
 pnpm update
@@ -362,32 +391,40 @@ pnpm update --latest   # Latest versions
 ### Common Issues
 
 #### Cache Misses
+
 **Problem**: Low cache hit rates, slow CI times
 **Solutions**:
+
 1. Check cache key patterns for consistency
 2. Verify file hash includes all relevant files
 3. Review restore-keys for proper fallback
 4. Monitor cache size and eviction policies
 
 #### Build Failures
+
 **Problem**: Inconsistent build failures
 **Solutions**:
+
 1. Check Node.js version compatibility
 2. Verify dependency versions and lock file
 3. Review environment variables and secrets
 4. Check for race conditions in parallel jobs
 
 #### Publication Failures
+
 **Problem**: npm publish errors
 **Solutions**:
+
 1. Verify NPM_TOKEN has correct permissions
 2. Check package version doesn't already exist
 3. Review package.json configuration
 4. Verify npm registry settings
 
 #### Workflow Timeouts
+
 **Problem**: Jobs timing out or hanging
 **Solutions**:
+
 1. Review resource usage and job complexity
 2. Split large jobs into smaller units
 3. Add timeout configurations
@@ -396,6 +433,7 @@ pnpm update --latest   # Latest versions
 ### Debug Commands
 
 #### CI Environment Debug
+
 ```bash
 # Check environment
 env | sort
@@ -412,6 +450,7 @@ pnpm config list
 ```
 
 #### Package Debug
+
 ```bash
 # Verify package structure
 pnpm list --depth=0
@@ -422,6 +461,7 @@ ls -la packages/*/dist/
 ```
 
 #### Release Debug
+
 ```bash
 # Check changeset status
 pnpm changeset status
@@ -434,18 +474,22 @@ npm view @tw-enigma/cli versions --json
 ### Emergency Procedures
 
 #### Skip CI Checks
+
 Add `[skip ci]` to commit message (use sparingly):
+
 ```bash
 git commit -m "docs: update README [skip ci]"
 ```
 
 #### Emergency Release
+
 1. Use manual workflow dispatch
 2. Select appropriate version bump
 3. Enable "skip tests" if critical
 4. Monitor release process closely
 
 #### Rollback Release
+
 ```bash
 # Deprecate problematic version
 npm deprecate @tw-enigma/core@1.0.0 "Critical issue - use 1.0.1+"
@@ -473,4 +517,4 @@ pnpm version && pnpm release
 
 ---
 
-For CI/CD issues or questions, please open an issue with the `ci/cd` label. 
+For CI/CD issues or questions, please open an issue with the `ci/cd` label.

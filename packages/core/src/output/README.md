@@ -19,16 +19,13 @@ The system consists of several core components working together:
 ### Basic Usage
 
 ```typescript
-import {
-  CssOutputOrchestrator,
-  CssOutputConfig,
-} from "./cssOutputOrchestrator";
+import { CssOutputOrchestrator, CssOutputConfig } from './cssOutputOrchestrator';
 
 // Create configuration
 const config: CssOutputConfig = {
-  strategy: "chunked",
+  strategy: 'chunked',
   chunking: {
-    strategy: "component",
+    strategy: 'component',
     chunkSizeTarget: 50 * 1024, // 50KB
     maxChunks: 10,
   },
@@ -47,7 +44,7 @@ const orchestrator = new CssOutputOrchestrator(config);
 
 // Process CSS bundles
 const results = await orchestrator.optimizeCssOutput(bundles, {
-  outputDir: "./dist/css",
+  outputDir: './dist/css',
   generateReport: true,
 });
 
@@ -80,16 +77,14 @@ The orchestrator is the main entry point that coordinates all optimization opera
 class CssOutputOrchestrator {
   async optimizeCssOutput(
     bundles: CssBundle[],
-    options: OptimizationOptions,
+    options: OptimizationOptions
   ): Promise<OptimizationResult>;
 
-  async generateReport(
-    results: OptimizationResult,
-  ): Promise<CssPerformanceReport>;
+  async generateReport(results: OptimizationResult): Promise<CssPerformanceReport>;
 
   async analyzeCssPerformance(
     bundles: CssBundle[],
-    budget?: PerformanceBudget,
+    budget?: PerformanceBudget
   ): Promise<PerformanceAnalysis>;
 }
 ```
@@ -114,7 +109,7 @@ class ProductionCssConfigManager {
   validatePerformanceBudget(budget: PerformanceBudget): ValidationResult;
 
   // Deployment preset application
-  applyDeploymentPreset(preset: "cdn" | "serverless" | "spa" | "ssr"): void;
+  applyDeploymentPreset(preset: 'cdn' | 'serverless' | 'spa' | 'ssr'): void;
 
   // CLI argument parsing
   static fromCliArgs(args: ParsedArgs): ProductionCssConfigManager;
@@ -215,7 +210,7 @@ Provides CI/CD integration capabilities.
 
 ```typescript
 interface CssOutputConfig {
-  strategy: "single" | "chunked" | "modular";
+  strategy: 'single' | 'chunked' | 'modular';
   chunking?: ChunkingConfig;
   optimization?: OptimizationConfig;
   compression?: CompressionConfig;
@@ -228,7 +223,7 @@ interface CssOutputConfig {
 
 ```typescript
 interface ChunkingConfig {
-  strategy: "component" | "route" | "usage" | "size";
+  strategy: 'component' | 'route' | 'usage' | 'size';
   chunkSizeTarget?: number;
   maxChunks?: number;
   minChunkSize?: number;
@@ -311,9 +306,9 @@ npm test tests/output/performance.test.ts
 ```typescript
 // Optimize CSS for React application
 const config = {
-  strategy: "chunked" as const,
+  strategy: 'chunked' as const,
   chunking: {
-    strategy: "component" as const,
+    strategy: 'component' as const,
     chunkSizeTarget: 30 * 1024, // 30KB chunks
   },
   optimization: {
@@ -323,7 +318,7 @@ const config = {
 };
 
 const results = await orchestrator.optimizeCssOutput(bundles, {
-  outputDir: "dist/css",
+  outputDir: 'dist/css',
   generateManifest: true,
 });
 ```
@@ -333,9 +328,9 @@ const results = await orchestrator.optimizeCssOutput(bundles, {
 ```typescript
 // Optimize CSS for Next.js with SSR
 const config = {
-  strategy: "modular" as const,
+  strategy: 'modular' as const,
   chunking: {
-    strategy: "route" as const,
+    strategy: 'route' as const,
   },
   criticalCss: {
     extractCritical: true,
@@ -353,7 +348,7 @@ const ciIntegration = createCiIntegration({
     performanceScore: 80,
     maxSizeIncrease: 0.1, // 10% max increase
   },
-  webhooks: ["https://hooks.slack.com/services/..."],
+  webhooks: ['https://hooks.slack.com/services/...'],
 });
 
 await ciIntegration.processReport(report);
@@ -392,7 +387,7 @@ Enable debug logging for detailed operation insights:
 const config = {
   // ... other config
   debug: true,
-  logLevel: "debug",
+  logLevel: 'debug',
 };
 ```
 

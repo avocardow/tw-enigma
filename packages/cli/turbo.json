@@ -8,9 +8,15 @@
         "$TURBO_DEFAULT$",
         "src/**/*.ts",
         "bin/**/*.ts",
+        "../../config/tsconfig.base.json",
+        "../../turbo.json",
+        "../../package.json",
+        "../../pnpm-lock.yaml",
         "package.json",
         "tsconfig.json",
-        "../../tsconfig.base.json",
+        "../../config/vitest.config.ts",
+        "vitest.config.ts",
+        "tsup.config.ts",
         "!src/**/*.test.ts",
         "!src/**/*.spec.ts"
       ]
@@ -21,8 +27,15 @@
         "$TURBO_DEFAULT$",
         "src/**/*.ts",
         "tests/**/*.ts",
-        "vitest.config.ts",
-        "../../vitest.workspace.ts"
+        "bin/**/*.ts",
+        "../../config/tsconfig.base.json",
+        "../../turbo.json",
+        "../../package.json",
+        "../../pnpm-lock.yaml",
+        "package.json",
+        "tsconfig.json",
+        "../../config/vitest.config.ts",
+        "vitest.config.ts"
       ],
       "outputs": ["coverage/**"]
     },

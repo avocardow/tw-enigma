@@ -40,21 +40,17 @@ The main CSS generation engine that provides intelligent optimization and code g
 import { EnhancedCSSGenerator } from '@tw-enigma/core';
 
 class EnhancedCSSGenerator {
-  constructor(
-    config: EnigmaConfig,
-    frequencyAnalyzer: FrequencyAnalyzer,
-    enablePostCSS?: boolean
-  );
-  
+  constructor(config: EnigmaConfig, frequencyAnalyzer: FrequencyAnalyzer, enablePostCSS?: boolean);
+
   async generateEnhancedCSS(
     classFrequencies: Map<string, number>,
     options?: Partial<CssGenerationOptions>
   ): Promise<GeneratedCSS>;
-  
+
   getPostCSSMetrics(): any;
-  
+
   async updatePostCSSConfig(updates: {
-    optimizationLevel?: "none" | "basic" | "standard" | "aggressive";
+    optimizationLevel?: 'none' | 'basic' | 'standard' | 'aggressive';
     enableTailwindOptimizer?: boolean;
     enableCSSMinifier?: boolean;
     enableSourceMapper?: boolean;
@@ -64,6 +60,7 @@ class EnhancedCSSGenerator {
 ```
 
 **Usage Example:**
+
 ```typescript
 import { EnhancedCSSGenerator, loadConfig } from '@tw-enigma/core';
 
@@ -71,9 +68,9 @@ const config = await loadConfig();
 const generator = new EnhancedCSSGenerator(config, frequencyAnalyzer);
 
 const result = await generator.generateEnhancedCSS(classFrequencies, {
-  strategy: "mixed",
+  strategy: 'mixed',
   useApplyDirective: true,
-  sortingStrategy: "frequency"
+  sortingStrategy: 'frequency',
 });
 
 console.log(result.css);
@@ -104,6 +101,7 @@ function generateOptimizedCss(
 ```
 
 **Parameters:**
+
 - `patterns`: Array of aggregated class data from analysis
 - `frequencyMap`: Map of class patterns to their frequency
 - `options`: Configuration options for CSS generation
@@ -111,14 +109,15 @@ function generateOptimizedCss(
 **Returns:** `CssGenerationResult` containing generated CSS, rules, and metadata
 
 **Example:**
+
 ```typescript
 import { generateOptimizedCss } from '@tw-enigma/core';
 
 const result = generateOptimizedCss(patterns, {
-  strategy: "mixed",
+  strategy: 'mixed',
   useApplyDirective: true,
-  sortingStrategy: "frequency",
-  commentLevel: "detailed"
+  sortingStrategy: 'frequency',
+  commentLevel: 'detailed',
 });
 
 console.log('Generated CSS:', result.css);
@@ -137,13 +136,14 @@ function generateCssRules(
 ```
 
 **Example:**
+
 ```typescript
 const rules = generateCssRules(patterns, {
-  selectorNaming: "pretty",
-  minimumFrequency: 3
+  selectorNaming: 'pretty',
+  minimumFrequency: 3,
 });
 
-rules.forEach(rule => {
+rules.forEach((rule) => {
   console.log(`${rule.selector} (${rule.frequency} uses)`);
 });
 ```
@@ -155,18 +155,13 @@ rules.forEach(rule => {
 Generate Tailwind CSS `@apply` directives from class lists.
 
 ```typescript
-function generateApplyDirective(
-  classes: string[],
-  options: CssGenerationOptions
-): ApplyDirective;
+function generateApplyDirective(classes: string[], options: CssGenerationOptions): ApplyDirective;
 ```
 
 **Example:**
+
 ```typescript
-const directive = generateApplyDirective(
-  ['text-lg', 'font-bold', 'text-blue-600'],
-  options
-);
+const directive = generateApplyDirective(['text-lg', 'font-bold', 'text-blue-600'], options);
 
 console.log(directive.optimized); // "@apply text-lg font-bold text-blue-600"
 ```
@@ -178,7 +173,7 @@ Validate apply directive syntax and compatibility.
 ```typescript
 function validateApplyDirective(
   directive: ApplyDirective | string
-): Array<{ type: "error" | "warning"; message: string }> | boolean;
+): Array<{ type: 'error' | 'warning'; message: string }> | boolean;
 ```
 
 #### Pattern Classification
@@ -195,6 +190,7 @@ function classifyPattern(
 ```
 
 **Example:**
+
 ```typescript
 const classification = classifyPattern(pattern, options);
 
@@ -212,21 +208,23 @@ Sort CSS rules using various strategies.
 ```typescript
 function sortCssRules(
   rules: CssRule[],
-  strategy: CssGenerationOptions["sortingStrategy"] | CssGenerationOptions,
+  strategy: CssGenerationOptions['sortingStrategy'] | CssGenerationOptions,
   customSortFn?: (a: CssRule, b: CssRule) => number
 ): CssRule[];
 ```
 
 **Strategies:**
+
 - `"frequency"`: Sort by usage frequency
 - `"specificity"`: Sort by CSS specificity
 - `"alphabetical"`: Sort alphabetically
 - `"custom"`: Use custom sort function
 
 **Example:**
+
 ```typescript
-const sortedRules = sortCssRules(rules, "frequency");
-const customSorted = sortCssRules(rules, "custom", (a, b) => {
+const sortedRules = sortCssRules(rules, 'frequency');
+const customSorted = sortCssRules(rules, 'custom', (a, b) => {
   return a.complexity - b.complexity;
 });
 ```
@@ -241,11 +239,12 @@ Generate descriptive comments for CSS rules.
 function generateCssComments(
   rules: CssRule[] | CssRule,
   statistics: CssGenerationStatistics,
-  commentLevel?: CssGenerationOptions["commentLevel"]
+  commentLevel?: CssGenerationOptions['commentLevel']
 ): string;
 ```
 
 **Comment Levels:**
+
 - `"none"`: No comments
 - `"minimal"`: Basic rule descriptions
 - `"detailed"`: Comprehensive information
@@ -259,11 +258,11 @@ Configuration options for CSS generation.
 
 ```typescript
 interface CssGenerationOptions {
-  strategy: "atomic" | "utility" | "component" | "mixed";
+  strategy: 'atomic' | 'utility' | 'component' | 'mixed';
   useApplyDirective: boolean;
-  sortingStrategy: "specificity" | "frequency" | "alphabetical" | "custom";
-  commentLevel: "none" | "minimal" | "detailed" | "verbose";
-  selectorNaming: "sequential" | "frequency-optimized" | "pretty" | "custom";
+  sortingStrategy: 'specificity' | 'frequency' | 'alphabetical' | 'custom';
+  commentLevel: 'none' | 'minimal' | 'detailed' | 'verbose';
+  selectorNaming: 'sequential' | 'frequency-optimized' | 'pretty' | 'custom';
   minimumFrequency: number;
   includeSourceMaps: boolean;
   formatOutput: boolean;
@@ -316,7 +315,7 @@ interface CssRule {
   declarations: string[];
   applyDirective?: string;
   frequency: number;
-  patternType: "atomic" | "utility" | "component";
+  patternType: 'atomic' | 'utility' | 'component';
   sourceClasses: string[];
   complexity: number;
   coOccurrenceStrength: number;
@@ -408,12 +407,12 @@ Main configuration interface for the Enigma engine.
 interface EnigmaConfig {
   // Core optimization settings
   optimization: {
-    strategy: "atomic" | "utility" | "component" | "mixed";
+    strategy: 'atomic' | 'utility' | 'component' | 'mixed';
     enableMinification: boolean;
     preserveComments: boolean;
     generateSourceMaps: boolean;
   };
-  
+
   // File processing settings
   files: {
     input: string[];
@@ -421,10 +420,10 @@ interface EnigmaConfig {
     ignore: string[];
     extensions: string[];
   };
-  
+
   // CSS generation settings
   css: CssGenerationOptions;
-  
+
   // Performance settings
   performance: {
     maxConcurrency: number;
@@ -457,7 +456,7 @@ import { fileDiscovery } from '@tw-enigma/core';
 
 // Discover files matching patterns
 const files = await fileDiscovery.find(['src/**/*.{js,ts,jsx,tsx}'], {
-  ignore: ['node_modules/**', 'dist/**']
+  ignore: ['node_modules/**', 'dist/**'],
 });
 ```
 
@@ -534,6 +533,7 @@ npx @tw-enigma/cli init-config [options]
 ```
 
 **Options:**
+
 - `--force`: Overwrite existing configuration
 - `--template <name>`: Use a specific template
 - `--output <path>`: Specify output directory
@@ -547,6 +547,7 @@ npx @tw-enigma/cli css-config [options]
 ```
 
 **Options:**
+
 - `--strategy <strategy>`: Set optimization strategy
 - `--apply-directives`: Enable @apply directive generation
 - `--comments <level>`: Set comment verbosity level
@@ -578,45 +579,40 @@ registerCommands(program);
 ### Basic CSS Optimization
 
 ```typescript
-import { 
-  EnhancedCSSGenerator, 
-  loadConfig, 
-  fileDiscovery,
-  htmlExtractor 
-} from '@tw-enigma/core';
+import { EnhancedCSSGenerator, loadConfig, fileDiscovery, htmlExtractor } from '@tw-enigma/core';
 
 async function optimizeProject() {
   // Load configuration
   const config = await loadConfig();
-  
+
   // Discover files
   const files = await fileDiscovery.find(config.files.input, {
-    ignore: config.files.ignore
+    ignore: config.files.ignore,
   });
-  
+
   // Extract classes
   const allClasses = new Map<string, number>();
-  
+
   for (const file of files) {
     const content = await fs.readFile(file, 'utf8');
     const classes = await htmlExtractor.extract(content);
-    
+
     classes.forEach((freq, className) => {
       allClasses.set(className, (allClasses.get(className) || 0) + freq);
     });
   }
-  
+
   // Generate optimized CSS
   const generator = new EnhancedCSSGenerator(config, frequencyAnalyzer);
   const result = await generator.generateEnhancedCSS(allClasses, {
-    strategy: "mixed",
+    strategy: 'mixed',
     useApplyDirective: true,
-    commentLevel: "detailed"
+    commentLevel: 'detailed',
   });
-  
+
   // Write output
   await fs.writeFile(config.files.output, result.css);
-  
+
   console.log(`Generated ${result.rules.length} CSS rules`);
   console.log(`Compression ratio: ${result.statistics.compressionRatio}%`);
 }
@@ -631,13 +627,13 @@ const generator = new EnhancedCSSGenerator(config, frequencyAnalyzer);
 
 // Configure PostCSS plugins
 await generator.updatePostCSSConfig({
-  optimizationLevel: "aggressive",
+  optimizationLevel: 'aggressive',
   enableTailwindOptimizer: true,
   enableCSSMinifier: true,
   customPluginConfigs: {
     autoprefixer: { grid: true },
-    cssnano: { preset: 'advanced' }
-  }
+    cssnano: { preset: 'advanced' },
+  },
 });
 
 const result = await generator.generateEnhancedCSS(classFrequencies);
@@ -655,11 +651,11 @@ import { EnigmaVitePlugin } from '@tw-enigma/vite-plugin';
 export default defineConfig({
   plugins: [
     EnigmaVitePlugin({
-      strategy: "mixed",
+      strategy: 'mixed',
       useApplyDirective: true,
-      outputPath: 'src/styles/optimized.css'
-    })
-  ]
+      outputPath: 'src/styles/optimized.css',
+    }),
+  ],
 });
 ```
 
@@ -674,9 +670,9 @@ module.exports = {
     new EnigmaWebpackPlugin({
       input: ['src/**/*.{js,jsx,ts,tsx}'],
       output: 'dist/optimized.css',
-      strategy: "component"
-    })
-  ]
+      strategy: 'component',
+    }),
+  ],
 };
 ```
 
@@ -687,11 +683,7 @@ module.exports = {
 ### Best Practices
 
 ```typescript
-import { 
-  CssGenerationError, 
-  InvalidCssError, 
-  ApplyDirectiveError 
-} from '@tw-enigma/core';
+import { CssGenerationError, InvalidCssError, ApplyDirectiveError } from '@tw-enigma/core';
 
 try {
   const result = await generator.generateEnhancedCSS(classFrequencies);
@@ -718,10 +710,10 @@ try {
 import { generateOptimizedCss } from '@tw-enigma/core';
 
 const options = {
-  strategy: "mixed",
+  strategy: 'mixed',
   enableValidation: true,
   skipInvalidClasses: true,
-  warnOnInvalidClasses: true
+  warnOnInvalidClasses: true,
 };
 
 const result = generateOptimizedCss(patterns, options);
@@ -729,7 +721,7 @@ const result = generateOptimizedCss(patterns, options);
 // Check for warnings
 if (result.warnings.length > 0) {
   console.warn('Warnings during generation:');
-  result.warnings.forEach(warning => console.warn(warning));
+  result.warnings.forEach((warning) => console.warn(warning));
 }
 
 // Check for validation errors
@@ -754,7 +746,7 @@ import type {
   CssGenerationResult,
   CssRule,
   EnigmaConfig,
-  PatternClassification
+  PatternClassification,
 } from '@tw-enigma/core';
 ```
 
@@ -780,7 +772,7 @@ declare module '@tw-enigma/core' {
   interface CssGenerationOptions {
     customOption?: boolean;
   }
-  
+
   interface EnigmaConfig {
     customSettings?: Record<string, any>;
   }
@@ -809,7 +801,7 @@ const performanceOptions = {
   maxRulesPerFile: 1000,
   enableOptimizations: true,
   minimumFrequency: 2, // Only include classes used 2+ times
-  strategy: "mixed" as const // Most efficient strategy
+  strategy: 'mixed' as const, // Most efficient strategy
 };
 ```
 
@@ -826,4 +818,4 @@ console.log(`Compression ratio: ${result.statistics.compressionRatio}%`);
 
 ---
 
-For more examples and advanced usage patterns, see the [Examples](../examples/) directory and [Architecture Documentation](./ARCHITECTURE.md). 
+For more examples and advanced usage patterns, see the [Examples](../examples/) directory and [Architecture Documentation](./ARCHITECTURE.md).

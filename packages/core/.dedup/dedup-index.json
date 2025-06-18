@@ -1,15 +1,15 @@
 {
   "version": "1.0.0",
   "totalEntries": 1,
-  "spaceSaved": 36500,
-  "lastUpdated": "2025-06-17T16:31:10.574Z",
+  "spaceSaved": 38500,
+  "lastUpdated": "2025-06-18T01:53:52.872Z",
   "entries": {
     "c38c2bf3055c516a98ac5d97f30e7c364e827bc0199e1c3415b794afbe55dcad": {
       "hash": "c38c2bf3055c516a98ac5d97f30e7c364e827bc0199e1c3415b794afbe55dcad",
       "algorithm": "sha256",
       "size": 500,
       "storagePath": "/Users/rowan/github/tw-enigma/tw-enigma/packages/core/.dedup/c38c2bf3055c516a98ac5d97f30e7c364e827bc0199e1c3415b794afbe55dcad.txt",
-      "referenceCount": 74,
+      "referenceCount": 78,
       "referencePaths": [
         "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750053712989/test1.txt",
         "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750053712989/test2.txt",
@@ -84,17 +84,21 @@
         "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750161960463/test1.txt",
         "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750161960463/test2.txt",
         "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750177870567/test1.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750177870567/test2.txt"
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750177870567/test2.txt",
+        "/tmp/compression-test-1750211550222/test1.txt",
+        "/tmp/compression-test-1750211550222/test2.txt",
+        "/tmp/compression-test-1750211632861/test1.txt",
+        "/tmp/compression-test-1750211632861/test2.txt"
       ],
       "firstSeen": "2025-06-16T06:01:52.992Z",
-      "lastAccessed": "2025-06-17T16:31:10.573Z",
+      "lastAccessed": "2025-06-18T01:53:52.871Z",
       "compressed": false
     }
   },
   "stats": {
-    "totalOriginalSize": 37000,
+    "totalOriginalSize": 39000,
     "totalDeduplicatedSize": 500,
-    "duplicatesFound": 73,
-    "averageReferenceCount": 74
+    "duplicatesFound": 77,
+    "averageReferenceCount": 78
   }
 }

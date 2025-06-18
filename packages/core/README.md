@@ -52,9 +52,9 @@ const generator = new EnhancedCSSGenerator(config, frequencyAnalyzer);
 
 // Generate optimized CSS
 const result = await generator.generateEnhancedCSS(classFrequencies, {
-  strategy: "mixed",
+  strategy: 'mixed',
   useApplyDirective: true,
-  sortingStrategy: "frequency"
+  sortingStrategy: 'frequency',
 });
 
 console.log('Generated CSS:', result.css);
@@ -68,7 +68,7 @@ import { htmlExtractor, jsExtractor, fileDiscovery } from '@tw-enigma/core';
 
 // Discover files
 const files = await fileDiscovery.find(['src/**/*.{html,js,ts,jsx,tsx}'], {
-  ignore: ['node_modules/**']
+  ignore: ['node_modules/**'],
 });
 
 // Extract classes from HTML
@@ -87,17 +87,17 @@ import { generateOptimizedCss, generateCssRules } from '@tw-enigma/core';
 
 // Generate CSS from patterns
 const result = generateOptimizedCss(patterns, {
-  strategy: "mixed",
+  strategy: 'mixed',
   useApplyDirective: true,
-  sortingStrategy: "frequency",
-  commentLevel: "detailed",
-  minimumFrequency: 3
+  sortingStrategy: 'frequency',
+  commentLevel: 'detailed',
+  minimumFrequency: 3,
 });
 
 // Generate individual CSS rules
 const rules = generateCssRules(patterns, {
-  selectorNaming: "pretty",
-  minimumFrequency: 2
+  selectorNaming: 'pretty',
+  minimumFrequency: 2,
 });
 ```
 
@@ -111,19 +111,15 @@ The main CSS generation engine that provides intelligent optimization and code g
 
 ```typescript
 class EnhancedCSSGenerator {
-  constructor(
-    config: EnigmaConfig,
-    frequencyAnalyzer: FrequencyAnalyzer,
-    enablePostCSS?: boolean
-  );
-  
+  constructor(config: EnigmaConfig, frequencyAnalyzer: FrequencyAnalyzer, enablePostCSS?: boolean);
+
   async generateEnhancedCSS(
     classFrequencies: Map<string, number>,
     options?: Partial<CssGenerationOptions>
   ): Promise<GeneratedCSS>;
-  
+
   getPostCSSMetrics(): any;
-  
+
   async updatePostCSSConfig(updates: PostCSSConfigUpdates): Promise<void>;
 }
 ```
@@ -146,10 +142,7 @@ function generateCssRules(
 ): CssRule[];
 
 // Generate @apply directives
-function generateApplyDirective(
-  classes: string[],
-  options: CssGenerationOptions
-): ApplyDirective;
+function generateApplyDirective(classes: string[], options: CssGenerationOptions): ApplyDirective;
 ```
 
 #### Pattern Analysis Functions
@@ -175,31 +168,31 @@ function sortCssRules(
 
 ```typescript
 const htmlExtractor: {
-  extract(content: string, options?: ExtractionOptions): Promise<Map<string, number>>
-}
+  extract(content: string, options?: ExtractionOptions): Promise<Map<string, number>>;
+};
 
 const htmlRewriter: {
-  rewrite(content: string, classMapping: Map<string, string>): Promise<string>
-}
+  rewrite(content: string, classMapping: Map<string, string>): Promise<string>;
+};
 ```
 
 #### JavaScript/TypeScript Processing
 
 ```typescript
 const jsExtractor: {
-  extract(content: string, options?: ExtractionOptions): Promise<Map<string, number>>
-}
+  extract(content: string, options?: ExtractionOptions): Promise<Map<string, number>>;
+};
 
 const jsRewriter: {
-  rewrite(content: string, classMapping: Map<string, string>): Promise<string>
-}
+  rewrite(content: string, classMapping: Map<string, string>): Promise<string>;
+};
 ```
 
 ### Configuration
 
 ```typescript
 // Load configuration
-function loadConfig(configPath?: string): Promise<EnigmaConfig>
+function loadConfig(configPath?: string): Promise<EnigmaConfig>;
 
 interface EnigmaConfig {
   optimization: OptimizationConfig;
@@ -217,44 +210,44 @@ interface EnigmaConfig {
 // enigma.config.js
 export default {
   optimization: {
-    strategy: "mixed",
+    strategy: 'mixed',
     enableMinification: true,
     preserveComments: false,
-    generateSourceMaps: true
+    generateSourceMaps: true,
   },
-  
+
   files: {
     input: ['src/**/*.{html,js,ts,jsx,tsx}'],
     output: 'dist/optimized.css',
     ignore: ['node_modules/**', 'dist/**'],
-    extensions: ['.html', '.js', '.ts', '.jsx', '.tsx']
+    extensions: ['.html', '.js', '.ts', '.jsx', '.tsx'],
   },
-  
+
   css: {
-    strategy: "mixed",
+    strategy: 'mixed',
     useApplyDirective: true,
-    sortingStrategy: "frequency",
-    commentLevel: "detailed",
-    minimumFrequency: 2
+    sortingStrategy: 'frequency',
+    commentLevel: 'detailed',
+    minimumFrequency: 2,
   },
-  
+
   performance: {
     maxConcurrency: 4,
     memoryLimit: 512,
-    timeout: 30000
-  }
-}
+    timeout: 30000,
+  },
+};
 ```
 
 ### CSS Generation Options
 
 ```typescript
 interface CssGenerationOptions {
-  strategy: "atomic" | "utility" | "component" | "mixed";
+  strategy: 'atomic' | 'utility' | 'component' | 'mixed';
   useApplyDirective: boolean;
-  sortingStrategy: "specificity" | "frequency" | "alphabetical" | "custom";
-  commentLevel: "none" | "minimal" | "detailed" | "verbose";
-  selectorNaming: "sequential" | "frequency-optimized" | "pretty" | "custom";
+  sortingStrategy: 'specificity' | 'frequency' | 'alphabetical' | 'custom';
+  commentLevel: 'none' | 'minimal' | 'detailed' | 'verbose';
+  selectorNaming: 'sequential' | 'frequency-optimized' | 'pretty' | 'custom';
   minimumFrequency: number;
   includeSourceMaps: boolean;
   formatOutput: boolean;
@@ -272,13 +265,13 @@ const generator = new EnhancedCSSGenerator(config, frequencyAnalyzer);
 
 // Configure PostCSS plugins
 await generator.updatePostCSSConfig({
-  optimizationLevel: "aggressive",
+  optimizationLevel: 'aggressive',
   enableTailwindOptimizer: true,
   enableCSSMinifier: true,
   customPluginConfigs: {
     autoprefixer: { grid: true },
-    cssnano: { preset: 'advanced' }
-  }
+    cssnano: { preset: 'advanced' },
+  },
 });
 ```
 
@@ -297,11 +290,7 @@ console.log(`Recommended strategy: ${classification.recommendedStrategy}`);
 ### Custom Error Handling
 
 ```typescript
-import { 
-  CssGenerationError, 
-  InvalidCssError, 
-  ApplyDirectiveError 
-} from '@tw-enigma/core';
+import { CssGenerationError, InvalidCssError, ApplyDirectiveError } from '@tw-enigma/core';
 
 try {
   const result = await generator.generateEnhancedCSS(classFrequencies);
@@ -370,9 +359,9 @@ export default defineConfig({
       name: 'enigma-integration',
       buildStart() {
         // Initialize CSS generation
-      }
-    }
-  ]
+      },
+    },
+  ],
 });
 ```
 
@@ -390,9 +379,9 @@ module.exports = {
           // Process CSS optimization
           callback();
         });
-      }
-    }
-  ]
+      },
+    },
+  ],
 };
 ```
 
@@ -400,35 +389,37 @@ module.exports = {
 
 Performance benchmarks on typical projects:
 
-| Project Size | Files | Classes | Processing Time | Memory Usage | Compression |
-|-------------|-------|---------|-----------------|--------------|-------------|
-| Small | 50 | 500 | 0.2s | 15MB | 45% |
-| Medium | 200 | 2,000 | 0.8s | 35MB | 62% |
-| Large | 1,000 | 10,000 | 3.2s | 120MB | 78% |
-| Enterprise | 5,000+ | 50,000+ | 12s | 400MB | 85% |
+| Project Size | Files  | Classes | Processing Time | Memory Usage | Compression |
+| ------------ | ------ | ------- | --------------- | ------------ | ----------- |
+| Small        | 50     | 500     | 0.2s            | 15MB         | 45%         |
+| Medium       | 200    | 2,000   | 0.8s            | 35MB         | 62%         |
+| Large        | 1,000  | 10,000  | 3.2s            | 120MB        | 78%         |
+| Enterprise   | 5,000+ | 50,000+ | 12s             | 400MB        | 85%         |
 
 ## 🔧 Troubleshooting
 
 ### Common Issues
 
 #### Memory Issues
+
 ```typescript
 // Reduce memory usage
 const config = {
   performance: {
     maxConcurrency: 2,
-    memoryLimit: 256
-  }
+    memoryLimit: 256,
+  },
 };
 ```
 
 #### Performance Issues
+
 ```typescript
 // Optimize for speed
 const options = {
-  strategy: "atomic", // Fastest strategy
+  strategy: 'atomic', // Fastest strategy
   minimumFrequency: 3, // Higher threshold
-  enableOptimizations: false // Skip expensive optimizations
+  enableOptimizations: false, // Skip expensive optimizations
 };
 ```
 
@@ -478,10 +469,3 @@ pnpm --filter @tw-enigma/core test
 
 - [@tw-enigma/cli](../cli) - Command-line interface for tw-enigma
 - [tw-enigma](../../) - Main monorepo documentation
-
----
-
-<div align="center">
-  <p>Part of the <a href="../../">tw-enigma</a> optimization toolkit</p>
-  <p>Made with ❤️ by the tw-enigma team</p>
-</div> 

@@ -25,11 +25,21 @@ The tw-enigma project uses Turborepo for task orchestration and caching, with ad
   "daemon": true,
   "cacheDir": ".turbo/cache",
   "tasks": {
-    "build": { /* Core build configuration */ },
-    "test": { /* Test execution with proper dependencies */ },
-    "lint": { /* Linting with ESLint cache */ },
-    "type-check": { /* TypeScript validation */ },
-    "clean": { /* Cleanup tasks */ }
+    "build": {
+      /* Core build configuration */
+    },
+    "test": {
+      /* Test execution with proper dependencies */
+    },
+    "lint": {
+      /* Linting with ESLint cache */
+    },
+    "type-check": {
+      /* TypeScript validation */
+    },
+    "clean": {
+      /* Cleanup tasks */
+    }
   },
   "remoteCache": {
     "signature": false,
@@ -43,11 +53,13 @@ The tw-enigma project uses Turborepo for task orchestration and caching, with ad
 ### Package-Specific Configurations
 
 #### Core Package: `packages/core/turbo.json`
+
 - **Inputs**: TypeScript source files, configuration files
 - **Outputs**: `dist/**` directory
 - **Exclusions**: Test files from build cache
 
 #### CLI Package: `packages/cli/turbo.json`
+
 - **Dependencies**: Depends on `@tw-enigma/core#build`
 - **Inputs**: CLI source files, binary files, configurations
 - **Outputs**: `dist/**` directory
@@ -55,6 +67,7 @@ The tw-enigma project uses Turborepo for task orchestration and caching, with ad
 ## 🎯 Task Pipeline
 
 ### Build Pipeline
+
 ```
 @tw-enigma/core#build (parallel with other root tasks)
         ↓
@@ -62,6 +75,7 @@ The tw-enigma project uses Turborepo for task orchestration and caching, with ad
 ```
 
 ### Test Pipeline
+
 ```
 @tw-enigma/core#build (required for tests)
         ↓
@@ -70,6 +84,7 @@ The tw-enigma project uses Turborepo for task orchestration and caching, with ad
 ```
 
 ### Lint Pipeline
+
 ```
 @tw-enigma/core#lint (parallel)
 @tw-enigma/cli#lint (parallel)
@@ -80,18 +95,21 @@ The tw-enigma project uses Turborepo for task orchestration and caching, with ad
 ### Cache Strategy
 
 #### Build Tasks
+
 - **Cache Key**: Based on source files, dependencies, and configuration
 - **Inputs**: TypeScript files, package.json, tsconfig files
 - **Outputs**: Built artifacts in `dist/` directories
 - **Exclusions**: Test files don't affect build cache
 
 #### Test Tasks
+
 - **Cache Key**: Based on source and test files
 - **Inputs**: All TypeScript files, test configuration
 - **Outputs**: Coverage reports
 - **Dependencies**: Requires built packages for integration tests
 
 #### Lint Tasks
+
 - **Cache Key**: Based on source files and ESLint configuration
 - **Inputs**: Source files, ESLint configs, TypeScript configs
 - **Outputs**: No outputs (linting doesn't produce artifacts)
@@ -100,13 +118,15 @@ The tw-enigma project uses Turborepo for task orchestration and caching, with ad
 ### Input Optimization
 
 #### Inclusion Patterns
+
 - `$TURBO_DEFAULT$`: Standard Turbo inputs
 - `src/**/*.ts`: Source TypeScript files
 - `package.json`: Package dependencies
 - `tsconfig.json`: TypeScript configuration
-- `../../tsconfig.base.json`: Shared TypeScript config
+- `config/tsconfig.base.json`: Shared TypeScript config
 
 #### Exclusion Patterns
+
 - `!src/**/*.test.ts`: Test files excluded from build
 - `!src/**/*.spec.ts`: Spec files excluded from build
 - `!README.md`: Documentation doesn't affect builds
@@ -116,6 +136,7 @@ The tw-enigma project uses Turborepo for task orchestration and caching, with ad
 ### Available Clean Scripts
 
 #### Root Level
+
 ```bash
 # Clean specific artifacts
 pnpm clean:dist        # Remove all dist directories
@@ -129,6 +150,7 @@ pnpm reset             # Full reset including reinstall
 ```
 
 #### Package Level
+
 ```bash
 # Per-package cleaning
 cd packages/core
@@ -139,12 +161,13 @@ pnpm clean:all         # Clean everything
 
 cd packages/cli
 pnpm clean             # Remove dist
-pnpm clean:coverage    # Remove coverage  
+pnpm clean:coverage    # Remove coverage
 pnpm clean:cache       # Remove caches
 pnpm clean:all         # Clean everything
 ```
 
 #### Turbo-Native Cleaning
+
 ```bash
 pnpm turbo clean       # Run clean tasks in all packages
 pnpm turbo clean:cache # Clear Turbo cache only
@@ -187,16 +210,19 @@ npx turbo link
 ### Expected Performance Improvements
 
 #### Cache Hits
+
 - **Fresh Build**: ~2-3 minutes full build
 - **Cache Hit**: ~10-30 seconds (95%+ improvement)
 - **Partial Cache**: ~30-90 seconds (70%+ improvement)
 
 #### Parallel Execution
+
 - **Sequential**: Core → CLI build (~2-3 minutes)
 - **Parallel**: Core + CLI tasks (~1-2 minutes)
 - **Dependencies**: Only necessary sequencing
 
 #### Development Workflow
+
 - **Watch Mode**: Incremental builds in ~5-15 seconds
 - **Test Runs**: Only affected packages retest
 - **Linting**: ESLint cache provides sub-second runs
@@ -206,6 +232,7 @@ npx turbo link
 ### Cache Issues
 
 #### Clear All Caches
+
 ```bash
 pnpm clean:cache
 rm -rf .turbo
@@ -213,6 +240,7 @@ pnpm install
 ```
 
 #### Verify Cache Configuration
+
 ```bash
 pnpm turbo build --dry-run  # Shows cache strategy
 pnpm turbo build --force    # Bypass cache
@@ -221,12 +249,14 @@ pnpm turbo build --force    # Bypass cache
 ### Build Issues
 
 #### Check Dependencies
+
 ```bash
 pnpm turbo build --dry-run  # Verify task dependencies
 pnpm install                # Ensure dependencies are current
 ```
 
 #### Validate Configuration
+
 ```bash
 # Check turbo.json syntax
 cat turbo.json | jq '.'
@@ -238,12 +268,14 @@ ls packages/*/turbo.json
 ### Performance Debugging
 
 #### Enable Verbose Logging
+
 ```bash
 pnpm turbo build --verbosity=2
 pnpm turbo build --dry-run --verbosity=2
 ```
 
 #### Analyze Task Performance
+
 ```bash
 pnpm turbo build --profile  # Generate performance profile
 ```
@@ -276,4 +308,4 @@ pnpm turbo build --profile  # Generate performance profile
 - [Turborepo Documentation](https://turbo.build/repo/docs)
 - [Remote Caching Guide](https://turbo.build/repo/docs/core-concepts/remote-caching)
 - [Configuration Reference](https://turbo.build/repo/docs/reference/configuration)
-- [Performance Optimization](https://turbo.build/repo/docs/guides/optimizing-builds) 
+- [Performance Optimization](https://turbo.build/repo/docs/guides/optimizing-builds)

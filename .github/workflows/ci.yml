@@ -71,10 +71,8 @@ jobs:
       - name: Setup TypeScript cache
         uses: actions/cache@v4
         with:
-          path: |
-            packages/*/tsconfig.tsbuildinfo
-            node_modules/.cache/typescript/**
-          key: ${{ runner.os }}-typescript-${{ hashFiles('**/tsconfig.json', '**/tsconfig.base.json', 'packages/*/src/**/*.ts') }}
+          path: ~/.cache/typescript
+          key: ${{ runner.os }}-typescript-${{ hashFiles('**/tsconfig.json', 'config/tsconfig.base.json', 'packages/*/src/**/*.ts') }}
           restore-keys: |
             ${{ runner.os }}-typescript-
 
@@ -199,10 +197,8 @@ jobs:
       - name: Restore TypeScript cache
         uses: actions/cache@v4
         with:
-          path: |
-            packages/*/tsconfig.tsbuildinfo
-            node_modules/.cache/typescript/**
-          key: ${{ runner.os }}-typescript-${{ hashFiles('**/tsconfig.json', '**/tsconfig.base.json', 'packages/*/src/**/*.ts') }}
+          path: ~/.cache/typescript
+          key: ${{ runner.os }}-typescript-${{ hashFiles('**/tsconfig.json', 'config/tsconfig.base.json', 'packages/*/src/**/*.ts') }}
           restore-keys: |
             ${{ runner.os }}-typescript-
 
@@ -252,10 +248,8 @@ jobs:
       - name: Restore TypeScript cache
         uses: actions/cache@v4
         with:
-          path: |
-            packages/*/tsconfig.tsbuildinfo
-            node_modules/.cache/typescript/**
-          key: ${{ runner.os }}-typescript-${{ hashFiles('**/tsconfig.json', '**/tsconfig.base.json', 'packages/*/src/**/*.ts') }}
+          path: ~/.cache/typescript
+          key: ${{ runner.os }}-typescript-${{ hashFiles('**/tsconfig.json', 'config/tsconfig.base.json', 'packages/*/src/**/*.ts') }}
           restore-keys: |
             ${{ runner.os }}-typescript-
 

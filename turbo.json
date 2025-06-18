@@ -27,7 +27,7 @@
         "src/**/*.ts",
         "package.json",
         "tsconfig.json",
-        "../../tsconfig.base.json"
+        "config/tsconfig.base.json"
       ]
     },
     "packages/cli#build": {
@@ -38,7 +38,7 @@
         "src/**/*.ts",
         "package.json",
         "tsconfig.json",
-        "../../tsconfig.base.json"
+        "config/tsconfig.base.json"
       ]
     },
     "test": {
@@ -62,7 +62,7 @@
         "src/**/*.ts",
         "tests/**/*.ts",
         "vitest.config.ts",
-        "../../vitest.workspace.ts"
+        "config/vitest.workspace.ts"
       ],
       "outputs": ["coverage/**"]
     },
@@ -73,7 +73,7 @@
         "src/**/*.ts",
         "tests/**/*.ts",
         "vitest.config.ts",
-        "../../vitest.workspace.ts"
+        "config/vitest.workspace.ts"
       ],
       "outputs": ["coverage/**"]
     },
@@ -168,7 +168,7 @@
     },
     "type-check": {
       "dependsOn": ["^build"],
-      "inputs": ["$TURBO_DEFAULT$", "src/**/*.ts", "tsconfig.json", "tsconfig.base.json"],
+      "inputs": ["$TURBO_DEFAULT$", "src/**/*.ts", "tsconfig.json", "config/tsconfig.base.json"],
       "outputs": []
     },
     "dev": {
@@ -193,7 +193,7 @@
   "globalDependencies": [
     ".env",
     ".env.local",
-    "tsconfig.base.json",
+    "config/tsconfig.base.json",
     "pnpm-workspace.yaml",
     "turbo.json"
   ],

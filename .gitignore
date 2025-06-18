@@ -102,7 +102,7 @@ packages-private/*
 packages-private/**/*
 packages-private/.*
 packages-private/*/.*
-packages-private/**/.* 
+packages-private/**/.*
 
 # Private workspace configurations
 pnpm-workspace.yaml.local
@@ -121,3 +121,64 @@ packages-private.zip
 packages-private.tar.*
 packages-private.backup
 .packages-private/
+
+# 🤖 AI ASSISTANT & DEVELOPMENT WORKFLOW 🤖
+# AI instructions and configurations (potentially sensitive)
+CLAUDE.md
+.windsurfrules
+.roomodes
+
+# AI assistant working directories
+.taskmaster/
+.roo/
+.cursor/
+.claude/
+.anthropic/
+
+# PRD files and planning documents (may contain sensitive info)
+scripts/*prd.txt
+scripts/*PRD.txt
+*.prd.txt
+*.PRD.txt
+**/prd/
+**/PRD/
+
+# Task management and workflow state
+workflow_state.mdc
+project_config.mdc
+tasks.json.backup
+*.tasks.backup
+
+# Development workflow artifacts
+temp-debug-logs.txt
+debug-*.log
+*.debug.log
+dev-*.temp
+*.dev.temp
+
+# AI conversation logs and context
+conversation-*.json
+context-*.json
+*.conversation
+*.context
+
+# Local development configurations
+.env.development.local
+.env.test.local
+.env.production.local
+local.config.*
+*.local.config.*
+
+# 📊 PERFORMANCE & TESTING 📊
+# Performance reports and benchmarks
+**/performance-reports/
+performance-*.json
+benchmark-*.json
+load-test-results/
+
+# Test artifacts and temporary files
+test-temp/
+tests/temp/
+**/test-temp/
+*.test.temp
+temp-test-*
