@@ -98,6 +98,19 @@ export * from './processors/jsRewriter';
 export * from './processors/nameGeneration';
 export * from './processors/patternAnalysis';
 
+// Performance optimization exports (Task 11)
+export {
+  calculateAestheticScoresBatch,
+  clearAestheticCache,
+  createEnhancedPrettyNameCache,
+  generatePrettyName,
+  getAestheticCacheStats,
+  getNextPermutationOptimized,
+  PermutationIterator,
+} from './processors/nameGeneration';
+
+export type { EnhancedPrettyNameCache } from './processors/nameGeneration';
+
 // =============================================================================
 // UTILITIES EXPORTS
 // =============================================================================
