@@ -10,6 +10,7 @@ import {
   createProductionConfigManager,
   generateConfigDocs,
   validateProductionConfig,
+  normalizeCliArguments,
 } from '@tw-enigma/core';
 import { Command } from 'commander';
 import { readFileSync, writeFileSync } from 'fs';
@@ -38,6 +39,23 @@ export function createCssConfigCommand(): Command {
     .option('--save <path>', 'Save configuration to file path')
     .action(async (options, cmd) => {
       const logger = createLoggerFromArgv(cmd.optsWithGlobals());
+
+      // Step 1 & 2: Access global options and integrate with core configuration
+      const globalOptions = cmd.optsWithGlobals();
+      const lengthOption = globalOptions.length;
+
+      // Create CLI arguments for core configuration integration
+      const cliArguments = {
+        nameGenerationMinimumLength: lengthOption
+      };
+
+      // Generate name generation config from CLI options
+      const normalizedConfig = normalizeCliArguments(cliArguments);
+
+      // Log length option if provided for user feedback
+      if (lengthOption) {
+        logger.info(`🎯 Using minimum class name length: ${lengthOption}`);
+      }
 
       try {
         if (options.validate) {
@@ -72,6 +90,9 @@ export function createCssConfigCommand(): Command {
         // Generate configuration
         const manager = createProductionConfigManager();
         let config;
+
+        // Define configuration options including name generation
+        const configOptions = lengthOption ? { nameGeneration: normalizedConfig.nameGeneration } : {};
 
         if (options.preset) {
           if (options.preset === 'production' || options.preset === 'development') {
@@ -111,13 +132,19 @@ export function createCssConfigCommand(): Command {
               preset: options.preset,
               version: packageInfo.version,
             },
+          // Include name generation configuration if provided
+          ...configOptions,
           };
 
           writeFileSync(savePath, JSON.stringify(output, null, 2));
           logger.info('💾 Configuration saved', { path: savePath });
         } else {
           // Display configuration
-          console.log(JSON.stringify(config, null, 2));
+        // Step 4: Enhanced output with length-aware configuration
+        const outputConfig = lengthOption
+          ? { ...config, nameGeneration: normalizedConfig.nameGeneration }
+          : config;
+        console.log(JSON.stringify(outputConfig, null, 2));
         }
       } catch (error) {
         handleCLIError(error, logger);

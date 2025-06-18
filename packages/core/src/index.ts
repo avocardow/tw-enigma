@@ -199,6 +199,7 @@ export {
   getConfigSync,
   loadConfig,
   loadConfigSync,
+  normalizeCliArguments,
 } from './config/config';
 
 export type { EnigmaConfig } from './config/config';
