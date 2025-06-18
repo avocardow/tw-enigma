@@ -1,0 +1,11 @@
+# Task ID: 2
+# Title: Update NameGenerationOptionsSchema
+# Status: pending
+# Dependencies: 1
+# Priority: high
+# Description: Enhance the NameGenerationOptionsSchema to include the minimumLength field.
+# Details:
+In packages/core/src/processors/nameGeneration.ts, update the NameGenerationOptionsSchema using zod (latest version) to add minimumLength field: z.number().min(1).max(26).default(1). Update related type definitions and validation logic.
+
+# Test Strategy:
+Create unit tests to ensure the schema correctly validates various input scenarios, including edge cases for minimumLength.

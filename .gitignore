@@ -129,25 +129,10 @@ CLAUDE.md
 .roomodes
 
 # AI assistant working directories
-.taskmaster/
 .roo/
 .cursor/
 .claude/
 .anthropic/
-
-# PRD files and planning documents (may contain sensitive info)
-scripts/*prd.txt
-scripts/*PRD.txt
-*.prd.txt
-*.PRD.txt
-**/prd/
-**/PRD/
-
-# Task management and workflow state
-workflow_state.mdc
-project_config.mdc
-tasks.json.backup
-*.tasks.backup
 
 # Development workflow artifacts
 temp-debug-logs.txt

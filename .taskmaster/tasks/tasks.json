@@ -1,0 +1,559 @@
+{
+  "master": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "Implement --length Global CLI Flag",
+        "description": "Add the --length global CLI flag to accept values 1-26 for setting minimum class name length.",
+        "details": "Update packages/cli/src/index.ts to add the --length flag to existing global options. Use yargs or commander.js (latest version) for CLI parsing. Implement validation for the 1-26 range with helpful error messages. Add length to CLI options interface and type definitions. Update help text and usage documentation.",
+        "testStrategy": "Write unit tests using Jest to verify flag parsing, validation, and error handling for various input scenarios including valid and invalid length values.",
+        "priority": "high",
+        "dependencies": [],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 2,
+        "title": "Update NameGenerationOptionsSchema",
+        "description": "Enhance the NameGenerationOptionsSchema to include the minimumLength field.",
+        "details": "In packages/core/src/processors/nameGeneration.ts, update the NameGenerationOptionsSchema using zod (latest version) to add minimumLength field: z.number().min(1).max(26).default(1). Update related type definitions and validation logic.",
+        "testStrategy": "Create unit tests to ensure the schema correctly validates various input scenarios, including edge cases for minimumLength.",
+        "priority": "high",
+        "dependencies": [
+          1
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 3,
+        "title": "Implement Core Length Enforcement Function",
+        "description": "Create the enforceMinimumLength() function to pad/extend names to the minimum length.",
+        "details": "Implement enforceMinimumLength() function in a new file packages/core/src/processors/lengthEnforcement.ts. Use a cryptographically secure random number generator (e.g., crypto.randomBytes()) for generating random padding. Ensure the function maintains CSS identifier validity.",
+        "testStrategy": "Write comprehensive unit tests to verify the function correctly pads names to the specified minimum length while maintaining CSS validity.",
+        "priority": "high",
+        "dependencies": [
+          2
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Function Implementation",
+            "description": "Design and implement the core function that integrates cryptographic random padding logic and CSS identifier validation.",
+            "dependencies": [],
+            "details": "Define the function signature, handle input/output, and ensure modularity for easy integration of padding and validation logic.",
+            "status": "pending"
+          },
+          {
+            "id": 2,
+            "title": "Cryptographic Random Padding Logic",
+            "description": "Develop secure random padding logic using cryptographic methods to ensure unpredictability and security.",
+            "dependencies": [
+              1
+            ],
+            "details": "Utilize a cryptographically secure random number generator to generate padding, and integrate this logic into the main function.",
+            "status": "pending"
+          },
+          {
+            "id": 3,
+            "title": "CSS Identifier Validation",
+            "description": "Implement logic to validate that generated or provided identifiers conform to CSS naming rules.",
+            "dependencies": [
+              1
+            ],
+            "details": "Ensure identifiers meet CSS specifications (e.g., start with a letter or underscore, contain only allowed characters), and handle invalid cases appropriately.",
+            "status": "pending"
+          },
+          {
+            "id": 4,
+            "title": "Code Review",
+            "description": "Conduct a thorough code review to ensure correctness, security, maintainability, and adherence to best practices.",
+            "dependencies": [
+              2,
+              3
+            ],
+            "details": "Review the implementation for logic errors, security vulnerabilities, and code style issues. Provide feedback and request changes if necessary.",
+            "status": "pending"
+          },
+          {
+            "id": 5,
+            "title": "Comprehensive Unit Testing",
+            "description": "Develop and execute comprehensive unit tests covering all aspects of the function, including edge cases for padding and identifier validation.",
+            "dependencies": [
+              4
+            ],
+            "details": "Write tests for normal and edge cases, invalid inputs, and integration of padding and validation logic. Ensure high code coverage and reliability.",
+            "status": "pending"
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "Update Base Conversion Functions",
+        "description": "Modify toCustomBase(), toBase26(), and toBase36() functions to accept and respect minimum length.",
+        "details": "Update the base conversion functions in packages/core/src/utils/baseConversion.ts to accept a minimumLength parameter. Implement padding logic that maintains CSS validity and preserves collision avoidance. Use the enforceMinimumLength() function for consistency.",
+        "testStrategy": "Create unit tests for each base conversion function, verifying correct behavior with various input lengths and minimum length requirements.",
+        "priority": "high",
+        "dependencies": [
+          3
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Update Base Conversion Functions",
+            "description": "Refactor each base conversion function to ensure compatibility with new requirements and prepare for integration with enforceMinimumLength.",
+            "dependencies": [],
+            "details": "Identify all base conversion functions (e.g., bin2dec, dec2hex, etc.) and update their logic as needed to support further enhancements.",
+            "status": "pending"
+          },
+          {
+            "id": 2,
+            "title": "Integrate enforceMinimumLength Logic",
+            "description": "Integrate the enforceMinimumLength function into each base conversion function to ensure output strings meet the required minimum length.",
+            "dependencies": [
+              1
+            ],
+            "details": "Modify each function to call enforceMinimumLength after conversion, ensuring correct padding or truncation as specified.",
+            "status": "pending"
+          },
+          {
+            "id": 3,
+            "title": "Implement Collision Avoidance Mechanism",
+            "description": "Update the conversion logic to avoid output collisions (e.g., different inputs producing the same output after length enforcement).",
+            "dependencies": [
+              2
+            ],
+            "details": "Analyze possible collision scenarios and adjust the conversion or padding logic to guarantee unique outputs for unique inputs.",
+            "status": "pending"
+          },
+          {
+            "id": 4,
+            "title": "Update Type Definitions",
+            "description": "Revise and extend type definitions to reflect changes in function signatures and output formats.",
+            "dependencies": [
+              3
+            ],
+            "details": "Ensure all type annotations and interfaces are accurate and consistent with the updated logic and enforced output constraints.",
+            "status": "pending"
+          },
+          {
+            "id": 5,
+            "title": "Write and Update Unit Tests",
+            "description": "Develop comprehensive unit tests for all updated functions, covering normal cases, edge cases, and collision avoidance.",
+            "dependencies": [
+              4
+            ],
+            "details": "Write new tests and update existing ones to validate correct behavior, minimum length enforcement, and uniqueness of outputs.",
+            "status": "pending"
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "Integrate Length Enforcement with generateSequentialName()",
+        "description": "Update the generateSequentialName() function to respect the minimum length constraint.",
+        "details": "Modify the generateSequentialName() function in packages/core/src/processors/nameGeneration.ts to use the enforceMinimumLength() function. Ensure that the generated names meet the length constraints while maintaining uniqueness.",
+        "testStrategy": "Write integration tests to verify that generateSequentialName() produces names of the correct minimum length across various scenarios.",
+        "priority": "high",
+        "dependencies": [
+          3,
+          4
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 6,
+        "title": "Update EnigmaConfigSchema",
+        "description": "Add minimumLength to the main EnigmaConfigSchema for configuration file support.",
+        "details": "In packages/core/src/config/config.ts, update the EnigmaConfigSchema to include the minimumLength field. Use zod for schema definition and validation. Ensure backward compatibility for configs without this field.",
+        "testStrategy": "Create unit tests to verify that the updated schema correctly validates configurations with and without the minimumLength field.",
+        "priority": "medium",
+        "dependencies": [
+          2
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 7,
+        "title": "Implement Configuration Integration",
+        "description": "Integrate minimumLength settings with configuration files and environment variables.",
+        "details": "Update the configuration loading process to handle minimumLength from config files and environment variables. Implement priority logic: CLI flags > environment variables > config file. Use dotenv (latest version) for environment variable handling.",
+        "testStrategy": "Write integration tests to verify correct loading and priority of minimumLength settings from different sources.",
+        "priority": "medium",
+        "dependencies": [
+          6
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 8,
+        "title": "Update css-config Command",
+        "description": "Modify the css-config command to accept and use the global length option.",
+        "details": "Update packages/cli/src/commands/css-config.ts to accept the global length option. Pass the length configuration through to the core name generation system. Ensure backward compatibility when the flag is not used.",
+        "testStrategy": "Create integration tests for the css-config command, verifying correct behavior with and without the --length flag.",
+        "priority": "high",
+        "dependencies": [
+          1,
+          5,
+          7
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 9,
+        "title": "Update init-config Command",
+        "description": "Modify the init-config command to accept and use the global length option.",
+        "details": "Update packages/cli/src/commands/init-config.ts to handle the global length option. Ensure that the generated configuration file includes the minimumLength setting when specified.",
+        "testStrategy": "Write integration tests for the init-config command, checking that it correctly generates config files with the minimumLength setting when the --length flag is used.",
+        "priority": "medium",
+        "dependencies": [
+          1,
+          6,
+          7
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 10,
+        "title": "Implement Pretty Names Integration",
+        "description": "Integrate length enforcement with the existing global --pretty flag logic.",
+        "details": "Update the pretty name generation logic to work in conjunction with the minimum length requirement. Ensure no character repetition for lengths ≤ 26 when --pretty is used. Implement this in packages/core/src/processors/nameGeneration.ts.",
+        "testStrategy": "Create comprehensive tests for various combinations of --pretty and --length flags, ensuring correct and aesthetic name generation.",
+        "priority": "medium",
+        "dependencies": [
+          3,
+          4,
+          5
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Update Pretty Name Generation Logic",
+            "description": "Revise the logic responsible for generating 'pretty names' to ensure it follows a logical, predictable structure and is easy to understand and pronounce.",
+            "dependencies": [],
+            "details": "Incorporate best practices for naming, such as clarity, simplicity, and logical structure. Ensure the generated names are meaningful and align with naming conventions.",
+            "status": "pending"
+          },
+          {
+            "id": 2,
+            "title": "Enforce Length and Uniqueness Constraints",
+            "description": "Implement logic to ensure that pretty names do not exceed the maximum allowed length and are unique within their context.",
+            "dependencies": [
+              1
+            ],
+            "details": "Add checks to enforce a maximum length (e.g., 26 characters) and verify that each generated name is unique, possibly by appending suffixes or using alternative strategies if a conflict is detected.",
+            "status": "pending"
+          },
+          {
+            "id": 3,
+            "title": "Handle Edge Cases for Length ≤ 26",
+            "description": "Address scenarios where the pretty name is at or below the length limit, ensuring no unnecessary truncation or modification occurs.",
+            "dependencies": [
+              2
+            ],
+            "details": "Test and adjust logic to ensure that names exactly at the limit are accepted as-is, and that shorter names are not altered unnecessarily.",
+            "status": "pending"
+          },
+          {
+            "id": 4,
+            "title": "Conduct Code Review",
+            "description": "Review the updated code to ensure it meets quality standards, follows naming best practices, and correctly implements the required logic.",
+            "dependencies": [
+              3
+            ],
+            "details": "Perform a peer review focusing on code clarity, maintainability, and adherence to naming conventions. Verify that all constraints and edge cases are handled.",
+            "status": "pending"
+          },
+          {
+            "id": 5,
+            "title": "Comprehensive Testing",
+            "description": "Develop and execute a suite of tests to validate the pretty name logic, length enforcement, uniqueness, and handling of edge cases.",
+            "dependencies": [
+              4
+            ],
+            "details": "Create unit and integration tests covering normal cases, boundary conditions (e.g., length = 26), and conflict scenarios to ensure robustness.",
+            "status": "pending"
+          }
+        ]
+      },
+      {
+        "id": 11,
+        "title": "Implement Performance Optimization",
+        "description": "Optimize name generation algorithms for high-length scenarios.",
+        "details": "Profile and optimize the name generation process for high minimum lengths (15-26). Consider implementing caching mechanisms or pre-computation strategies. Use a profiling tool like clinic.js to identify bottlenecks.",
+        "testStrategy": "Conduct performance tests with various length settings, measuring generation time and memory usage. Compare results before and after optimization.",
+        "priority": "medium",
+        "dependencies": [
+          4,
+          5,
+          10
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Profiling the System",
+            "description": "Use profiling tools to collect detailed performance metrics and identify which parts of the system consume the most resources.",
+            "dependencies": [],
+            "details": "Select appropriate profiling tools for the technology stack (e.g., VisualVM for Java, cProfile for Python). Run the application under typical workloads and gather data on CPU, memory, I/O, and network usage.",
+            "status": "pending"
+          },
+          {
+            "id": 2,
+            "title": "Identifying Performance Bottlenecks",
+            "description": "Analyze profiling results to pinpoint specific functions, queries, or components that are causing slowdowns or excessive resource consumption.",
+            "dependencies": [
+              1
+            ],
+            "details": "Review profiling reports to locate hotspots, inefficient algorithms, slow database queries, or problematic network calls. Document the most critical bottlenecks for further action.",
+            "status": "pending"
+          },
+          {
+            "id": 3,
+            "title": "Designing Optimization Strategies",
+            "description": "Develop targeted strategies to address identified bottlenecks, considering algorithmic improvements, architectural changes, and resource management.",
+            "dependencies": [
+              2
+            ],
+            "details": "Propose solutions such as refactoring code, optimizing algorithms, improving database queries, or redesigning system components. Prioritize optimizations based on impact and feasibility.",
+            "status": "pending"
+          },
+          {
+            "id": 4,
+            "title": "Implementing Caching and Pre-computation",
+            "description": "Introduce caching mechanisms and pre-computation techniques to reduce redundant operations and speed up data retrieval.",
+            "dependencies": [
+              3
+            ],
+            "details": "Implement in-memory caches (e.g., Redis, Memcached), database query caching, or pre-compute frequently needed results. Ensure cache invalidation and consistency strategies are in place.",
+            "status": "pending"
+          },
+          {
+            "id": 5,
+            "title": "Performance Testing and Validation",
+            "description": "Conduct performance tests to measure the effectiveness of optimizations and ensure that changes meet performance goals without introducing regressions.",
+            "dependencies": [
+              4
+            ],
+            "details": "Use benchmarking and load testing tools to compare performance before and after optimizations. Validate improvements and monitor for any new issues.",
+            "status": "pending"
+          },
+          {
+            "id": 6,
+            "title": "Documentation and Knowledge Sharing",
+            "description": "Document the optimization process, decisions made, and results achieved. Share findings and best practices with the team.",
+            "dependencies": [
+              5
+            ],
+            "details": "Update technical documentation, create reports on bottlenecks and solutions, and provide guidelines for future performance monitoring and optimization.",
+            "status": "pending"
+          }
+        ]
+      },
+      {
+        "id": 12,
+        "title": "Implement Warning System",
+        "description": "Add warnings for extremely high length values and potential performance implications.",
+        "details": "Implement a warning system that logs messages to the console for length values 15 and above. Use a logging library like winston (latest version) for consistent log formatting. Include capacity tables and performance implications in the warnings.",
+        "testStrategy": "Write unit tests to verify that appropriate warnings are logged for different length values. Test integration with the CLI commands.",
+        "priority": "low",
+        "dependencies": [
+          1,
+          8,
+          9
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 13,
+        "title": "Enhance Error Handling and Validation",
+        "description": "Implement comprehensive error handling and validation for length-related operations.",
+        "details": "Enhance error handling throughout the system for length-related operations. Create custom error types for specific scenarios. Implement detailed validation checks at various stages of the name generation process. Use a validation library like joi (latest version) for complex validations.",
+        "testStrategy": "Create a comprehensive suite of unit and integration tests covering various error scenarios and edge cases related to length enforcement.",
+        "priority": "medium",
+        "dependencies": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Design and Implement Error Handling Logic",
+            "description": "Establish a robust error handling strategy, including the use of try/catch/finally blocks, proper logging, and graceful degradation to ensure the system can recover or fail safely.",
+            "dependencies": [],
+            "details": "Follow best practices such as anticipating potential errors, using descriptive error messages, and ensuring resources are cleaned up appropriately.",
+            "status": "pending"
+          },
+          {
+            "id": 2,
+            "title": "Create Custom Error Types",
+            "description": "Define a hierarchy of custom error types tailored to the application's domain, enabling more precise error identification and handling.",
+            "dependencies": [
+              1
+            ],
+            "details": "Ensure custom errors provide meaningful context and can be distinguished from generic system errors.",
+            "status": "pending"
+          },
+          {
+            "id": 3,
+            "title": "Implement Validation Checks",
+            "description": "Develop thorough validation logic to check all inputs and outputs, ensuring that invalid data is caught early and handled appropriately.",
+            "dependencies": [
+              2
+            ],
+            "details": "Be comprehensive in error checking, handle all possible exceptions, and ensure validation is performed before processing data.",
+            "status": "pending"
+          },
+          {
+            "id": 4,
+            "title": "Integrate with Validation Library",
+            "description": "Integrate a suitable validation library to standardize and streamline validation checks across the system.",
+            "dependencies": [
+              3
+            ],
+            "details": "Ensure the library is configured to work with custom error types and that validation failures trigger the appropriate error handling logic.",
+            "status": "pending"
+          },
+          {
+            "id": 5,
+            "title": "Develop Comprehensive Testing for Error Handling and Validation",
+            "description": "Write unit and integration tests to cover all error handling paths, custom error types, and validation scenarios, ensuring robust coverage and correct system behavior.",
+            "dependencies": [
+              4
+            ],
+            "details": "Test both expected and edge-case error scenarios, verify error messages, and confirm that logging and graceful degradation work as intended.",
+            "status": "pending"
+          }
+        ]
+      },
+      {
+        "id": 14,
+        "title": "Update Documentation",
+        "description": "Update README, API documentation, and user guides to reflect the new --length feature.",
+        "details": "Update the project's README.md with information about the --length flag. Create or update API documentation using a tool like TypeDoc (latest version). Update user guides with examples of using the length feature. Include capacity tables and performance considerations.",
+        "testStrategy": "Conduct a documentation review process. Create a checklist of all places where documentation needs to be updated and verify each item.",
+        "priority": "medium",
+        "dependencies": [
+          1,
+          8,
+          9,
+          10,
+          12
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 15,
+        "title": "Conduct Final Integration Testing",
+        "description": "Perform comprehensive integration testing of the entire system with the new length feature.",
+        "details": "Design and execute a comprehensive integration test plan. Test various combinations of flags, configuration settings, and commands. Verify backward compatibility with existing projects. Use a combination of automated tests (e.g., with Jest) and manual testing scenarios.",
+        "testStrategy": "Create an extensive test matrix covering different length values, flag combinations, and usage scenarios. Automate as many tests as possible and document manual test procedures for edge cases.",
+        "priority": "high",
+        "dependencies": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Test Plan Design",
+            "description": "Define the scope, objectives, integration points, and risk analysis for integration testing. Document the test plan, including positive and negative scenarios, prioritization, and exploratory testing.",
+            "dependencies": [],
+            "details": "Identify all modules and their integration points. Use tools for test case documentation and ensure coverage of edge cases and risk areas.",
+            "status": "pending"
+          },
+          {
+            "id": 2,
+            "title": "Automated Test Creation",
+            "description": "Develop automated integration tests based on the documented test plan to validate key workflows and regression scenarios.",
+            "dependencies": [
+              1
+            ],
+            "details": "Implement automated tests using appropriate frameworks. Focus on high-priority and repetitive test cases for efficiency.",
+            "status": "pending"
+          },
+          {
+            "id": 3,
+            "title": "Manual Test Scenario Development",
+            "description": "Create detailed manual test scenarios for complex, exploratory, or edge case integrations that are not easily automated.",
+            "dependencies": [
+              1
+            ],
+            "details": "Document step-by-step manual test cases, including expected results and data requirements, for scenarios requiring human validation.",
+            "status": "pending"
+          },
+          {
+            "id": 4,
+            "title": "Test Matrix Coverage Analysis",
+            "description": "Develop and maintain a test matrix to ensure all integration points, features, and edge cases are covered by both automated and manual tests.",
+            "dependencies": [
+              2,
+              3
+            ],
+            "details": "Map test cases to requirements and integration points. Identify any gaps in coverage and update tests as needed.",
+            "status": "pending"
+          },
+          {
+            "id": 5,
+            "title": "Backward Compatibility Verification",
+            "description": "Verify that new integrations do not break or degrade existing functionality by running regression tests and compatibility checks.",
+            "dependencies": [
+              4
+            ],
+            "details": "Execute regression suites and validate results against previous versions. Document any compatibility issues found.",
+            "status": "pending"
+          },
+          {
+            "id": 6,
+            "title": "Bug Triage and Fixes",
+            "description": "Log, prioritize, and resolve defects found during integration testing. Re-test fixes to ensure issues are resolved and no regressions are introduced.",
+            "dependencies": [
+              5
+            ],
+            "details": "Use a defect tracking system to manage bugs. Coordinate with development for timely fixes and verify resolutions.",
+            "status": "pending"
+          },
+          {
+            "id": 7,
+            "title": "Final Review and Sign-off",
+            "description": "Conduct a comprehensive review of test results, coverage, and outstanding issues. Obtain stakeholder approval for release readiness.",
+            "dependencies": [],
+            "details": "Summarize test outcomes, ensure all critical issues are addressed, and document lessons learned for future cycles.",
+            "status": "pending"
+          }
+        ]
+      }
+    ],
+    "metadata": {
+      "created": "2025-06-16T01:49:25.526Z",
+      "updated": "2025-06-18T03:51:53.440Z",
+      "description": "Tasks for master context"
+    }
+  }
+}

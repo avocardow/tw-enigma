@@ -1,0 +1,11 @@
+# Task ID: 8
+# Title: Update css-config Command
+# Status: pending
+# Dependencies: 1, 5, 7
+# Priority: high
+# Description: Modify the css-config command to accept and use the global length option.
+# Details:
+Update packages/cli/src/commands/css-config.ts to accept the global length option. Pass the length configuration through to the core name generation system. Ensure backward compatibility when the flag is not used.
+
+# Test Strategy:
+Create integration tests for the css-config command, verifying correct behavior with and without the --length flag.

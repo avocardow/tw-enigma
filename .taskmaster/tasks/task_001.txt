@@ -1,0 +1,11 @@
+# Task ID: 1
+# Title: Implement --length Global CLI Flag
+# Status: pending
+# Dependencies: None
+# Priority: high
+# Description: Add the --length global CLI flag to accept values 1-26 for setting minimum class name length.
+# Details:
+Update packages/cli/src/index.ts to add the --length flag to existing global options. Use yargs or commander.js (latest version) for CLI parsing. Implement validation for the 1-26 range with helpful error messages. Add length to CLI options interface and type definitions. Update help text and usage documentation.
+
+# Test Strategy:
+Write unit tests using Jest to verify flag parsing, validation, and error handling for various input scenarios including valid and invalid length values.

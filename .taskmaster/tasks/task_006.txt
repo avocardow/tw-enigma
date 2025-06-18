@@ -1,0 +1,11 @@
+# Task ID: 6
+# Title: Update EnigmaConfigSchema
+# Status: pending
+# Dependencies: 2
+# Priority: medium
+# Description: Add minimumLength to the main EnigmaConfigSchema for configuration file support.
+# Details:
+In packages/core/src/config/config.ts, update the EnigmaConfigSchema to include the minimumLength field. Use zod for schema definition and validation. Ensure backward compatibility for configs without this field.
+
+# Test Strategy:
+Create unit tests to verify that the updated schema correctly validates configurations with and without the minimumLength field.

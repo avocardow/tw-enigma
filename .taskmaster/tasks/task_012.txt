@@ -1,0 +1,11 @@
+# Task ID: 12
+# Title: Implement Warning System
+# Status: pending
+# Dependencies: 1, 8, 9
+# Priority: low
+# Description: Add warnings for extremely high length values and potential performance implications.
+# Details:
+Implement a warning system that logs messages to the console for length values 15 and above. Use a logging library like winston (latest version) for consistent log formatting. Include capacity tables and performance implications in the warnings.
+
+# Test Strategy:
+Write unit tests to verify that appropriate warnings are logged for different length values. Test integration with the CLI commands.

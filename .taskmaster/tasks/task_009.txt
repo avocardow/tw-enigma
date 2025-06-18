@@ -1,0 +1,11 @@
+# Task ID: 9
+# Title: Update init-config Command
+# Status: pending
+# Dependencies: 1, 6, 7
+# Priority: medium
+# Description: Modify the init-config command to accept and use the global length option.
+# Details:
+Update packages/cli/src/commands/init-config.ts to handle the global length option. Ensure that the generated configuration file includes the minimumLength setting when specified.
+
+# Test Strategy:
+Write integration tests for the init-config command, checking that it correctly generates config files with the minimumLength setting when the --length flag is used.

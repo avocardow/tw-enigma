@@ -1,0 +1,204 @@
+<context>
+# Overview
+The Enigma Custom Length Feature allows users to set a minimum length for generated CSS class names using a `--length` global command-line flag. Currently, Tailwind Enigma generates class names based on the optimal length required to accommodate the number of detected class patterns (e.g., 26 patterns = 1 character names). This feature adds explicit control over name length for enhanced security, obfuscation, and consistency requirements.
+
+The primary problem this solves is enabling users to generate longer class names than mathematically necessary, providing enhanced security through obfuscation while maintaining the core optimization benefits of Tailwind Enigma.
+
+# Core Features
+1. **--length Global CLI Flag**: Command-line flag accepting values 1-26 that sets minimum class name length
+   - Works as a global flag alongside existing `--pretty` global flag
+   - Applies to all CLI commands (init-config, css-config, future commands)
+   - Overrides automatic length calculation
+   - Maintains backward compatibility when flag is not used
+
+2. **Enhanced Name Generation Algorithm**: Updated core name generation to respect minimum length constraints
+   - Padding/extension logic for names shorter than minimum length
+   - Random character generation for padding when needed
+   - Maintains CSS validity and collision avoidance
+
+3. **Global Flag Integration**: Seamless integration with existing global flag architecture
+   - Works with existing `--pretty` global flag
+   - Consistent flag processing across all commands
+   - Global configuration passed to core name generation system
+
+4. **Configuration Integration**: Support for length settings in configuration files
+   - Global CLI flags override config file settings
+   - Environment variable support
+   - Validation and error handling for invalid values
+
+# User Experience
+**Primary User Personas:**
+- Security-conscious developers needing obfuscation
+- Teams with consistency requirements for class naming
+- Enterprise developers with strict naming conventions
+
+**Key User Flows:**
+1. Basic Usage: `enigma --length=5 css-config` sets all class names to minimum 5 characters
+2. Combined Usage: `enigma --pretty --length=3 css-config --strategy chunked` creates aesthetic 3+ character names
+3. With Init: `enigma --length=4 init-config` initializes with consistent 4+ character naming
+4. Configuration: Set `minimumLength: 4` in config file for project-wide consistency
+
+**UI/UX Considerations:**
+- Clear error messages for invalid length values (must be 1-26)
+- Warnings for extremely high length values (15+) about performance and file size
+- Progress indicators for potentially slower generation with high lengths
+- Documentation with capacity tables and performance implications
+- Consistent behavior across all CLI commands
+
+# Technical Architecture
+**Core System Components:**
+1. **Global CLI Flag Processing** (packages/cli/src/index.ts)
+   - Add `--length` to existing global options alongside `--pretty`
+   - Validate length values (1-26) at CLI entry point
+   - Pass validated length to all commands through options object
+   - Error handling for invalid values with helpful messages
+
+2. **NameGenerationOptionsSchema Enhancement** (packages/core/src/processors/nameGeneration.ts)
+   - Add `minimumLength` field: `z.number().min(1).max(26).default(1)`
+   - Update type definitions and validation
+
+3. **Length Enforcement Engine**
+   - `enforceMinimumLength()`: Core function to pad/extend names to minimum length
+   - `generateRandomPadding()`: Generate random alphabetic characters for padding
+   - `validateLengthRequirements()`: Ensure generated names meet length constraints
+
+4. **Enhanced Base Conversion Functions**
+   - Update `toCustomBase()`, `toBase26()`, `toBase36()` to accept minimum length
+   - Implement padding logic that maintains CSS validity
+   - Preserve collision avoidance while enforcing length
+
+5. **Command Integration** (packages/cli/src/commands/)
+   - Update all commands to accept global length option
+   - Pass length configuration to core name generation system
+   - Maintain existing command functionality
+
+**Data Models:**
+- Enhanced `NameGenerationOptions` interface with `minimumLength` property
+- Updated `EnigmaConfigSchema` to include minimumLength in main config
+- Global CLI options interface updated with `length?: number`
+- Updated validation schemas and error types
+
+**APIs and Integrations:**
+- Backward compatible API - existing code continues to work
+- Global flag processing architecture matches existing `--pretty` implementation
+- Configuration system integration for persistent settings
+- Core package receives length through enhanced options
+
+**Infrastructure Requirements:**
+- No additional infrastructure needed
+- Existing build and test systems accommodate changes
+- Documentation updates for new global flag
+
+# Development Roadmap
+**Phase 1: Global CLI Flag Implementation**
+- Add `--length` flag to global CLI options in packages/cli/src/index.ts
+- Implement validation for 1-26 range with helpful error messages
+- Add length to CLI options interface and type definitions
+- Update help text and usage documentation
+- Create unit tests for flag parsing and validation
+
+**Phase 2: Core Length Enforcement (MVP)**
+- Update `NameGenerationOptionsSchema` with `minimumLength` field
+- Add `minimumLength` to main `EnigmaConfigSchema` in packages/core/src/config/config.ts
+- Implement basic `enforceMinimumLength()` function with random padding
+- Update `generateSequentialName()` to respect minimum length
+- Create comprehensive unit tests for length enforcement
+
+**Phase 3: Command Integration**
+- Update css-config command to accept and use global length option
+- Update init-config command to accept and use global length option
+- Pass global length configuration through to core name generation
+- Integration testing with existing command workflows
+- Validate functionality across all commands
+
+**Phase 4: Enhanced Generation Algorithms**
+- Update all base conversion functions (`toBase26`, `toBase36`, `toCustomBase`)
+- Add collision detection for padded names
+- Performance optimization for high-length scenarios
+- Integration testing with existing name generation strategies
+
+**Phase 5: Pretty Names Integration & Polish**
+- Integrate length enforcement with existing global `--pretty` flag logic
+- Ensure no character repetition for lengths ≤ 26
+- Comprehensive testing of `--pretty` + `--length` combinations
+- Documentation updates and performance warnings
+- Final integration testing and bug fixes
+
+# Logical Dependency Chain
+**Foundation (Must be built first):**
+1. Global CLI flag implementation - enables all subsequent development
+2. Schema updates (`NameGenerationOptionsSchema` + `EnigmaConfigSchema`) - enables core functionality
+3. Core `enforceMinimumLength()` function - central to all name generation
+
+**Quick User Value (Build for early feedback):**
+4. Integration with `generateSequentialName()` - working basic implementation
+5. Simple padding with random characters - functional MVP
+6. Command integration for css-config - provides immediate user value
+7. Basic validation and error handling - prevents user frustration
+
+**Advanced Features (Build upon foundation):**
+8. Enhanced base conversion function updates - improves algorithm sophistication
+9. Integration with existing `--pretty` global flag - adds user value
+10. Performance optimization and polish - user experience improvements
+11. Configuration system integration - enterprise and team features
+
+**Pacing Strategy:**
+- Each phase delivers working, testable functionality
+- Early phases provide immediate value while maintaining backward compatibility
+- Later phases add sophistication without breaking existing functionality
+- Incremental complexity allows for thorough testing and validation
+
+# Risks and Mitigations
+**Technical Challenges:**
+- **Risk**: Performance degradation with very high minimum lengths (15-26)
+  - **Mitigation**: Performance testing, warnings for extreme values, optimization
+- **Risk**: Breaking changes to existing CLI architecture
+  - **Mitigation**: Follow existing global flag patterns, maintain backward compatibility
+
+**MVP Definition and Scope:**
+- **Risk**: Over-engineering the initial implementation
+  - **Mitigation**: Focus on basic random padding for MVP, enhance later
+- **Risk**: Complex integration with existing global flag processing
+  - **Mitigation**: Mirror existing `--pretty` flag implementation patterns
+
+**Resource and Implementation Constraints:**
+- **Risk**: Complex edge cases with collision detection and length enforcement
+  - **Mitigation**: Comprehensive test suite, gradual rollout, user feedback
+- **Risk**: Documentation and user education for new feature
+  - **Mitigation**: Clear examples, capacity tables, performance warnings, README updates
+
+# Appendix
+**Class Length Capacity Analysis:**
+- Length 1: 26 combinations
+- Length 2: 702 combinations (cumulative)
+- Length 3: 18,278 combinations (cumulative)
+- Length 4: 475,254 combinations (cumulative)
+- Length 5: 12,356,630 combinations (cumulative)
+- Lengths 6-26: Exponentially increasing combinations (see full table in previous discussion)
+
+**Technical Specifications:**
+- Minimum length range: 1-26 characters (hard limit)
+- Default minimum length: 1 (maintains current behavior)
+- Alphabet: Standard lowercase a-z (26 characters)
+- CSS validity: All generated names must remain valid CSS identifiers
+- Collision avoidance: Enhanced algorithms must maintain collision detection
+
+**Performance Considerations:**
+- Lengths 1-5: Minimal performance impact
+- Lengths 6-10: Moderate computational overhead
+- Lengths 11-26: Significant overhead, user warnings recommended
+- Memory usage increases with longer names and larger CSS files
+
+**Security and Obfuscation Benefits:**
+- Length 5: 12+ million possible combinations
+- Length 8: 208+ trillion possible combinations
+- Length 10: 146+ quadrillion possible combinations
+- Exponential difficulty increase for reverse engineering attempts
+
+**Command Structure:**
+- Primary usage: `enigma --length=X --pretty css-config --strategy chunked`
+- Alternative usage: `enigma --length=5 init-config`
+- Global flags: `--length` and `--pretty` work with all commands
+- Configuration: Set in `enigma.config.js` under name generation options
+- Integration: Works with existing global flag architecture
+</context>

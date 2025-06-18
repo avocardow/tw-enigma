@@ -1,0 +1,43 @@
+# Task ID: 4
+# Title: Update Base Conversion Functions
+# Status: pending
+# Dependencies: 3
+# Priority: high
+# Description: Modify toCustomBase(), toBase26(), and toBase36() functions to accept and respect minimum length.
+# Details:
+Update the base conversion functions in packages/core/src/utils/baseConversion.ts to accept a minimumLength parameter. Implement padding logic that maintains CSS validity and preserves collision avoidance. Use the enforceMinimumLength() function for consistency.
+
+# Test Strategy:
+Create unit tests for each base conversion function, verifying correct behavior with various input lengths and minimum length requirements.
+
+# Subtasks:
+## 1. Update Base Conversion Functions [pending]
+### Dependencies: None
+### Description: Refactor each base conversion function to ensure compatibility with new requirements and prepare for integration with enforceMinimumLength.
+### Details:
+Identify all base conversion functions (e.g., bin2dec, dec2hex, etc.) and update their logic as needed to support further enhancements.
+
+## 2. Integrate enforceMinimumLength Logic [pending]
+### Dependencies: 4.1
+### Description: Integrate the enforceMinimumLength function into each base conversion function to ensure output strings meet the required minimum length.
+### Details:
+Modify each function to call enforceMinimumLength after conversion, ensuring correct padding or truncation as specified.
+
+## 3. Implement Collision Avoidance Mechanism [pending]
+### Dependencies: 4.2
+### Description: Update the conversion logic to avoid output collisions (e.g., different inputs producing the same output after length enforcement).
+### Details:
+Analyze possible collision scenarios and adjust the conversion or padding logic to guarantee unique outputs for unique inputs.
+
+## 4. Update Type Definitions [pending]
+### Dependencies: 4.3
+### Description: Revise and extend type definitions to reflect changes in function signatures and output formats.
+### Details:
+Ensure all type annotations and interfaces are accurate and consistent with the updated logic and enforced output constraints.
+
+## 5. Write and Update Unit Tests [pending]
+### Dependencies: 4.4
+### Description: Develop comprehensive unit tests for all updated functions, covering normal cases, edge cases, and collision avoidance.
+### Details:
+Write new tests and update existing ones to validate correct behavior, minimum length enforcement, and uniqueness of outputs.
+

@@ -1,0 +1,11 @@
+# Task ID: 14
+# Title: Update Documentation
+# Status: pending
+# Dependencies: 1, 8, 9, 10, 12
+# Priority: medium
+# Description: Update README, API documentation, and user guides to reflect the new --length feature.
+# Details:
+Update the project's README.md with information about the --length flag. Create or update API documentation using a tool like TypeDoc (latest version). Update user guides with examples of using the length feature. Include capacity tables and performance considerations.
+
+# Test Strategy:
+Conduct a documentation review process. Create a checklist of all places where documentation needs to be updated and verify each item.
