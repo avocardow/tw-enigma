@@ -1,5 +1,17 @@
 # Changelog - @tw-enigma/cli
 
+## 1.0.1
+
+### Patch Changes
+
+- Fix CI environment detection in integration tests
+
+  - Clear GitHub Actions environment variables in test isolation for proper CI provider detection
+  - Fix 4 failing CI integration tests (GitLab, Jenkins, CircleCI, generic CI)
+  - All 58/58 integration tests now passing
+  - Ensures proper environment variable isolation between test cases
+  - Resolves issue where GitHub Actions env vars were persisting and overriding test mocks
+
 ## 1.0.0
 
 ### Major Changes
