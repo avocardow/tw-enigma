@@ -172,7 +172,7 @@ export {
   JsParsingError as UtilsJsParsingError,
 } from './utils/errors';
 
-// Error Handler
+// Error Handler (Legacy)
 export {
   categorizeError,
   CircuitBreaker,
@@ -192,6 +192,10 @@ export {
   shutdownErrorHandling,
   withCircuitBreaker,
 } from './errorHandler';
+
+// Enhanced Error Handling & Validation (Task 13)
+export * from './errors';
+export * from './validation/ValidationChain';
 
 // =============================================================================
 // CONFIGURATION EXPORTS

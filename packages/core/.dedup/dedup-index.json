@@ -1,15 +1,15 @@
 {
   "version": "1.0.0",
   "totalEntries": 1,
-  "spaceSaved": 47500,
-  "lastUpdated": "2025-06-18T08:31:13.191Z",
+  "spaceSaved": 50500,
+  "lastUpdated": "2025-06-18T09:33:16.788Z",
   "entries": {
     "c38c2bf3055c516a98ac5d97f30e7c364e827bc0199e1c3415b794afbe55dcad": {
       "hash": "c38c2bf3055c516a98ac5d97f30e7c364e827bc0199e1c3415b794afbe55dcad",
       "algorithm": "sha256",
       "size": 500,
       "storagePath": "/Users/rowan/github/tw-enigma/tw-enigma/packages/core/.dedup/c38c2bf3055c516a98ac5d97f30e7c364e827bc0199e1c3415b794afbe55dcad.txt",
-      "referenceCount": 96,
+      "referenceCount": 102,
       "referencePaths": [
         "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750053712989/test1.txt",
         "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750053712989/test2.txt",
@@ -106,17 +106,23 @@
         "/tmp/compression-test-1750231859539/test1.txt",
         "/tmp/compression-test-1750231859539/test2.txt",
         "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750235473181/test1.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750235473181/test2.txt"
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750235473181/test2.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750237913280/test1.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750237913280/test2.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750239195850/test1.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750239195850/test2.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750239196777/test1.txt",
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750239196777/test2.txt"
       ],
       "firstSeen": "2025-06-16T06:01:52.992Z",
-      "lastAccessed": "2025-06-18T08:31:13.190Z",
+      "lastAccessed": "2025-06-18T09:33:16.787Z",
       "compressed": false
     }
   },
   "stats": {
-    "totalOriginalSize": 48000,
+    "totalOriginalSize": 51000,
     "totalDeduplicatedSize": 500,
-    "duplicatesFound": 95,
-    "averageReferenceCount": 96
+    "duplicatesFound": 101,
+    "averageReferenceCount": 102
   }
 }
