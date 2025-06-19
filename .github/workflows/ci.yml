@@ -576,7 +576,11 @@ jobs:
           echo "| Test | ${{ needs.test.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Security | ${{ needs.security.result }} |" >> $GITHUB_STEP_SUMMARY
 
-          if [[ "${{ needs.lint.result }}" == "failure" || "${{ needs.type-check.result }}" == "failure" || "${{ needs.build.result }}" == "failure" || "${{ needs.test.result }}" == "failure" ]]; then
+          # Check for both failure and skipped statuses (skipped jobs indicate upstream failures)
+          if [[ "${{ needs.lint.result }}" =~ (failure|skipped) || \
+                "${{ needs.type-check.result }}" =~ (failure|skipped) || \
+                "${{ needs.build.result }}" =~ (failure|skipped) || \
+                "${{ needs.test.result }}" =~ (failure|skipped) ]]; then
             echo "❌ CI pipeline failed"
             exit 1
           else
