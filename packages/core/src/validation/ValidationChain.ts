@@ -339,7 +339,7 @@ export function createEnhancedSchema<T>(
   baseSchema: ZodSchema<T>,
   customMessages?: Record<string, string>
 ): ZodSchema<T> {
-  return baseSchema.refine((value) => true, {
+  return baseSchema.refine((_value) => true, {
     message: customMessages?.default || 'Validation failed',
   });
 }

@@ -1,9 +1,9 @@
-import { createLogger } from '../utils/logger';
-import { EnigmaPlugin, PluginConfig } from '../types/plugins';
+import { EventEmitter } from 'events';
+import { watch } from 'fs';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { watch } from 'fs';
-import { EventEmitter } from 'events';
+import { EnigmaPlugin, PluginConfig } from '../types/plugins';
+import { createLogger } from '../utils/logger';
 
 interface PluginRegistryEntry {
   plugin: EnigmaPlugin;
@@ -553,7 +553,7 @@ export class PluginRegistry extends EventEmitter {
    */
   private async loadPluginFromFile(filePath: string): Promise<EnigmaPlugin> {
     // Clear require cache for hot-reload
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
+
     delete require.cache[require.resolve(filePath)];
 
     // eslint-disable-next-line @typescript-eslint/no-require-imports

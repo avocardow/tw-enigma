@@ -7,11 +7,12 @@ import {
   getConfigSync,
   loadConfig,
   loadConfigSync,
+  validateBasicConfigSchema,
 } from '@tw-enigma/core';
 import { existsSync, mkdirSync, rmSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { normalizeCliArguments, validateConfig } from '../src/config/config';
+import { normalizeCliArguments } from '../src/config/config';
 
 const TEST_DIR = join(process.cwd(), 'test-config');
 const TEST_CONFIG_FILE = join(TEST_DIR, '.enigmarc.json');

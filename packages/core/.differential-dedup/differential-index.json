@@ -1,25 +1,25 @@
 {
   "version": "1.0.0",
   "currentFullBackup": {
-    "id": "backup_1750241326313_rmh6nf",
-    "createdAt": "2025-06-18T10:08:46.313Z",
-    "filePath": "/tmp/compression-test-1750241326311/.backups-dedup/diff-dedup.2025-06-18T10-08-46-313Z.txt.backup",
+    "id": "backup_1750306541330_5bz3gq",
+    "createdAt": "2025-06-19T04:15:41.330Z",
+    "filePath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750306541329/.backups-dedup/diff-dedup.2025-06-19T04-15-41-330Z.txt.backup",
     "size": 29
   },
   "differentialChain": [
     {
-      "id": "backup_1750241326324_awnttm",
+      "id": "backup_1750306541342_1ar0ma",
       "type": "differential",
-      "baseFullBackupId": "backup_1750241326313_rmh6nf",
-      "backupPath": "/tmp/compression-test-1750241326311/.backups-dedup/diff-dedup.2025-06-18T10-08-46-324Z.txt.backup",
-      "originalPath": "/tmp/compression-test-1750241326311/diff-dedup.txt",
-      "createdAt": "2025-06-18T10:08:46.324Z",
+      "baseFullBackupId": "backup_1750306541330_5bz3gq",
+      "backupPath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750306541329/.backups-dedup/diff-dedup.2025-06-19T04-15-41-342Z.txt.backup",
+      "originalPath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750306541329/diff-dedup.txt",
+      "createdAt": "2025-06-19T04:15:41.342Z",
       "cumulativeFiles": [
-        "/tmp/compression-test-1750241326311/diff-dedup.txt"
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750306541329/diff-dedup.txt"
       ],
       "cumulativeSize": 38,
       "currentFiles": [
-        "/tmp/compression-test-1750241326311/diff-dedup.txt"
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750306541329/diff-dedup.txt"
       ],
       "currentSize": 38,
       "changeDetectionMethod": "mtime",
@@ -29,11 +29,11 @@
     }
   ],
   "cumulativeFileStates": {
-    "/tmp/compression-test-1750241326311/diff-dedup.txt": {
-      "filePath": "/tmp/compression-test-1750241326311/diff-dedup.txt",
+    "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750306541329/diff-dedup.txt": {
+      "filePath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750306541329/diff-dedup.txt",
       "size": 38,
-      "mtime": "2025-06-18T10:08:46.324Z",
-      "lastBackup": "2025-06-18T10:08:46.324Z",
+      "mtime": "2025-06-19T04:15:41.342Z",
+      "lastBackup": "2025-06-19T04:15:41.342Z",
       "hasChanged": true
     }
   },
@@ -43,8 +43,8 @@
     "cumulativeSize": 38,
     "cumulativeSizeRatio": 1.3103448275862069,
     "totalSpaceSaved": 0,
-    "lastBackupAt": "2025-06-18T10:08:46.324Z",
+    "lastBackupAt": "2025-06-19T04:15:41.342Z",
     "timeSinceFullBackup": 0.0000030555555555555556
   },
-  "lastUpdated": "2025-06-18T10:08:46.324Z"
+  "lastUpdated": "2025-06-19T04:15:41.342Z"
 }

@@ -283,7 +283,7 @@ export class ErrorHandler {
           const result = await strategy(error);
           return { success: true, result, method: pattern };
         }
-      } catch (recoveryError) {
+      } catch {
         // Recovery strategy failed, continue to next one
         continue;
       }

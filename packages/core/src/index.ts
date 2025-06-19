@@ -100,9 +100,12 @@ export * from './processors/patternAnalysis';
 
 // Performance optimization exports (Task 11)
 export {
+  ALPHABET_CONFIGS,
   calculateAestheticScoresBatch,
   clearAestheticCache,
   createEnhancedPrettyNameCache,
+  CSS_IDENTIFIER_PATTERNS,
+  CSS_RESERVED_KEYWORDS,
   generatePrettyName,
   getAestheticCacheStats,
   getNextPermutationOptimized,
@@ -257,6 +260,7 @@ export {
   loadConfig,
   loadConfigSync,
   normalizeCliArguments,
+  validateBasicConfigSchema,
 } from './config/config';
 
 export type { EnigmaConfig } from './config/config';
