@@ -7,6 +7,7 @@
 import { Command } from 'commander';
 import { createCssConfigCommand } from './css-config';
 import { createInitConfigCommand } from './init-config';
+import { createScrambleCommand } from './scramble';
 import { createTemplateCommand } from './template';
 
 /**
@@ -29,6 +30,11 @@ export function registerCommands(program: Command): void {
   console.error('[CLI-DEBUG] Adding template command to program...');
   program.addCommand(templateCommand);
 
+  console.error('[CLI-DEBUG] Creating scramble command...');
+  const scrambleCommand = createScrambleCommand();
+  console.error('[CLI-DEBUG] Adding scramble command to program...');
+  program.addCommand(scrambleCommand);
+
   // TODO: Add remaining commands as they are migrated
   // program.addCommand(createCssOptimizeCommand());
   // program.addCommand(createCssAnalyzeCommand());
@@ -38,4 +44,9 @@ export function registerCommands(program: Command): void {
 /**
  * Export command creators for individual use
  */
-export { createCssConfigCommand, createInitConfigCommand, createTemplateCommand };
+export {
+  createCssConfigCommand,
+  createInitConfigCommand,
+  createScrambleCommand,
+  createTemplateCommand,
+};
