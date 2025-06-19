@@ -46,7 +46,7 @@ export function createCssConfigCommand(): Command {
 
       // Create CLI arguments for core configuration integration
       const cliArguments = {
-        nameGenerationMinimumLength: lengthOption
+        nameGenerationMinimumLength: lengthOption,
       };
 
       // Generate name generation config from CLI options
@@ -92,7 +92,9 @@ export function createCssConfigCommand(): Command {
         let config;
 
         // Define configuration options including name generation
-        const configOptions = lengthOption ? { nameGeneration: normalizedConfig.nameGeneration } : {};
+        const configOptions = lengthOption
+          ? { nameGeneration: normalizedConfig.nameGeneration }
+          : {};
 
         if (options.preset) {
           if (options.preset === 'production' || options.preset === 'development') {
@@ -132,19 +134,19 @@ export function createCssConfigCommand(): Command {
               preset: options.preset,
               version: packageInfo.version,
             },
-          // Include name generation configuration if provided
-          ...configOptions,
+            // Include name generation configuration if provided
+            ...configOptions,
           };
 
           writeFileSync(savePath, JSON.stringify(output, null, 2));
           logger.info('💾 Configuration saved', { path: savePath });
         } else {
           // Display configuration
-        // Step 4: Enhanced output with length-aware configuration
-        const outputConfig = lengthOption
-          ? { ...config, nameGeneration: normalizedConfig.nameGeneration }
-          : config;
-        console.log(JSON.stringify(outputConfig, null, 2));
+          // Step 4: Enhanced output with length-aware configuration
+          const outputConfig = lengthOption
+            ? { ...config, nameGeneration: normalizedConfig.nameGeneration }
+            : config;
+          console.log(JSON.stringify(outputConfig, null, 2));
         }
       } catch (error) {
         handleCLIError(error, logger);
