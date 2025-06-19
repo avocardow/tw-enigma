@@ -7,6 +7,7 @@
 import { Command } from 'commander';
 import { createCssConfigCommand } from './css-config';
 import { createInitConfigCommand } from './init-config';
+import { createTemplateCommand } from './template';
 
 /**
  * Register all commands with the main program
@@ -23,6 +24,11 @@ export function registerCommands(program: Command): void {
   console.error('[CLI-DEBUG] Adding css-config command to program...');
   program.addCommand(cssConfigCommand);
 
+  console.error('[CLI-DEBUG] Creating template command...');
+  const templateCommand = createTemplateCommand();
+  console.error('[CLI-DEBUG] Adding template command to program...');
+  program.addCommand(templateCommand);
+
   // TODO: Add remaining commands as they are migrated
   // program.addCommand(createCssOptimizeCommand());
   // program.addCommand(createCssAnalyzeCommand());
@@ -32,4 +38,4 @@ export function registerCommands(program: Command): void {
 /**
  * Export command creators for individual use
  */
-export { createCssConfigCommand, createInitConfigCommand };
+export { createCssConfigCommand, createInitConfigCommand, createTemplateCommand };
