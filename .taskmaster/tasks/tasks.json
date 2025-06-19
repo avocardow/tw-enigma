@@ -506,7 +506,7 @@
               1
             ],
             "details": "Document step-by-step manual test cases, including expected results and data requirements, for scenarios requiring human validation.",
-            "status": "pending"
+            "status": "done"
           },
           {
             "id": 4,
@@ -517,7 +517,7 @@
               3
             ],
             "details": "Map test cases to requirements and integration points. Identify any gaps in coverage and update tests as needed.",
-            "status": "pending"
+            "status": "done"
           },
           {
             "id": 5,
@@ -527,7 +527,7 @@
               4
             ],
             "details": "Execute regression suites and validate results against previous versions. Document any compatibility issues found.",
-            "status": "pending"
+            "status": "done"
           },
           {
             "id": 6,
@@ -552,7 +552,7 @@
     ],
     "metadata": {
       "created": "2025-06-16T01:49:25.526Z",
-      "updated": "2025-06-18T14:17:56.872Z",
+      "updated": "2025-06-19T00:28:32.826Z",
       "description": "Tasks for master context"
     }
   }

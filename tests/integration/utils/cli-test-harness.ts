@@ -47,29 +47,49 @@ export class CliTestHarness {
    * Execute a CLI command and return the result
    */
   async executeCommand(
-    command: string,
     args: string[] = [],
     options: CliExecutionOptions = {}
   ): Promise<CliExecutionResult> {
-    const startTime = Date.now();
-    const timeout = options.timeout || this.defaultTimeout;
-    const cwd = options.cwd || this.defaultCwd;
-    const env = {
-      ...process.env,
-      NODE_ENV: 'test',
-      INTEGRATION_TEST: 'true',
-      ...options.env,
-    };
+    const { cwd = this.defaultCwd, timeout = this.defaultTimeout } = options;
 
-    // Build the full command
-    const fullCommand = `node "${this.cliPath}" ${command} ${args.join(' ')}`.trim();
+    // Handle command and arguments properly
+    // First argument is the command (or empty for base CLI), rest are arguments
+    let command = '';
+    let commandArgs: string[] = [];
+
+    if (args.length > 0) {
+      // Check if first arg is a command (doesn't start with -)
+      if (!args[0].startsWith('-')) {
+        command = args[0];
+        commandArgs = args.slice(1);
+      } else {
+        // All arguments are flags/options
+        commandArgs = args;
+      }
+    }
+
+    // Build the full command properly with space separation
+    const baseCommand = `node "${this.cliPath}"`;
+    const fullCommand = [baseCommand, command, ...commandArgs]
+      .filter((part) => part.length > 0)
+      .join(' ')
+      .trim();
+
+    const startTime = Date.now();
 
     try {
       const { stdout, stderr } = await execAsync(fullCommand, {
         timeout,
         cwd,
-        env,
         encoding: 'utf8',
+        env: {
+          ...process.env,
+          NODE_ENV: 'test',
+          INTEGRATION_TEST: 'true',
+          // Suppress debug output in test environment
+          DEBUG: '',
+          LOG_LEVEL: 'error',
+        },
       });
 
       const executionTime = Date.now() - startTime;
@@ -79,7 +99,7 @@ export class CliTestHarness {
         stderr: stderr.trim(),
         exitCode: 0,
         executionTime,
-        command,
+        command: fullCommand,
         args,
       };
     } catch (error: any) {
@@ -92,7 +112,7 @@ export class CliTestHarness {
           stderr: (error.stderr || '').trim(),
           exitCode: error.code || 1,
           executionTime,
-          command,
+          command: fullCommand,
           args,
         };
       }
@@ -118,7 +138,7 @@ export class CliTestHarness {
     additionalArgs: string[] = [],
     options: CliExecutionOptions = {}
   ): Promise<CliExecutionResult> {
-    return this.executeCommand(`--length=${length}`, [command, ...additionalArgs], options);
+    return this.executeCommand([`--length=${length}`, command, ...additionalArgs], options);
   }
 
   /**
@@ -128,7 +148,7 @@ export class CliTestHarness {
     args: string[] = [],
     options: CliExecutionOptions = {}
   ): Promise<CliExecutionResult> {
-    return this.executeCommand('css-config', args, options);
+    return this.executeCommand(['css-config', ...args], options);
   }
 
   /**
@@ -149,7 +169,7 @@ export class CliTestHarness {
     args: string[] = [],
     options: CliExecutionOptions = {}
   ): Promise<CliExecutionResult> {
-    return this.executeCommand('init-config', args, options);
+    return this.executeCommand(['init-config', ...args], options);
   }
 
   /**
@@ -171,14 +191,14 @@ export class CliTestHarness {
     options: CliExecutionOptions = {}
   ): Promise<CliExecutionResult> {
     const args = command ? [command] : [];
-    return this.executeCommand('--help', args, options);
+    return this.executeCommand(['--help', ...args], options);
   }
 
   /**
    * Execute version command
    */
   async executeVersion(options: CliExecutionOptions = {}): Promise<CliExecutionResult> {
-    return this.executeCommand('--version', [], options);
+    return this.executeCommand(['--version'], options);
   }
 
   /**
@@ -407,11 +427,8 @@ export default {
       cwd: workingDirectory,
     };
 
-    // Extract command from args (assume first arg might be the command)
-    const command = args.length > 0 ? args[0] : '';
-    const commandArgs = args.slice(1);
-
-    return this.executeCommand(command, commandArgs, executionOptions);
+    // Pass the full args array to executeCommand
+    return this.executeCommand(args, executionOptions);
   }
 
   /**
