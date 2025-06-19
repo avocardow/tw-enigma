@@ -133,6 +133,7 @@ CLAUDE.md
 .cursor/
 .claude/
 .anthropic/
+.cursorignore
 
 # Development workflow artifacts
 temp-debug-logs.txt
