@@ -3,7 +3,7 @@
 [![CI](https://github.com/avocardow/tw-enigma/actions/workflows/ci.yml/badge.svg)](https://github.com/avocardow/tw-enigma/actions/workflows/ci.yml)
 [![Release](https://github.com/avocardow/tw-enigma/actions/workflows/release.yml/badge.svg)](https://github.com/avocardow/tw-enigma/actions/workflows/release.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Tests](https://img.shields.io/badge/tests-1779%20passing-brightgreen.svg)](#)
+[![Tests](https://img.shields.io/badge/tests-1355%20passing-brightgreen.svg)](#)
 
 **Dramatically shrink your HTML and JavaScript bundle sizes by replacing repetitive Tailwind class patterns with short, optimized class names.**
 
