@@ -5,11 +5,11 @@
         "id": 1,
         "title": "Set up private package structure",
         "description": "Create the initial package structure for @tw-enigma/scramble as a private package within the monorepo.",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
         "details": "Create the following directory structure in packages-private/scramble:\n- src/index.ts (main source file)\n- tsup.config.ts (build configuration)\n- package.json (package configuration)\n\nPackage.json should include:\n```json\n{\n  \"name\": \"@tw-enigma/scramble\",\n  \"version\": \"0.1.0\",\n  \"private\": true,\n  \"main\": \"dist/scramble.min.js\",\n  \"scripts\": {\n    \"build\": \"tsup\",\n    \"dev\": \"tsup --watch\"\n  },\n  \"devDependencies\": {\n    \"tsup\": \"^7.1.0\",\n    \"typescript\": \"^5.1.6\"\n  }\n}\n```\n\ntsup.config.ts should configure for IIFE output:\n```typescript\nimport { defineConfig } from 'tsup';\n\nexport default defineConfig({\n  entry: ['src/index.ts'],\n  format: ['iife'],\n  minify: true,\n  clean: true,\n  outExtension: () => ({ js: '.min.js' }),\n  noExternal: ['*']\n});\n```\n\nCreate a basic README.md with development setup instructions.",
         "testStrategy": "Verify the package structure is correctly set up by running `pnpm build` from the monorepo root and confirming that the scramble package builds successfully. Check that the dist/scramble.min.js file is generated with the expected IIFE format.",
-        "priority": "high",
-        "dependencies": [],
-        "status": "pending",
         "subtasks": [
           {
             "id": 1,
@@ -17,7 +17,7 @@
             "description": "Set up the foundational directory and file layout for the private package, ensuring all necessary folders and placeholder files are present.",
             "dependencies": [],
             "details": "Create the root package directory. Inside, add a 'src' folder for source code, a 'tests' folder for test files, and include placeholder files such as 'src/index.ts' and 'tests/index.test.ts'. Ensure the structure matches best practices for private packages.",
-            "status": "pending"
+            "status": "done"
           },
           {
             "id": 2,
@@ -27,7 +27,7 @@
               1
             ],
             "details": "Run 'npm init -y' (or equivalent) in the root directory. Edit package.json to include the package name, version, description, main entry point, author, license, and set 'private': true. Add scripts for build, test, and lint as needed.",
-            "status": "pending"
+            "status": "done"
           },
           {
             "id": 3,
@@ -37,7 +37,7 @@
               2
             ],
             "details": "Install tsup as a dev dependency. Create a 'tsup.config.ts' file in the root directory. Configure entry points, output directory, format (e.g., cjs, esm), and enable source maps. Update package.json build script to use tsup.",
-            "status": "pending"
+            "status": "done"
           },
           {
             "id": 4,
@@ -47,7 +47,20 @@
               3
             ],
             "details": "Create a README.md in the root directory. Include sections for project overview, installation steps, usage examples, build/test instructions, and contribution guidelines. Ensure clarity and completeness for new contributors.",
-            "status": "pending"
+            "status": "done"
+          },
+          {
+            "id": 5,
+            "title": "Verify Build Process",
+            "description": "Confirm that the package builds correctly from both the package directory and monorepo root.",
+            "dependencies": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "details": "Test building the package using 'pnpm --filter' from the monorepo root and directly from the package directory. Verify that dist/scramble.min.js is generated correctly as an IIFE with the TwEnigmaScramble global name and ES2020 target.",
+            "status": "done"
           }
         ]
       },
@@ -893,7 +906,7 @@
     ],
     "metadata": {
       "created": "2025-06-16T01:49:25.526Z",
-      "updated": "2025-06-19T10:32:23.716Z",
+      "updated": "2025-06-19T11:25:10.517Z",
       "description": "Tasks for master context"
     }
   }
