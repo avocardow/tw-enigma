@@ -167,9 +167,10 @@ export function validateLength(value: string | number, quietWarnings: boolean = 
   // Try to import and use the new validation with warnings
   try {
     // Import dynamically to avoid circular dependencies
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { validateCliLength } = require('@tw-enigma/core/utils/lengthValidation');
     return validateCliLength(value, quietWarnings);
-  } catch (importError) {
+  } catch {
     // Fallback to basic validation if the import fails
     const num = typeof value === 'string' ? parseInt(value, 10) : value;
 
