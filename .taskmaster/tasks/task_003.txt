@@ -1,43 +1,114 @@
 # Task ID: 3
-# Title: Implement Core Length Enforcement Function
+# Title: Implement CSS selector discovery
 # Status: pending
 # Dependencies: 2
 # Priority: high
-# Description: Create the enforceMinimumLength() function to pad/extend names to the minimum length.
+# Description: Create the core functionality to scan and identify tw-enigma generated class selectors in stylesheets.
 # Details:
-Implement enforceMinimumLength() function in a new file packages/core/src/processors/lengthEnforcement.ts. Use a cryptographically secure random number generator (e.g., crypto.randomBytes()) for generating random padding. Ensure the function maintains CSS identifier validity.
+Implement a function to scan all accessible stylesheets and identify tw-enigma generated class selectors using the regex pattern `^\.[a-z][a-z0-9]*$`.
+
+```typescript
+interface CSSRuleInfo {
+  rule: CSSStyleRule;
+  originalSelector: string;
+  className: string; // without the dot
+}
+
+function discoverTwEnigmaSelectors(): CSSRuleInfo[] {
+  const results: CSSRuleInfo[] = [];
+  const twEnigmaPattern = /^\.[a-z][a-z0-9]*$/;
+  
+  try {
+    // Iterate through all document stylesheets
+    for (let i = 0; i < document.styleSheets.length; i++) {
+      const stylesheet = document.styleSheets[i];
+      
+      // Skip cross-origin stylesheets that can't be accessed
+      try {
+        // This will throw if stylesheet is cross-origin
+        const rules = stylesheet.cssRules || stylesheet.rules;
+        
+        // Process each rule in the stylesheet
+        for (let j = 0; j < rules.length; j++) {
+          const rule = rules[j];
+          
+          // Only process style rules (CSSStyleRule)
+          if (rule instanceof CSSStyleRule) {
+            const match = rule.selectorText.match(twEnigmaPattern);
+            if (match) {
+              results.push({
+                rule: rule,
+                originalSelector: rule.selectorText,
+                className: match[0].substring(1) // Remove the dot prefix
+              });
+            }
+          }
+        }
+      } catch (e) {
+        debug('Could not access stylesheet', i, e);
+        // Continue with next stylesheet
+      }
+    }
+  } catch (e) {
+    debug('Error discovering selectors', e);
+  }
+  
+  return results;
+}
+```
+
+Implement retry logic to handle cases where stylesheets might not be fully loaded:
+
+```typescript
+async function discoverWithRetry(maxRetries = CONFIG.RETRY_ATTEMPTS): Promise<CSSRuleInfo[]> {
+  let results = discoverTwEnigmaSelectors();
+  let attempts = 0;
+  
+  while (results.length === 0 && attempts < maxRetries) {
+    debug(`No selectors found, retrying (${attempts + 1}/${maxRetries})...`);
+    await new Promise(resolve => setTimeout(resolve, 100));
+    results = discoverTwEnigmaSelectors();
+    attempts++;
+  }
+  
+  return results;
+}
+```
+<info added on 2025-06-19T10:45:16.952Z>
+The regex pattern `^\.[a-z][a-z0-9]*$` is THE CRITICAL pattern that MUST be used for tw-enigma class detection. This pattern specifically matches class selectors that start with a lowercase letter followed by any combination of lowercase letters and numbers, which is the exact format that tw-enigma generates. This pattern is mandatory and non-negotiable for proper scramble effect functionality. Any deviation from this pattern will result in incorrect selector identification and compromise the core functionality of the system.
+</info added on 2025-06-19T10:45:16.952Z>
 
 # Test Strategy:
-Write comprehensive unit tests to verify the function correctly pads names to the specified minimum length while maintaining CSS validity.
+Test with a sample HTML page containing tw-enigma generated classes. Verify the function correctly identifies all tw-enigma class selectors and handles cross-origin stylesheets gracefully. Test the retry mechanism by artificially delaying stylesheet loading.
 
 # Subtasks:
-## 1. Function Implementation [pending]
+## 1. Implement Selector Scanning Function [pending]
 ### Dependencies: None
-### Description: Design and implement the core function that integrates cryptographic random padding logic and CSS identifier validation.
+### Description: Develop the core function that traverses the DOM, extracts selectors, and matches them against CSS rules. Ensure support for various selector types (ID, class, attribute, etc.) and handle dynamic or complex selectors using regex where necessary.
 ### Details:
-Define the function signature, handle input/output, and ensure modularity for easy integration of padding and validation logic.
+The function should use DOM APIs (e.g., querySelectorAll) to discover elements and their associated selectors. It must be modular to allow integration with error handling and retry logic in later steps. Success is defined by accurate extraction and matching of selectors for a representative set of DOM elements.
 
-## 2. Cryptographic Random Padding Logic [pending]
+## 2. Handle Cross-Origin Stylesheets [pending]
 ### Dependencies: 3.1
-### Description: Develop secure random padding logic using cryptographic methods to ensure unpredictability and security.
+### Description: Extend the selector scanning logic to detect and gracefully handle cross-origin stylesheet access issues, such as CORS errors or security exceptions.
 ### Details:
-Utilize a cryptographically secure random number generator to generate padding, and integrate this logic into the main function.
+Implement try/catch blocks or feature detection to skip or log inaccessible stylesheets without breaking the scanning process. Success is defined by the function continuing to operate and reporting inaccessible stylesheets when encountering cross-origin restrictions.
 
-## 3. CSS Identifier Validation [pending]
+## 3. Integrate Retry Logic for Stylesheet Access [pending]
+### Dependencies: 3.2
+### Description: Add robust retry logic to the stylesheet scanning process to handle transient errors (e.g., network delays, temporary CORS issues) with configurable retry limits and backoff strategies.
+### Details:
+Implement a retry mechanism that attempts to access problematic stylesheets a set number of times before failing gracefully. Success is defined by the function successfully retrying and recovering from transient errors, or failing with clear error reporting after exhausting retries.
+
+## 4. Define CSSRuleInfo Interface [pending]
 ### Dependencies: 3.1
-### Description: Implement logic to validate that generated or provided identifiers conform to CSS naming rules.
+### Description: Design and implement a TypeScript (or equivalent) interface named CSSRuleInfo to standardize the structure of extracted CSS rule data, including selector text, rule type, stylesheet source, and error metadata.
 ### Details:
-Ensure identifiers meet CSS specifications (e.g., start with a letter or underscore, contain only allowed characters), and handle invalid cases appropriately.
+The interface should include fields for selector, rule type (e.g., style, media), stylesheet URL, and any error or access metadata. Success is defined by all scanning and error-handling logic outputting results conforming to this interface.
 
-## 4. Code Review [pending]
-### Dependencies: 3.2, 3.3
-### Description: Conduct a thorough code review to ensure correctness, security, maintainability, and adherence to best practices.
+## 5. Write Comprehensive Tests for Selector Scanning [pending]
+### Dependencies: 3.1, 3.2, 3.3, 3.4
+### Description: Develop automated tests covering various scenarios: standard selectors, dynamic selectors, cross-origin stylesheets, retry logic, and error cases. Ensure tests validate both successful extraction and correct error handling.
 ### Details:
-Review the implementation for logic errors, security vulnerabilities, and code style issues. Provide feedback and request changes if necessary.
-
-## 5. Comprehensive Unit Testing [pending]
-### Dependencies: 3.4
-### Description: Develop and execute comprehensive unit tests covering all aspects of the function, including edge cases for padding and identifier validation.
-### Details:
-Write tests for normal and edge cases, invalid inputs, and integration of padding and validation logic. Ensure high code coverage and reliability.
+Tests should use representative HTML/CSS fixtures and simulate cross-origin and transient error conditions. Success is defined by all tests passing, with clear assertions for selector extraction accuracy, error handling, and retry outcomes.
 

@@ -3,443 +3,897 @@
     "tasks": [
       {
         "id": 1,
-        "title": "Implement --length Global CLI Flag",
-        "description": "Add the --length global CLI flag to accept values 1-26 for setting minimum class name length.",
-        "details": "Update packages/cli/src/index.ts to add the --length flag to existing global options. Use yargs or commander.js (latest version) for CLI parsing. Implement validation for the 1-26 range with helpful error messages. Add length to CLI options interface and type definitions. Update help text and usage documentation.",
-        "testStrategy": "Write unit tests using Vitest to verify flag parsing, validation, and error handling for various input scenarios including valid and invalid length values.",
+        "title": "Set up private package structure",
+        "description": "Create the initial package structure for @tw-enigma/scramble as a private package within the monorepo.",
+        "details": "Create the following directory structure in packages-private/scramble:\n- src/index.ts (main source file)\n- tsup.config.ts (build configuration)\n- package.json (package configuration)\n\nPackage.json should include:\n```json\n{\n  \"name\": \"@tw-enigma/scramble\",\n  \"version\": \"0.1.0\",\n  \"private\": true,\n  \"main\": \"dist/scramble.min.js\",\n  \"scripts\": {\n    \"build\": \"tsup\",\n    \"dev\": \"tsup --watch\"\n  },\n  \"devDependencies\": {\n    \"tsup\": \"^7.1.0\",\n    \"typescript\": \"^5.1.6\"\n  }\n}\n```\n\ntsup.config.ts should configure for IIFE output:\n```typescript\nimport { defineConfig } from 'tsup';\n\nexport default defineConfig({\n  entry: ['src/index.ts'],\n  format: ['iife'],\n  minify: true,\n  clean: true,\n  outExtension: () => ({ js: '.min.js' }),\n  noExternal: ['*']\n});\n```\n\nCreate a basic README.md with development setup instructions.",
+        "testStrategy": "Verify the package structure is correctly set up by running `pnpm build` from the monorepo root and confirming that the scramble package builds successfully. Check that the dist/scramble.min.js file is generated with the expected IIFE format.",
         "priority": "high",
         "dependencies": [],
-        "status": "done",
-        "subtasks": []
-      },
-      {
-        "id": 2,
-        "title": "Update NameGenerationOptionsSchema",
-        "description": "Enhance the NameGenerationOptionsSchema to include the minimumLength field.",
-        "details": "In packages/core/src/processors/nameGeneration.ts, update the NameGenerationOptionsSchema using zod (latest version) to add minimumLength field: z.number().min(1).max(26).default(1). Update related type definitions and validation logic.",
-        "testStrategy": "Create unit tests to ensure the schema correctly validates various input scenarios, including edge cases for minimumLength.",
-        "priority": "high",
-        "dependencies": [1],
-        "status": "done",
-        "subtasks": []
-      },
-      {
-        "id": 3,
-        "title": "Implement Core Length Enforcement Function",
-        "description": "Create the enforceMinimumLength() function to pad/extend names to the minimum length.",
-        "details": "Implement enforceMinimumLength() function in a new file packages/core/src/processors/lengthEnforcement.ts. Use a cryptographically secure random number generator (e.g., crypto.randomBytes()) for generating random padding. Ensure the function maintains CSS identifier validity.",
-        "testStrategy": "Write comprehensive unit tests to verify the function correctly pads names to the specified minimum length while maintaining CSS validity.",
-        "priority": "high",
-        "dependencies": [2],
-        "status": "done",
+        "status": "pending",
         "subtasks": [
           {
             "id": 1,
-            "title": "Function Implementation",
-            "description": "Design and implement the core function that integrates cryptographic random padding logic and CSS identifier validation.",
+            "title": "Create the Directory Structure",
+            "description": "Set up the foundational directory and file layout for the private package, ensuring all necessary folders and placeholder files are present.",
             "dependencies": [],
-            "details": "Define the function signature, handle input/output, and ensure modularity for easy integration of padding and validation logic.",
-            "status": "done"
+            "details": "Create the root package directory. Inside, add a 'src' folder for source code, a 'tests' folder for test files, and include placeholder files such as 'src/index.ts' and 'tests/index.test.ts'. Ensure the structure matches best practices for private packages.",
+            "status": "pending"
           },
           {
             "id": 2,
-            "title": "Cryptographic Random Padding Logic",
-            "description": "Develop secure random padding logic using cryptographic methods to ensure unpredictability and security.",
-            "dependencies": [1],
-            "details": "Utilize a cryptographically secure random number generator to generate padding, and integrate this logic into the main function.",
-            "status": "done"
+            "title": "Initialize package.json",
+            "description": "Generate and configure the package.json file with essential metadata and scripts for the private package.",
+            "dependencies": [
+              1
+            ],
+            "details": "Run 'npm init -y' (or equivalent) in the root directory. Edit package.json to include the package name, version, description, main entry point, author, license, and set 'private': true. Add scripts for build, test, and lint as needed.",
+            "status": "pending"
           },
           {
             "id": 3,
-            "title": "CSS Identifier Validation",
-            "description": "Implement logic to validate that generated or provided identifiers conform to CSS naming rules.",
-            "dependencies": [1],
-            "details": "Ensure identifiers meet CSS specifications (e.g., start with a letter or underscore, contain only allowed characters), and handle invalid cases appropriately.",
-            "status": "done"
+            "title": "Configure tsup",
+            "description": "Set up tsup for TypeScript compilation and bundling, ensuring the configuration aligns with project requirements.",
+            "dependencies": [
+              2
+            ],
+            "details": "Install tsup as a dev dependency. Create a 'tsup.config.ts' file in the root directory. Configure entry points, output directory, format (e.g., cjs, esm), and enable source maps. Update package.json build script to use tsup.",
+            "status": "pending"
           },
           {
             "id": 4,
-            "title": "Code Review",
-            "description": "Conduct a thorough code review to ensure correctness, security, maintainability, and adherence to best practices.",
-            "dependencies": [2, 3],
-            "details": "Review the implementation for logic errors, security vulnerabilities, and code style issues. Provide feedback and request changes if necessary.",
-            "status": "done"
+            "title": "Write the Initial README.md",
+            "description": "Draft a README.md file that documents the package purpose, usage, installation instructions, and development guidelines.",
+            "dependencies": [
+              3
+            ],
+            "details": "Create a README.md in the root directory. Include sections for project overview, installation steps, usage examples, build/test instructions, and contribution guidelines. Ensure clarity and completeness for new contributors.",
+            "status": "pending"
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "Implement configuration template system",
+        "description": "Create a configuration template system that allows the CLI to inject build-time configuration into the scramble script.",
+        "details": "Create a configuration template in src/index.ts that will be replaced at build time:\n\n```typescript\n// Configuration injected at build time by CLI\nconst CONFIG = {\n  SCRAMBLE_INTERVAL: {{SCRAMBLE_INTERVAL}}, // Default: 150\n  SCRAMBLE_MODE: \"{{SCRAMBLE_MODE}}\", // Default: \"all\"\n  CHARSET: \"{{CHARSET}}\", // Default: \"abcdefghijklmnopqrstuvwxyz0123456789\"\n  DEBUG_MODE: {{DEBUG_MODE}}, // Default: false\n  RETRY_ATTEMPTS: {{RETRY_ATTEMPTS}}, // Default: 3\n  CLEANUP_INTERVAL: {{CLEANUP_INTERVAL}}, // Default: 30\n  MAX_REGISTRY_SIZE: {{MAX_REGISTRY_SIZE}}, // Default: 1000\n  PERFORMANCE_MONITORING: {{PERFORMANCE_MONITORING}} // Default: false\n};\n```\n\nImplement a debug logging utility that only logs when DEBUG_MODE is true:\n\n```typescript\nfunction debug(...args: any[]) {\n  if (CONFIG.DEBUG_MODE) {\n    console.log('[tw-enigma/scramble]', ...args);\n  }\n}\n```\n\nCreate a template processing function in the CLI that will replace these placeholders with actual values based on CLI flags.",
+        "testStrategy": "Test by manually replacing template variables with test values and verifying the script compiles correctly. Verify debug logging works when DEBUG_MODE is true and doesn't log when false.",
+        "priority": "high",
+        "dependencies": [
+          1
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Define Template Structure",
+            "description": "Design and document the template format, specifying how placeholders are represented (e.g., {{PLACEHOLDER}}), supported data types, and any constraints. Ensure the structure is flexible for future extensions and easy to validate.",
+            "dependencies": [],
+            "details": "Create a sample template file with at least three distinct placeholders. Document the placeholder syntax and provide examples. Success criteria: Template structure is clearly defined, documented, and reviewed.",
+            "status": "pending"
+          },
+          {
+            "id": 2,
+            "title": "Implement Placeholder Replacement Logic",
+            "description": "Develop the core logic to identify placeholders in the template and replace them with provided values. Handle edge cases such as missing or extra placeholders, and ensure type safety and error reporting.",
+            "dependencies": [
+              1
+            ],
+            "details": "Write a function that takes a template string and a mapping of placeholder names to values, returning the processed string. Include unit tests for scenarios with missing, extra, and nested placeholders. Success criteria: All tests pass and logic handles edge cases robustly.",
+            "status": "pending"
+          },
+          {
+            "id": 3,
+            "title": "Integrate CLI Flag Parsing",
+            "description": "Add command-line interface (CLI) support to accept template file paths, placeholder values, and output options via flags. Validate input and provide helpful error messages for invalid or missing arguments.",
+            "dependencies": [
+              2
+            ],
+            "details": "Use a CLI parsing library to define flags for template path, output path, and placeholder key-value pairs. Implement input validation and help text. Success criteria: CLI accepts all required arguments and displays errors/help as needed.",
+            "status": "pending"
+          },
+          {
+            "id": 4,
+            "title": "Add Debug Utility",
+            "description": "Implement a debug mode that outputs detailed information about the template processing steps, including detected placeholders, replacement values, and any errors encountered.",
+            "dependencies": [
+              3
+            ],
+            "details": "Add a CLI flag (e.g., --debug) that, when enabled, prints step-by-step logs of the injection process. Ensure logs are clear and actionable. Success criteria: Debug output is comprehensive and aids troubleshooting.",
+            "status": "pending"
           },
           {
             "id": 5,
-            "title": "Comprehensive Unit Testing",
-            "description": "Develop and execute comprehensive unit tests covering all aspects of the function, including edge cases for padding and identifier validation.",
-            "dependencies": [4],
-            "details": "Write tests for normal and edge cases, invalid inputs, and integration of padding and validation logic. Ensure high code coverage and reliability.",
-            "status": "done"
+            "title": "Test the Injection Process",
+            "description": "Develop and execute a suite of integration tests covering the full injection process, including CLI usage, placeholder replacement, error handling, and debug output.",
+            "dependencies": [
+              4
+            ],
+            "details": "Write integration tests that simulate real-world usage scenarios, including valid and invalid inputs. Verify output correctness and error reporting. Success criteria: All tests pass and coverage includes all major code paths.",
+            "status": "pending"
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Implement CSS selector discovery",
+        "description": "Create the core functionality to scan and identify tw-enigma generated class selectors in stylesheets.",
+        "status": "pending",
+        "dependencies": [
+          2
+        ],
+        "priority": "high",
+        "details": "Implement a function to scan all accessible stylesheets and identify tw-enigma generated class selectors using the regex pattern `^\\.[a-z][a-z0-9]*$`.\n\n```typescript\ninterface CSSRuleInfo {\n  rule: CSSStyleRule;\n  originalSelector: string;\n  className: string; // without the dot\n}\n\nfunction discoverTwEnigmaSelectors(): CSSRuleInfo[] {\n  const results: CSSRuleInfo[] = [];\n  const twEnigmaPattern = /^\\.[a-z][a-z0-9]*$/;\n  \n  try {\n    // Iterate through all document stylesheets\n    for (let i = 0; i < document.styleSheets.length; i++) {\n      const stylesheet = document.styleSheets[i];\n      \n      // Skip cross-origin stylesheets that can't be accessed\n      try {\n        // This will throw if stylesheet is cross-origin\n        const rules = stylesheet.cssRules || stylesheet.rules;\n        \n        // Process each rule in the stylesheet\n        for (let j = 0; j < rules.length; j++) {\n          const rule = rules[j];\n          \n          // Only process style rules (CSSStyleRule)\n          if (rule instanceof CSSStyleRule) {\n            const match = rule.selectorText.match(twEnigmaPattern);\n            if (match) {\n              results.push({\n                rule: rule,\n                originalSelector: rule.selectorText,\n                className: match[0].substring(1) // Remove the dot prefix\n              });\n            }\n          }\n        }\n      } catch (e) {\n        debug('Could not access stylesheet', i, e);\n        // Continue with next stylesheet\n      }\n    }\n  } catch (e) {\n    debug('Error discovering selectors', e);\n  }\n  \n  return results;\n}\n```\n\nImplement retry logic to handle cases where stylesheets might not be fully loaded:\n\n```typescript\nasync function discoverWithRetry(maxRetries = CONFIG.RETRY_ATTEMPTS): Promise<CSSRuleInfo[]> {\n  let results = discoverTwEnigmaSelectors();\n  let attempts = 0;\n  \n  while (results.length === 0 && attempts < maxRetries) {\n    debug(`No selectors found, retrying (${attempts + 1}/${maxRetries})...`);\n    await new Promise(resolve => setTimeout(resolve, 100));\n    results = discoverTwEnigmaSelectors();\n    attempts++;\n  }\n  \n  return results;\n}\n```\n<info added on 2025-06-19T10:45:16.952Z>\nThe regex pattern `^\\.[a-z][a-z0-9]*$` is THE CRITICAL pattern that MUST be used for tw-enigma class detection. This pattern specifically matches class selectors that start with a lowercase letter followed by any combination of lowercase letters and numbers, which is the exact format that tw-enigma generates. This pattern is mandatory and non-negotiable for proper scramble effect functionality. Any deviation from this pattern will result in incorrect selector identification and compromise the core functionality of the system.\n</info added on 2025-06-19T10:45:16.952Z>",
+        "testStrategy": "Test with a sample HTML page containing tw-enigma generated classes. Verify the function correctly identifies all tw-enigma class selectors and handles cross-origin stylesheets gracefully. Test the retry mechanism by artificially delaying stylesheet loading.",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Implement Selector Scanning Function",
+            "description": "Develop the core function that traverses the DOM, extracts selectors, and matches them against CSS rules. Ensure support for various selector types (ID, class, attribute, etc.) and handle dynamic or complex selectors using regex where necessary.",
+            "dependencies": [],
+            "details": "The function should use DOM APIs (e.g., querySelectorAll) to discover elements and their associated selectors. It must be modular to allow integration with error handling and retry logic in later steps. Success is defined by accurate extraction and matching of selectors for a representative set of DOM elements.",
+            "status": "pending"
+          },
+          {
+            "id": 2,
+            "title": "Handle Cross-Origin Stylesheets",
+            "description": "Extend the selector scanning logic to detect and gracefully handle cross-origin stylesheet access issues, such as CORS errors or security exceptions.",
+            "dependencies": [
+              1
+            ],
+            "details": "Implement try/catch blocks or feature detection to skip or log inaccessible stylesheets without breaking the scanning process. Success is defined by the function continuing to operate and reporting inaccessible stylesheets when encountering cross-origin restrictions.",
+            "status": "pending"
+          },
+          {
+            "id": 3,
+            "title": "Integrate Retry Logic for Stylesheet Access",
+            "description": "Add robust retry logic to the stylesheet scanning process to handle transient errors (e.g., network delays, temporary CORS issues) with configurable retry limits and backoff strategies.",
+            "dependencies": [
+              2
+            ],
+            "details": "Implement a retry mechanism that attempts to access problematic stylesheets a set number of times before failing gracefully. Success is defined by the function successfully retrying and recovering from transient errors, or failing with clear error reporting after exhausting retries.",
+            "status": "pending"
+          },
+          {
+            "id": 4,
+            "title": "Define CSSRuleInfo Interface",
+            "description": "Design and implement a TypeScript (or equivalent) interface named CSSRuleInfo to standardize the structure of extracted CSS rule data, including selector text, rule type, stylesheet source, and error metadata.",
+            "dependencies": [
+              1
+            ],
+            "details": "The interface should include fields for selector, rule type (e.g., style, media), stylesheet URL, and any error or access metadata. Success is defined by all scanning and error-handling logic outputting results conforming to this interface.",
+            "status": "pending"
+          },
+          {
+            "id": 5,
+            "title": "Write Comprehensive Tests for Selector Scanning",
+            "description": "Develop automated tests covering various scenarios: standard selectors, dynamic selectors, cross-origin stylesheets, retry logic, and error cases. Ensure tests validate both successful extraction and correct error handling.",
+            "dependencies": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "details": "Tests should use representative HTML/CSS fixtures and simulate cross-origin and transient error conditions. Success is defined by all tests passing, with clear assertions for selector extraction accuracy, error handling, and retry outcomes.",
+            "status": "pending"
           }
         ]
       },
       {
         "id": 4,
-        "title": "Update Base Conversion Functions",
-        "description": "Modify toCustomBase(), toBase26(), and toBase36() functions to accept and respect minimum length.",
-        "details": "Update the base conversion functions in packages/core/src/utils/baseConversion.ts to accept a minimumLength parameter. Implement padding logic that maintains CSS validity and preserves collision avoidance. Use the enforceMinimumLength() function for consistency.",
-        "testStrategy": "Create unit tests for each base conversion function, verifying correct behavior with various input lengths and minimum length requirements.",
+        "title": "Create DOM element mapping system",
+        "description": "Implement a system to map CSS rules to their corresponding DOM elements and create a registry for synchronized updates.",
+        "details": "Create a registry data structure to map CSS rules to DOM elements:\n\n```typescript\ninterface ClassRegistry {\n  [className: string]: {\n    cssRule: CSSStyleRule;\n    elements: Element[];\n    originalClassName: string;\n  }\n}\n\nasync function buildRegistry(): Promise<ClassRegistry> {\n  const registry: ClassRegistry = {};\n  const selectors = await discoverWithRetry();\n  \n  debug(`Discovered ${selectors.length} tw-enigma selectors`);\n  \n  // Limit registry size to prevent performance issues\n  const limitedSelectors = selectors.slice(0, CONFIG.MAX_REGISTRY_SIZE);\n  \n  for (const { rule, className } of limitedSelectors) {\n    try {\n      // Find all elements with this class\n      const elements = Array.from(document.querySelectorAll(`.${className}`));\n      \n      if (elements.length > 0) {\n        registry[className] = {\n          cssRule: rule,\n          elements,\n          originalClassName: className\n        };\n      }\n    } catch (e) {\n      debug(`Error mapping elements for class ${className}`, e);\n    }\n  }\n  \n  debug(`Built registry with ${Object.keys(registry).length} active classes`);\n  return registry;\n}\n```\n\nImplement a registry cleanup function to prevent memory leaks:\n\n```typescript\nfunction cleanupRegistry(registry: ClassRegistry): void {\n  for (const className in registry) {\n    // Filter out elements that are no longer in the DOM\n    registry[className].elements = registry[className].elements.filter(el => el.isConnected);\n    \n    // Remove classes with no elements\n    if (registry[className].elements.length === 0) {\n      delete registry[className];\n    }\n  }\n  \n  debug(`Registry cleanup complete, ${Object.keys(registry).length} classes remaining`);\n}\n```",
+        "testStrategy": "Test with a sample page containing tw-enigma classes. Verify the registry correctly maps CSS rules to DOM elements. Test the cleanup function by removing elements from the DOM and checking that they're removed from the registry.",
         "priority": "high",
-        "dependencies": [3],
-        "status": "done",
+        "dependencies": [
+          3
+        ],
+        "status": "pending",
         "subtasks": [
           {
             "id": 1,
-            "title": "Update Base Conversion Functions",
-            "description": "Refactor each base conversion function to ensure compatibility with new requirements and prepare for integration with enforceMinimumLength.",
+            "title": "Design the Registry Data Structure",
+            "description": "Define a robust data structure to store and manage CSS rules mapped to DOM elements. Specify how rules are indexed, how elements are referenced, and how updates will be tracked. Ensure the structure supports efficient lookup, insertion, and removal.",
             "dependencies": [],
-            "details": "Identify all base conversion functions (e.g., bin2dec, dec2hex, etc.) and update their logic as needed to support further enhancements.",
-            "status": "done"
+            "details": "Document the registry schema, including types for CSS rules, element references (e.g., WeakMap for garbage collection), and any metadata needed for cleanup or updates. Success criteria: A clear, documented data structure ready for implementation.",
+            "status": "pending"
           },
           {
             "id": 2,
-            "title": "Integrate enforceMinimumLength Logic",
-            "description": "Integrate the enforceMinimumLength function into each base conversion function to ensure output strings meet the required minimum length.",
-            "dependencies": [1],
-            "details": "Modify each function to call enforceMinimumLength after conversion, ensuring correct padding or truncation as specified.",
-            "status": "done"
+            "title": "Implement CSS Rule-to-Element Mapping Logic",
+            "description": "Develop the core logic that maps CSS rules to DOM elements, updating the registry as elements are added, removed, or mutated. Handle dynamic changes in the DOM and ensure the registry stays in sync.",
+            "dependencies": [
+              1
+            ],
+            "details": "Implement functions to add, update, and remove mappings. Integrate with DOM mutation observers if needed. Success criteria: Accurate, performant mapping logic with unit tests for edge cases (e.g., element removal, rule updates).",
+            "status": "pending"
           },
           {
             "id": 3,
-            "title": "Implement Collision Avoidance Mechanism",
-            "description": "Update the conversion logic to avoid output collisions (e.g., different inputs producing the same output after length enforcement).",
-            "dependencies": [2],
-            "details": "Analyze possible collision scenarios and adjust the conversion or padding logic to guarantee unique outputs for unique inputs.",
-            "status": "done"
+            "title": "Build the Registry Builder Component",
+            "description": "Create a component or module that initializes and manages the registry lifecycle, exposing an API for registering, querying, and updating CSS rules and their associated elements.",
+            "dependencies": [
+              2
+            ],
+            "details": "Implement initialization, teardown, and public methods for registry interaction. Ensure compatibility with server/client rendering if applicable. Success criteria: Registry builder passes integration tests and exposes a stable API.",
+            "status": "pending"
           },
           {
             "id": 4,
-            "title": "Update Type Definitions",
-            "description": "Revise and extend type definitions to reflect changes in function signatures and output formats.",
-            "dependencies": [3],
-            "details": "Ensure all type annotations and interfaces are accurate and consistent with the updated logic and enforced output constraints.",
-            "status": "done"
+            "title": "Add Cleanup and Memory Management Logic",
+            "description": "Implement logic to clean up unused CSS rules and element references from the registry, preventing memory leaks and stale state. Ensure cleanup is triggered on DOM mutations and component unmounts.",
+            "dependencies": [
+              3
+            ],
+            "details": "Use WeakMap or similar structures for element references. Add hooks or listeners for DOM changes. Success criteria: No memory leaks detected in stress tests; registry remains accurate after element removal.",
+            "status": "pending"
           },
           {
             "id": 5,
-            "title": "Write and Update Unit Tests",
-            "description": "Develop comprehensive unit tests for all updated functions, covering normal cases, edge cases, and collision avoidance.",
-            "dependencies": [4],
-            "details": "Write new tests and update existing ones to validate correct behavior, minimum length enforcement, and uniqueness of outputs.",
-            "status": "done"
+            "title": "Validate Implementation with Comprehensive Tests",
+            "description": "Develop and run a suite of unit and integration tests to validate all registry behaviors, including mapping, updates, cleanup, and edge cases. Ensure correctness under concurrent DOM mutations.",
+            "dependencies": [
+              4
+            ],
+            "details": "Write tests for all public APIs and internal logic. Include tests for rapid DOM changes, rule updates, and cleanup. Success criteria: All tests pass; code coverage meets project standards; no regressions found.",
+            "status": "pending"
           }
         ]
       },
       {
         "id": 5,
-        "title": "Integrate Length Enforcement with generateSequentialName()",
-        "description": "Update the generateSequentialName() function to respect the minimum length constraint.",
-        "details": "Modify the generateSequentialName() function in packages/core/src/processors/nameGeneration.ts to use the enforceMinimumLength() function. Ensure that the generated names meet the length constraints while maintaining uniqueness.",
-        "testStrategy": "Write integration tests to verify that generateSequentialName() produces names of the correct minimum length across various scenarios.",
+        "title": "Implement class name scrambling algorithm",
+        "description": "Create the core algorithm for generating random class names and ensuring they don't conflict with existing classes.",
+        "details": "Implement functions to generate random class names and check for conflicts:\n\n```typescript\nfunction generateRandomClassName(length = 1): string {\n  let result = '';\n  const charset = CONFIG.CHARSET;\n  \n  // First character must be a letter (a-z)\n  result += charset.substring(0, 26).charAt(Math.floor(Math.random() * 26));\n  \n  // If length > 1, add more random characters (can include numbers)\n  for (let i = 1; i < length; i++) {\n    result += charset.charAt(Math.floor(Math.random() * charset.length));\n  }\n  \n  return result;\n}\n\nfunction generateUniqueClassName(registry: ClassRegistry, preferredLength = 1): string {\n  // Start with preferred length, increase if needed to find unique name\n  let length = preferredLength;\n  let attempts = 0;\n  let className;\n  \n  do {\n    className = generateRandomClassName(length);\n    attempts++;\n    \n    // If we've tried too many times at this length, increase length\n    if (attempts > 10) {\n      length++;\n      attempts = 0;\n    }\n  } while (registry[className]);\n  \n  return className;\n}\n```\n\nImplement the function to scramble a single class:\n\n```typescript\nfunction scrambleClass(registry: ClassRegistry, originalClassName: string): void {\n  const entry = registry[originalClassName];\n  if (!entry) return;\n  \n  try {\n    // Generate a new unique class name\n    const newClassName = generateUniqueClassName(registry, originalClassName.length);\n    \n    // Update the CSS rule\n    entry.cssRule.selectorText = `.${newClassName}`;\n    \n    // Update all DOM elements\n    for (const element of entry.elements) {\n      element.classList.remove(originalClassName);\n      element.classList.add(newClassName);\n    }\n    \n    // Update registry with new class name\n    registry[newClassName] = entry;\n    delete registry[originalClassName];\n  } catch (e) {\n    debug(`Error scrambling class ${originalClassName}`, e);\n  }\n}\n```",
+        "testStrategy": "Test the random class name generation to ensure it follows the pattern of starting with a letter and containing only allowed characters. Test the scrambling function with a sample registry and verify that both the CSS rule and DOM elements are updated correctly.",
         "priority": "high",
-        "dependencies": [3, 4],
-        "status": "done",
-        "subtasks": []
-      },
-      {
-        "id": 6,
-        "title": "Update EnigmaConfigSchema",
-        "description": "Add minimumLength to the main EnigmaConfigSchema for configuration file support.",
-        "details": "In packages/core/src/config/config.ts, update the EnigmaConfigSchema to include the minimumLength field. Use zod for schema definition and validation. Ensure backward compatibility for configs without this field.",
-        "testStrategy": "Create unit tests to verify that the updated schema correctly validates configurations with and without the minimumLength field.",
-        "priority": "medium",
-        "dependencies": [2],
-        "status": "done",
-        "subtasks": []
-      },
-      {
-        "id": 7,
-        "title": "Implement Configuration Integration",
-        "description": "Integrate minimumLength settings with configuration files and environment variables.",
-        "details": "Update the configuration loading process to handle minimumLength from config files and environment variables. Implement priority logic: CLI flags > environment variables > config file. Use dotenv (latest version) for environment variable handling.",
-        "testStrategy": "Write integration tests to verify correct loading and priority of minimumLength settings from different sources.",
-        "priority": "medium",
-        "dependencies": [6],
-        "status": "done",
-        "subtasks": []
-      },
-      {
-        "id": 8,
-        "title": "Update css-config Command",
-        "description": "Modify the css-config command to accept and use the global length option.",
-        "details": "Update packages/cli/src/commands/css-config.ts to accept the global length option. Pass the length configuration through to the core name generation system. Ensure backward compatibility when the flag is not used.",
-        "testStrategy": "Create integration tests for the css-config command, verifying correct behavior with and without the --length flag.",
-        "priority": "high",
-        "dependencies": [1, 5, 7],
-        "status": "done",
-        "subtasks": []
-      },
-      {
-        "id": 9,
-        "title": "Update init-config Command",
-        "description": "Modify the init-config command to accept and use the global length option.",
-        "details": "Update packages/cli/src/commands/init-config.ts to handle the global length option. Ensure that the generated configuration file includes the minimumLength setting when specified.",
-        "testStrategy": "Write integration tests for the init-config command, checking that it correctly generates config files with the minimumLength setting when the --length flag is used.",
-        "priority": "medium",
-        "dependencies": [1, 6, 7],
-        "status": "done",
-        "subtasks": []
-      },
-      {
-        "id": 10,
-        "title": "Implement Pretty Names Integration",
-        "description": "Integrate length enforcement with the existing global --pretty flag logic.",
-        "details": "Update the pretty name generation logic to work in conjunction with the minimum length requirement. Ensure no character repetition for lengths ≤ 26 when --pretty is used. Implement this in packages/core/src/processors/nameGeneration.ts.",
-        "testStrategy": "Create comprehensive tests for various combinations of --pretty and --length flags, ensuring correct and aesthetic name generation.",
-        "priority": "medium",
-        "dependencies": [3, 4, 5],
-        "status": "done",
+        "dependencies": [
+          4
+        ],
+        "status": "pending",
         "subtasks": [
           {
             "id": 1,
-            "title": "Update Pretty Name Generation Logic",
-            "description": "Revise the logic responsible for generating 'pretty names' to ensure it follows a logical, predictable structure and is easy to understand and pronounce.",
+            "title": "Implement Random Class Name Generation",
+            "description": "Develop a function that generates random class names using a secure randomization algorithm. Ensure the generated names conform to CSS naming conventions and are of configurable length.",
             "dependencies": [],
-            "details": "Incorporate best practices for naming, such as clarity, simplicity, and logical structure. Ensure the generated names are meaningful and align with naming conventions.",
-            "status": "done"
+            "details": "The function must avoid reserved keywords and invalid characters. Success is defined by generating a class name string that passes all CSS selector validation checks.",
+            "status": "pending"
           },
           {
             "id": 2,
-            "title": "Enforce Length and Uniqueness Constraints",
-            "description": "Implement logic to ensure that pretty names do not exceed the maximum allowed length and are unique within their context.",
-            "dependencies": [1],
-            "details": "Add checks to enforce a maximum length (e.g., 26 characters) and verify that each generated name is unique, possibly by appending suffixes or using alternative strategies if a conflict is detected.",
-            "status": "done"
+            "title": "Enforce Uniqueness of Class Names",
+            "description": "Create a mechanism to check that each generated class name is unique within the current registry. If a collision is detected, regenerate until a unique name is found.",
+            "dependencies": [
+              1
+            ],
+            "details": "Maintain an in-memory or persistent registry of used class names. Success is defined by no duplicate class names being present after each generation.",
+            "status": "pending"
           },
           {
             "id": 3,
-            "title": "Handle Edge Cases for Length ≤ 26",
-            "description": "Address scenarios where the pretty name is at or below the length limit, ensuring no unnecessary truncation or modification occurs.",
-            "dependencies": [2],
-            "details": "Test and adjust logic to ensure that names exactly at the limit are accepted as-is, and that shorter names are not altered unnecessarily.",
-            "status": "done"
+            "title": "Update CSS Rules with New Class Names",
+            "description": "Develop logic to insert or update CSS rules in the stylesheet to reflect the new class names. Ensure that rules are correctly scoped and do not overwrite existing unrelated styles.",
+            "dependencies": [
+              2
+            ],
+            "details": "CSS rules must be inserted into the correct stylesheet and be immediately effective in the DOM. Success is defined by the new class name having the intended visual effect.",
+            "status": "pending"
           },
           {
             "id": 4,
-            "title": "Conduct Code Review",
-            "description": "Review the updated code to ensure it meets quality standards, follows naming best practices, and correctly implements the required logic.",
-            "dependencies": [3],
-            "details": "Perform a peer review focusing on code clarity, maintainability, and adherence to naming conventions. Verify that all constraints and edge cases are handled.",
-            "status": "done"
+            "title": "Update DOM Elements with Generated Class Names",
+            "description": "Implement a process to update relevant DOM elements to use the newly generated class names. Ensure that all affected elements are correctly targeted and updated.",
+            "dependencies": [
+              3
+            ],
+            "details": "DOM updates must be atomic and not cause flicker or inconsistent state. Success is defined by all intended elements reflecting the new class name and associated styles.",
+            "status": "pending"
           },
           {
             "id": 5,
-            "title": "Comprehensive Testing",
-            "description": "Develop and execute a suite of tests to validate the pretty name logic, length enforcement, uniqueness, and handling of edge cases.",
-            "dependencies": [4],
-            "details": "Create unit and integration tests covering normal cases, boundary conditions (e.g., length = 26), and conflict scenarios to ensure robustness.",
-            "status": "done"
+            "title": "Synchronize and Update the Class Name Registry",
+            "description": "Update the class name registry to reflect all changes, ensuring it remains consistent with both the DOM and CSS rules. Handle edge cases such as rollbacks or failed updates.",
+            "dependencies": [
+              4
+            ],
+            "details": "The registry must accurately represent the current state of class names in use. Success is defined by no orphaned or stale entries after any operation.",
+            "status": "pending"
+          },
+          {
+            "id": 6,
+            "title": "Comprehensive Testing of All Code Paths",
+            "description": "Design and execute tests covering all code paths, including random generation, uniqueness enforcement, CSS and DOM updates, and registry synchronization. Include edge cases and failure scenarios.",
+            "dependencies": [
+              5
+            ],
+            "details": "Tests must verify correctness, performance, and resilience to edge cases (e.g., rapid updates, collisions, DOM mutations). Success is defined by all tests passing and coverage of all identified code paths.",
+            "status": "pending"
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "title": "Implement synchronized update system",
+        "description": "Create a system that synchronizes CSS rule and DOM element updates to prevent visual flicker during scrambling.",
+        "details": "Implement the main scramble function that updates all classes in the registry:\n\n```typescript\nfunction scrambleAllClasses(registry: ClassRegistry): void {\n  // Get all current class names (before we start modifying the registry)\n  const classNames = Object.keys(registry);\n  \n  // Process each class\n  for (const className of classNames) {\n    if (registry[className]) { // Check again as registry might have changed\n      scrambleClass(registry, className);\n    }\n  }\n}\n```\n\nImplement the main animation loop using requestAnimationFrame for optimal performance:\n\n```typescript\nlet lastScrambleTime = 0;\nlet registry: ClassRegistry = {};\nlet isRunning = false;\n\nfunction scrambleLoop(timestamp: number): void {\n  if (!isRunning) return;\n  \n  // Request next frame first to ensure smooth animation\n  requestAnimationFrame(scrambleLoop);\n  \n  // Check if it's time to scramble\n  if (timestamp - lastScrambleTime >= CONFIG.SCRAMBLE_INTERVAL) {\n    lastScrambleTime = timestamp;\n    \n    // Perform scrambling\n    scrambleAllClasses(registry);\n    \n    // Periodically clean up registry (every CLEANUP_INTERVAL seconds)\n    if (Math.floor(timestamp / 1000) % CONFIG.CLEANUP_INTERVAL === 0) {\n      cleanupRegistry(registry);\n    }\n  }\n}\n\nfunction startScrambling(): void {\n  if (isRunning) return;\n  isRunning = true;\n  requestAnimationFrame(scrambleLoop);\n  debug('Scrambling started');\n}\n\nfunction stopScrambling(): void {\n  isRunning = false;\n  debug('Scrambling stopped');\n}\n```",
+        "testStrategy": "Test the synchronized update system by running it on a sample page and verifying that CSS rules and DOM elements are updated in sync. Use browser DevTools to monitor for any visual flicker during updates. Verify that the animation loop respects the configured interval.",
+        "priority": "high",
+        "dependencies": [
+          5
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Implement Main Scramble Loop with requestAnimationFrame",
+            "description": "Develop the core scramble animation loop using requestAnimationFrame to ensure smooth, frame-synchronized updates. The loop should update the DOM or CSS properties as needed for the scramble effect.",
+            "dependencies": [],
+            "details": "The loop must be initiated and stopped cleanly, and each frame should only update the necessary elements. Success is defined by a visually smooth scramble effect with no dropped frames.",
+            "status": "pending"
+          },
+          {
+            "id": 2,
+            "title": "Synchronize CSS and DOM Updates in Real Time",
+            "description": "Ensure that updates to CSS and DOM are tightly synchronized to prevent visual artifacts or flicker. Implement logic to batch or sequence updates as needed.",
+            "dependencies": [
+              1
+            ],
+            "details": "Use techniques such as batching DOM changes or leveraging the Virtual DOM (if using React) to minimize layout thrashing. Success is defined by consistent visual output with no observable desynchronization between CSS and DOM changes.",
+            "status": "pending"
+          },
+          {
+            "id": 3,
+            "title": "Integrate Cleanup and Interval Management",
+            "description": "Implement cleanup logic to clear intervals, timeouts, or animation frames when the scramble effect is stopped or the component is unmounted.",
+            "dependencies": [
+              1
+            ],
+            "details": "All timers and animation handles must be tracked and disposed of to prevent memory leaks or lingering effects. Success is defined by no residual intervals or animation frames after cleanup.",
+            "status": "pending"
+          },
+          {
+            "id": 4,
+            "title": "Design and Manage Scramble State",
+            "description": "Create a robust state management system to track the current scramble status, animation progress, and any relevant data for the effect.",
+            "dependencies": [
+              1
+            ],
+            "details": "State should be updated atomically and in sync with the animation loop. If using React, leverage useState/useRef appropriately. Success is defined by accurate state reflection and no race conditions.",
+            "status": "pending"
+          },
+          {
+            "id": 5,
+            "title": "Test for Visual Flicker and Artifacts",
+            "description": "Develop and execute tests (manual or automated) to detect and diagnose visual flicker, tearing, or artifacts during the scramble animation.",
+            "dependencies": [
+              2,
+              3,
+              4
+            ],
+            "details": "Tests should include rapid start/stop cycles, stress scenarios, and edge cases. Success is defined by the absence of visual flicker or artifacts under all tested conditions.",
+            "status": "pending"
+          },
+          {
+            "id": 6,
+            "title": "Validate Synchronization and Performance",
+            "description": "Profile and validate that CSS and DOM updates remain synchronized and performant under various loads. Optimize as needed.",
+            "dependencies": [
+              5
+            ],
+            "details": "Use browser dev tools and performance profiling to ensure updates are efficient and synchronized. Success is defined by stable frame rates and no measurable lag or desync.",
+            "status": "pending"
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "title": "Implement accessibility compliance",
+        "description": "Add support for respecting the prefers-reduced-motion media query to automatically disable the scrambling effect for users with motion sensitivity.",
+        "details": "Implement a function to check for reduced motion preference:\n\n```typescript\nfunction shouldReduceMotion(): boolean {\n  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;\n}\n```\n\nModify the initialization function to respect this preference:\n\n```typescript\nasync function initialize(): Promise<void> {\n  // Check for reduced motion preference\n  if (shouldReduceMotion()) {\n    debug('Reduced motion preference detected, scrambling disabled');\n    return;\n  }\n  \n  try {\n    // Build the registry\n    registry = await buildRegistry();\n    \n    // Start scrambling if we found any classes\n    if (Object.keys(registry).length > 0) {\n      startScrambling();\n    } else {\n      debug('No tw-enigma classes found, scrambling disabled');\n    }\n  } catch (e) {\n    debug('Error initializing scramble effect', e);\n  }\n}\n```\n\nAdd a listener for changes to the media query:\n\n```typescript\nfunction setupMotionPreferenceListener(): void {\n  const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');\n  \n  // Modern browsers\n  if (mediaQuery.addEventListener) {\n    mediaQuery.addEventListener('change', () => {\n      if (mediaQuery.matches) {\n        stopScrambling();\n      } else {\n        initialize();\n      }\n    });\n  }\n  // Older browsers\n  else if (mediaQuery.addListener) {\n    mediaQuery.addListener(() => {\n      if (mediaQuery.matches) {\n        stopScrambling();\n      } else {\n        initialize();\n      }\n    });\n  }\n}\n```",
+        "testStrategy": "Test by simulating the prefers-reduced-motion media query in browser DevTools. Verify that the scrambling effect is disabled when reduced motion is preferred and enabled when it's not. Test the listener by changing the preference while the page is open.",
+        "priority": "medium",
+        "dependencies": [
+          6
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Detect Reduced Motion Preference Using JavaScript",
+            "description": "Implement logic to detect the user's reduced motion preference using the `window.matchMedia('(prefers-reduced-motion: reduce)')` API. Ensure the detection returns a boolean indicating whether the user prefers reduced motion.",
+            "dependencies": [],
+            "details": "Write a function that returns true if the user has enabled reduced motion in their OS settings, and false otherwise. Use `window.matchMedia('(prefers-reduced-motion: reduce)').matches` as the detection mechanism. Validate that the function works across major browsers.",
+            "status": "pending"
+          },
+          {
+            "id": 2,
+            "title": "Modify Initialization Logic Based on Reduced Motion Preference",
+            "description": "Update the application's initialization logic to conditionally enable or disable animations and motion effects based on the detected reduced motion preference.",
+            "dependencies": [
+              1
+            ],
+            "details": "Refactor the initialization code so that if reduced motion is preferred, all non-essential animations are disabled or replaced with static alternatives. Ensure that the logic is centralized and easy to maintain. Test that the application initializes correctly in both reduced and normal motion scenarios.",
+            "status": "pending"
+          },
+          {
+            "id": 3,
+            "title": "Add Listener for Preference Changes",
+            "description": "Implement an event listener that responds to changes in the user's reduced motion preference at runtime, updating the application's behavior accordingly.",
+            "dependencies": [
+              1,
+              2
+            ],
+            "details": "Use the `addEventListener('change', ...)` method on the MediaQueryList returned by `window.matchMedia('(prefers-reduced-motion: reduce)')` to listen for changes. Ensure that when the preference changes, the application updates its animation and motion settings without requiring a page reload. Test by toggling the OS-level reduced motion setting and verifying dynamic updates.",
+            "status": "pending"
+          },
+          {
+            "id": 4,
+            "title": "Implement Security Compliance Checks",
+            "description": "Add security validations for CSP compliance, iframe detection, and origin validation to ensure the scramble effect works safely in various environments.",
+            "details": "Implement checks for Content Security Policy compliance (inline script restrictions), detect iframe context to prevent clickjacking issues, and validate document origin to ensure the script runs only in expected contexts. Include graceful fallbacks when security restrictions prevent normal operation.",
+            "status": "pending",
+            "dependencies": [
+              3
+            ],
+            "parentTaskId": 7
+          }
+        ]
+      },
+      {
+        "id": 8,
+        "title": "Implement performance monitoring",
+        "description": "Add performance monitoring capabilities to track CPU usage, memory consumption, and animation frame timing when in debug mode.",
+        "details": "Implement performance monitoring functions that only run when PERFORMANCE_MONITORING is enabled:\n\n```typescript\ninterface PerformanceMetrics {\n  frameTime: number[];\n  memoryUsage?: any;\n  lastReportTime: number;\n}\n\nconst metrics: PerformanceMetrics = {\n  frameTime: [],\n  lastReportTime: 0\n};\n\nfunction trackPerformance(startTime: number): void {\n  if (!CONFIG.PERFORMANCE_MONITORING) return;\n  \n  // Track frame time\n  const frameTime = performance.now() - startTime;\n  metrics.frameTime.push(frameTime);\n  \n  // Limit array size\n  if (metrics.frameTime.length > 100) {\n    metrics.frameTime.shift();\n  }\n  \n  // Track memory usage if available\n  if (performance.memory) {\n    metrics.memoryUsage = performance.memory;\n  }\n  \n  // Report metrics every 5 seconds\n  const now = performance.now();\n  if (now - metrics.lastReportTime > 5000) {\n    reportPerformanceMetrics();\n    metrics.lastReportTime = now;\n  }\n}\n\nfunction reportPerformanceMetrics(): void {\n  if (!CONFIG.PERFORMANCE_MONITORING) return;\n  \n  // Calculate average frame time\n  const avgFrameTime = metrics.frameTime.reduce((sum, time) => sum + time, 0) / metrics.frameTime.length;\n  \n  debug('Performance metrics:');\n  debug(`- Average frame time: ${avgFrameTime.toFixed(2)}ms`);\n  debug(`- Max frame time: ${Math.max(...metrics.frameTime).toFixed(2)}ms`);\n  \n  if (metrics.memoryUsage) {\n    debug(`- Memory usage: ${(metrics.memoryUsage.usedJSHeapSize / 1024 / 1024).toFixed(2)}MB`);\n  }\n}\n```\n\nModify the scramble loop to include performance tracking:\n\n```typescript\nfunction scrambleLoop(timestamp: number): void {\n  if (!isRunning) return;\n  \n  // Request next frame first\n  requestAnimationFrame(scrambleLoop);\n  \n  // Check if it's time to scramble\n  if (timestamp - lastScrambleTime >= CONFIG.SCRAMBLE_INTERVAL) {\n    const startTime = performance.now();\n    lastScrambleTime = timestamp;\n    \n    // Perform scrambling\n    scrambleAllClasses(registry);\n    \n    // Track performance\n    trackPerformance(startTime);\n    \n    // Periodically clean up registry\n    if (Math.floor(timestamp / 1000) % CONFIG.CLEANUP_INTERVAL === 0) {\n      cleanupRegistry(registry);\n    }\n  }\n}\n```",
+        "testStrategy": "Enable performance monitoring and test on a page with many tw-enigma classes. Verify that performance metrics are logged to the console every 5 seconds. Check that the metrics include frame time and memory usage (if available). Ensure that performance monitoring doesn't significantly impact the scrambling effect itself.",
+        "priority": "low",
+        "dependencies": [
+          6
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Define and Instrument Performance Metrics Collection",
+            "description": "Identify key performance metrics relevant to the scramble loop (e.g., execution time, memory usage, throughput, error rates). Instrument the codebase to collect these metrics at appropriate points, ensuring minimal impact on core logic. Use a standardized logging or monitoring library for consistency.",
+            "dependencies": [],
+            "details": "Success criteria: Metrics are clearly defined, documented, and collected automatically during each scramble loop execution. Metrics collection does not interfere with core functionality.",
+            "status": "pending"
+          },
+          {
+            "id": 2,
+            "title": "Integrate Metrics Reporting and Visualization",
+            "description": "Implement a reporting mechanism to aggregate and visualize collected performance metrics. Integrate with existing dashboards or monitoring tools, ensuring real-time or scheduled reporting. Provide clear, actionable visualizations for stakeholders.",
+            "dependencies": [
+              1
+            ],
+            "details": "Success criteria: Metrics are accessible via dashboard or reports, updated in real-time or at defined intervals. Stakeholders can interpret and act on the reported data.",
+            "status": "pending"
+          },
+          {
+            "id": 3,
+            "title": "Update Scramble Loop to Support Metrics Hooks",
+            "description": "Refactor the scramble loop to include hooks or callbacks for performance metric collection and reporting. Ensure the integration is modular and does not introduce side effects or performance regressions.",
+            "dependencies": [
+              1,
+              2
+            ],
+            "details": "Success criteria: Scramble loop executes with metrics hooks enabled, and performance data is collected and reported as designed. No regressions or logic errors are introduced.",
+            "status": "pending"
+          },
+          {
+            "id": 4,
+            "title": "Conduct Load Testing and Validate Metrics Accuracy",
+            "description": "Design and execute load tests simulating high-traffic scenarios. Validate that performance metrics are accurately collected and reported under load. Identify and resolve any bottlenecks or inaccuracies in the metrics pipeline.",
+            "dependencies": [
+              3
+            ],
+            "details": "Success criteria: Metrics remain accurate and complete under load. Any issues with data integrity, reporting latency, or system performance are identified and resolved.",
+            "status": "pending"
+          }
+        ]
+      },
+      {
+        "id": 9,
+        "title": "Implement main initialization and self-execution",
+        "description": "Create the main initialization function and self-executing code to start the scrambling effect when the script loads.",
+        "details": "Implement the main initialization function that ties everything together:\n\n```typescript\nasync function main(): Promise<void> {\n  debug('tw-enigma/scramble initializing...');\n  debug('Configuration:', CONFIG);\n  \n  // Setup motion preference listener\n  setupMotionPreferenceListener();\n  \n  // Wait for DOM to be ready\n  if (document.readyState === 'loading') {\n    await new Promise(resolve => {\n      document.addEventListener('DOMContentLoaded', resolve);\n    });\n  }\n  \n  // Initialize scrambling\n  await initialize();\n}\n```\n\nAdd self-executing code at the end of the file:\n\n```typescript\n// Self-executing function\n(async () => {\n  try {\n    await main();\n  } catch (e) {\n    console.error('[tw-enigma/scramble] Fatal error:', e);\n  }\n})();\n```\n\nEnsure the script is wrapped in an IIFE to prevent global scope pollution:\n\n```typescript\n// The entire script should be wrapped in an IIFE\n(function() {\n  // All code goes here\n  \n  // Self-executing initialization at the end\n  (async () => {\n    try {\n      await main();\n    } catch (e) {\n      console.error('[tw-enigma/scramble] Fatal error:', e);\n    }\n  })();\n})();\n```",
+        "testStrategy": "Test the initialization by including the script in a sample HTML page. Verify that the scrambling effect starts automatically when the page loads. Test error handling by intentionally causing errors and verifying they're caught and logged properly.",
+        "priority": "medium",
+        "dependencies": [
+          7
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Design and Implement the Main Initialization Function",
+            "description": "Create a main initialization function that sets up all required variables and state for the application. Ensure all variables are declared and initialized at the top of the function using 'let' or 'const' as appropriate, following JavaScript best practices to avoid global variables and undefined values.",
+            "dependencies": [],
+            "details": "The function should encapsulate all setup logic, declare variables at the top, and initialize them with default values. Use 'const' for objects and arrays to prevent accidental type changes. The function should not pollute the global namespace.",
+            "status": "pending"
+          },
+          {
+            "id": 2,
+            "title": "Implement DOM Readiness Handling",
+            "description": "Ensure the initialization function executes only after the DOM is fully loaded. Use appropriate event listeners or modern APIs to detect DOM readiness and trigger the main initialization function.",
+            "dependencies": [
+              1
+            ],
+            "details": "Attach the initialization function to the DOMContentLoaded event or use a similar mechanism to guarantee that DOM elements are accessible when initialization runs. Avoid using deprecated or unreliable methods.",
+            "status": "pending"
+          },
+          {
+            "id": 3,
+            "title": "Integrate Motion Preference Logic",
+            "description": "Add logic to detect the user's motion preferences (e.g., prefers-reduced-motion) and adjust initialization behavior accordingly. Ensure this logic is modular and does not interfere with other initialization steps.",
+            "dependencies": [
+              2
+            ],
+            "details": "Use the 'window.matchMedia' API to check for motion preferences. Store the result in a local variable and use it to conditionally enable or disable motion-related features during initialization.",
+            "status": "pending"
+          },
+          {
+            "id": 4,
+            "title": "Wrap All Logic in a Self-Executing Function",
+            "description": "Encapsulate the entire initialization process, including DOM readiness and motion preference logic, within a self-executing anonymous function to prevent global scope pollution.",
+            "dependencies": [
+              3
+            ],
+            "details": "Use an Immediately Invoked Function Expression (IIFE) to wrap all code. Ensure no variables or functions leak to the global scope. The IIFE should contain all previous logic in the correct order.\n<info added on 2025-06-19T10:41:29.988Z>\nImplement comprehensive error handling within the IIFE wrapper using try-catch blocks to isolate the scramble effect from the host page. Structure the error boundary to catch initialization errors, runtime exceptions, and any other potential failures. Include error logging functionality that provides meaningful debug information without exposing sensitive details. Implement graceful degradation patterns so that if the scramble effect fails, the original text remains visible and functional. Add specific error recovery mechanisms for common failure scenarios such as unsupported browsers, DOM manipulation failures, or animation timing issues. Ensure all error handlers are non-blocking and maintain the principle that script failures should never impact the core functionality of the host website.\n</info added on 2025-06-19T10:41:29.988Z>",
+            "status": "pending"
+          }
+        ]
+      },
+      {
+        "id": 10,
+        "title": "Implement CLI integration for package discovery",
+        "description": "Create the CLI integration logic to detect the scramble package and handle its absence gracefully.",
+        "details": "Implement the package discovery logic in the CLI:\n\n```typescript\n// In the CLI codebase\nimport { existsSync } from 'fs';\nimport { resolve } from 'path';\n\nasync function detectScramblePackage(): Promise<string | null> {\n  try {\n    // Try to resolve the package path\n    const packagePath = resolve(process.cwd(), 'packages-private/scramble/dist/scramble.min.js');\n    \n    // Check if the file exists\n    if (existsSync(packagePath)) {\n      return packagePath;\n    }\n    \n    // Alternative resolution methods\n    try {\n      // Try using require.resolve (works in Node.js environments)\n      return require.resolve('@tw-enigma/scramble/dist/scramble.min.js');\n    } catch (e) {\n      // Package not found via require.resolve\n    }\n    \n    return null;\n  } catch (e) {\n    console.warn('⚠️ Error detecting scramble package:', e);\n    return null;\n  }\n}\n\n// Usage in CLI command handler\nasync function handleScrambleFlag(options: any): Promise<void> {\n  if (options.scramble) {\n    const scramblePackagePath = await detectScramblePackage();\n    \n    if (scramblePackagePath) {\n      console.log('✅ Scramble package found at:', scramblePackagePath);\n      await integrateScrambleEffect(scramblePackagePath, options);\n    } else {\n      console.warn('⚠️ Scramble effect requires @tw-enigma/scramble package, which was not found. Skipping scramble integration.');\n      // Continue normal CLI operation without scramble\n    }\n  }\n}\n```",
+        "testStrategy": "Test the package discovery logic with and without the scramble package installed. Verify that it correctly finds the package when available and gracefully handles its absence. Test with different working directories to ensure path resolution works correctly.",
+        "priority": "medium",
+        "dependencies": [
+          9
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Implement Package Path Resolution Logic",
+            "description": "Develop a function that resolves a package path given a module name and a base directory, following Node.js resolution semantics. The function should handle package.json lookups, consult relevant fields (e.g., exports, main, module), and return the absolute path or null if not found. Ensure memoization for performance and consistency with Node.js require behavior.",
+            "dependencies": [],
+            "details": "Technical requirements: Use file system APIs to traverse directories and locate package.json files. Parse package.json and check fields in the correct order (exports, browser, module, main). Memoize results for repeated lookups. Expected outcome: Given a valid module name and base directory, the function returns the resolved absolute path or null if the package cannot be found.",
+            "status": "pending"
+          },
+          {
+            "id": 2,
+            "title": "Handle Missing Package Scenarios and Error Reporting",
+            "description": "Extend the resolution logic to robustly handle cases where the package cannot be found or is missing required fields. Implement clear error messages or return values for missing packages, invalid package.json, or unresolved entry points. Ensure that error handling does not cause unhandled exceptions and provides actionable feedback.",
+            "dependencies": [
+              1
+            ],
+            "details": "Technical requirements: Detect missing package.json, missing entry fields, or invalid paths. Return null or throw a controlled error with a descriptive message. Log or propagate errors in a way that can be consumed by CLI handlers. Expected outcome: All missing or invalid package scenarios are handled gracefully, with clear and actionable error reporting.",
+            "status": "pending"
+          },
+          {
+            "id": 3,
+            "title": "Integrate Package Resolution with CLI Command Handlers",
+            "description": "Connect the package path resolution and error handling logic to CLI command handlers. Ensure that CLI commands can invoke the resolution logic, receive results or errors, and display appropriate output to the user. Provide CLI options for specifying base directories or module names, and ensure exit codes and messages reflect resolution outcomes.",
+            "dependencies": [
+              2
+            ],
+            "details": "Technical requirements: Expose resolution logic via CLI commands. Parse CLI arguments for module name and base directory. Display resolved paths or error messages to the user. Set appropriate exit codes for success or failure. Expected outcome: CLI commands correctly resolve package paths, handle errors, and provide clear user feedback.",
+            "status": "pending"
           }
         ]
       },
       {
         "id": 11,
-        "title": "Implement Performance Optimization",
-        "description": "Optimize name generation algorithms for high-length scenarios.",
-        "details": "Profile and optimize the name generation process for high minimum lengths (15-26). Consider implementing caching mechanisms or pre-computation strategies. Use a profiling tool like clinic.js to identify bottlenecks.",
-        "testStrategy": "Conduct performance tests with various length settings, measuring generation time and memory usage. Compare results before and after optimization.",
+        "title": "Implement CLI configuration injection",
+        "description": "Create the CLI functionality to inject user configuration into the scramble script template.",
+        "details": "Implement the configuration injection logic in the CLI:\n\n```typescript\n// In the CLI codebase\nimport { readFileSync, writeFileSync } from 'fs';\n\ninterface ScrambleOptions {\n  scrambleSpeed?: number;\n  scrambleDebug?: boolean;\n  scrambleMode?: string;\n  scrambleCharset?: string;\n}\n\nasync function injectScrambleConfiguration(\n  templatePath: string,\n  outputPath: string,\n  options: ScrambleOptions\n): Promise<void> {\n  try {\n    // Read the template file\n    let template = readFileSync(templatePath, 'utf8');\n    \n    // Default configuration\n    const config = {\n      SCRAMBLE_INTERVAL: options.scrambleSpeed || 150,\n      SCRAMBLE_MODE: options.scrambleMode || 'all',\n      CHARSET: options.scrambleCharset || 'abcdefghijklmnopqrstuvwxyz0123456789',\n      DEBUG_MODE: options.scrambleDebug || false,\n      RETRY_ATTEMPTS: 3,\n      CLEANUP_INTERVAL: 30,\n      MAX_REGISTRY_SIZE: 1000,\n      PERFORMANCE_MONITORING: options.scrambleDebug || false\n    };\n    \n    // Validate configuration\n    if (config.SCRAMBLE_INTERVAL < 50) {\n      console.warn('⚠️ Scramble interval too low, setting to minimum of 50ms');\n      config.SCRAMBLE_INTERVAL = 50;\n    }\n    \n    if (config.SCRAMBLE_INTERVAL > 1000) {\n      console.warn('⚠️ Scramble interval too high, setting to maximum of 1000ms');\n      config.SCRAMBLE_INTERVAL = 1000;\n    }\n    \n    // Replace template placeholders\n    template = template\n      .replace('{{SCRAMBLE_INTERVAL}}', config.SCRAMBLE_INTERVAL.toString())\n      .replace('{{SCRAMBLE_MODE}}', config.SCRAMBLE_MODE)\n      .replace('{{CHARSET}}', config.CHARSET)\n      .replace('{{DEBUG_MODE}}', config.DEBUG_MODE.toString())\n      .replace('{{RETRY_ATTEMPTS}}', config.RETRY_ATTEMPTS.toString())\n      .replace('{{CLEANUP_INTERVAL}}', config.CLEANUP_INTERVAL.toString())\n      .replace('{{MAX_REGISTRY_SIZE}}', config.MAX_REGISTRY_SIZE.toString())\n      .replace('{{PERFORMANCE_MONITORING}}', config.PERFORMANCE_MONITORING.toString());\n    \n    // Write the configured file\n    writeFileSync(outputPath, template, 'utf8');\n    \n    console.log('✅ Scramble configuration injected successfully');\n  } catch (e) {\n    console.error('❌ Error injecting scramble configuration:', e);\n    throw e;\n  }\n}\n```",
+        "testStrategy": "Test the configuration injection with various combinations of CLI options. Verify that the template placeholders are correctly replaced with the provided values. Test validation by providing invalid values and checking that they're corrected.",
         "priority": "medium",
-        "dependencies": [4, 5, 10],
-        "status": "done",
+        "dependencies": [
+          10
+        ],
+        "status": "pending",
         "subtasks": [
           {
             "id": 1,
-            "title": "Profiling the System",
-            "description": "Use profiling tools to collect detailed performance metrics and identify which parts of the system consume the most resources.",
+            "title": "Read Template File",
+            "description": "Open and read the template file from disk, ensuring the file exists and is accessible. Handle file I/O errors gracefully and confirm the template content is loaded into memory as a string.",
             "dependencies": [],
-            "details": "Select appropriate profiling tools for the technology stack (e.g., VisualVM for Java, cProfile for Python). Run the application under typical workloads and gather data on CPU, memory, I/O, and network usage.",
-            "status": "done"
+            "details": "The template file path must be provided as input. If the file does not exist or cannot be read, return a clear error message. Success is defined as having the template content available for further processing.",
+            "status": "pending"
           },
           {
             "id": 2,
-            "title": "Identifying Performance Bottlenecks",
-            "description": "Analyze profiling results to pinpoint specific functions, queries, or components that are causing slowdowns or excessive resource consumption.",
-            "dependencies": [1],
-            "details": "Review profiling reports to locate hotspots, inefficient algorithms, slow database queries, or problematic network calls. Document the most critical bottlenecks for further action.",
-            "status": "done"
+            "title": "Validate and Prepare Configuration",
+            "description": "Load the configuration data, validate required keys and value types, and prepare a mapping of placeholders to values. Ensure all placeholders in the template have corresponding configuration entries.",
+            "dependencies": [
+              1
+            ],
+            "details": "Configuration can be loaded from a file or object. Validate that all required fields are present and of correct type. If validation fails, output a detailed error. Success is defined as a validated, ready-to-use configuration mapping.",
+            "status": "pending"
           },
           {
             "id": 3,
-            "title": "Designing Optimization Strategies",
-            "description": "Develop targeted strategies to address identified bottlenecks, considering algorithmic improvements, architectural changes, and resource management.",
-            "dependencies": [2],
-            "details": "Propose solutions such as refactoring code, optimizing algorithms, improving database queries, or redesigning system components. Prioritize optimizations based on impact and feasibility.",
-            "status": "done"
+            "title": "Replace Placeholders in Template",
+            "description": "Iterate through the template content and replace all placeholders with their corresponding values from the validated configuration. Handle missing or extra placeholders with explicit error or warning messages.",
+            "dependencies": [
+              2
+            ],
+            "details": "Use a consistent placeholder syntax (e.g., {{key}}). Ensure all placeholders are replaced and no unresolved placeholders remain. If a placeholder is missing in the configuration, halt and report the issue. Success is a fully rendered template string.",
+            "status": "pending"
           },
           {
             "id": 4,
-            "title": "Implementing Caching and Pre-computation",
-            "description": "Introduce caching mechanisms and pre-computation techniques to reduce redundant operations and speed up data retrieval.",
-            "dependencies": [3],
-            "details": "Implement in-memory caches (e.g., Redis, Memcached), database query caching, or pre-compute frequently needed results. Ensure cache invalidation and consistency strategies are in place.",
-            "status": "done"
-          },
-          {
-            "id": 5,
-            "title": "Performance Testing and Validation",
-            "description": "Conduct performance tests to measure the effectiveness of optimizations and ensure that changes meet performance goals without introducing regressions.",
-            "dependencies": [4],
-            "details": "Use benchmarking and load testing tools to compare performance before and after optimizations. Validate improvements and monitor for any new issues.",
-            "status": "done"
-          },
-          {
-            "id": 6,
-            "title": "Documentation and Knowledge Sharing",
-            "description": "Document the optimization process, decisions made, and results achieved. Share findings and best practices with the team.",
-            "dependencies": [5],
-            "details": "Update technical documentation, create reports on bottlenecks and solutions, and provide guidelines for future performance monitoring and optimization.",
-            "status": "done"
+            "title": "Write Output File",
+            "description": "Write the rendered template string to the specified output file path. Ensure the output file is created or overwritten as needed, and handle any file system errors.",
+            "dependencies": [
+              3
+            ],
+            "details": "The output file path must be provided. Confirm that the file is written successfully and is readable. If writing fails, report the error with details. Success is a correctly written output file containing the rendered template.",
+            "status": "pending"
           }
         ]
       },
       {
         "id": 12,
-        "title": "Implement Warning System",
-        "description": "Add warnings for extremely high length values and potential performance implications.",
-        "details": "Implement a warning system that logs messages to the console for length values 15 and above. Use a logging library like winston (latest version) for consistent log formatting. Include capacity tables and performance implications in the warnings.",
-        "testStrategy": "Write unit tests to verify that appropriate warnings are logged for different length values. Test integration with the CLI commands.",
-        "priority": "low",
-        "dependencies": [1, 8, 9],
-        "status": "done",
-        "subtasks": []
-      },
-      {
-        "id": 13,
-        "title": "Enhance Error Handling and Validation",
-        "description": "Implement comprehensive error handling and validation for length-related operations.",
-        "details": "Enhance error handling throughout the system for length-related operations. Create custom error types for specific scenarios. Implement detailed validation checks at various stages of the name generation process. Use a validation library like joi (latest version) for complex validations.",
-        "testStrategy": "Create a comprehensive suite of unit and integration tests covering various error scenarios and edge cases related to length enforcement.",
+        "title": "Implement HTML discovery and script injection",
+        "description": "Create the CLI functionality to discover HTML files in the build output and inject the scramble script.",
+        "details": "Implement HTML discovery and script injection in the CLI:\n\n```typescript\n// In the CLI codebase\nimport { readFileSync, writeFileSync } from 'fs';\nimport { glob } from 'glob';\nimport { join, relative } from 'path';\n\nasync function findHtmlFiles(buildDir: string): Promise<string[]> {\n  return new Promise((resolve, reject) => {\n    glob('**/*.html', { cwd: buildDir, absolute: true }, (err, files) => {\n      if (err) reject(err);\n      else resolve(files);\n    });\n  });\n}\n\nasync function injectScriptIntoHtml(\n  htmlFile: string,\n  scriptPath: string\n): Promise<boolean> {\n  try {\n    // Read the HTML file\n    let html = readFileSync(htmlFile, 'utf8');\n    \n    // Calculate relative path from HTML file to script\n    const htmlDir = htmlFile.substring(0, htmlFile.lastIndexOf('/'));\n    const relativeScriptPath = relative(htmlDir, scriptPath);\n    \n    // Check if script is already injected\n    if (html.includes(relativeScriptPath)) {\n      console.log(`⚠️ Script already injected in ${htmlFile}`);\n      return false;\n    }\n    \n    // Inject script before closing body tag\n    const scriptTag = `<script src=\"${relativeScriptPath}\"></script>`;\n    html = html.replace('</body>', `  ${scriptTag}\\n</body>`);\n    \n    // Write the modified HTML\n    writeFileSync(htmlFile, html, 'utf8');\n    \n    console.log(`✅ Injected script into ${htmlFile}`);\n    return true;\n  } catch (e) {\n    console.error(`❌ Error injecting script into ${htmlFile}:`, e);\n    return false;\n  }\n}\n\nasync function injectScrambleIntoHtmlFiles(\n  buildDir: string,\n  scriptPath: string\n): Promise<void> {\n  try {\n    // Find all HTML files\n    const htmlFiles = await findHtmlFiles(buildDir);\n    console.log(`Found ${htmlFiles.length} HTML files in ${buildDir}`);\n    \n    // Inject script into each HTML file\n    let successCount = 0;\n    for (const htmlFile of htmlFiles) {\n      const success = await injectScriptIntoHtml(htmlFile, scriptPath);\n      if (success) successCount++;\n    }\n    \n    console.log(`✅ Injected scramble script into ${successCount}/${htmlFiles.length} HTML files`);\n  } catch (e) {\n    console.error('❌ Error injecting scramble script into HTML files:', e);\n  }\n}\n```",
+        "testStrategy": "Test HTML discovery with a sample build directory containing HTML files in various subdirectories. Test script injection by verifying that the script tag is correctly inserted before the closing body tag. Test idempotence by running the injection multiple times and verifying that the script is only injected once.",
         "priority": "medium",
-        "dependencies": [1, 2, 3, 4],
-        "status": "done",
+        "dependencies": [
+          11
+        ],
+        "status": "pending",
         "subtasks": [
           {
             "id": 1,
-            "title": "Design and Implement Error Handling Logic",
-            "description": "Establish a robust error handling strategy, including the use of try/catch/finally blocks, proper logging, and graceful degradation to ensure the system can recover or fail safely.",
+            "title": "Discover All HTML Files Recursively",
+            "description": "Implement a function to recursively traverse the target directory and identify all files with an .html extension. Ensure the function handles nested directories and symbolic links safely.",
             "dependencies": [],
-            "details": "Follow best practices such as anticipating potential errors, using descriptive error messages, and ensuring resources are cleaned up appropriately.",
-            "status": "done"
+            "details": "Success criteria: Returns a complete, deduplicated list of absolute file paths for all HTML files found within the directory tree.",
+            "status": "pending"
           },
           {
             "id": 2,
-            "title": "Create Custom Error Types",
-            "description": "Define a hierarchy of custom error types tailored to the application's domain, enabling more precise error identification and handling.",
-            "dependencies": [1],
-            "details": "Ensure custom errors provide meaningful context and can be distinguished from generic system errors.",
-            "status": "done"
+            "title": "Calculate Correct Script Paths for Each HTML File",
+            "description": "For each discovered HTML file, determine the appropriate relative or absolute path for the script to be injected, accounting for the file's location and the desired script source.",
+            "dependencies": [
+              1
+            ],
+            "details": "Success criteria: For every HTML file, outputs a valid script path string that will resolve correctly when the HTML file is loaded in a browser.",
+            "status": "pending"
           },
           {
             "id": 3,
-            "title": "Implement Validation Checks",
-            "description": "Develop thorough validation logic to check all inputs and outputs, ensuring that invalid data is caught early and handled appropriately.",
-            "dependencies": [2],
-            "details": "Be comprehensive in error checking, handle all possible exceptions, and ensure validation is performed before processing data.",
-            "status": "done"
+            "title": "Inject Script Tag into HTML Content",
+            "description": "Parse each HTML file, insert a <script> tag with the calculated path into the <head> or <body> as specified, and write the modified content back to disk.",
+            "dependencies": [
+              2
+            ],
+            "details": "Success criteria: Each HTML file contains exactly one correctly-formed <script> tag at the intended location, and the file remains valid HTML.",
+            "status": "pending"
           },
           {
             "id": 4,
-            "title": "Integrate with Validation Library",
-            "description": "Integrate a suitable validation library to standardize and streamline validation checks across the system.",
-            "dependencies": [3],
-            "details": "Ensure the library is configured to work with custom error types and that validation failures trigger the appropriate error handling logic.",
-            "status": "done"
+            "title": "Ensure Idempotent Script Injection",
+            "description": "Before injecting, check if the script tag already exists in the HTML file to prevent duplicate insertions. The process should be repeatable without introducing multiple script tags.",
+            "dependencies": [
+              3
+            ],
+            "details": "Success criteria: Running the injection process multiple times does not result in more than one script tag per file.",
+            "status": "pending"
           },
           {
             "id": 5,
-            "title": "Develop Comprehensive Testing for Error Handling and Validation",
-            "description": "Write unit and integration tests to cover all error handling paths, custom error types, and validation scenarios, ensuring robust coverage and correct system behavior.",
-            "dependencies": [4],
-            "details": "Test both expected and edge-case error scenarios, verify error messages, and confirm that logging and graceful degradation work as intended.",
-            "status": "done"
+            "title": "Validate Script Injection and HTML Integrity",
+            "description": "After injection, verify that each HTML file contains the script tag exactly once and that the HTML structure is not corrupted. Optionally, run HTML validation tools to ensure correctness.",
+            "dependencies": [
+              4
+            ],
+            "details": "Success criteria: All processed HTML files pass validation checks, and the script tag is present exactly once in each file.",
+            "status": "pending"
+          }
+        ]
+      },
+      {
+        "id": 13,
+        "title": "Implement end-to-end CLI integration",
+        "description": "Create the main CLI integration function that orchestrates the entire scramble integration process.",
+        "details": "Implement the main integration function in the CLI:\n\n```typescript\n// In the CLI codebase\nimport { copyFileSync, mkdirSync } from 'fs';\nimport { dirname, join } from 'path';\nimport { execSync } from 'child_process';\n\nasync function integrateScrambleEffect(\n  scramblePackagePath: string,\n  options: any\n): Promise<void> {\n  try {\n    const buildDir = options.outDir || 'dist';\n    const assetsDir = join(buildDir, 'assets');\n    const configuredScriptPath = join(assetsDir, 'enigma-scramble.js');\n    \n    // Ensure assets directory exists\n    mkdirSync(assetsDir, { recursive: true });\n    \n    // Build scramble package if needed\n    if (options.buildScramble) {\n      console.log('Building scramble package...');\n      execSync('pnpm --filter @tw-enigma/scramble build');\n    }\n    \n    // Inject configuration and copy to build output\n    await injectScrambleConfiguration(\n      scramblePackagePath,\n      configuredScriptPath,\n      {\n        scrambleSpeed: options.scrambleSpeed,\n        scrambleDebug: options.scrambleDebug,\n        scrambleMode: options.scrambleMode,\n        scrambleCharset: options.scrambleCharset\n      }\n    );\n    \n    // Inject script into HTML files\n    await injectScrambleIntoHtmlFiles(buildDir, configuredScriptPath);\n    \n    console.log('✅ Scramble effect integration complete');\n  } catch (e) {\n    console.error('❌ Error integrating scramble effect:', e);\n  }\n}\n\n// Add CLI command options\nfunction addScrambleOptions(program: any) {\n  return program\n    .option('--scramble', 'Enable scramble effect')\n    .option('--scramble-speed <ms>', 'Scramble speed in milliseconds (50-1000)', parseInt)\n    .option('--scramble-debug', 'Enable debug logging for scramble effect')\n    .option('--scramble-mode <mode>', 'Scramble mode (currently only \"all\" supported)')\n    .option('--scramble-charset <charset>', 'Character set for scramble effect');\n}\n```\n\nUpdate the CLI command handlers to use these functions:\n\n```typescript\n// Example command handler\nasync function handleCssConfigCommand(options: any) {\n  // Process scramble flags if present\n  if (options.scramble) {\n    const scramblePackagePath = await detectScramblePackage();\n    if (scramblePackagePath) {\n      await integrateScrambleEffect(scramblePackagePath, {\n        ...options,\n        buildScramble: true\n      });\n    } else {\n      console.warn('⚠️ Scramble effect requires @tw-enigma/scramble package, which was not found. Skipping scramble integration.');\n    }\n  }\n  \n  // Continue with normal CSS processing\n  // ...\n}\n```",
+        "testStrategy": "Test the end-to-end integration with a sample project. Verify that the scramble package is built, configuration is injected, and the script is injected into HTML files. Test with various CLI options to ensure they're correctly passed to the scramble script.",
+        "priority": "medium",
+        "dependencies": [
+          12
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Package Build Orchestration",
+            "description": "Design and implement the orchestration logic to build the software package, ensuring all dependencies are resolved and build steps are executed in the correct sequence.",
+            "dependencies": [],
+            "details": "Define the build pipeline, invoke build tools, and verify that the output artifacts are generated as expected. Success criteria: Build completes without errors, and all expected artifacts are present.",
+            "status": "pending"
+          },
+          {
+            "id": 2,
+            "title": "Configuration Injection Mechanism",
+            "description": "Develop a robust mechanism to inject configuration values into the package during the build process, supporting both static and dynamic configuration sources.",
+            "dependencies": [
+              1
+            ],
+            "details": "Implement configuration file parsing, environment variable support, and validation logic. Success criteria: All required configuration values are correctly injected and validated in the final build output.",
+            "status": "pending"
+          },
+          {
+            "id": 3,
+            "title": "Script Copying Logic",
+            "description": "Implement logic to copy necessary scripts (e.g., shell, batch, or Node scripts) into the build output, preserving file permissions and directory structure.",
+            "dependencies": [
+              1
+            ],
+            "details": "Identify required scripts, handle file system operations, and verify integrity post-copy. Success criteria: All scripts are present in the output with correct permissions and paths.",
+            "status": "pending"
+          },
+          {
+            "id": 4,
+            "title": "HTML Injection Process",
+            "description": "Create a process to inject dynamic or static content into HTML files as part of the build, supporting template variables and content blocks.",
+            "dependencies": [
+              2,
+              3
+            ],
+            "details": "Parse HTML templates, replace placeholders with actual values, and validate resulting HTML for correctness. Success criteria: All HTML files contain the correct injected content and pass validation checks.",
+            "status": "pending"
+          },
+          {
+            "id": 5,
+            "title": "CLI Flag Parsing and Handling",
+            "description": "Implement comprehensive parsing and handling of CLI flags, ensuring all supported options are validated, defaults are applied, and errors are reported for invalid input.",
+            "dependencies": [
+              1
+            ],
+            "details": "Define supported flags, implement parsing logic, and integrate with build/configuration steps. Success criteria: CLI flags are correctly parsed, and their effects are reflected in the build process.",
+            "status": "pending"
+          },
+          {
+            "id": 6,
+            "title": "Centralized Error Reporting and Handling",
+            "description": "Develop a centralized error reporting and handling system that captures, logs, and reports errors from all subsystems, providing actionable feedback and halting the process on critical failures.",
+            "dependencies": [
+              2,
+              3,
+              4,
+              5
+            ],
+            "details": "Implement error capture hooks, structured logging, and user-friendly error messages. Success criteria: All errors are consistently reported, logged, and surfaced to the user with clear remediation steps.",
+            "status": "pending"
           }
         ]
       },
       {
         "id": 14,
-        "title": "Update Documentation",
-        "description": "Update README, API documentation, and user guides to reflect the new --length feature.",
-        "details": "Update the project's README.md with information about the --length flag. Create or update API documentation using a tool like TypeDoc (latest version). Update user guides with examples of using the length feature. Include capacity tables and performance considerations.",
-        "testStrategy": "Conduct a documentation review process. Create a checklist of all places where documentation needs to be updated and verify each item.",
-        "priority": "medium",
-        "dependencies": [1, 8, 9, 10, 12],
-        "status": "done",
-        "subtasks": []
-      },
-      {
-        "id": 15,
-        "title": "Conduct Final Integration Testing",
-        "description": "Perform comprehensive integration testing of the entire system with the new length feature.",
-        "details": "Design and execute a comprehensive integration test plan. Test various combinations of flags, configuration settings, and commands. Verify backward compatibility with existing projects. Use a combination of automated tests (e.g., with Vitest) and manual testing scenarios.",
-        "testStrategy": "Create an extensive test matrix covering different length values, flag combinations, and usage scenarios. Automate as many tests as possible and document manual test procedures for edge cases.",
-        "priority": "high",
-        "dependencies": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
-        "status": "done",
+        "title": "Create comprehensive test fixtures",
+        "description": "Create a set of test fixtures covering various scenarios to validate the scramble effect.",
+        "details": "Create test fixtures for the following scenarios:\n\n1. **Static HTML with external CSS**\n   - Create a simple HTML page with external CSS file\n   - Include various tw-enigma generated classes\n   - Test with both simple and complex selectors\n\n2. **React SPA with CSS-in-JS**\n   - Create a simple React app using styled-components\n   - Configure tw-enigma to process the CSS\n   - Test with dynamic content updates\n\n3. **Vue SPA with scoped CSS**\n   - Create a simple Vue app with scoped CSS\n   - Configure tw-enigma to process the CSS\n   - Test with component transitions\n\n4. **Next.js SSR with mixed CSS approaches**\n   - Create a simple Next.js app with various CSS approaches\n   - Configure tw-enigma to process the CSS\n   - Test with server-rendered and client-rendered content\n\n5. **Edge case: Large number of classes**\n   - Create a page with 1000+ CSS classes\n   - Test performance and memory usage\n\n6. **Edge case: Third-party CSS**\n   - Create a page with Bootstrap, Material-UI, or other third-party CSS\n   - Test handling of cross-origin stylesheets\n\nEach fixture should include:\n- Source code in `packages/cli/tests/fixtures/`\n- Build configuration for tw-enigma\n- Test script to build and validate the fixture\n- Documentation of expected behavior\n\nExample test script for a fixture:\n\n```bash\n#!/bin/bash\n\n# Build the fixture\ncd packages/cli/tests/fixtures/static-html\npnpm build\n\n# Validate the build output\nif [ ! -f \"dist/assets/enigma-scramble.js\" ]; then\n  echo \"❌ Scramble script not found in build output\"\n  exit 1\nfi\n\n# Check HTML injection\nif ! grep -q \"enigma-scramble.js\" \"dist/index.html\"; then\n  echo \"❌ Scramble script not injected into HTML\"\n  exit 1\nfi\n\necho \"✅ Fixture validation passed\"\n```",
+        "testStrategy": "Run each test fixture and manually verify the scramble effect in the browser. Check that the effect works correctly in all scenarios and gracefully handles edge cases. Verify that the effect respects accessibility preferences and doesn't impact page performance.",
+        "priority": "low",
+        "dependencies": [
+          13
+        ],
+        "status": "pending",
         "subtasks": [
           {
             "id": 1,
-            "title": "Test Plan Design",
-            "description": "Define the scope, objectives, integration points, and risk analysis for integration testing. Document the test plan, including positive and negative scenarios, prioritization, and exploratory testing.",
+            "title": "Define and Document Each Fixture Scenario",
+            "description": "Identify all required fixture scenarios based on test coverage needs. For each scenario, document the purpose, setup requirements, teardown steps, and any dependencies or special considerations. Ensure scenarios are small, focused, and isolated to minimize side effects and maximize maintainability.",
             "dependencies": [],
-            "details": "Identify all modules and their integration points. Use tools for test case documentation and ensure coverage of edge cases and risk areas.",
-            "status": "done"
+            "details": "List each scenario with a clear description, expected initial state, and rationale. Include diagrams or tables if needed to clarify complex setups. Success criteria: Each scenario is uniquely identified, unambiguous, and ready for implementation.",
+            "status": "pending"
           },
           {
             "id": 2,
-            "title": "Automated Test Creation",
-            "description": "Develop automated integration tests based on the documented test plan to validate key workflows and regression scenarios.",
-            "dependencies": [1],
-            "details": "Implement automated tests using appropriate frameworks. Focus on high-priority and repetitive test cases for efficiency.",
-            "status": "done"
+            "title": "Write Build Configurations for Each Fixture",
+            "description": "Create build configuration files or scripts for each documented fixture scenario. These should automate the setup and teardown of the test environment, ensuring consistency and repeatability.",
+            "dependencies": [
+              1
+            ],
+            "details": "Use appropriate tools (e.g., Docker Compose, Makefiles, CI pipeline configs) to define environment variables, dependencies, and resource allocation. Success criteria: Each build config can reliably provision and clean up the fixture environment without manual intervention.",
+            "status": "pending"
           },
           {
             "id": 3,
-            "title": "Manual Test Scenario Development",
-            "description": "Create detailed manual test scenarios for complex, exploratory, or edge case integrations that are not easily automated.",
-            "dependencies": [1],
-            "details": "Document step-by-step manual test cases, including expected results and data requirements, for scenarios requiring human validation.",
-            "status": "done"
+            "title": "Implement Test Scripts Using Fixtures",
+            "description": "Develop automated test scripts that utilize the defined fixtures. Ensure scripts are modular, reusable, and leverage fixture features such as parametrization, dynamic setup, and teardown.",
+            "dependencies": [
+              2
+            ],
+            "details": "Write scripts in the chosen test framework (e.g., pytest, Playwright, Mocha) using best practices for fixture usage. Include assertions for expected outcomes and handle edge cases. Success criteria: Scripts execute reliably, use fixtures as intended, and provide clear pass/fail results.",
+            "status": "pending"
           },
           {
             "id": 4,
-            "title": "Test Matrix Coverage Analysis",
-            "description": "Develop and maintain a test matrix to ensure all integration points, features, and edge cases are covered by both automated and manual tests.",
-            "dependencies": [2, 3],
-            "details": "Map test cases to requirements and integration points. Identify any gaps in coverage and update tests as needed.",
-            "status": "done"
+            "title": "Document Expected Behavior and Test Coverage",
+            "description": "For each test script and fixture scenario, document the expected behavior, including input conditions, expected outputs, and any side effects. Map each test to the requirements or user stories it covers.",
+            "dependencies": [
+              3
+            ],
+            "details": "Create or update documentation (e.g., README, test plan, inline comments) to describe what each test validates and why. Success criteria: Documentation is clear, complete, and enables others to understand the intent and coverage of each test.",
+            "status": "pending"
           },
           {
             "id": 5,
-            "title": "Backward Compatibility Verification",
-            "description": "Verify that new integrations do not break or degrade existing functionality by running regression tests and compatibility checks.",
-            "dependencies": [4],
-            "details": "Execute regression suites and validate results against previous versions. Document any compatibility issues found.",
-            "status": "done"
-          },
+            "title": "Validate Results and Review for Implementation Errors",
+            "description": "Run all test scripts in a clean environment, verify results against documented expectations, and check for implementation errors or AI hallucinations. Review logs, outputs, and fixture teardown to ensure no resource leaks or state pollution.",
+            "dependencies": [
+              4
+            ],
+            "details": "Perform peer review or automated checks for correctness, completeness, and adherence to best practices. Success criteria: All tests pass as expected, fixture environments are cleanly managed, and documentation matches actual behavior.",
+            "status": "pending"
+          }
+        ]
+      },
+      {
+        "id": 15,
+        "title": "Create technical documentation",
+        "description": "Create comprehensive technical documentation for the scramble package, including architecture decisions, development setup, and usage instructions.",
+        "details": "Create the following documentation:\n\n1. **Internal README.md**\n   - Development setup instructions\n   - Architecture overview\n   - Key design decisions and trade-offs\n   - Performance considerations\n   - Debugging techniques\n\n2. **Code Comments**\n   - Add detailed comments to all complex code sections\n   - Explain rationale behind implementation choices\n   - Document potential edge cases and how they're handled\n\n3. **CLI Integration Guide**\n   - Document how the CLI integrates with the scramble package\n   - Explain the configuration options and their effects\n   - Provide examples of common usage patterns\n\n4. **Troubleshooting Guide**\n   - Common issues and their solutions\n   - Debugging techniques for different environments\n   - Performance optimization tips\n\nExample README.md structure:\n\n```markdown\n# @tw-enigma/scramble\n\n> Internal package for creating a \"hacker\" visual effect with tw-enigma CSS classes.\n\n## Development Setup\n\n1. Clone the tw-enigma monorepo\n2. Create `packages-private` directory (locally only)\n3. Add `packages-private/*` to `pnpm-workspace.yaml` (DO NOT COMMIT)\n4. Install dependencies with `pnpm install`\n5. Build the package with `pnpm --filter @tw-enigma/scramble build`\n\n## Architecture Overview\n\nThe scramble effect works by:\n\n1. Scanning stylesheets for tw-enigma generated class selectors\n2. Building a registry mapping CSS rules to DOM elements\n3. Continuously scrambling class names using requestAnimationFrame\n4. Synchronizing updates to both CSS rules and DOM elements\n\n## Key Design Decisions\n\n- **requestAnimationFrame**: Used for optimal performance and battery efficiency\n- **Registry Structure**: Maps class names to both CSS rules and DOM elements for synchronized updates\n- **Error Handling**: Gracefully handles cross-origin stylesheets and other edge cases\n- **Accessibility**: Automatically respects prefers-reduced-motion preference\n\n## CLI Integration\n\nThe scramble package is integrated with the tw-enigma CLI via the following flags:\n\n- `--scramble`: Enable the scramble effect\n- `--scramble-speed=<ms>`: Set the scramble interval (50-1000ms)\n- `--scramble-debug`: Enable debug logging\n\nExample usage:\n\n```bash\nenigma css-config --preset production --scramble --scramble-speed=100\n```\n\n## Debugging\n\nEnable debug mode with the `--scramble-debug` flag to see detailed logging in the browser console.\n\nCommon issues:\n- No scrambling effect: Check if tw-enigma classes are present and accessible\n- Cross-origin stylesheet errors: These are expected and handled gracefully\n- Performance issues: Try increasing the scramble interval\n```",
+        "testStrategy": "Review the documentation for completeness, accuracy, and clarity. Verify that it covers all aspects of the scramble package and provides clear instructions for developers. Test the instructions by following them on a clean environment.",
+        "priority": "low",
+        "dependencies": [
+          14
+        ],
+        "status": "pending",
+        "subtasks": [
           {
-            "id": 6,
-            "title": "Bug Triage and Fixes",
-            "description": "Log, prioritize, and resolve defects found during integration testing. Re-test fixes to ensure issues are resolved and no regressions are introduced.",
-            "dependencies": [5],
-            "details": "Use a defect tracking system to manage bugs. Coordinate with development for timely fixes and verify resolutions.",
-            "status": "done"
-          },
-          {
-            "id": 7,
-            "title": "Final Review and Sign-off",
-            "description": "Conduct a comprehensive review of test results, coverage, and outstanding issues. Obtain stakeholder approval for release readiness.",
+            "id": 1,
+            "title": "Draft Internal README Structure and Content",
+            "description": "Create a detailed outline and initial draft for the internal README, ensuring it covers project overview, architecture, setup instructions, usage examples, and contribution guidelines. Each section should be clearly defined and logically organized to minimize ambiguity.",
             "dependencies": [],
-            "details": "Summarize test outcomes, ensure all critical issues are addressed, and document lessons learned for future cycles.",
-            "status": "done"
+            "details": "The README must include: project purpose, system requirements, installation steps, configuration options, usage scenarios, and team contact information. Success is defined by a logically structured document with no missing critical sections.",
+            "status": "pending"
+          },
+          {
+            "id": 2,
+            "title": "Add Comprehensive Code Comments",
+            "description": "Review the codebase and insert clear, context-rich comments for all complex functions, classes, and modules, especially those with high cyclomatic complexity or non-obvious logic. Ensure comments explain intent, parameters, return values, and edge cases.",
+            "dependencies": [],
+            "details": "Focus on areas identified as complex by cyclomatic or Halstead metrics. Each comment should clarify the 'why' behind the code, not just the 'what.' Success is measured by improved code readability and reduced ambiguity for future maintainers.",
+            "status": "pending"
+          },
+          {
+            "id": 3,
+            "title": "Develop CLI Integration Guide",
+            "description": "Write a step-by-step guide for integrating and using the CLI, including installation, command syntax, configuration, and example workflows. Address common user scenarios and provide sample commands with expected outputs.",
+            "dependencies": [
+              1
+            ],
+            "details": "The guide must be granular, with each command and option explained. Include troubleshooting tips for CLI-specific errors. Success is defined by a user being able to set up and use the CLI without external assistance.",
+            "status": "pending"
+          },
+          {
+            "id": 4,
+            "title": "Compile Troubleshooting Guide",
+            "description": "Aggregate known issues, error messages, and their resolutions into a structured troubleshooting guide. Categorize problems by component (installation, runtime, CLI, etc.) and provide actionable solutions and diagnostic steps.",
+            "dependencies": [
+              1,
+              3
+            ],
+            "details": "The guide should include a FAQ, error code explanations, and escalation paths for unresolved issues. Success is measured by users resolving common problems independently using the guide.",
+            "status": "pending"
           }
         ]
       }
     ],
     "metadata": {
       "created": "2025-06-16T01:49:25.526Z",
-      "updated": "2025-06-19T00:36:25.737Z",
+      "updated": "2025-06-19T10:32:23.716Z",
       "description": "Tasks for master context"
     }
   }

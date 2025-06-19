@@ -1,11 +1,115 @@
 # Task ID: 5
-# Title: Integrate Length Enforcement with generateSequentialName()
+# Title: Implement class name scrambling algorithm
 # Status: pending
-# Dependencies: 3, 4
+# Dependencies: 4
 # Priority: high
-# Description: Update the generateSequentialName() function to respect the minimum length constraint.
+# Description: Create the core algorithm for generating random class names and ensuring they don't conflict with existing classes.
 # Details:
-Modify the generateSequentialName() function in packages/core/src/processors/nameGeneration.ts to use the enforceMinimumLength() function. Ensure that the generated names meet the length constraints while maintaining uniqueness.
+Implement functions to generate random class names and check for conflicts:
+
+```typescript
+function generateRandomClassName(length = 1): string {
+  let result = '';
+  const charset = CONFIG.CHARSET;
+  
+  // First character must be a letter (a-z)
+  result += charset.substring(0, 26).charAt(Math.floor(Math.random() * 26));
+  
+  // If length > 1, add more random characters (can include numbers)
+  for (let i = 1; i < length; i++) {
+    result += charset.charAt(Math.floor(Math.random() * charset.length));
+  }
+  
+  return result;
+}
+
+function generateUniqueClassName(registry: ClassRegistry, preferredLength = 1): string {
+  // Start with preferred length, increase if needed to find unique name
+  let length = preferredLength;
+  let attempts = 0;
+  let className;
+  
+  do {
+    className = generateRandomClassName(length);
+    attempts++;
+    
+    // If we've tried too many times at this length, increase length
+    if (attempts > 10) {
+      length++;
+      attempts = 0;
+    }
+  } while (registry[className]);
+  
+  return className;
+}
+```
+
+Implement the function to scramble a single class:
+
+```typescript
+function scrambleClass(registry: ClassRegistry, originalClassName: string): void {
+  const entry = registry[originalClassName];
+  if (!entry) return;
+  
+  try {
+    // Generate a new unique class name
+    const newClassName = generateUniqueClassName(registry, originalClassName.length);
+    
+    // Update the CSS rule
+    entry.cssRule.selectorText = `.${newClassName}`;
+    
+    // Update all DOM elements
+    for (const element of entry.elements) {
+      element.classList.remove(originalClassName);
+      element.classList.add(newClassName);
+    }
+    
+    // Update registry with new class name
+    registry[newClassName] = entry;
+    delete registry[originalClassName];
+  } catch (e) {
+    debug(`Error scrambling class ${originalClassName}`, e);
+  }
+}
+```
 
 # Test Strategy:
-Write integration tests to verify that generateSequentialName() produces names of the correct minimum length across various scenarios.
+Test the random class name generation to ensure it follows the pattern of starting with a letter and containing only allowed characters. Test the scrambling function with a sample registry and verify that both the CSS rule and DOM elements are updated correctly.
+
+# Subtasks:
+## 1. Implement Random Class Name Generation [pending]
+### Dependencies: None
+### Description: Develop a function that generates random class names using a secure randomization algorithm. Ensure the generated names conform to CSS naming conventions and are of configurable length.
+### Details:
+The function must avoid reserved keywords and invalid characters. Success is defined by generating a class name string that passes all CSS selector validation checks.
+
+## 2. Enforce Uniqueness of Class Names [pending]
+### Dependencies: 5.1
+### Description: Create a mechanism to check that each generated class name is unique within the current registry. If a collision is detected, regenerate until a unique name is found.
+### Details:
+Maintain an in-memory or persistent registry of used class names. Success is defined by no duplicate class names being present after each generation.
+
+## 3. Update CSS Rules with New Class Names [pending]
+### Dependencies: 5.2
+### Description: Develop logic to insert or update CSS rules in the stylesheet to reflect the new class names. Ensure that rules are correctly scoped and do not overwrite existing unrelated styles.
+### Details:
+CSS rules must be inserted into the correct stylesheet and be immediately effective in the DOM. Success is defined by the new class name having the intended visual effect.
+
+## 4. Update DOM Elements with Generated Class Names [pending]
+### Dependencies: 5.3
+### Description: Implement a process to update relevant DOM elements to use the newly generated class names. Ensure that all affected elements are correctly targeted and updated.
+### Details:
+DOM updates must be atomic and not cause flicker or inconsistent state. Success is defined by all intended elements reflecting the new class name and associated styles.
+
+## 5. Synchronize and Update the Class Name Registry [pending]
+### Dependencies: 5.4
+### Description: Update the class name registry to reflect all changes, ensuring it remains consistent with both the DOM and CSS rules. Handle edge cases such as rollbacks or failed updates.
+### Details:
+The registry must accurately represent the current state of class names in use. Success is defined by no orphaned or stale entries after any operation.
+
+## 6. Comprehensive Testing of All Code Paths [pending]
+### Dependencies: 5.5
+### Description: Design and execute tests covering all code paths, including random generation, uniqueness enforcement, CSS and DOM updates, and registry synchronization. Include edge cases and failure scenarios.
+### Details:
+Tests must verify correctness, performance, and resilience to edge cases (e.g., rapid updates, collisions, DOM mutations). Success is defined by all tests passing and coverage of all identified code paths.
+

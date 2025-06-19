@@ -1,11 +1,101 @@
 # Task ID: 14
-# Title: Update Documentation
+# Title: Create comprehensive test fixtures
 # Status: pending
-# Dependencies: 1, 8, 9, 10, 12
-# Priority: medium
-# Description: Update README, API documentation, and user guides to reflect the new --length feature.
+# Dependencies: 13
+# Priority: low
+# Description: Create a set of test fixtures covering various scenarios to validate the scramble effect.
 # Details:
-Update the project's README.md with information about the --length flag. Create or update API documentation using a tool like TypeDoc (latest version). Update user guides with examples of using the length feature. Include capacity tables and performance considerations.
+Create test fixtures for the following scenarios:
+
+1. **Static HTML with external CSS**
+   - Create a simple HTML page with external CSS file
+   - Include various tw-enigma generated classes
+   - Test with both simple and complex selectors
+
+2. **React SPA with CSS-in-JS**
+   - Create a simple React app using styled-components
+   - Configure tw-enigma to process the CSS
+   - Test with dynamic content updates
+
+3. **Vue SPA with scoped CSS**
+   - Create a simple Vue app with scoped CSS
+   - Configure tw-enigma to process the CSS
+   - Test with component transitions
+
+4. **Next.js SSR with mixed CSS approaches**
+   - Create a simple Next.js app with various CSS approaches
+   - Configure tw-enigma to process the CSS
+   - Test with server-rendered and client-rendered content
+
+5. **Edge case: Large number of classes**
+   - Create a page with 1000+ CSS classes
+   - Test performance and memory usage
+
+6. **Edge case: Third-party CSS**
+   - Create a page with Bootstrap, Material-UI, or other third-party CSS
+   - Test handling of cross-origin stylesheets
+
+Each fixture should include:
+- Source code in `packages/cli/tests/fixtures/`
+- Build configuration for tw-enigma
+- Test script to build and validate the fixture
+- Documentation of expected behavior
+
+Example test script for a fixture:
+
+```bash
+#!/bin/bash
+
+# Build the fixture
+cd packages/cli/tests/fixtures/static-html
+pnpm build
+
+# Validate the build output
+if [ ! -f "dist/assets/enigma-scramble.js" ]; then
+  echo "❌ Scramble script not found in build output"
+  exit 1
+fi
+
+# Check HTML injection
+if ! grep -q "enigma-scramble.js" "dist/index.html"; then
+  echo "❌ Scramble script not injected into HTML"
+  exit 1
+fi
+
+echo "✅ Fixture validation passed"
+```
 
 # Test Strategy:
-Conduct a documentation review process. Create a checklist of all places where documentation needs to be updated and verify each item.
+Run each test fixture and manually verify the scramble effect in the browser. Check that the effect works correctly in all scenarios and gracefully handles edge cases. Verify that the effect respects accessibility preferences and doesn't impact page performance.
+
+# Subtasks:
+## 1. Define and Document Each Fixture Scenario [pending]
+### Dependencies: None
+### Description: Identify all required fixture scenarios based on test coverage needs. For each scenario, document the purpose, setup requirements, teardown steps, and any dependencies or special considerations. Ensure scenarios are small, focused, and isolated to minimize side effects and maximize maintainability.
+### Details:
+List each scenario with a clear description, expected initial state, and rationale. Include diagrams or tables if needed to clarify complex setups. Success criteria: Each scenario is uniquely identified, unambiguous, and ready for implementation.
+
+## 2. Write Build Configurations for Each Fixture [pending]
+### Dependencies: 14.1
+### Description: Create build configuration files or scripts for each documented fixture scenario. These should automate the setup and teardown of the test environment, ensuring consistency and repeatability.
+### Details:
+Use appropriate tools (e.g., Docker Compose, Makefiles, CI pipeline configs) to define environment variables, dependencies, and resource allocation. Success criteria: Each build config can reliably provision and clean up the fixture environment without manual intervention.
+
+## 3. Implement Test Scripts Using Fixtures [pending]
+### Dependencies: 14.2
+### Description: Develop automated test scripts that utilize the defined fixtures. Ensure scripts are modular, reusable, and leverage fixture features such as parametrization, dynamic setup, and teardown.
+### Details:
+Write scripts in the chosen test framework (e.g., pytest, Playwright, Mocha) using best practices for fixture usage. Include assertions for expected outcomes and handle edge cases. Success criteria: Scripts execute reliably, use fixtures as intended, and provide clear pass/fail results.
+
+## 4. Document Expected Behavior and Test Coverage [pending]
+### Dependencies: 14.3
+### Description: For each test script and fixture scenario, document the expected behavior, including input conditions, expected outputs, and any side effects. Map each test to the requirements or user stories it covers.
+### Details:
+Create or update documentation (e.g., README, test plan, inline comments) to describe what each test validates and why. Success criteria: Documentation is clear, complete, and enables others to understand the intent and coverage of each test.
+
+## 5. Validate Results and Review for Implementation Errors [pending]
+### Dependencies: 14.4
+### Description: Run all test scripts in a clean environment, verify results against documented expectations, and check for implementation errors or AI hallucinations. Review logs, outputs, and fixture teardown to ensure no resource leaks or state pollution.
+### Details:
+Perform peer review or automated checks for correctness, completeness, and adherence to best practices. Success criteria: All tests pass as expected, fixture environments are cleanly managed, and documentation matches actual behavior.
+

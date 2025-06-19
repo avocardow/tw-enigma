@@ -1,11 +1,69 @@
 # Task ID: 2
-# Title: Update NameGenerationOptionsSchema
+# Title: Implement configuration template system
 # Status: pending
 # Dependencies: 1
 # Priority: high
-# Description: Enhance the NameGenerationOptionsSchema to include the minimumLength field.
+# Description: Create a configuration template system that allows the CLI to inject build-time configuration into the scramble script.
 # Details:
-In packages/core/src/processors/nameGeneration.ts, update the NameGenerationOptionsSchema using zod (latest version) to add minimumLength field: z.number().min(1).max(26).default(1). Update related type definitions and validation logic.
+Create a configuration template in src/index.ts that will be replaced at build time:
+
+```typescript
+// Configuration injected at build time by CLI
+const CONFIG = {
+  SCRAMBLE_INTERVAL: {{SCRAMBLE_INTERVAL}}, // Default: 150
+  SCRAMBLE_MODE: "{{SCRAMBLE_MODE}}", // Default: "all"
+  CHARSET: "{{CHARSET}}", // Default: "abcdefghijklmnopqrstuvwxyz0123456789"
+  DEBUG_MODE: {{DEBUG_MODE}}, // Default: false
+  RETRY_ATTEMPTS: {{RETRY_ATTEMPTS}}, // Default: 3
+  CLEANUP_INTERVAL: {{CLEANUP_INTERVAL}}, // Default: 30
+  MAX_REGISTRY_SIZE: {{MAX_REGISTRY_SIZE}}, // Default: 1000
+  PERFORMANCE_MONITORING: {{PERFORMANCE_MONITORING}} // Default: false
+};
+```
+
+Implement a debug logging utility that only logs when DEBUG_MODE is true:
+
+```typescript
+function debug(...args: any[]) {
+  if (CONFIG.DEBUG_MODE) {
+    console.log('[tw-enigma/scramble]', ...args);
+  }
+}
+```
+
+Create a template processing function in the CLI that will replace these placeholders with actual values based on CLI flags.
 
 # Test Strategy:
-Create unit tests to ensure the schema correctly validates various input scenarios, including edge cases for minimumLength.
+Test by manually replacing template variables with test values and verifying the script compiles correctly. Verify debug logging works when DEBUG_MODE is true and doesn't log when false.
+
+# Subtasks:
+## 1. Define Template Structure [pending]
+### Dependencies: None
+### Description: Design and document the template format, specifying how placeholders are represented (e.g., {{PLACEHOLDER}}), supported data types, and any constraints. Ensure the structure is flexible for future extensions and easy to validate.
+### Details:
+Create a sample template file with at least three distinct placeholders. Document the placeholder syntax and provide examples. Success criteria: Template structure is clearly defined, documented, and reviewed.
+
+## 2. Implement Placeholder Replacement Logic [pending]
+### Dependencies: 2.1
+### Description: Develop the core logic to identify placeholders in the template and replace them with provided values. Handle edge cases such as missing or extra placeholders, and ensure type safety and error reporting.
+### Details:
+Write a function that takes a template string and a mapping of placeholder names to values, returning the processed string. Include unit tests for scenarios with missing, extra, and nested placeholders. Success criteria: All tests pass and logic handles edge cases robustly.
+
+## 3. Integrate CLI Flag Parsing [pending]
+### Dependencies: 2.2
+### Description: Add command-line interface (CLI) support to accept template file paths, placeholder values, and output options via flags. Validate input and provide helpful error messages for invalid or missing arguments.
+### Details:
+Use a CLI parsing library to define flags for template path, output path, and placeholder key-value pairs. Implement input validation and help text. Success criteria: CLI accepts all required arguments and displays errors/help as needed.
+
+## 4. Add Debug Utility [pending]
+### Dependencies: 2.3
+### Description: Implement a debug mode that outputs detailed information about the template processing steps, including detected placeholders, replacement values, and any errors encountered.
+### Details:
+Add a CLI flag (e.g., --debug) that, when enabled, prints step-by-step logs of the injection process. Ensure logs are clear and actionable. Success criteria: Debug output is comprehensive and aids troubleshooting.
+
+## 5. Test the Injection Process [pending]
+### Dependencies: 2.4
+### Description: Develop and execute a suite of integration tests covering the full injection process, including CLI usage, placeholder replacement, error handling, and debug output.
+### Details:
+Write integration tests that simulate real-world usage scenarios, including valid and invalid inputs. Verify output correctness and error reporting. Success criteria: All tests pass and coverage includes all major code paths.
+

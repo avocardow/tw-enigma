@@ -1,43 +1,128 @@
 # Task ID: 13
-# Title: Enhance Error Handling and Validation
+# Title: Implement end-to-end CLI integration
 # Status: pending
-# Dependencies: 1, 2, 3, 4
+# Dependencies: 12
 # Priority: medium
-# Description: Implement comprehensive error handling and validation for length-related operations.
+# Description: Create the main CLI integration function that orchestrates the entire scramble integration process.
 # Details:
-Enhance error handling throughout the system for length-related operations. Create custom error types for specific scenarios. Implement detailed validation checks at various stages of the name generation process. Use a validation library like joi (latest version) for complex validations.
+Implement the main integration function in the CLI:
+
+```typescript
+// In the CLI codebase
+import { copyFileSync, mkdirSync } from 'fs';
+import { dirname, join } from 'path';
+import { execSync } from 'child_process';
+
+async function integrateScrambleEffect(
+  scramblePackagePath: string,
+  options: any
+): Promise<void> {
+  try {
+    const buildDir = options.outDir || 'dist';
+    const assetsDir = join(buildDir, 'assets');
+    const configuredScriptPath = join(assetsDir, 'enigma-scramble.js');
+    
+    // Ensure assets directory exists
+    mkdirSync(assetsDir, { recursive: true });
+    
+    // Build scramble package if needed
+    if (options.buildScramble) {
+      console.log('Building scramble package...');
+      execSync('pnpm --filter @tw-enigma/scramble build');
+    }
+    
+    // Inject configuration and copy to build output
+    await injectScrambleConfiguration(
+      scramblePackagePath,
+      configuredScriptPath,
+      {
+        scrambleSpeed: options.scrambleSpeed,
+        scrambleDebug: options.scrambleDebug,
+        scrambleMode: options.scrambleMode,
+        scrambleCharset: options.scrambleCharset
+      }
+    );
+    
+    // Inject script into HTML files
+    await injectScrambleIntoHtmlFiles(buildDir, configuredScriptPath);
+    
+    console.log('✅ Scramble effect integration complete');
+  } catch (e) {
+    console.error('❌ Error integrating scramble effect:', e);
+  }
+}
+
+// Add CLI command options
+function addScrambleOptions(program: any) {
+  return program
+    .option('--scramble', 'Enable scramble effect')
+    .option('--scramble-speed <ms>', 'Scramble speed in milliseconds (50-1000)', parseInt)
+    .option('--scramble-debug', 'Enable debug logging for scramble effect')
+    .option('--scramble-mode <mode>', 'Scramble mode (currently only "all" supported)')
+    .option('--scramble-charset <charset>', 'Character set for scramble effect');
+}
+```
+
+Update the CLI command handlers to use these functions:
+
+```typescript
+// Example command handler
+async function handleCssConfigCommand(options: any) {
+  // Process scramble flags if present
+  if (options.scramble) {
+    const scramblePackagePath = await detectScramblePackage();
+    if (scramblePackagePath) {
+      await integrateScrambleEffect(scramblePackagePath, {
+        ...options,
+        buildScramble: true
+      });
+    } else {
+      console.warn('⚠️ Scramble effect requires @tw-enigma/scramble package, which was not found. Skipping scramble integration.');
+    }
+  }
+  
+  // Continue with normal CSS processing
+  // ...
+}
+```
 
 # Test Strategy:
-Create a comprehensive suite of unit and integration tests covering various error scenarios and edge cases related to length enforcement.
+Test the end-to-end integration with a sample project. Verify that the scramble package is built, configuration is injected, and the script is injected into HTML files. Test with various CLI options to ensure they're correctly passed to the scramble script.
 
 # Subtasks:
-## 1. Design and Implement Error Handling Logic [pending]
+## 1. Package Build Orchestration [pending]
 ### Dependencies: None
-### Description: Establish a robust error handling strategy, including the use of try/catch/finally blocks, proper logging, and graceful degradation to ensure the system can recover or fail safely.
+### Description: Design and implement the orchestration logic to build the software package, ensuring all dependencies are resolved and build steps are executed in the correct sequence.
 ### Details:
-Follow best practices such as anticipating potential errors, using descriptive error messages, and ensuring resources are cleaned up appropriately.
+Define the build pipeline, invoke build tools, and verify that the output artifacts are generated as expected. Success criteria: Build completes without errors, and all expected artifacts are present.
 
-## 2. Create Custom Error Types [pending]
+## 2. Configuration Injection Mechanism [pending]
 ### Dependencies: 13.1
-### Description: Define a hierarchy of custom error types tailored to the application's domain, enabling more precise error identification and handling.
+### Description: Develop a robust mechanism to inject configuration values into the package during the build process, supporting both static and dynamic configuration sources.
 ### Details:
-Ensure custom errors provide meaningful context and can be distinguished from generic system errors.
+Implement configuration file parsing, environment variable support, and validation logic. Success criteria: All required configuration values are correctly injected and validated in the final build output.
 
-## 3. Implement Validation Checks [pending]
-### Dependencies: 13.2
-### Description: Develop thorough validation logic to check all inputs and outputs, ensuring that invalid data is caught early and handled appropriately.
+## 3. Script Copying Logic [pending]
+### Dependencies: 13.1
+### Description: Implement logic to copy necessary scripts (e.g., shell, batch, or Node scripts) into the build output, preserving file permissions and directory structure.
 ### Details:
-Be comprehensive in error checking, handle all possible exceptions, and ensure validation is performed before processing data.
+Identify required scripts, handle file system operations, and verify integrity post-copy. Success criteria: All scripts are present in the output with correct permissions and paths.
 
-## 4. Integrate with Validation Library [pending]
-### Dependencies: 13.3
-### Description: Integrate a suitable validation library to standardize and streamline validation checks across the system.
+## 4. HTML Injection Process [pending]
+### Dependencies: 13.2, 13.3
+### Description: Create a process to inject dynamic or static content into HTML files as part of the build, supporting template variables and content blocks.
 ### Details:
-Ensure the library is configured to work with custom error types and that validation failures trigger the appropriate error handling logic.
+Parse HTML templates, replace placeholders with actual values, and validate resulting HTML for correctness. Success criteria: All HTML files contain the correct injected content and pass validation checks.
 
-## 5. Develop Comprehensive Testing for Error Handling and Validation [pending]
-### Dependencies: 13.4
-### Description: Write unit and integration tests to cover all error handling paths, custom error types, and validation scenarios, ensuring robust coverage and correct system behavior.
+## 5. CLI Flag Parsing and Handling [pending]
+### Dependencies: 13.1
+### Description: Implement comprehensive parsing and handling of CLI flags, ensuring all supported options are validated, defaults are applied, and errors are reported for invalid input.
 ### Details:
-Test both expected and edge-case error scenarios, verify error messages, and confirm that logging and graceful degradation work as intended.
+Define supported flags, implement parsing logic, and integrate with build/configuration steps. Success criteria: CLI flags are correctly parsed, and their effects are reflected in the build process.
+
+## 6. Centralized Error Reporting and Handling [pending]
+### Dependencies: 13.2, 13.3, 13.4, 13.5
+### Description: Develop a centralized error reporting and handling system that captures, logs, and reports errors from all subsystems, providing actionable feedback and halting the process on critical failures.
+### Details:
+Implement error capture hooks, structured logging, and user-friendly error messages. Success criteria: All errors are consistently reported, logged, and surfaced to the user with clear remediation steps.
 

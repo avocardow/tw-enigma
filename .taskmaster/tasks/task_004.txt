@@ -1,43 +1,101 @@
 # Task ID: 4
-# Title: Update Base Conversion Functions
+# Title: Create DOM element mapping system
 # Status: pending
 # Dependencies: 3
 # Priority: high
-# Description: Modify toCustomBase(), toBase26(), and toBase36() functions to accept and respect minimum length.
+# Description: Implement a system to map CSS rules to their corresponding DOM elements and create a registry for synchronized updates.
 # Details:
-Update the base conversion functions in packages/core/src/utils/baseConversion.ts to accept a minimumLength parameter. Implement padding logic that maintains CSS validity and preserves collision avoidance. Use the enforceMinimumLength() function for consistency.
+Create a registry data structure to map CSS rules to DOM elements:
+
+```typescript
+interface ClassRegistry {
+  [className: string]: {
+    cssRule: CSSStyleRule;
+    elements: Element[];
+    originalClassName: string;
+  }
+}
+
+async function buildRegistry(): Promise<ClassRegistry> {
+  const registry: ClassRegistry = {};
+  const selectors = await discoverWithRetry();
+  
+  debug(`Discovered ${selectors.length} tw-enigma selectors`);
+  
+  // Limit registry size to prevent performance issues
+  const limitedSelectors = selectors.slice(0, CONFIG.MAX_REGISTRY_SIZE);
+  
+  for (const { rule, className } of limitedSelectors) {
+    try {
+      // Find all elements with this class
+      const elements = Array.from(document.querySelectorAll(`.${className}`));
+      
+      if (elements.length > 0) {
+        registry[className] = {
+          cssRule: rule,
+          elements,
+          originalClassName: className
+        };
+      }
+    } catch (e) {
+      debug(`Error mapping elements for class ${className}`, e);
+    }
+  }
+  
+  debug(`Built registry with ${Object.keys(registry).length} active classes`);
+  return registry;
+}
+```
+
+Implement a registry cleanup function to prevent memory leaks:
+
+```typescript
+function cleanupRegistry(registry: ClassRegistry): void {
+  for (const className in registry) {
+    // Filter out elements that are no longer in the DOM
+    registry[className].elements = registry[className].elements.filter(el => el.isConnected);
+    
+    // Remove classes with no elements
+    if (registry[className].elements.length === 0) {
+      delete registry[className];
+    }
+  }
+  
+  debug(`Registry cleanup complete, ${Object.keys(registry).length} classes remaining`);
+}
+```
 
 # Test Strategy:
-Create unit tests for each base conversion function, verifying correct behavior with various input lengths and minimum length requirements.
+Test with a sample page containing tw-enigma classes. Verify the registry correctly maps CSS rules to DOM elements. Test the cleanup function by removing elements from the DOM and checking that they're removed from the registry.
 
 # Subtasks:
-## 1. Update Base Conversion Functions [pending]
+## 1. Design the Registry Data Structure [pending]
 ### Dependencies: None
-### Description: Refactor each base conversion function to ensure compatibility with new requirements and prepare for integration with enforceMinimumLength.
+### Description: Define a robust data structure to store and manage CSS rules mapped to DOM elements. Specify how rules are indexed, how elements are referenced, and how updates will be tracked. Ensure the structure supports efficient lookup, insertion, and removal.
 ### Details:
-Identify all base conversion functions (e.g., bin2dec, dec2hex, etc.) and update their logic as needed to support further enhancements.
+Document the registry schema, including types for CSS rules, element references (e.g., WeakMap for garbage collection), and any metadata needed for cleanup or updates. Success criteria: A clear, documented data structure ready for implementation.
 
-## 2. Integrate enforceMinimumLength Logic [pending]
+## 2. Implement CSS Rule-to-Element Mapping Logic [pending]
 ### Dependencies: 4.1
-### Description: Integrate the enforceMinimumLength function into each base conversion function to ensure output strings meet the required minimum length.
+### Description: Develop the core logic that maps CSS rules to DOM elements, updating the registry as elements are added, removed, or mutated. Handle dynamic changes in the DOM and ensure the registry stays in sync.
 ### Details:
-Modify each function to call enforceMinimumLength after conversion, ensuring correct padding or truncation as specified.
+Implement functions to add, update, and remove mappings. Integrate with DOM mutation observers if needed. Success criteria: Accurate, performant mapping logic with unit tests for edge cases (e.g., element removal, rule updates).
 
-## 3. Implement Collision Avoidance Mechanism [pending]
+## 3. Build the Registry Builder Component [pending]
 ### Dependencies: 4.2
-### Description: Update the conversion logic to avoid output collisions (e.g., different inputs producing the same output after length enforcement).
+### Description: Create a component or module that initializes and manages the registry lifecycle, exposing an API for registering, querying, and updating CSS rules and their associated elements.
 ### Details:
-Analyze possible collision scenarios and adjust the conversion or padding logic to guarantee unique outputs for unique inputs.
+Implement initialization, teardown, and public methods for registry interaction. Ensure compatibility with server/client rendering if applicable. Success criteria: Registry builder passes integration tests and exposes a stable API.
 
-## 4. Update Type Definitions [pending]
+## 4. Add Cleanup and Memory Management Logic [pending]
 ### Dependencies: 4.3
-### Description: Revise and extend type definitions to reflect changes in function signatures and output formats.
+### Description: Implement logic to clean up unused CSS rules and element references from the registry, preventing memory leaks and stale state. Ensure cleanup is triggered on DOM mutations and component unmounts.
 ### Details:
-Ensure all type annotations and interfaces are accurate and consistent with the updated logic and enforced output constraints.
+Use WeakMap or similar structures for element references. Add hooks or listeners for DOM changes. Success criteria: No memory leaks detected in stress tests; registry remains accurate after element removal.
 
-## 5. Write and Update Unit Tests [pending]
+## 5. Validate Implementation with Comprehensive Tests [pending]
 ### Dependencies: 4.4
-### Description: Develop comprehensive unit tests for all updated functions, covering normal cases, edge cases, and collision avoidance.
+### Description: Develop and run a suite of unit and integration tests to validate all registry behaviors, including mapping, updates, cleanup, and edge cases. Ensure correctness under concurrent DOM mutations.
 ### Details:
-Write new tests and update existing ones to validate correct behavior, minimum length enforcement, and uniqueness of outputs.
+Write tests for all public APIs and internal logic. Include tests for rapid DOM changes, rule updates, and cleanup. Success criteria: All tests pass; code coverage meets project standards; no regressions found.
 

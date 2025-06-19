@@ -1,55 +1,114 @@
 # Task ID: 15
-# Title: Conduct Final Integration Testing
+# Title: Create technical documentation
 # Status: pending
-# Dependencies: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14
-# Priority: high
-# Description: Perform comprehensive integration testing of the entire system with the new length feature.
+# Dependencies: 14
+# Priority: low
+# Description: Create comprehensive technical documentation for the scramble package, including architecture decisions, development setup, and usage instructions.
 # Details:
-Design and execute a comprehensive integration test plan. Test various combinations of flags, configuration settings, and commands. Verify backward compatibility with existing projects. Use a combination of automated tests (e.g., with Jest) and manual testing scenarios.
+Create the following documentation:
+
+1. **Internal README.md**
+   - Development setup instructions
+   - Architecture overview
+   - Key design decisions and trade-offs
+   - Performance considerations
+   - Debugging techniques
+
+2. **Code Comments**
+   - Add detailed comments to all complex code sections
+   - Explain rationale behind implementation choices
+   - Document potential edge cases and how they're handled
+
+3. **CLI Integration Guide**
+   - Document how the CLI integrates with the scramble package
+   - Explain the configuration options and their effects
+   - Provide examples of common usage patterns
+
+4. **Troubleshooting Guide**
+   - Common issues and their solutions
+   - Debugging techniques for different environments
+   - Performance optimization tips
+
+Example README.md structure:
+
+```markdown
+# @tw-enigma/scramble
+
+> Internal package for creating a "hacker" visual effect with tw-enigma CSS classes.
+
+## Development Setup
+
+1. Clone the tw-enigma monorepo
+2. Create `packages-private` directory (locally only)
+3. Add `packages-private/*` to `pnpm-workspace.yaml` (DO NOT COMMIT)
+4. Install dependencies with `pnpm install`
+5. Build the package with `pnpm --filter @tw-enigma/scramble build`
+
+## Architecture Overview
+
+The scramble effect works by:
+
+1. Scanning stylesheets for tw-enigma generated class selectors
+2. Building a registry mapping CSS rules to DOM elements
+3. Continuously scrambling class names using requestAnimationFrame
+4. Synchronizing updates to both CSS rules and DOM elements
+
+## Key Design Decisions
+
+- **requestAnimationFrame**: Used for optimal performance and battery efficiency
+- **Registry Structure**: Maps class names to both CSS rules and DOM elements for synchronized updates
+- **Error Handling**: Gracefully handles cross-origin stylesheets and other edge cases
+- **Accessibility**: Automatically respects prefers-reduced-motion preference
+
+## CLI Integration
+
+The scramble package is integrated with the tw-enigma CLI via the following flags:
+
+- `--scramble`: Enable the scramble effect
+- `--scramble-speed=<ms>`: Set the scramble interval (50-1000ms)
+- `--scramble-debug`: Enable debug logging
+
+Example usage:
+
+```bash
+enigma css-config --preset production --scramble --scramble-speed=100
+```
+
+## Debugging
+
+Enable debug mode with the `--scramble-debug` flag to see detailed logging in the browser console.
+
+Common issues:
+- No scrambling effect: Check if tw-enigma classes are present and accessible
+- Cross-origin stylesheet errors: These are expected and handled gracefully
+- Performance issues: Try increasing the scramble interval
+```
 
 # Test Strategy:
-Create an extensive test matrix covering different length values, flag combinations, and usage scenarios. Automate as many tests as possible and document manual test procedures for edge cases.
+Review the documentation for completeness, accuracy, and clarity. Verify that it covers all aspects of the scramble package and provides clear instructions for developers. Test the instructions by following them on a clean environment.
 
 # Subtasks:
-## 1. Test Plan Design [pending]
+## 1. Draft Internal README Structure and Content [pending]
 ### Dependencies: None
-### Description: Define the scope, objectives, integration points, and risk analysis for integration testing. Document the test plan, including positive and negative scenarios, prioritization, and exploratory testing.
+### Description: Create a detailed outline and initial draft for the internal README, ensuring it covers project overview, architecture, setup instructions, usage examples, and contribution guidelines. Each section should be clearly defined and logically organized to minimize ambiguity.
 ### Details:
-Identify all modules and their integration points. Use tools for test case documentation and ensure coverage of edge cases and risk areas.
+The README must include: project purpose, system requirements, installation steps, configuration options, usage scenarios, and team contact information. Success is defined by a logically structured document with no missing critical sections.
 
-## 2. Automated Test Creation [pending]
-### Dependencies: 15.1
-### Description: Develop automated integration tests based on the documented test plan to validate key workflows and regression scenarios.
-### Details:
-Implement automated tests using appropriate frameworks. Focus on high-priority and repetitive test cases for efficiency.
-
-## 3. Manual Test Scenario Development [pending]
-### Dependencies: 15.1
-### Description: Create detailed manual test scenarios for complex, exploratory, or edge case integrations that are not easily automated.
-### Details:
-Document step-by-step manual test cases, including expected results and data requirements, for scenarios requiring human validation.
-
-## 4. Test Matrix Coverage Analysis [pending]
-### Dependencies: 15.2, 15.3
-### Description: Develop and maintain a test matrix to ensure all integration points, features, and edge cases are covered by both automated and manual tests.
-### Details:
-Map test cases to requirements and integration points. Identify any gaps in coverage and update tests as needed.
-
-## 5. Backward Compatibility Verification [pending]
-### Dependencies: 15.4
-### Description: Verify that new integrations do not break or degrade existing functionality by running regression tests and compatibility checks.
-### Details:
-Execute regression suites and validate results against previous versions. Document any compatibility issues found.
-
-## 6. Bug Triage and Fixes [pending]
-### Dependencies: 15.5
-### Description: Log, prioritize, and resolve defects found during integration testing. Re-test fixes to ensure issues are resolved and no regressions are introduced.
-### Details:
-Use a defect tracking system to manage bugs. Coordinate with development for timely fixes and verify resolutions.
-
-## 7. Final Review and Sign-off [pending]
+## 2. Add Comprehensive Code Comments [pending]
 ### Dependencies: None
-### Description: Conduct a comprehensive review of test results, coverage, and outstanding issues. Obtain stakeholder approval for release readiness.
+### Description: Review the codebase and insert clear, context-rich comments for all complex functions, classes, and modules, especially those with high cyclomatic complexity or non-obvious logic. Ensure comments explain intent, parameters, return values, and edge cases.
 ### Details:
-Summarize test outcomes, ensure all critical issues are addressed, and document lessons learned for future cycles.
+Focus on areas identified as complex by cyclomatic or Halstead metrics. Each comment should clarify the 'why' behind the code, not just the 'what.' Success is measured by improved code readability and reduced ambiguity for future maintainers.
+
+## 3. Develop CLI Integration Guide [pending]
+### Dependencies: 15.1
+### Description: Write a step-by-step guide for integrating and using the CLI, including installation, command syntax, configuration, and example workflows. Address common user scenarios and provide sample commands with expected outputs.
+### Details:
+The guide must be granular, with each command and option explained. Include troubleshooting tips for CLI-specific errors. Success is defined by a user being able to set up and use the CLI without external assistance.
+
+## 4. Compile Troubleshooting Guide [pending]
+### Dependencies: 15.1, 15.3
+### Description: Aggregate known issues, error messages, and their resolutions into a structured troubleshooting guide. Categorize problems by component (installation, runtime, CLI, etc.) and provide actionable solutions and diagnostic steps.
+### Details:
+The guide should include a FAQ, error code explanations, and escalation paths for unresolved issues. Success is measured by users resolving common problems independently using the guide.
 

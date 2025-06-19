@@ -1,11 +1,91 @@
 # Task ID: 9
-# Title: Update init-config Command
+# Title: Implement main initialization and self-execution
 # Status: pending
-# Dependencies: 1, 6, 7
+# Dependencies: 7
 # Priority: medium
-# Description: Modify the init-config command to accept and use the global length option.
+# Description: Create the main initialization function and self-executing code to start the scrambling effect when the script loads.
 # Details:
-Update packages/cli/src/commands/init-config.ts to handle the global length option. Ensure that the generated configuration file includes the minimumLength setting when specified.
+Implement the main initialization function that ties everything together:
+
+```typescript
+async function main(): Promise<void> {
+  debug('tw-enigma/scramble initializing...');
+  debug('Configuration:', CONFIG);
+  
+  // Setup motion preference listener
+  setupMotionPreferenceListener();
+  
+  // Wait for DOM to be ready
+  if (document.readyState === 'loading') {
+    await new Promise(resolve => {
+      document.addEventListener('DOMContentLoaded', resolve);
+    });
+  }
+  
+  // Initialize scrambling
+  await initialize();
+}
+```
+
+Add self-executing code at the end of the file:
+
+```typescript
+// Self-executing function
+(async () => {
+  try {
+    await main();
+  } catch (e) {
+    console.error('[tw-enigma/scramble] Fatal error:', e);
+  }
+})();
+```
+
+Ensure the script is wrapped in an IIFE to prevent global scope pollution:
+
+```typescript
+// The entire script should be wrapped in an IIFE
+(function() {
+  // All code goes here
+  
+  // Self-executing initialization at the end
+  (async () => {
+    try {
+      await main();
+    } catch (e) {
+      console.error('[tw-enigma/scramble] Fatal error:', e);
+    }
+  })();
+})();
+```
 
 # Test Strategy:
-Write integration tests for the init-config command, checking that it correctly generates config files with the minimumLength setting when the --length flag is used.
+Test the initialization by including the script in a sample HTML page. Verify that the scrambling effect starts automatically when the page loads. Test error handling by intentionally causing errors and verifying they're caught and logged properly.
+
+# Subtasks:
+## 1. Design and Implement the Main Initialization Function [pending]
+### Dependencies: None
+### Description: Create a main initialization function that sets up all required variables and state for the application. Ensure all variables are declared and initialized at the top of the function using 'let' or 'const' as appropriate, following JavaScript best practices to avoid global variables and undefined values.
+### Details:
+The function should encapsulate all setup logic, declare variables at the top, and initialize them with default values. Use 'const' for objects and arrays to prevent accidental type changes. The function should not pollute the global namespace.
+
+## 2. Implement DOM Readiness Handling [pending]
+### Dependencies: 9.1
+### Description: Ensure the initialization function executes only after the DOM is fully loaded. Use appropriate event listeners or modern APIs to detect DOM readiness and trigger the main initialization function.
+### Details:
+Attach the initialization function to the DOMContentLoaded event or use a similar mechanism to guarantee that DOM elements are accessible when initialization runs. Avoid using deprecated or unreliable methods.
+
+## 3. Integrate Motion Preference Logic [pending]
+### Dependencies: 9.2
+### Description: Add logic to detect the user's motion preferences (e.g., prefers-reduced-motion) and adjust initialization behavior accordingly. Ensure this logic is modular and does not interfere with other initialization steps.
+### Details:
+Use the 'window.matchMedia' API to check for motion preferences. Store the result in a local variable and use it to conditionally enable or disable motion-related features during initialization.
+
+## 4. Wrap All Logic in a Self-Executing Function [pending]
+### Dependencies: 9.3
+### Description: Encapsulate the entire initialization process, including DOM readiness and motion preference logic, within a self-executing anonymous function to prevent global scope pollution.
+### Details:
+Use an Immediately Invoked Function Expression (IIFE) to wrap all code. Ensure no variables or functions leak to the global scope. The IIFE should contain all previous logic in the correct order.
+<info added on 2025-06-19T10:41:29.988Z>
+Implement comprehensive error handling within the IIFE wrapper using try-catch blocks to isolate the scramble effect from the host page. Structure the error boundary to catch initialization errors, runtime exceptions, and any other potential failures. Include error logging functionality that provides meaningful debug information without exposing sensitive details. Implement graceful degradation patterns so that if the scramble effect fails, the original text remains visible and functional. Add specific error recovery mechanisms for common failure scenarios such as unsupported browsers, DOM manipulation failures, or animation timing issues. Ensure all error handlers are non-blocking and maintain the principle that script failures should never impact the core functionality of the host website.
+</info added on 2025-06-19T10:41:29.988Z>
+

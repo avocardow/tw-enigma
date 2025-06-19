@@ -1,0 +1,672 @@
+# @tw-enigma/scramble v1 - Product Requirements Document
+
+## Overview
+
+The `@tw-enigma/scramble` package is a proprietary, client-side JavaScript module that provides a dynamic "hacker" visual effect for websites using the tw-enigma CSS optimization tool. This v1 release is an **internal, unlicensed, and private** package designed to prove technical viability and gather internal feedback.
+
+### Problem Statement
+While tw-enigma successfully optimizes CSS by generating short, mangled class names, these optimized class names are only visible to developers who inspect the source code. There is an opportunity to create a compelling, aesthetic feature that showcases this optimization in a visually engaging way.
+
+### Solution
+A client-side script that continuously scrambles tw-enigma's optimized class names in both the DOM and CSS rules simultaneously, creating a "digital rain" or "hacker terminal" effect visible in browser developer tools. This provides a unique, memorable demonstration of the optimization tool's capabilities.
+
+### Target Audience
+- Internal development team (v1 primary audience)
+- Developers who have adopted tw-enigma and want to add dynamic flair to projects
+- Personal portfolios, agency websites, and themed marketing sites seeking creative expression
+
+### Value Proposition
+- **Purely Aesthetic**: Provides creative expression and memorable user experience
+- **Zero Functional Impact**: Maintains perfect visual styling while creating effect
+- **Technical Showcase**: Demonstrates sophisticated DOM/CSSOM synchronization
+- **Performance Optimized**: Mandates requestAnimationFrame for optimal rendering performance, battery efficiency, and alignment with browser repaint cycles
+
+## Core Features
+
+### 1. Continuous Class Scrambling
+**What it does**: Continuously randomizes class attributes of elements styled by tw-enigma while simultaneously updating corresponding CSS rules.
+
+**Why it's important**: Creates the core "hacker effect" that makes the optimization visible and engaging.
+
+**How it works**: Uses a synchronized update system that modifies CSS selectors in stylesheets and DOM element classes in the same animation frame to prevent visual flicker.
+
+### 2. Perfect Visual Consistency
+**What it does**: Ensures that all visual styling (colors, layout, fonts, spacing) remains completely unchanged during scrambling.
+
+**Why it's important**: The effect must be purely aesthetic - any visual disruption would break user experience.
+
+**How it works**: Maintains live references to CSS rules and DOM elements, updating only selectors/class names while preserving all style properties.
+
+### 3. Configurable Speed Control
+**What it does**: Allows developers to control the scrambling interval via CLI flags.
+
+**Why it's important**: Different projects may want subtle flickering versus rapid chaotic effects.
+
+**How it works**: CLI injects speed settings directly into the script at build time, eliminating runtime configuration overhead.
+
+### 4. Accessibility Compliance
+**What it does**: Automatically disables the scrambling effect for users with motion sensitivity.
+
+**Why it's important**: Respects user accessibility preferences and ensures inclusive experience.
+
+**How it works**: Checks `prefers-reduced-motion` media query on initialization and exits immediately if motion should be reduced.
+
+### 5. Graceful Error Handling
+**What it does**: Continues operating even when encountering inaccessible cross-origin stylesheets or other edge cases.
+
+**Why it's important**: Third-party resources (Google Fonts, analytics) shouldn't break the effect.
+
+**How it works**: Uses try-catch blocks around stylesheet access and individual class updates.
+
+## User Experience
+
+### User Personas
+
+#### Primary: Internal Developer (v1)
+- **Goal**: Verify technical functionality and visual appeal
+- **Context**: Testing scramble effect on development projects
+- **Needs**: Debug information, reliable performance, easy integration
+
+#### Secondary: Creative Developer
+- **Goal**: Add unique visual flair to projects
+- **Context**: Personal portfolios, themed websites
+- **Needs**: Customizable speed, subtle aesthetic control
+
+### Key User Flows
+
+#### 1. Enable Scramble Effect
+```bash
+# Developer runs CLI with scramble flag
+enigma css-config --preset production --scramble --scramble-speed=100
+
+# CLI detects flag, builds custom script, injects into HTML
+# User opens website - scramble effect automatically starts
+```
+
+#### 2. Developer Tools Discovery
+```
+User opens website → Opens DevTools → Inspects elements →
+Sees class names rapidly changing → Experiences "wow" moment
+```
+
+#### 3. Motion Sensitivity Accommodation
+```
+User with prefers-reduced-motion visits site →
+Script detects preference → Automatically disables →
+Normal static experience maintained
+```
+
+### UI/UX Considerations
+- **Zero Visual Impact**: No changes to actual website appearance
+- **Developer Tools Effect**: Creates engaging animation in inspection panels
+- **Performance Invisible**: Should not affect page load or interaction performance
+- **Accessibility First**: Motion preferences respected without user action required
+
+## Technical Architecture
+
+### System Components
+
+#### 1. Private Package Structure
+```
+packages-private/scramble/
+├── src/
+│   └── index.ts              # Main scramble logic
+├── dist/
+│   └── scramble.min.js       # Built IIFE output
+├── package.json              # Private package configuration
+└── tsup.config.ts           # Build configuration
+```
+
+#### 2. CLI Integration Layer
+- **Detection Logic**: CLI scans for `--scramble` flags across all commands
+- **Package Resolution**: Attempts to resolve private package using ESM-compatible imports
+- **Build Orchestration**: Builds scramble package with injected configuration when flags present
+- **HTML Discovery**: Recursively scans build output directory for HTML files (*.html)
+- **Script Injection**: Copies scramble script and injects `<script>` tag before `</body>`
+- **Timing Coordination**: Ensures CSS generation completes before scramble script injection
+
+#### 3. Client-Side Runtime Engine
+- **Discovery Phase**: Scans stylesheets using regex `^\.[a-z][a-z0-9]*$` to identify tw-enigma classes
+- **Mapping Phase**: Creates registry linking CSS rules to DOM elements
+- **Animation Loop**: Uses requestAnimationFrame for synchronized updates
+
+### Data Models
+
+#### Class Registry Structure
+```typescript
+Map<string, {
+  cssRule: CSSStyleRule,    // Live reference to CSS rule
+  elements: Element[]       // Array of DOM elements using this class
+}>
+```
+
+#### Configuration Schema
+```typescript
+interface ScrambleConfig {
+  SCRAMBLE_INTERVAL: number;     // Milliseconds between updates (50-1000ms)
+  SCRAMBLE_MODE: "all";          // Update mode (v1: all chars at once)
+  CHARSET: string;               // Character set for random generation
+  DEBUG_MODE: boolean;           // Console logging enabled
+  RETRY_ATTEMPTS: number;        // CSS loading retry attempts (default: 3)
+  CLEANUP_INTERVAL: number;      // Registry cleanup interval in seconds (default: 30)
+  MAX_REGISTRY_SIZE: number;     // Maximum classes to track (default: 1000)
+  PERFORMANCE_MONITORING: boolean; // Track performance metrics in debug mode
+}
+```
+
+#### Security Considerations
+```typescript
+interface SecurityConfig {
+  CSP_COMPLIANCE: boolean;       // Use nonce for script injection if CSP detected
+  ORIGIN_VALIDATION: boolean;    // Validate stylesheet origins before access
+  IFRAME_DETECTION: boolean;     // Disable in cross-origin iframes
+  SOURCE_MAP_SAFE: boolean;      // Preserve source map functionality
+}
+```
+
+### APIs and Integrations
+
+#### CLI Integration Points
+- **Flag Detection**: `--scramble`, `--scramble-speed=<ms>`, `--scramble-debug`
+- **Package Resolution**: ESM-compatible path resolution for `@tw-enigma/scramble/dist/scramble.min.js`
+- **Template Processing**: String replacement in source template with build-time configuration injection
+- **Build Integration**: Automatic scramble package building when flags detected
+- **HTML Discovery**: Scans build output directory for HTML files using glob patterns
+- **Script Injection**: Injects script tag before closing `</body>` tag in discovered HTML files
+
+#### Browser APIs Used
+- **DOM API**: `document.querySelectorAll()`, `classList.replace()`
+- **CSSOM API**: `document.styleSheets`, `cssRules[].selectorText`
+- **Performance API**: `requestAnimationFrame()`
+- **Media Queries**: `window.matchMedia('(prefers-reduced-motion: reduce)')`
+
+### Infrastructure Requirements
+
+#### Development Environment
+- **Monorepo Context**: Part of tw-enigma pnpm/Turborepo workspace
+- **Git Exclusion**: `packages-private/` directory in `.gitignore`
+- **Local Workspace**: Developer adds `packages-private/*` to `pnpm-workspace.yaml` locally
+
+#### Build System
+- **TypeScript Compilation**: Source written in TypeScript
+- **IIFE Bundling**: tsup configured for Immediately-Invoked Function Expression
+- **Minification**: Production-ready compressed output
+- **Template System**: CLI performs build-time configuration injection
+
+## Integration Contract with `@tw-enigma/cli`
+
+This section defines the mandatory responsibilities of the core CLI when the `--scramble` flag is used.
+
+### CLI Package Discovery Requirements
+The CLI must implement the following discovery logic when any `--scramble*` flag is detected:
+
+```typescript
+// CLI Integration Logic
+try {
+  // 1. Attempt to resolve scramble package path
+  const scramblePackagePath = require.resolve('@tw-enigma/scramble/dist/scramble.min.js');
+
+  // 2. If successful, proceed with scramble integration
+  await integrateScrambleEffect(scramblePackagePath, scrambleOptions);
+
+} catch (error) {
+  // 3. If package not found, show warning and continue without scramble
+  console.warn('⚠️ Scramble effect requires @tw-enigma/scramble package, which was not found. Skipping scramble integration.');
+  // Continue normal CLI operation without scramble
+}
+```
+
+### CLI Asset Management Responsibilities
+
+#### 1. Package Discovery
+- **MUST** verify `@tw-enigma/scramble` package is installed using `require.resolve()` or equivalent
+- **MUST** gracefully continue CLI operation if package is not found
+- **MUST** display clear warning message when package unavailable
+
+#### 2. Build Orchestration
+- **MUST** build scramble package automatically when scramble flags detected
+- **MUST** inject user configuration into scramble template before building
+- **MUST** ensure scramble build completes before HTML injection phase
+
+#### 3. Asset Copying
+- **MUST** copy final `scramble.min.js` from scramble package's `dist/` folder
+- **MUST** place script in user's build output directory (e.g., `dist/assets/enigma-scramble.js`)
+- **MUST** preserve script integrity and minification
+
+#### 4. HTML Injection
+- **MUST** scan build output directory for HTML files using glob pattern `**/*.html`
+- **MUST** inject `<script>` tag before closing `</body>` tag in each HTML file
+- **MUST** ensure script loads after all CSS to prevent race conditions
+
+#### 5. Configuration Passing
+- **MUST** pass scramble configuration via build-time template injection
+- **MUST NOT** use runtime configuration methods (data attributes, global variables)
+- **MUST** validate configuration values (speed limits, character sets)
+
+### Integration Sequence
+```bash
+# User Command
+enigma css-config --preset production --scramble --scramble-speed=100 --scramble-debug
+
+# CLI Internal Sequence
+1. Parse CLI flags and extract scramble configuration
+2. Attempt package discovery (@tw-enigma/scramble)
+3. If found: Build scramble with injected configuration
+4. Execute normal CSS processing (css-config)
+5. Copy scramble script to build output
+6. Scan for HTML files in output directory
+7. Inject script tags into discovered HTML files
+8. Display success message with scramble configuration summary
+```
+
+### Error Handling Contract
+- **Package Not Found**: Warn and continue without scramble (non-blocking)
+- **Build Failure**: Warn and continue without scramble (non-blocking)
+- **HTML Injection Failure**: Warn but complete other CLI operations (non-blocking)
+- **Configuration Validation**: Error and exit if invalid scramble settings provided (blocking)
+
+### Development Setup Requirements
+
+#### Developer Onboarding Steps
+```bash
+# 1. Clone tw-enigma monorepo
+git clone <repository-url>
+cd tw-enigma
+
+# 2. Create packages-private directory (locally only)
+mkdir -p packages-private
+
+# 3. Modify pnpm-workspace.yaml (DO NOT COMMIT)
+# Add line: "packages-private/*"
+
+# 4. Install dependencies
+pnpm install
+
+# 5. Verify CLI works
+pnpm build
+./packages/cli/bin/enigma.ts --help
+
+# 6. Create scramble package structure
+mkdir -p packages-private/scramble/src
+```
+
+#### Local Development Workflow
+- **Never commit**: `packages-private/` directory or workspace changes
+- **Testing**: Use fixtures in `packages/cli/tests/fixtures/`
+- **Building**: `pnpm build` from root builds scramble if present
+- **Debugging**: Enable `--scramble-debug` for console logging
+
+## Development Roadmap
+
+### Phase 1: Core Package Foundation (MVP)
+**Goal**: Establish basic package structure and build system
+
+**Components**:
+- Package directory structure in `packages-private/scramble`
+- TypeScript source file with basic scramble logic
+- tsup build configuration for IIFE output
+- Package.json with private flag and build scripts
+
+**Deliverables**:
+- Package directory structure in `packages-private/scramble`
+- TypeScript source file with comprehensive internal documentation
+- tsup build configuration for IIFE output
+- Package.json with private flag and build scripts
+
+**Internal Documentation Requirements**:
+- **Code Comments**: TypeScript source must include detailed comments explaining implementation rationale, especially for:
+  - Registry build logic and data structure decisions
+  - requestAnimationFrame loop timing and synchronization strategy
+  - Error handling approaches and recovery mechanisms
+  - Performance optimization techniques
+- **Technical README**: Internal README.md explaining:
+  - Development setup for new contributors
+  - Architecture decisions and trade-offs
+  - Debugging techniques and common issues
+  - Build process and configuration options
+
+**Acceptance Criteria**:
+- Package builds successfully with `pnpm build`
+- Outputs single minified JavaScript file
+- No external runtime dependencies
+- All complex code sections include explanatory comments
+- Technical documentation enables new developer onboarding
+
+### Phase 2: Scramble Algorithm Implementation
+**Goal**: Implement core scrambling functionality with proper synchronization
+
+**Components**:
+- **CSS Selector Discovery**: Implement stylesheet scanning using the mandatory regex pattern `^\.[a-z][a-z0-9]*$` to identify tw-enigma mangled classes (supports 1-character through N-character names)
+- DOM element mapping and registry creation
+- **requestAnimationFrame Animation Loop**: Mandatory use of requestAnimationFrame (not setInterval) for optimal rendering performance, better battery efficiency, and proper alignment with browser repaint cycles
+- Synchronized CSS rule and DOM element updates
+- Dead CSS rule pruning optimization
+
+**Acceptance Criteria**:
+- Correctly identifies all tw-enigma generated classes
+- Maintains perfect visual consistency during scrambling
+- Handles 1-character through N-character class names
+- Performance optimized with efficient registry management
+
+### Phase 3: Configuration and Error Handling
+**Goal**: Add build-time configuration and robust error handling
+
+**Components**:
+- Template-based configuration injection system
+- Accessibility compliance with prefers-reduced-motion
+- Cross-origin stylesheet error handling
+- Debug logging functionality
+- Graceful failure for individual class update errors
+
+**Acceptance Criteria**:
+- Script automatically disables for motion-sensitive users
+- Continues operating when third-party stylesheets are inaccessible
+- Debug mode provides useful development information
+- Single class failures don't crash entire effect
+
+### Phase 4: CLI Integration
+**Goal**: Integrate scramble package with tw-enigma CLI
+
+**Components**:
+- Global CLI flags: `--scramble`, `--scramble-speed`, `--scramble-debug`
+- Package resolution and conditional building
+- Script injection into user's build output
+- HTML modification to include scramble script
+
+**Acceptance Criteria**:
+- CLI gracefully handles missing scramble package
+- Builds custom script with user-specified settings
+- Injects script into HTML files with no manual configuration
+- Works with all existing CLI commands
+
+### Phase 5: Integration Testing and Validation
+**Goal**: Ensure end-to-end functionality with real projects
+
+**Components**:
+- **Test Fixture Matrix**:
+  - Static HTML sites with external CSS
+  - React SPA with CSS-in-JS (styled-components)
+  - Vue SPA with scoped CSS
+  - Next.js SSR with mixed CSS approaches
+  - Multi-page sites with shared CSS frameworks
+- **Edge Case Testing**:
+  - Sites with 1000+ CSS classes
+  - Sites with heavy third-party CSS (Bootstrap, Material-UI)
+  - Sites with CSP headers
+  - Sites with source maps enabled
+- **Performance Benchmarking**:
+  - Memory usage monitoring (max 100KB overhead)
+  - CPU usage profiling (max 1% CPU usage)
+  - Animation frame timing (maintain 60fps)
+  - Battery impact measurement on mobile devices
+- **Cross-browser Validation**:
+  - Chrome 100+, Firefox 100+, Safari 15+, Edge 100+
+  - Desktop and mobile versions
+  - Different OS environments (Windows, macOS, iOS, Android)
+
+**Testing Methodology**:
+For v1, testing will be primarily **manual and end-to-end integration testing**. Traditional unit tests are less relevant than successful CLI-to-browser integration.
+
+**Manual Test Protocol**:
+1. **Build Verification**: Run `turbo build` in monorepo root to verify scramble package builds
+2. **CLI Integration**: Run `enigma css-config --scramble --scramble-speed=100` against test fixtures
+3. **Asset Verification**: Confirm scramble script copied to fixture's build output directory
+4. **HTML Injection**: Verify `<script>` tag properly injected in HTML files
+5. **Browser Testing**: Serve fixture output and open in browser DevTools
+6. **Effect Verification**: Confirm class names scrambling visibly in Elements panel
+7. **Error Checking**: Verify no console errors during scramble operation
+8. **Performance Validation**: Confirm no impact on page load or interaction performance
+
+**Test Fixture Requirements**:
+- Static HTML with external CSS
+- React SPA with multiple components
+- Vue SPA with scoped styles
+- Next.js SSR with mixed CSS approaches
+
+**Acceptance Criteria**:
+- All manual test steps pass without errors across all fixtures
+- Scramble effect visible in browser DevTools for all scenarios
+- Memory usage stays below 100KB threshold (measured via DevTools)
+- Zero console errors in any test scenario
+- No visible impact on page appearance or performance
+- Graceful degradation when APIs unavailable
+
+## Logical Dependency Chain
+
+### Foundation Dependencies
+1. **Package Structure** → **Build System** → **Core Algorithm**
+   - Must establish workspace before implementing logic
+   - Build system required to test algorithm during development
+
+### Algorithm Dependencies
+2. **CSS Discovery** → **DOM Mapping** → **Synchronized Updates**
+   - CSS parsing must work before element mapping
+   - Both discovery phases required before scrambling logic
+
+### Integration Dependencies
+3. **Configuration System** → **CLI Integration** → **End-to-End Testing**
+   - Template injection needed for CLI to build custom scripts
+   - CLI integration required for realistic testing scenarios
+
+### Critical Path to Usable Product
+1. **Minimal Viable Demo**: Phase 1 + Phase 2 basic implementation
+2. **Developer-Ready**: Add Phase 3 error handling and debugging
+3. **Production-Ready**: Complete Phase 4 CLI integration
+4. **Release-Ready**: Phase 5 validation and testing
+
+### Atomic Development Units
+- Each phase builds incrementally on previous phases
+- Individual features within phases can be developed independently
+- Early phases provide foundation for rapid iteration
+- Testing can begin after Phase 2 with manual script injection
+
+## Risks and Mitigations
+
+### Technical Challenges
+
+#### Risk: CSS Rule Modification Failures
+**Description**: Browser security restrictions or stylesheet access issues could prevent CSS rule updates.
+
+**Likelihood**: Medium - Cross-origin stylesheets are common
+
+**Impact**: High - Would break scrambling effect entirely
+
+**Mitigation**:
+- Implement robust try-catch blocks around all CSSOM operations
+- Gracefully skip inaccessible stylesheets
+- Continue operation with accessible rules only
+- Provide debug logging to identify problematic stylesheets
+
+#### Risk: Timing/Race Conditions
+**Description**: Script may initialize before tw-enigma CSS is fully loaded, resulting in empty registry.
+
+**Likelihood**: High - CSS loading is asynchronous
+
+**Impact**: High - No scrambling effect despite successful setup
+
+**Mitigation**:
+- Implement CSS loading detection with retry mechanism
+- Use MutationObserver to detect stylesheet additions
+- Add fallback polling mechanism for CSS rule discovery
+- Provide initialization status logging in debug mode
+
+#### Risk: Memory Leaks from DOM References
+**Description**: Element references in registry may prevent garbage collection when elements are removed.
+
+**Likelihood**: Medium - Dynamic content changes are common
+
+**Impact**: Medium - Gradual memory consumption increase
+
+**Mitigation**:
+- Implement periodic registry cleanup (every 30 seconds)
+- Check element.isConnected before each scramble iteration
+- Remove disconnected elements from registry automatically
+- Monitor memory usage in debug mode
+
+#### Risk: Performance Degradation
+**Description**: Continuous DOM/CSS updates could impact page performance or battery life.
+
+**Likelihood**: Low - Optimized implementation planned
+
+**Impact**: High - Would violate "zero functional impact" requirement
+
+**Mitigation**:
+- Use requestAnimationFrame for optimal timing
+- Implement efficient registry with minimal object creation
+- Profile performance with large CSS files
+- Add performance monitoring in debug mode
+
+#### Risk: Browser Compatibility Issues
+**Description**: Different browsers may handle CSSOM manipulation differently.
+
+**Likelihood**: Medium - Browser APIs can vary
+
+**Impact**: Medium - Effect might not work on some browsers
+
+**Mitigation**:
+- Target modern evergreen browsers only for v1
+- Test across Chrome, Firefox, Safari, Edge
+- Implement feature detection before running scramble logic
+- Graceful degradation when APIs unavailable
+
+### MVP and Scope Challenges
+
+#### Risk: Feature Scope Creep
+**Description**: Temptation to add advanced features like MutationObserver, complex animations, or licensing system.
+
+**Likelihood**: High - Natural developer tendency
+
+**Impact**: Medium - Could delay v1 delivery
+
+**Mitigation**:
+- Explicitly document v1 scope limitations in PRD
+- Defer all advanced features to future versions
+- Focus on core scrambling functionality only
+- Regular scope review meetings
+
+#### Risk: Monorepo Integration Complexity
+**Description**: Private package integration with public monorepo could create build or dependency issues.
+
+**Likelihood**: Medium - Complex workspace setup
+
+**Impact**: Medium - Could complicate development workflow
+
+**Mitigation**:
+- Document clear setup instructions for developers
+- Use simple conditional logic in CLI for package detection
+- Implement graceful fallback when package unavailable
+- Test both scenarios: with and without private package
+
+### Resource Constraints
+
+#### Risk: Limited Testing Scenarios
+**Description**: As internal v1, may lack comprehensive testing across diverse project configurations.
+
+**Likelihood**: High - Limited test cases planned
+
+**Impact**: Medium - Could miss edge cases
+
+**Mitigation**:
+- Create diverse test fixtures covering common scenarios
+- Implement comprehensive error handling for unknown cases
+- Use debug mode extensively during development
+- Plan for iterative improvement based on initial feedback
+
+## Appendix
+
+### Compatibility Matrix
+
+#### Supported Combinations
+| Component | Version | Status | Notes |
+|-----------|---------|--------|-------|
+| tw-enigma CLI | 0.1.0+ | ✅ Supported | Requires CLI integration features |
+| Node.js | 18.0+ | ✅ Supported | ESM compatibility required |
+| pnpm | 8.0+ | ✅ Supported | Monorepo workspace support |
+| TypeScript | 5.0+ | ✅ Supported | Build system requirement |
+| Chrome | 100+ | ✅ Supported | Primary development target |
+| Firefox | 100+ | ✅ Supported | Full API compatibility |
+| Safari | 15+ | ✅ Supported | requestAnimationFrame support |
+| Edge | 100+ | ✅ Supported | Chromium-based compatibility |
+
+#### CSS Framework Compatibility
+| Framework | Status | Limitations |
+|-----------|--------|-------------|
+| Tailwind CSS | ✅ Full Support | Native tw-enigma integration |
+| Bootstrap | ⚠️ Partial | Only scrambles tw-enigma classes |
+| Material-UI | ⚠️ Partial | CSS-in-JS not affected |
+| Styled-components | ⚠️ Partial | Only static CSS classes |
+| CSS Modules | ✅ Full Support | Works with processed output |
+
+#### Build Tool Compatibility
+| Tool | Status | Integration Method |
+|------|--------|-------------------|
+| Vite | ✅ Planned | Post-build HTML injection |
+| Webpack | ✅ Planned | Output directory scanning |
+| Parcel | ⚠️ Untested | Standard HTML injection |
+| Rollup | ⚠️ Untested | Output directory scanning |
+
+### Technical Specifications
+
+#### CSS Selector Detection Regex
+```
+Pattern: ^\.[a-z][a-z0-9]*$
+Explanation:
+- ^\.     : Starts with literal dot
+- [a-z]   : First character must be lowercase letter
+- [a-z0-9]*: Subsequent characters are lowercase letters or numbers (zero or more)
+- $       : End of string
+```
+
+#### Supported Class Name Examples
+```
+✅ Supported: .a, .ab, .abc, .x1, .hello, .a2b3c4
+❌ Not Supported: .1abc (starts with number), .ABC (uppercase), .a-b (hyphen)
+```
+
+#### Performance Requirements
+- **Animation Frame Budget**: <1ms per scramble iteration (measured via performance.now())
+- **Memory Overhead**: <100KB for class registry (measured via performance.measureUserAgentSpecificMemory when available)
+- **CPU Usage**: <1% average CPU utilization (measured via CPU profiling)
+- **Bundle Size**: <10KB minified script size
+- **Initialization Time**: <50ms from DOMContentLoaded to first scramble
+- **Registry Limits**: Maximum 1000 tracked classes, 10000 total DOM elements
+- **Battery Impact**: Negligible battery drain (same as 60fps CSS animation)
+- **Lighthouse Score**: Zero impact on Performance, Accessibility, Best Practices scores
+
+#### Configuration Template Variables
+```typescript
+// Template placeholders for CLI injection
+const SCRAMBLE_INTERVAL = {{SCRAMBLE_INTERVAL}};      // Default: 150
+const SCRAMBLE_MODE = "{{SCRAMBLE_MODE}}";             // Default: "all"
+const CHARSET = "{{CHARSET}}";                         // Default: "abcdefghijklmnopqrstuvwxyz"
+const DEBUG_MODE = {{DEBUG_MODE}};                     // Default: false
+const RETRY_ATTEMPTS = {{RETRY_ATTEMPTS}};             // Default: 3
+const CLEANUP_INTERVAL = {{CLEANUP_INTERVAL}};         // Default: 30
+const MAX_REGISTRY_SIZE = {{MAX_REGISTRY_SIZE}};       // Default: 1000
+const PERFORMANCE_MONITORING = {{PERFORMANCE_MONITORING}}; // Default: false
+
+// CLI Command Examples
+// enigma css-config --scramble --scramble-speed=100 --scramble-debug
+// enigma build --scramble --scramble-speed=50
+// enigma analyze --scramble --scramble-debug --scramble-speed=200
+```
+
+### Research Findings
+
+#### Alternative Approaches Considered
+1. **Server-Side Scrambling**: Rejected due to complexity and inability to create dynamic effect
+2. **CSS Animation-Based**: Rejected due to inability to change actual class names
+3. **MutationObserver Integration**: Deferred to v2 due to complexity
+4. **WebWorker Implementation**: Rejected due to DOM access requirements
+
+#### Browser API Compatibility Research
+- **CSSStyleRule.selectorText**: Supported across all target browsers, writable
+- **Element.classList.replace()**: Supported in all modern browsers
+- **requestAnimationFrame**: Universal support, optimal for visual updates
+- **prefers-reduced-motion**: Supported in all target browsers
+
+### Future Enhancement Opportunities
+- **v2**: Dynamic content support with MutationObserver
+- **v3**: Sequential character scrambling mode
+- **v4**: Licensing system and public distribution
+- **v5**: Advanced visual effects (color shifting, CSS property scrambling)

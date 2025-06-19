@@ -1,11 +1,114 @@
 # Task ID: 12
-# Title: Implement Warning System
+# Title: Implement HTML discovery and script injection
 # Status: pending
-# Dependencies: 1, 8, 9
-# Priority: low
-# Description: Add warnings for extremely high length values and potential performance implications.
+# Dependencies: 11
+# Priority: medium
+# Description: Create the CLI functionality to discover HTML files in the build output and inject the scramble script.
 # Details:
-Implement a warning system that logs messages to the console for length values 15 and above. Use a logging library like winston (latest version) for consistent log formatting. Include capacity tables and performance implications in the warnings.
+Implement HTML discovery and script injection in the CLI:
+
+```typescript
+// In the CLI codebase
+import { readFileSync, writeFileSync } from 'fs';
+import { glob } from 'glob';
+import { join, relative } from 'path';
+
+async function findHtmlFiles(buildDir: string): Promise<string[]> {
+  return new Promise((resolve, reject) => {
+    glob('**/*.html', { cwd: buildDir, absolute: true }, (err, files) => {
+      if (err) reject(err);
+      else resolve(files);
+    });
+  });
+}
+
+async function injectScriptIntoHtml(
+  htmlFile: string,
+  scriptPath: string
+): Promise<boolean> {
+  try {
+    // Read the HTML file
+    let html = readFileSync(htmlFile, 'utf8');
+    
+    // Calculate relative path from HTML file to script
+    const htmlDir = htmlFile.substring(0, htmlFile.lastIndexOf('/'));
+    const relativeScriptPath = relative(htmlDir, scriptPath);
+    
+    // Check if script is already injected
+    if (html.includes(relativeScriptPath)) {
+      console.log(`⚠️ Script already injected in ${htmlFile}`);
+      return false;
+    }
+    
+    // Inject script before closing body tag
+    const scriptTag = `<script src="${relativeScriptPath}"></script>`;
+    html = html.replace('</body>', `  ${scriptTag}\n</body>`);
+    
+    // Write the modified HTML
+    writeFileSync(htmlFile, html, 'utf8');
+    
+    console.log(`✅ Injected script into ${htmlFile}`);
+    return true;
+  } catch (e) {
+    console.error(`❌ Error injecting script into ${htmlFile}:`, e);
+    return false;
+  }
+}
+
+async function injectScrambleIntoHtmlFiles(
+  buildDir: string,
+  scriptPath: string
+): Promise<void> {
+  try {
+    // Find all HTML files
+    const htmlFiles = await findHtmlFiles(buildDir);
+    console.log(`Found ${htmlFiles.length} HTML files in ${buildDir}`);
+    
+    // Inject script into each HTML file
+    let successCount = 0;
+    for (const htmlFile of htmlFiles) {
+      const success = await injectScriptIntoHtml(htmlFile, scriptPath);
+      if (success) successCount++;
+    }
+    
+    console.log(`✅ Injected scramble script into ${successCount}/${htmlFiles.length} HTML files`);
+  } catch (e) {
+    console.error('❌ Error injecting scramble script into HTML files:', e);
+  }
+}
+```
 
 # Test Strategy:
-Write unit tests to verify that appropriate warnings are logged for different length values. Test integration with the CLI commands.
+Test HTML discovery with a sample build directory containing HTML files in various subdirectories. Test script injection by verifying that the script tag is correctly inserted before the closing body tag. Test idempotence by running the injection multiple times and verifying that the script is only injected once.
+
+# Subtasks:
+## 1. Discover All HTML Files Recursively [pending]
+### Dependencies: None
+### Description: Implement a function to recursively traverse the target directory and identify all files with an .html extension. Ensure the function handles nested directories and symbolic links safely.
+### Details:
+Success criteria: Returns a complete, deduplicated list of absolute file paths for all HTML files found within the directory tree.
+
+## 2. Calculate Correct Script Paths for Each HTML File [pending]
+### Dependencies: 12.1
+### Description: For each discovered HTML file, determine the appropriate relative or absolute path for the script to be injected, accounting for the file's location and the desired script source.
+### Details:
+Success criteria: For every HTML file, outputs a valid script path string that will resolve correctly when the HTML file is loaded in a browser.
+
+## 3. Inject Script Tag into HTML Content [pending]
+### Dependencies: 12.2
+### Description: Parse each HTML file, insert a <script> tag with the calculated path into the <head> or <body> as specified, and write the modified content back to disk.
+### Details:
+Success criteria: Each HTML file contains exactly one correctly-formed <script> tag at the intended location, and the file remains valid HTML.
+
+## 4. Ensure Idempotent Script Injection [pending]
+### Dependencies: 12.3
+### Description: Before injecting, check if the script tag already exists in the HTML file to prevent duplicate insertions. The process should be repeatable without introducing multiple script tags.
+### Details:
+Success criteria: Running the injection process multiple times does not result in more than one script tag per file.
+
+## 5. Validate Script Injection and HTML Integrity [pending]
+### Dependencies: 12.4
+### Description: After injection, verify that each HTML file contains the script tag exactly once and that the HTML structure is not corrupted. Optionally, run HTML validation tools to ensure correctness.
+### Details:
+Success criteria: All processed HTML files pass validation checks, and the script tag is present exactly once in each file.
+
