@@ -38,7 +38,7 @@ export interface ProcessingResult {
 
 export class TemplateProcessor {
   private options: Required<TemplateProcessorOptions>;
-  private readonly defaultPattern = /\{\{([A-Z_]+)\}\}/g;
+  private readonly defaultPattern = /\{\{([A-Z_0-9]+)\}\}/g;
 
   constructor(options: TemplateProcessorOptions = {}) {
     this.options = {
@@ -178,12 +178,16 @@ export class TemplateProcessor {
    */
   private extractPlaceholders(template: string): string[] {
     const placeholders: string[] = [];
-    let match;
 
-    // Reset regex state
-    this.options.placeholderPattern.lastIndex = 0;
+    // Use matchAll instead of exec to avoid potential infinite loops
+    // Create a new regex instance to avoid shared state issues
+    // Preserve original flags and ensure global flag is set
+    const originalFlags = this.options.placeholderPattern.flags;
+    const globalFlags = originalFlags.includes('g') ? originalFlags : originalFlags + 'g';
+    const regex = new RegExp(this.options.placeholderPattern.source, globalFlags);
+    const matches = template.matchAll(regex);
 
-    while ((match = this.options.placeholderPattern.exec(template)) !== null) {
+    for (const match of matches) {
       if (!placeholders.includes(match[1])) {
         placeholders.push(match[1]);
       }
@@ -202,7 +206,8 @@ export class TemplateProcessor {
         .replace(/\\/g, '\\\\')
         .replace(/"/g, '\\"')
         .replace(/\n/g, '\\n')
-        .replace(/\r/g, '\\r');
+        .replace(/\r/g, '\\r')
+        .replace(/\t/g, '\\t');
     } else if (typeof value === 'number') {
       if (!Number.isFinite(value)) {
         throw new Error(`Invalid number value: ${value}`);
@@ -248,8 +253,8 @@ export class TemplateProcessor {
 
     // First, remove all valid {{PLACEHOLDER}} patterns from the template
     // to avoid false positives when checking for malformed patterns
-    const validPlaceholders = template.match(/\{\{[A-Z_]+\}\}/g) || [];
-    const templateWithoutValidPlaceholders = template.replace(/\{\{[A-Z_]+\}\}/g, '');
+    const validPlaceholders = template.match(/\{\{[A-Z_0-9]+\}\}/g) || [];
+    const templateWithoutValidPlaceholders = template.replace(/\{\{[A-Z_0-9]+\}\}/g, '');
 
     if (this.options.debug) {
       debugSteps.push(
@@ -263,7 +268,7 @@ export class TemplateProcessor {
     // Look for obvious malformed patterns (single braces) in the cleaned template
     const problematicPatterns = [
       /\{\{[^}]*\}\}/g, // Triple+ braces like {{{VALUE}}}
-      /\{[A-Z_]+\}/g, // Single braces around uppercase identifiers (likely meant to be placeholders)
+      /\{[A-Z_0-9]+\}/g, // Single braces around uppercase identifiers (likely meant to be placeholders)
     ];
 
     for (const pattern of problematicPatterns) {
