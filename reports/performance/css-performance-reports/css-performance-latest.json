@@ -27,9 +27,7 @@
         "limit": 50000,
         "severity": "error",
         "message": "Bundle exceeds size limit",
-        "recommendations": [
-          "Optimize CSS"
-        ]
+        "recommendations": ["Optimize CSS"]
       }
     ],
     "score": 100

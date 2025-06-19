@@ -20,14 +20,17 @@ export interface CLIResult {
 /**
  * Execute CLI command for testing
  */
-export const runCLI = async (args: string[], options: {
-  cwd?: string;
-  timeout?: number;
-  input?: string;
-} = {}): Promise<CLIResult> => {
+export const runCLI = async (
+  args: string[],
+  options: {
+    cwd?: string;
+    timeout?: number;
+    input?: string;
+  } = {}
+): Promise<CLIResult> => {
   const { cwd = process.cwd(), timeout = 10000, input } = options;
   const cliPath = join(__dirname, '../../dist/enigma.js');
-  
+
   return new Promise((resolve, reject) => {
     const startTime = Date.now();
     const child: ChildProcess = spawn('node', [cliPath, ...args], {
@@ -96,9 +99,9 @@ export const mockConsole = () => {
     warn: vi.fn(),
     info: vi.fn(),
   };
-  
+
   Object.assign(console, mocks);
-  
+
   return {
     mocks,
     restore: () => Object.assign(console, originalConsole),
@@ -112,10 +115,10 @@ export const createTempConfig = async (config: object) => {
   const fs = await import('fs/promises');
   const os = await import('os');
   const path = await import('path');
-  
+
   const tempDir = os.tmpdir();
   const configPath = path.join(tempDir, `tw-enigma-test-config-${Date.now()}.json`);
-  
+
   await fs.writeFile(configPath, JSON.stringify(config, null, 2));
   return configPath;
 };
@@ -146,43 +149,48 @@ export const createMockFileSystem = () => {
     mkdir: vi.fn(),
     readdir: vi.fn(),
   }));
-  
+
   return fs;
 };
 
 /**
  * Assert CLI output contains expected patterns
  */
-export const expectCLIOutput = (result: CLIResult, expectations: {
-  exitCode?: number;
-  stdout?: string | RegExp;
-  stderr?: string | RegExp;
-  maxDuration?: number;
-}) => {
+export const expectCLIOutput = (
+  result: CLIResult,
+  expectations: {
+    exitCode?: number;
+    stdout?: string | RegExp;
+    stderr?: string | RegExp;
+    maxDuration?: number;
+  }
+) => {
   if (expectations.exitCode !== undefined) {
     if (result.exitCode !== expectations.exitCode) {
       throw new Error(`Expected exit code ${expectations.exitCode}, got ${result.exitCode}`);
     }
   }
-  
+
   if (expectations.stdout) {
-    const matches = typeof expectations.stdout === 'string' 
-      ? result.stdout.includes(expectations.stdout)
-      : expectations.stdout.test(result.stdout);
+    const matches =
+      typeof expectations.stdout === 'string'
+        ? result.stdout.includes(expectations.stdout)
+        : expectations.stdout.test(result.stdout);
     if (!matches) {
       throw new Error(`Expected stdout to match "${expectations.stdout}", got: "${result.stdout}"`);
     }
   }
-  
+
   if (expectations.stderr) {
-    const matches = typeof expectations.stderr === 'string' 
-      ? result.stderr.includes(expectations.stderr)
-      : expectations.stderr.test(result.stderr);
+    const matches =
+      typeof expectations.stderr === 'string'
+        ? result.stderr.includes(expectations.stderr)
+        : expectations.stderr.test(result.stderr);
     if (!matches) {
       throw new Error(`Expected stderr to match "${expectations.stderr}", got: "${result.stderr}"`);
     }
   }
-  
+
   if (expectations.maxDuration && result.duration > expectations.maxDuration) {
     throw new Error(`Expected duration <= ${expectations.maxDuration}ms, got ${result.duration}ms`);
   }
@@ -214,4 +222,4 @@ export const testConfigs = {
       warnOnly: false,
     },
   },
-}; 
+};

@@ -16,6 +16,7 @@
 ## 🚀 Overview
 
 The tw-enigma project uses a monorepo structure with two main packages:
+
 - `@tw-enigma/core` - Core optimization engine
 - `@tw-enigma/cli` - Command-line interface
 
@@ -266,8 +267,8 @@ jobs:
         uses: changesets/action@v1
         with:
           publish: pnpm changeset publish
-          commit: "chore: release packages"
-          title: "chore: release packages"
+          commit: 'chore: release packages'
+          title: 'chore: release packages'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -290,7 +291,7 @@ jobs:
         with:
           node-version: 18
           cache: 'pnpm'
-      
+
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
       - run: pnpm type-check
@@ -319,7 +320,7 @@ jobs:
         with:
           node-version: 18
           cache: 'pnpm'
-      
+
       - run: pnpm install --frozen-lockfile
       - run: pnpm audit
       - run: pnpm audit --audit-level moderate
@@ -435,29 +436,37 @@ gh release create v1.2.4 --title "Security Hotfix v1.2.4" --notes "Critical secu
 
 ### Communication Template
 
-```markdown
+````markdown
 # Emergency Release Notice
 
 ## Issue
+
 [Brief description of the critical issue]
 
 ## Affected Versions
+
 - @tw-enigma/core: v1.2.0 - v1.2.3
 - @tw-enigma/cli: v1.2.0 - v1.2.3
 
 ## Resolution
+
 - Updated packages to v1.2.4
 - [Brief description of fix]
 
 ## Action Required
+
 Please update immediately:
+
 ```bash
 npm update @tw-enigma/core @tw-enigma/cli
 ```
+````
 
 ## Impact
+
 [Description of security/functionality impact]
-```
+
+````
 
 ## 🔧 Maintenance Tasks
 
@@ -498,7 +507,7 @@ pnpm audit
 
 # Fix security issues automatically
 pnpm audit --fix
-```
+````
 
 ### Performance Monitoring
 
@@ -537,6 +546,7 @@ pnpm examples:update
 ### Publishing Metrics
 
 Track the following metrics:
+
 - **Release Frequency**: Target monthly releases
 - **Time to Release**: From changeset to published
 - **Quality Gates**: Success rate of pre-publish checks
@@ -545,6 +555,7 @@ Track the following metrics:
 ### Quality Metrics
 
 Monitor these quality indicators:
+
 - **Test Coverage**: Maintain >90% coverage
 - **Bug Reports**: Track issues per release
 - **Breaking Changes**: Minimize breaking changes
@@ -553,6 +564,7 @@ Monitor these quality indicators:
 ### Performance Metrics
 
 Benchmark performance regularly:
+
 - **Package Size**: Monitor bundle size growth
 - **Installation Time**: Track npm install performance
 - **Build Time**: Monitor CI/CD pipeline performance
@@ -563,18 +575,21 @@ Benchmark performance regularly:
 ### Release Responsibility
 
 #### Release Manager
+
 - Coordinates release timeline
 - Ensures quality gates pass
 - Manages emergency releases
 - Communicates with stakeholders
 
 #### Package Maintainers
+
 - Review and approve changes
 - Write and maintain changelogs
 - Handle community feedback
 - Monitor package health
 
 #### Contributors
+
 - Follow contribution guidelines
 - Add appropriate changesets
 - Ensure tests pass
@@ -590,18 +605,21 @@ Benchmark performance regularly:
 ## 📚 Resources
 
 ### Tools and Services
+
 - [Changesets](https://github.com/changesets/changesets) - Version management
 - [GitHub Actions](https://github.com/features/actions) - CI/CD automation
 - [npm](https://www.npmjs.com/) - Package registry
 - [Semantic Versioning](https://semver.org/) - Versioning standard
 
 ### Documentation
+
 - [Contributing Guidelines](./CONTRIBUTING.md)
 - [Architecture Documentation](./ARCHITECTURE.md)
 - [Package READMEs](./packages/)
 - [Examples](./examples/)
 
 ### Support
+
 - [GitHub Issues](https://github.com/avocardow/tw-enigma/issues)
 - [GitHub Discussions](https://github.com/avocardow/tw-enigma/discussions)
 - [Package Health](https://snyk.io/advisor/npm-package/@tw-enigma/core)
@@ -611,4 +629,4 @@ Benchmark performance regularly:
 <div align="center">
   <p>📚 Part of the <a href="./">tw-enigma documentation</a></p>
   <p>For questions about publishing workflows, please open a <a href="https://github.com/avocardow/tw-enigma/discussions">discussion</a></p>
-</div> 
+</div>

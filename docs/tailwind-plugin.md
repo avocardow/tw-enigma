@@ -31,10 +31,10 @@ pnpm add tailwind-enigma
 
 ```javascript
 // tailwind.config.js
-import tailwindEnigma from "tailwind-enigma";
+import tailwindEnigma from 'tailwind-enigma';
 
 export default {
-  content: ["./src/**/*.{html,js,ts,jsx,tsx}"],
+  content: ['./src/**/*.{html,js,ts,jsx,tsx}'],
   theme: {
     extend: {},
   },
@@ -47,7 +47,7 @@ export default {
       },
       utilities: {
         enabled: true,
-        prefix: "tw-opt-",
+        prefix: 'tw-opt-',
       },
       development: {
         hotReload: true,
@@ -74,7 +74,7 @@ This creates the pattern and frequency files that the plugin uses to generate op
 ### Complete Configuration Example
 
 ```javascript
-import tailwindEnigma from "tailwind-enigma";
+import tailwindEnigma from 'tailwind-enigma';
 
 export default {
   plugins: [
@@ -90,7 +90,7 @@ export default {
       // Utility class generation
       utilities: {
         enabled: true, // Enable utility generation
-        prefix: "tw-opt-", // Prefix for generated classes
+        prefix: 'tw-opt-', // Prefix for generated classes
         generateResponsive: true, // Generate responsive variants
         generateHover: true, // Generate hover variants
         generateFocus: true, // Generate focus variants
@@ -113,9 +113,9 @@ export default {
 
       // File paths
       paths: {
-        patternsFile: "./.enigma/patterns.json",
-        frequencyFile: "./.enigma/frequency.json",
-        autocompleteFile: "./.enigma/autocomplete.json",
+        patternsFile: './.enigma/patterns.json',
+        frequencyFile: './.enigma/frequency.json',
+        autocompleteFile: './.enigma/autocomplete.json',
       },
     }),
   ],
@@ -176,9 +176,7 @@ Once configured, the plugin automatically generates optimized utility classes ba
 
 ```html
 <!-- Instead of writing this repeatedly: -->
-<div class="flex items-center justify-center p-4 bg-white shadow-lg rounded-lg">
-  Content
-</div>
+<div class="flex items-center justify-center p-4 bg-white shadow-lg rounded-lg">Content</div>
 
 <!-- Use the generated optimized class: -->
 <div class="tw-opt-0">Content</div>
@@ -203,9 +201,7 @@ Add to your `.vscode/settings.json`:
 
 ```json
 {
-  "tailwindCSS.experimental.classRegex": [
-    ["tw-opt-[\\w-]+", "[\"'`]([^\"'`]*).*?[\"'`]"]
-  ],
+  "tailwindCSS.experimental.classRegex": [["tw-opt-[\\w-]+", "[\"'`]([^\"'`]*).*?[\"'`]"]],
   "tailwindCSS.includeLanguages": {
     "javascript": "javascript",
     "typescript": "typescript",
@@ -224,7 +220,7 @@ The plugin generates autocomplete configuration that can be imported into WebSto
 Full TypeScript definitions are included:
 
 ```typescript
-import tailwindEnigma, { TailwindEnigmaConfig } from "tailwind-enigma";
+import tailwindEnigma, { TailwindEnigmaConfig } from 'tailwind-enigma';
 
 const config: TailwindEnigmaConfig = {
   patterns: {
@@ -232,7 +228,7 @@ const config: TailwindEnigmaConfig = {
     minFrequency: 3,
   },
   utilities: {
-    prefix: "opt-",
+    prefix: 'opt-',
   },
 };
 
@@ -246,15 +242,12 @@ export default {
 ### Custom Pattern Loading
 
 ```javascript
-import {
-  loadPatternData,
-  generateUtilitiesFromPatterns,
-} from "tailwind-enigma";
+import { loadPatternData, generateUtilitiesFromPatterns } from 'tailwind-enigma';
 
 // Load custom pattern data
 const { patterns, frequencies } = loadPatternData(
-  "./custom/patterns.json",
-  "./custom/frequency.json",
+  './custom/patterns.json',
+  './custom/frequency.json'
 );
 
 // Generate utilities programmatically
@@ -270,8 +263,8 @@ const utilities = generateUtilitiesFromPatterns(patterns, frequencies, config);
 module.exports = {
   // ... other config
   plugins: [
-    new (require("webpack-watch-files-plugin"))({
-      files: ["./.enigma/*.json"],
+    new (require('webpack-watch-files-plugin'))({
+      files: ['./.enigma/*.json'],
       verbose: true,
     }),
   ],
@@ -286,7 +279,7 @@ export default {
   // ... other config
   server: {
     watch: {
-      include: ["./.enigma/*.json"],
+      include: ['./.enigma/*.json'],
     },
   },
 };
@@ -442,7 +435,7 @@ function tailwindEnigma(config?: TailwindEnigmaConfig): PluginCreator;
 ```typescript
 function loadPatternData(
   patternsPath: string,
-  frequencyPath: string,
+  frequencyPath: string
 ): {
   patterns: PatternData[];
   frequencies: Map<string, number>;
@@ -455,7 +448,7 @@ function loadPatternData(
 function generateUtilitiesFromPatterns(
   patterns: PatternData[],
   frequencies: Map<string, number>,
-  config: TailwindEnigmaConfig,
+  config: TailwindEnigmaConfig
 ): Record<string, Record<string, string>>;
 ```
 
@@ -465,14 +458,14 @@ function generateUtilitiesFromPatterns(
 
 ```javascript
 // tailwind.config.js
-import tailwindEnigma from "tailwind-enigma";
+import tailwindEnigma from 'tailwind-enigma';
 
 export default {
-  content: ["./src/**/*.{js,jsx,ts,tsx}"],
+  content: ['./src/**/*.{js,jsx,ts,tsx}'],
   plugins: [
     tailwindEnigma({
       patterns: { minFrequency: 3 },
-      utilities: { prefix: "opt-" },
+      utilities: { prefix: 'opt-' },
       development: { hotReload: true },
     }),
   ],
@@ -483,18 +476,15 @@ export default {
 
 ```javascript
 // tailwind.config.js
-import tailwindEnigma from "tailwind-enigma";
+import tailwindEnigma from 'tailwind-enigma';
 
 export default {
-  content: [
-    "./pages/**/*.{js,ts,jsx,tsx}",
-    "./components/**/*.{js,ts,jsx,tsx}",
-  ],
+  content: ['./pages/**/*.{js,ts,jsx,tsx}', './components/**/*.{js,ts,jsx,tsx}'],
   plugins: [
     tailwindEnigma({
       paths: {
-        patternsFile: "./analysis/patterns.json",
-        frequencyFile: "./analysis/frequency.json",
+        patternsFile: './analysis/patterns.json',
+        frequencyFile: './analysis/frequency.json',
       },
     }),
   ],
@@ -505,10 +495,10 @@ export default {
 
 ```javascript
 // tailwind.config.js
-import tailwindEnigma from "tailwind-enigma";
+import tailwindEnigma from 'tailwind-enigma';
 
 export default {
-  content: ["./src/**/*.{vue,js,ts}"],
+  content: ['./src/**/*.{vue,js,ts}'],
   plugins: [
     tailwindEnigma({
       utilities: { generateResponsive: true },

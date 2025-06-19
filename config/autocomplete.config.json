@@ -84,47 +84,27 @@
   "suggestions": [
     {
       "trigger": "flex",
-      "completions": [
-        "tw-opt-center-flex",
-        "tw-opt-flex-col",
-        "tw-opt-flex-wrap"
-      ],
+      "completions": ["tw-opt-center-flex", "tw-opt-flex-col", "tw-opt-flex-wrap"],
       "context": "layout"
     },
     {
       "trigger": "text-",
-      "completions": [
-        "tw-opt-text-medium",
-        "tw-opt-text-large",
-        "tw-opt-text-small"
-      ],
+      "completions": ["tw-opt-text-medium", "tw-opt-text-large", "tw-opt-text-small"],
       "context": "typography"
     },
     {
       "trigger": "bg-",
-      "completions": [
-        "tw-opt-card",
-        "tw-opt-bg-primary",
-        "tw-opt-bg-secondary"
-      ],
+      "completions": ["tw-opt-card", "tw-opt-bg-primary", "tw-opt-bg-secondary"],
       "context": "background"
     },
     {
       "trigger": "w-",
-      "completions": [
-        "tw-opt-full-size",
-        "tw-opt-container",
-        "tw-opt-responsive"
-      ],
+      "completions": ["tw-opt-full-size", "tw-opt-container", "tw-opt-responsive"],
       "context": "sizing"
     },
     {
       "trigger": "p-",
-      "completions": [
-        "tw-opt-spacing-default",
-        "tw-opt-spacing-large",
-        "tw-opt-spacing-small"
-      ],
+      "completions": ["tw-opt-spacing-default", "tw-opt-spacing-large", "tw-opt-spacing-small"],
       "context": "spacing"
     }
   ],
@@ -171,9 +151,7 @@
       "extensionId": "tailwind-enigma",
       "configPath": ".vscode/settings.json",
       "settings": {
-        "tailwindCSS.experimental.classRegex": [
-          ["tw-opt-[\\w-]+", "[\"'`]([^\"'`]*).*?[\"'`]"]
-        ],
+        "tailwindCSS.experimental.classRegex": [["tw-opt-[\\w-]+", "[\"'`]([^\"'`]*).*?[\"'`]"]],
         "tailwindCSS.includeLanguages": {
           "javascript": "javascript",
           "typescript": "typescript",

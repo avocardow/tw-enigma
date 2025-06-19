@@ -29,10 +29,9 @@ describe('Environment Variables Integration', () => {
   describe('Basic Environment Variable Support', () => {
     it('should read TW_ENIGMA_LENGTH environment variable', async () => {
       // Test basic length environment variable
-      const result = await cliHarness.executeCommandWithEnv(
-        ['init-config'],
-        { TW_ENIGMA_LENGTH: '12' }
-      );
+      const result = await cliHarness.executeCommandWithEnv(['init-config'], {
+        TW_ENIGMA_LENGTH: '12',
+      });
 
       // Validate environment variable is applied
       IntegrationAssertions.assertLengthIntegration(result, 12, 'init-config');
@@ -40,10 +39,9 @@ describe('Environment Variables Integration', () => {
 
     it('should read TW_ENIGMA_INPUT environment variable', async () => {
       // Test input path environment variable
-      const result = await cliHarness.executeCommandWithEnv(
-        ['init-config'],
-        { TW_ENIGMA_INPUT: './custom-src' }
-      );
+      const result = await cliHarness.executeCommandWithEnv(['init-config'], {
+        TW_ENIGMA_INPUT: './custom-src',
+      });
 
       // Validate input path configuration
       expect(result.stdout).toContain('./custom-src');
@@ -51,10 +49,9 @@ describe('Environment Variables Integration', () => {
 
     it('should read TW_ENIGMA_OUTPUT environment variable', async () => {
       // Test output path environment variable
-      const result = await cliHarness.executeCommandWithEnv(
-        ['init-config'],
-        { TW_ENIGMA_OUTPUT: './custom-dist' }
-      );
+      const result = await cliHarness.executeCommandWithEnv(['init-config'], {
+        TW_ENIGMA_OUTPUT: './custom-dist',
+      });
 
       // Validate output path configuration
       expect(result.stdout).toContain('./custom-dist');
@@ -62,10 +59,9 @@ describe('Environment Variables Integration', () => {
 
     it('should read TW_ENIGMA_VERBOSE environment variable', async () => {
       // Test verbose environment variable
-      const result = await cliHarness.executeCommandWithEnv(
-        ['init-config'],
-        { TW_ENIGMA_VERBOSE: 'true' }
-      );
+      const result = await cliHarness.executeCommandWithEnv(['init-config'], {
+        TW_ENIGMA_VERBOSE: 'true',
+      });
 
       // Validate verbose mode
       expect(result.stderr).toMatch(/verbose|debug/i);
@@ -75,10 +71,9 @@ describe('Environment Variables Integration', () => {
   describe('Environment Variable Precedence', () => {
     it('should prioritize CLI flags over environment variables', async () => {
       // Test CLI flag precedence
-      const result = await cliHarness.executeCommandWithEnv(
-        ['--length', '10', 'init-config'],
-        { TW_ENIGMA_LENGTH: '8' }
-      );
+      const result = await cliHarness.executeCommandWithEnv(['--length', '10', 'init-config'], {
+        TW_ENIGMA_LENGTH: '8',
+      });
 
       // CLI flag should take precedence
       IntegrationAssertions.assertLengthIntegration(result, 10, 'init-config');
@@ -86,10 +81,9 @@ describe('Environment Variables Integration', () => {
 
     it('should prioritize environment variables over default values', async () => {
       // Test environment variable over defaults
-      const result = await cliHarness.executeCommandWithEnv(
-        ['init-config'],
-        { TW_ENIGMA_LENGTH: '15' }
-      );
+      const result = await cliHarness.executeCommandWithEnv(['init-config'], {
+        TW_ENIGMA_LENGTH: '15',
+      });
 
       // Environment variable should override defaults
       IntegrationAssertions.assertLengthIntegration(result, 15, 'init-config');
@@ -133,13 +127,10 @@ describe('Environment Variables Integration', () => {
   describe('Environment Variable Types', () => {
     it('should handle boolean environment variables', async () => {
       // Test boolean conversion
-      const result = await cliHarness.executeCommandWithEnv(
-        ['init-config'],
-        {
-          TW_ENIGMA_VERBOSE: 'true',
-          TW_ENIGMA_PRETTY: 'false'
-        }
-      );
+      const result = await cliHarness.executeCommandWithEnv(['init-config'], {
+        TW_ENIGMA_VERBOSE: 'true',
+        TW_ENIGMA_PRETTY: 'false',
+      });
 
       // Validate boolean handling
       expect(result.stderr).toMatch(/verbose|debug/i);
@@ -147,13 +138,10 @@ describe('Environment Variables Integration', () => {
 
     it('should handle numeric environment variables', async () => {
       // Test numeric conversion
-      const result = await cliHarness.executeCommandWithEnv(
-        ['init-config'],
-        {
-          TW_ENIGMA_LENGTH: '18',
-          TW_ENIGMA_TIMEOUT: '5000'
-        }
-      );
+      const result = await cliHarness.executeCommandWithEnv(['init-config'], {
+        TW_ENIGMA_LENGTH: '18',
+        TW_ENIGMA_TIMEOUT: '5000',
+      });
 
       // Validate numeric parsing
       IntegrationAssertions.assertLengthIntegration(result, 18, 'init-config');
@@ -161,10 +149,9 @@ describe('Environment Variables Integration', () => {
 
     it('should handle array environment variables', async () => {
       // Test array parsing (comma-separated)
-      const result = await cliHarness.executeCommandWithEnv(
-        ['init-config'],
-        { TW_ENIGMA_INPUT: './src,./components,./pages' }
-      );
+      const result = await cliHarness.executeCommandWithEnv(['init-config'], {
+        TW_ENIGMA_INPUT: './src,./components,./pages',
+      });
 
       // Validate array parsing
       expect(result.stdout).toContain('./src');
@@ -177,13 +164,12 @@ describe('Environment Variables Integration', () => {
       const nameGenerationConfig = JSON.stringify({
         enabled: true,
         minimumLength: 14,
-        pattern: 'alphabetic'
+        pattern: 'alphabetic',
       });
 
-      const result = await cliHarness.executeCommandWithEnv(
-        ['init-config'],
-        { TW_ENIGMA_NAME_GENERATION: nameGenerationConfig }
-      );
+      const result = await cliHarness.executeCommandWithEnv(['init-config'], {
+        TW_ENIGMA_NAME_GENERATION: nameGenerationConfig,
+      });
 
       // Validate JSON parsing
       IntegrationAssertions.assertNameGenerationOptionsValid(
@@ -191,7 +177,7 @@ describe('Environment Variables Integration', () => {
         {
           enabled: true,
           minimumLength: 14,
-          pattern: 'alphabetic'
+          pattern: 'alphabetic',
         },
         'JSON environment variable parsing'
       );
@@ -201,10 +187,9 @@ describe('Environment Variables Integration', () => {
   describe('Environment Variable Validation', () => {
     it('should validate numeric environment variable ranges', async () => {
       // Test invalid numeric value
-      const result = await cliHarness.executeCommandWithEnv(
-        ['init-config'],
-        { TW_ENIGMA_LENGTH: '-5' }
-      );
+      const result = await cliHarness.executeCommandWithEnv(['init-config'], {
+        TW_ENIGMA_LENGTH: '-5',
+      });
 
       // Should handle invalid range
       CliAssertions.assertErrorHandling(
@@ -216,10 +201,9 @@ describe('Environment Variables Integration', () => {
 
     it('should validate boolean environment variable formats', async () => {
       // Test invalid boolean value
-      const result = await cliHarness.executeCommandWithEnv(
-        ['init-config'],
-        { TW_ENIGMA_VERBOSE: 'maybe' }
-      );
+      const result = await cliHarness.executeCommandWithEnv(['init-config'], {
+        TW_ENIGMA_VERBOSE: 'maybe',
+      });
 
       // Should handle invalid boolean (might convert to false or error)
       expect(result.exitCode).toBeDefined();
@@ -227,10 +211,9 @@ describe('Environment Variables Integration', () => {
 
     it('should validate JSON environment variable syntax', async () => {
       // Test invalid JSON
-      const result = await cliHarness.executeCommandWithEnv(
-        ['init-config'],
-        { TW_ENIGMA_NAME_GENERATION: '{ invalid json }' }
-      );
+      const result = await cliHarness.executeCommandWithEnv(['init-config'], {
+        TW_ENIGMA_NAME_GENERATION: '{ invalid json }',
+      });
 
       // Should handle JSON syntax error
       CliAssertions.assertErrorHandling(
@@ -242,10 +225,9 @@ describe('Environment Variables Integration', () => {
 
     it('should validate path environment variables', async () => {
       // Test invalid path format
-      const result = await cliHarness.executeCommandWithEnv(
-        ['init-config'],
-        { TW_ENIGMA_INPUT: '\\invalid\\windows\\path\\on\\unix' }
-      );
+      const result = await cliHarness.executeCommandWithEnv(['init-config'], {
+        TW_ENIGMA_INPUT: '\\invalid\\windows\\path\\on\\unix',
+      });
 
       // Should handle invalid path (might normalize or error)
       expect(result.exitCode).toBeDefined();
@@ -260,13 +242,10 @@ describe('Environment Variables Integration', () => {
         TW_ENIGMA_INPUT: './full-env-src',
         TW_ENIGMA_OUTPUT: './full-env-dist',
         TW_ENIGMA_VERBOSE: 'true',
-        TW_ENIGMA_PRETTY: 'true'
+        TW_ENIGMA_PRETTY: 'true',
       };
 
-      const result = await cliHarness.executeCommandWithEnv(
-        ['init-config'],
-        fullEnv
-      );
+      const result = await cliHarness.executeCommandWithEnv(['init-config'], fullEnv);
 
       // Validate all environment variables are recognized
       IntegrationAssertions.assertDataFlow(
@@ -276,7 +255,7 @@ describe('Environment Variables Integration', () => {
           input: './full-env-src',
           output: './full-env-dist',
           verbose: true,
-          pretty: true
+          pretty: true,
         },
         'Complete environment variable discovery'
       );
@@ -284,14 +263,11 @@ describe('Environment Variables Integration', () => {
 
     it('should ignore unknown environment variables', async () => {
       // Test unknown environment variables
-      const result = await cliHarness.executeCommandWithEnv(
-        ['init-config'],
-        {
-          TW_ENIGMA_LENGTH: '9',
-          UNKNOWN_VAR: 'should-be-ignored',
-          TW_ENIGMA_UNKNOWN: 'should-also-be-ignored'
-        }
-      );
+      const result = await cliHarness.executeCommandWithEnv(['init-config'], {
+        TW_ENIGMA_LENGTH: '9',
+        UNKNOWN_VAR: 'should-be-ignored',
+        TW_ENIGMA_UNKNOWN: 'should-also-be-ignored',
+      });
 
       // Should process known variables and ignore unknown ones
       IntegrationAssertions.assertLengthIntegration(result, 9, 'init-config');
@@ -301,13 +277,10 @@ describe('Environment Variables Integration', () => {
   describe('Environment Variable Edge Cases', () => {
     it('should handle empty environment variables', async () => {
       // Test empty values
-      const result = await cliHarness.executeCommandWithEnv(
-        ['init-config'],
-        {
-          TW_ENIGMA_LENGTH: '',
-          TW_ENIGMA_INPUT: ''
-        }
-      );
+      const result = await cliHarness.executeCommandWithEnv(['init-config'], {
+        TW_ENIGMA_LENGTH: '',
+        TW_ENIGMA_INPUT: '',
+      });
 
       // Should handle empty values gracefully (use defaults or error)
       expect(result.exitCode).toBeDefined();
@@ -315,13 +288,10 @@ describe('Environment Variables Integration', () => {
 
     it('should handle whitespace in environment variables', async () => {
       // Test whitespace handling
-      const result = await cliHarness.executeCommandWithEnv(
-        ['init-config'],
-        {
-          TW_ENIGMA_LENGTH: ' 13 ',
-          TW_ENIGMA_INPUT: ' ./src/with/spaces '
-        }
-      );
+      const result = await cliHarness.executeCommandWithEnv(['init-config'], {
+        TW_ENIGMA_LENGTH: ' 13 ',
+        TW_ENIGMA_INPUT: ' ./src/with/spaces ',
+      });
 
       // Should trim whitespace appropriately
       if (result.exitCode === 0) {
@@ -331,13 +301,10 @@ describe('Environment Variables Integration', () => {
 
     it('should handle case sensitivity', async () => {
       // Test case variations
-      const result = await cliHarness.executeCommandWithEnv(
-        ['init-config'],
-        {
-          tw_enigma_length: '7', // lowercase
-          TW_ENIGMA_LENGTH: '8'  // uppercase (should take precedence)
-        }
-      );
+      const result = await cliHarness.executeCommandWithEnv(['init-config'], {
+        tw_enigma_length: '7', // lowercase
+        TW_ENIGMA_LENGTH: '8', // uppercase (should take precedence)
+      });
 
       // Should handle case sensitivity appropriately
       expect(result.exitCode).toBeDefined();

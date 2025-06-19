@@ -18,4 +18,4 @@ describe('@tw-enigma/core', () => {
     const result = await optimizeCSS('body { margin: 0; }', config);
     expect(result).toBeDefined();
   });
-}); 
+});

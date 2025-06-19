@@ -68,35 +68,32 @@ import { defineConfig } from '@tw-enigma/core';
 
 export default defineConfig({
   // Input directories to analyze
-  content: [
-    './src/**/*.{js,jsx,ts,tsx}',
-    './public/index.html'
-  ],
+  content: ['./src/**/*.{js,jsx,ts,tsx}', './public/index.html'],
 
   // Optimization strategy
   optimization: {
     strategy: 'atomic',
     threshold: 2,
-    minify: true
+    minify: true,
   },
 
   // Output configuration
   output: {
     filename: 'optimized.css',
-    directory: 'dist/assets'
+    directory: 'dist/assets',
   },
 
   // Development settings
   development: {
     enableHMR: true,
-    sourceMaps: true
+    sourceMaps: true,
   },
 
   // Performance monitoring
   analytics: {
     enabled: true,
-    reportPath: 'reports/optimization.json'
-  }
+    reportPath: 'reports/optimization.json',
+  },
 });
 ```
 
@@ -112,12 +109,12 @@ export default defineConfig({
   plugins: [
     react(),
     twEnigmaPlugin({
-      configFile: './tw-enigma.config.js'
-    })
+      configFile: './tw-enigma.config.js',
+    }),
   ],
-  
+
   css: {
-    devSourcemap: true
+    devSourcemap: true,
   },
 
   build: {
@@ -126,11 +123,11 @@ export default defineConfig({
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom'],
-          utils: ['clsx', 'tailwind-merge']
-        }
-      }
-    }
-  }
+          utils: ['clsx', 'tailwind-merge'],
+        },
+      },
+    },
+  },
 });
 ```
 
@@ -159,24 +156,24 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           'inline-flex items-center justify-center rounded-md font-medium transition-colors',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
           'disabled:pointer-events-none disabled:opacity-50',
-          
+
           // Variant styles
           {
-            'bg-blue-600 text-white hover:bg-blue-700 focus-visible:ring-blue-500': 
+            'bg-blue-600 text-white hover:bg-blue-700 focus-visible:ring-blue-500':
               variant === 'primary',
-            'bg-gray-200 text-gray-900 hover:bg-gray-300 focus-visible:ring-gray-500': 
+            'bg-gray-200 text-gray-900 hover:bg-gray-300 focus-visible:ring-gray-500':
               variant === 'secondary',
-            'bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-500': 
+            'bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-500':
               variant === 'danger',
           },
-          
+
           // Size styles
           {
             'h-8 px-3 text-sm': size === 'sm',
             'h-10 px-4 text-base': size === 'md',
             'h-12 px-6 text-lg': size === 'lg',
           },
-          
+
           className
         )}
         disabled={loading || props.disabled}
@@ -245,11 +242,7 @@ interface CardHeaderProps {
 }
 
 export function CardHeader({ children, className }: CardHeaderProps) {
-  return (
-    <div className={clsx('mb-4 border-b border-gray-200 pb-4', className)}>
-      {children}
-    </div>
-  );
+  return <div className={clsx('mb-4 border-b border-gray-200 pb-4', className)}>{children}</div>;
 }
 
 interface CardTitleProps {
@@ -258,11 +251,7 @@ interface CardTitleProps {
 }
 
 export function CardTitle({ children, className }: CardTitleProps) {
-  return (
-    <h3 className={clsx('text-lg font-semibold text-gray-900', className)}>
-      {children}
-    </h3>
-  );
+  return <h3 className={clsx('text-lg font-semibold text-gray-900', className)}>{children}</h3>;
 }
 
 interface CardContentProps {
@@ -271,11 +260,7 @@ interface CardContentProps {
 }
 
 export function CardContent({ children, className }: CardContentProps) {
-  return (
-    <div className={clsx('text-gray-600', className)}>
-      {children}
-    </div>
-  );
+  return <div className={clsx('text-gray-600', className)}>{children}</div>;
 }
 ```
 
@@ -310,7 +295,7 @@ export function Layout({ children }: LayoutProps) {
                 tw-enigma Demo
               </Link>
             </div>
-            
+
             <div className="flex space-x-8">
               {navItems.map((item) => (
                 <Link
@@ -332,16 +317,12 @@ export function Layout({ children }: LayoutProps) {
       </nav>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-        {children}
-      </main>
+      <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">{children}</main>
 
       {/* Footer */}
       <footer className="bg-white border-t border-gray-200 mt-auto">
         <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
-          <p className="text-center text-sm text-gray-500">
-            Built with tw-enigma CSS optimization
-          </p>
+          <p className="text-center text-sm text-gray-500">Built with tw-enigma CSS optimization</p>
         </div>
       </footer>
     </div>
@@ -355,26 +336,26 @@ This example demonstrates the optimization effectiveness of tw-enigma:
 
 ### Bundle Size Analysis
 
-| Build Type | Original CSS | Optimized CSS | Reduction |
-|------------|--------------|---------------|-----------|
-| Development | 3.2 MB | 3.2 MB | 0% (optimization disabled) |
-| Production | 3.2 MB | 125 KB | 96% reduction |
+| Build Type  | Original CSS | Optimized CSS | Reduction                  |
+| ----------- | ------------ | ------------- | -------------------------- |
+| Development | 3.2 MB       | 3.2 MB        | 0% (optimization disabled) |
+| Production  | 3.2 MB       | 125 KB        | 96% reduction              |
 
 ### Build Performance
 
-| Metric | Before tw-enigma | With tw-enigma | Improvement |
-|--------|------------------|----------------|-------------|
-| Build Time | 3.2s | 2.1s | 34% faster |
-| CSS Processing | 1.8s | 0.3s | 83% faster |
-| Bundle Analysis | N/A | 0.2s | Built-in analysis |
+| Metric          | Before tw-enigma | With tw-enigma | Improvement       |
+| --------------- | ---------------- | -------------- | ----------------- |
+| Build Time      | 3.2s             | 2.1s           | 34% faster        |
+| CSS Processing  | 1.8s             | 0.3s           | 83% faster        |
+| Bundle Analysis | N/A              | 0.2s           | Built-in analysis |
 
 ### Runtime Performance
 
-| Metric | Before | After | Improvement |
-|--------|--------|-------|-------------|
-| First Contentful Paint | 1.2s | 0.8s | 33% faster |
-| Largest Contentful Paint | 2.1s | 1.3s | 38% faster |
-| CSS Parse Time | 45ms | 8ms | 82% faster |
+| Metric                   | Before | After | Improvement |
+| ------------------------ | ------ | ----- | ----------- |
+| First Contentful Paint   | 1.2s   | 0.8s  | 33% faster  |
+| Largest Contentful Paint | 2.1s   | 1.3s  | 38% faster  |
+| CSS Parse Time           | 45ms   | 8ms   | 82% faster  |
 
 ## 🔧 Development Features
 
@@ -399,11 +380,11 @@ Both development and production builds include source maps:
 // vite.config.ts
 export default defineConfig({
   css: {
-    devSourcemap: true  // Development source maps
+    devSourcemap: true, // Development source maps
   },
   build: {
-    sourcemap: true     // Production source maps
-  }
+    sourcemap: true, // Production source maps
+  },
 });
 ```
 
@@ -417,6 +398,7 @@ npm run dev:analyze
 ```
 
 Opens a dashboard showing:
+
 - Real-time CSS usage statistics
 - Optimization effectiveness
 - Bundle size metrics
@@ -479,7 +461,7 @@ export function trackCustomMetric(name: string, value: number) {
     metric: name,
     value,
     timestamp: Date.now(),
-    build: process.env.NODE_ENV
+    build: process.env.NODE_ENV,
   });
 }
 ```
@@ -513,35 +495,38 @@ npm run build:profile
 ### Common Issues
 
 **Issue: CSS not optimizing in development**
+
 ```javascript
 // tw-enigma.config.js
 export default defineConfig({
   development: {
-    optimize: false  // Optimization disabled by default in dev
-  }
+    optimize: false, // Optimization disabled by default in dev
+  },
 });
 ```
 
 **Issue: Missing Tailwind classes**
+
 ```javascript
 // Ensure all content paths are included
 export default defineConfig({
   content: [
     './src/**/*.{js,jsx,ts,tsx}',
     './public/index.html',
-    './components/**/*.{js,jsx,ts,tsx}'  // Add missing paths
-  ]
+    './components/**/*.{js,jsx,ts,tsx}', // Add missing paths
+  ],
 });
 ```
 
 **Issue: Build performance**
+
 ```javascript
 // Enable parallel processing
 export default defineConfig({
   optimization: {
     parallel: true,
-    workers: 4
-  }
+    workers: 4,
+  },
 });
 ```
 
@@ -560,10 +545,12 @@ DEBUG=tw-enigma:verbose npm run build
 ## 📚 Next Steps
 
 1. **Explore Advanced Examples**
+
    - [React TypeScript](../typescript/) - Type-safe configuration
    - [React Component Library](../component-lib/) - Library optimization
 
 2. **Try Different Optimization Strategies**
+
    - [Chunked Optimization](../../tutorials/optimization/chunked.md)
    - [Hybrid Strategy](../../tutorials/optimization/hybrid.md)
 
@@ -580,4 +567,4 @@ DEBUG=tw-enigma:verbose npm run build
 
 ---
 
-**Ready to optimize your React application?** This example provides a solid foundation for integrating tw-enigma with React and Vite. Customize the configuration based on your specific needs and explore the advanced features as your application grows. 
+**Ready to optimize your React application?** This example provides a solid foundation for integrating tw-enigma with React and Vite. Customize the configuration based on your specific needs and explore the advanced features as your application grows.

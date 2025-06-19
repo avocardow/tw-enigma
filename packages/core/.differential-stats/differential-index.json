@@ -1,0 +1,58 @@
+{
+  "version": "1.0.0",
+  "currentFullBackup": {
+    "id": "backup_1750320904553_98hllh",
+    "createdAt": "2025-06-19T08:15:04.553Z",
+    "filePath": "/tmp/compression-test-1750320904551/.backups-stats/diff-stats1.2025-06-19T08-15-04-553Z.txt.backup",
+    "size": 30
+  },
+  "differentialChain": [
+    {
+      "id": "backup_1750320904564_w1v3it",
+      "type": "differential",
+      "baseFullBackupId": "backup_1750320904553_98hllh",
+      "backupPath": "/tmp/compression-test-1750320904551/.backups-stats/diff-stats2.2025-06-19T08-15-04-564Z.txt.backup",
+      "originalPath": "/tmp/compression-test-1750320904551/diff-stats2.txt",
+      "createdAt": "2025-06-19T08:15:04.564Z",
+      "cumulativeFiles": [
+        "/tmp/compression-test-1750320904551/diff-stats1.txt",
+        "/tmp/compression-test-1750320904551/diff-stats2.txt"
+      ],
+      "cumulativeSize": 20,
+      "currentFiles": [
+        "/tmp/compression-test-1750320904551/diff-stats2.txt"
+      ],
+      "currentSize": 20,
+      "changeDetectionMethod": "mtime",
+      "compressed": false,
+      "deduplicated": false,
+      "timeSinceFullBackup": 0.0000030555555555555556
+    }
+  ],
+  "cumulativeFileStates": {
+    "/tmp/compression-test-1750320904551/diff-stats1.txt": {
+      "filePath": "/tmp/compression-test-1750320904551/diff-stats1.txt",
+      "size": 30,
+      "mtime": "2025-06-19T08:15:04.553Z",
+      "lastBackup": "2025-06-19T08:15:04.553Z",
+      "hasChanged": false
+    },
+    "/tmp/compression-test-1750320904551/diff-stats2.txt": {
+      "filePath": "/tmp/compression-test-1750320904551/diff-stats2.txt",
+      "size": 20,
+      "mtime": "2025-06-19T08:15:04.564Z",
+      "lastBackup": "2025-06-19T08:15:04.564Z",
+      "hasChanged": true
+    }
+  },
+  "stats": {
+    "totalDifferentials": 1,
+    "currentChainLength": 1,
+    "cumulativeSize": 20,
+    "cumulativeSizeRatio": 0.6666666666666666,
+    "totalSpaceSaved": 0,
+    "lastBackupAt": "2025-06-19T08:15:04.564Z",
+    "timeSinceFullBackup": 0.0000030555555555555556
+  },
+  "lastUpdated": "2025-06-19T08:15:04.564Z"
+}

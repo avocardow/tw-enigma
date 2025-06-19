@@ -1,25 +1,19 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import fs from "fs";
-import { PluginSandbox } from "../src/security/pluginSandbox";
-import { PluginErrorHandler } from "../src/errorHandler/pluginErrorHandler";
-import {
-  EnigmaPluginManager,
-  createSecurePluginManager,
-} from "../src/core/pluginManager";
-import {
-  PluginDebugger,
-  createPluginDebugger,
-} from "../src/debugging/pluginDebugger";
-import { BaseEnigmaPlugin, EnigmaPluginContext } from "../src/types/plugins";
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import fs from 'fs';
+import { PluginSandbox } from '../src/security/pluginSandbox';
+import { PluginErrorHandler } from '../src/errorHandler/pluginErrorHandler';
+import { EnigmaPluginManager, createSecurePluginManager } from '../src/core/pluginManager';
+import { PluginDebugger, createPluginDebugger } from '../src/debugging/pluginDebugger';
+import { BaseEnigmaPlugin, EnigmaPluginContext } from '../src/types/plugins';
 
 // Mock plugin for testing
 class TestPlugin extends BaseEnigmaPlugin {
   readonly meta = {
-    name: "test-plugin",
-    version: "1.0.0",
-    description: "A test plugin",
-    author: "Test Author",
-    tags: ["test"],
+    name: 'test-plugin',
+    version: '1.0.0',
+    description: 'A test plugin',
+    author: 'Test Author',
+    tags: ['test'],
   };
 
   async initialize(_context: EnigmaPluginContext): Promise<void> {
@@ -28,7 +22,7 @@ class TestPlugin extends BaseEnigmaPlugin {
 
   async processCss(css: string, _context: EnigmaPluginContext): Promise<string> {
     // Simple transformation for testing
-    return css.replace(/color:\s*red/g, "color: blue");
+    return css.replace(/color:\s*red/g, 'color: blue');
   }
 
   async validate(_context: EnigmaPluginContext): Promise<boolean> {
@@ -38,7 +32,7 @@ class TestPlugin extends BaseEnigmaPlugin {
   getHealth(): Record<string, unknown> {
     return {
       name: this.meta.name,
-      status: "healthy",
+      status: 'healthy',
       lastProcessed: new Date().toISOString(),
     };
   }
@@ -47,48 +41,48 @@ class TestPlugin extends BaseEnigmaPlugin {
 // Malicious plugin for security testing
 class MaliciousPlugin extends BaseEnigmaPlugin {
   readonly meta = {
-    name: "malicious-plugin",
-    version: "1.0.0",
-    description: "A malicious plugin for testing",
-    author: "Test Author",
-    tags: ["test", "malicious"],
+    name: 'malicious-plugin',
+    version: '1.0.0',
+    description: 'A malicious plugin for testing',
+    author: 'Test Author',
+    tags: ['test', 'malicious'],
   };
 
   async processCss(css: string, _context: EnigmaPluginContext): Promise<string> {
     // Try to access file system (should be blocked)
     try {
-      fs.readFileSync("/etc/passwd");
-      return css + "/* SECURITY BREACH */";
+      fs.readFileSync('/etc/passwd');
+      return css + '/* SECURITY BREACH */';
     } catch {
-      return css + "/* SECURITY BLOCKED */";
+      return css + '/* SECURITY BLOCKED */';
     }
   }
 
   getHealth(): Record<string, unknown> {
-    return { name: this.meta.name, status: "malicious" };
+    return { name: this.meta.name, status: 'malicious' };
   }
 }
 
 // Plugin that throws errors
 class ErrorPlugin extends BaseEnigmaPlugin {
   readonly meta = {
-    name: "error-plugin",
-    version: "1.0.0",
-    description: "A plugin that throws errors",
-    author: "Test Author",
-    tags: ["test", "error"],
+    name: 'error-plugin',
+    version: '1.0.0',
+    description: 'A plugin that throws errors',
+    author: 'Test Author',
+    tags: ['test', 'error'],
   };
 
   async processCss(_css: string, _context: EnigmaPluginContext): Promise<string> {
-    throw new Error("Intentional test error");
+    throw new Error('Intentional test error');
   }
 
   getHealth(): Record<string, unknown> {
-    return { name: this.meta.name, status: "error-prone" };
+    return { name: this.meta.name, status: 'error-prone' };
   }
 }
 
-describe("Plugin Security System", () => {
+describe('Plugin Security System', () => {
   let sandbox: PluginSandbox;
 
   beforeEach(() => {
@@ -104,29 +98,29 @@ describe("Plugin Security System", () => {
     sandbox.cleanup();
   });
 
-  it("should create a secure sandbox", () => {
+  it('should create a secure sandbox', () => {
     expect(sandbox).toBeDefined();
   });
 
-  it("should execute safe code in sandbox", async () => {
+  it('should execute safe code in sandbox', async () => {
     const testPlugin = new TestPlugin();
-    const config = { name: "test-plugin", enabled: true };
+    const config = { name: 'test-plugin', enabled: true };
 
     const sandboxResult = await sandbox.createSandbox(testPlugin, config);
     expect(sandboxResult.sandboxId).toBeDefined();
 
     const result = await sandbox.executeInSandbox(
       sandboxResult.sandboxId,
-      () => "safe code execution",
-      5000,
+      () => 'safe code execution',
+      5000
     );
 
-    expect(result).toBe("safe code execution");
+    expect(result).toBe('safe code execution');
   });
 
-  it("should block file system access in sandbox", async () => {
+  it('should block file system access in sandbox', async () => {
     const maliciousPlugin = new MaliciousPlugin();
-    const config = { name: "malicious-plugin", enabled: true };
+    const config = { name: 'malicious-plugin', enabled: true };
 
     const sandboxResult = await sandbox.createSandbox(maliciousPlugin, config);
 
@@ -135,21 +129,21 @@ describe("Plugin Security System", () => {
       () => {
         try {
           // This should be blocked
-          fs.readFileSync("/etc/passwd");
-          return "FILE_ACCESS_ALLOWED";
+          fs.readFileSync('/etc/passwd');
+          return 'FILE_ACCESS_ALLOWED';
         } catch {
-          return "FILE_ACCESS_BLOCKED";
+          return 'FILE_ACCESS_BLOCKED';
         }
       },
-      5000,
+      5000
     );
 
-    expect(result).toBe("FILE_ACCESS_BLOCKED");
+    expect(result).toBe('FILE_ACCESS_BLOCKED');
   });
 
-  it("should handle memory violations", async () => {
+  it('should handle memory violations', async () => {
     const testPlugin = new TestPlugin();
-    const config = { name: "memory-hog", enabled: true };
+    const config = { name: 'memory-hog', enabled: true };
 
     const sandboxResult = await sandbox.createSandbox(testPlugin, config);
 
@@ -158,17 +152,17 @@ describe("Plugin Security System", () => {
         sandboxResult.sandboxId,
         () => {
           // Try to allocate large array
-          const largeArray = new Array(10000000).fill("x");
+          const largeArray = new Array(10000000).fill('x');
           return largeArray.length;
         },
-        5000,
-      ),
+        5000
+      )
     ).rejects.toThrow();
   });
 
-  it("should enforce execution timeouts", async () => {
+  it('should enforce execution timeouts', async () => {
     const testPlugin = new TestPlugin();
-    const config = { name: "slow-plugin", enabled: true };
+    const config = { name: 'slow-plugin', enabled: true };
 
     const sandboxResult = await sandbox.createSandbox(testPlugin, config);
     const startTime = Date.now();
@@ -182,8 +176,8 @@ describe("Plugin Security System", () => {
             // Do nothing
           }
         },
-        1000, // 1 second timeout
-      ),
+        1000 // 1 second timeout
+      )
     ).rejects.toThrow();
 
     const elapsed = Date.now() - startTime;
@@ -191,7 +185,7 @@ describe("Plugin Security System", () => {
   });
 });
 
-describe("Plugin Error Handler", () => {
+describe('Plugin Error Handler', () => {
   let errorHandler: PluginErrorHandler;
 
   beforeEach(() => {
@@ -211,73 +205,62 @@ describe("Plugin Error Handler", () => {
     });
   });
 
-  it("should handle plugin errors gracefully", async () => {
-    const mockPlugin = vi.fn().mockRejectedValue(new Error("Test error"));
+  it('should handle plugin errors gracefully', async () => {
+    const mockPlugin = vi.fn().mockRejectedValue(new Error('Test error'));
 
-    const result = await errorHandler.executeWithErrorHandling(
-      "test-plugin",
-      mockPlugin,
-    );
+    const result = await errorHandler.executeWithErrorHandling('test-plugin', mockPlugin);
 
     expect(result).toBeNull(); // Should return null on error without fallback
   });
 
-  it("should implement circuit breaker pattern", async () => {
-    const mockPlugin = vi.fn().mockRejectedValue(new Error("Test error"));
+  it('should implement circuit breaker pattern', async () => {
+    const mockPlugin = vi.fn().mockRejectedValue(new Error('Test error'));
 
     // Trigger circuit breaker with multiple failures
     for (let i = 0; i < 3; i++) {
-      await errorHandler.executeWithErrorHandling("failing-plugin", mockPlugin);
+      await errorHandler.executeWithErrorHandling('failing-plugin', mockPlugin);
     }
 
     // Circuit should be open now
-    const result = await errorHandler.executeWithErrorHandling(
-      "failing-plugin",
-      mockPlugin,
-    );
+    const result = await errorHandler.executeWithErrorHandling('failing-plugin', mockPlugin);
     expect(result).toBeNull();
 
     // Circuit breaker should eventually stop calls
     expect(mockPlugin.mock.calls.length).toBeGreaterThanOrEqual(3);
   });
 
-  it("should track plugin health metrics", async () => {
-    const mockPlugin = vi.fn().mockRejectedValue(new Error("Test error"));
+  it('should track plugin health metrics', async () => {
+    const mockPlugin = vi.fn().mockRejectedValue(new Error('Test error'));
 
     // Execute plugin twice to record 2 errors
-    await errorHandler.executeWithErrorHandling("test-plugin", mockPlugin);
-    await errorHandler.executeWithErrorHandling("test-plugin", mockPlugin);
+    await errorHandler.executeWithErrorHandling('test-plugin', mockPlugin);
+    await errorHandler.executeWithErrorHandling('test-plugin', mockPlugin);
 
-    const health = errorHandler.getPluginHealth("test-plugin");
+    const health = errorHandler.getPluginHealth('test-plugin');
 
     expect(health.errorCount).toBeGreaterThanOrEqual(2);
     expect(health.isHealthy).toBe(false);
   });
 
-  it("should execute fallback strategies", async () => {
-    const fallbackMock = vi.fn().mockResolvedValue("fallback result");
+  it('should execute fallback strategies', async () => {
+    const fallbackMock = vi.fn().mockResolvedValue('fallback result');
 
-    errorHandler.registerFallback("test-plugin", {
-      pluginName: "test-plugin",
+    errorHandler.registerFallback('test-plugin', {
+      pluginName: 'test-plugin',
       execute: fallbackMock,
       canHandle: () => true,
     });
 
-    const failingPlugin = vi
-      .fn()
-      .mockRejectedValue(new Error("Primary failed"));
+    const failingPlugin = vi.fn().mockRejectedValue(new Error('Primary failed'));
 
-    const result = await errorHandler.executeWithErrorHandling(
-      "test-plugin",
-      failingPlugin,
-    );
+    const result = await errorHandler.executeWithErrorHandling('test-plugin', failingPlugin);
 
-    expect(result).toBe("fallback result");
+    expect(result).toBe('fallback result');
     expect(fallbackMock).toHaveBeenCalled();
   });
 });
 
-describe("Enhanced Plugin Manager", () => {
+describe('Enhanced Plugin Manager', () => {
   let pluginManager: EnigmaPluginManager;
 
   beforeEach(() => {
@@ -292,80 +275,79 @@ describe("Enhanced Plugin Manager", () => {
     pluginManager.cleanup();
   });
 
-  it("should register and execute plugins securely", async () => {
+  it('should register and execute plugins securely', async () => {
     const testPlugin = new TestPlugin();
 
     pluginManager.register(testPlugin);
 
     const context: EnigmaPluginContext = {
-      projectPath: "/test/project",
-      filePath: "test.css",
+      projectPath: '/test/project',
+      filePath: 'test.css',
       options: {},
       utils: {} as any,
     };
 
     // Test without sandbox for this test
     pluginManager.disableSecurity();
-    const result = await pluginManager.executePlugin("test-plugin", async () =>
-      testPlugin.processCss("color: red; background: white;", context),
+    const result = await pluginManager.executePlugin('test-plugin', async () =>
+      testPlugin.processCss('color: red; background: white;', context)
     );
 
-    expect(result).toBe("color: blue; background: white;");
+    expect(result).toBe('color: blue; background: white;');
   });
 
-  it("should handle malicious plugins safely", async () => {
+  it('should handle malicious plugins safely', async () => {
     const maliciousPlugin = new MaliciousPlugin();
 
     pluginManager.register(maliciousPlugin);
 
     const context: EnigmaPluginContext = {
-      projectPath: "/test/project",
-      filePath: "test.css",
+      projectPath: '/test/project',
+      filePath: 'test.css',
       options: {},
       utils: {} as any,
     };
 
     // Test with sandbox enabled for this test
     pluginManager.enableSecurity();
-    const result = await pluginManager.executePlugin(
-      "malicious-plugin",
-      async () => maliciousPlugin.processCss("color: red;", context),
+    const result = await pluginManager.executePlugin('malicious-plugin', async () =>
+      maliciousPlugin.processCss('color: red;', context)
     );
 
     // Should complete with security blocking (the system actually blocks malicious activity)
-    expect(result).toContain("SECURITY BLOCKED");
+    expect(result).toContain('SECURITY BLOCKED');
   });
 
-  it("should monitor plugin resource usage", async () => {
+  it('should monitor plugin resource usage', async () => {
     const testPlugin = new TestPlugin();
     pluginManager.register(testPlugin);
 
     const context: EnigmaPluginContext = {
-      projectPath: "/test/project",
-      filePath: "test.css",
+      projectPath: '/test/project',
+      filePath: 'test.css',
       options: {},
       utils: {} as any,
     };
 
     // Test without sandbox for this test
     pluginManager.disableSecurity();
-    await pluginManager.executePlugin("test-plugin", async () =>
-      testPlugin.processCss("color: red;", context),
+    await pluginManager.executePlugin('test-plugin', async () =>
+      testPlugin.processCss('color: red;', context)
     );
 
     const stats = pluginManager.getResourceStats();
-    expect(stats).toHaveProperty("test-plugin");
-    expect(stats["test-plugin"]).toHaveProperty("executionTime");
-    expect(stats["test-plugin"]).toHaveProperty("memoryUsage");
+    expect(stats).toHaveProperty('test-plugin');
+    expect(stats['test-plugin']).toHaveProperty('executionTime');
+    expect(stats['test-plugin']).toHaveProperty('memoryUsage');
   });
 
-  it("should handle plugin errors with circuit breaker", async () => {
+  it('should handle plugin errors with circuit breaker', async () => {
     const errorPlugin = new ErrorPlugin();
     pluginManager.register(errorPlugin);
 
     const context: EnigmaPluginContext = {
-      projectPath: "/test/project",
-      filePath: "test.css",
+      projectPath: '/test/project',
+      filePath: 'test.css',
       options: {},
       utils: {} as any,
     };
@@ -373,41 +355,41 @@ describe("Enhanced Plugin Manager", () => {
     // Execute multiple times to trigger circuit breaker
     for (let i = 0; i < 4; i++) {
       try {
-        await pluginManager.executePlugin("error-plugin", async () =>
-          errorPlugin.processCss("color: red;", context),
+        await pluginManager.executePlugin('error-plugin', async () =>
+          errorPlugin.processCss('color: red;', context)
         );
       } catch {
         // Expected to fail
       }
     }
 
-    const health = pluginManager.getPluginHealth("error-plugin");
+    const health = pluginManager.getPluginHealth('error-plugin');
     expect(health.isHealthy).toBe(false);
   });
 
-  it("should manage plugin lifecycle", async () => {
+  it('should manage plugin lifecycle', async () => {
     const testPlugin = new TestPlugin();
 
     // Register
     pluginManager.register(testPlugin);
-    expect(pluginManager.hasPlugin("test-plugin")).toBe(true);
+    expect(pluginManager.hasPlugin('test-plugin')).toBe(true);
 
     // Enable/Disable
-    pluginManager.disablePlugin("test-plugin", "Testing disable");
-    const healthAfterDisable = pluginManager.getPluginHealth("test-plugin");
+    pluginManager.disablePlugin('test-plugin', 'Testing disable');
+    const healthAfterDisable = pluginManager.getPluginHealth('test-plugin');
     expect(healthAfterDisable.isDisabled).toBe(true);
 
-    pluginManager.enablePlugin("test-plugin");
-    const healthAfterEnable = pluginManager.getPluginHealth("test-plugin");
+    pluginManager.enablePlugin('test-plugin');
+    const healthAfterEnable = pluginManager.getPluginHealth('test-plugin');
     expect(healthAfterEnable.isDisabled).toBe(false);
 
     // Unregister
-    pluginManager.unregister("test-plugin");
-    expect(pluginManager.hasPlugin("test-plugin")).toBe(false);
+    pluginManager.unregister('test-plugin');
+    expect(pluginManager.hasPlugin('test-plugin')).toBe(false);
   });
 });
 
-describe("Plugin Debugger", () => {
+describe('Plugin Debugger', () => {
   let pluginDebugger: PluginDebugger;
 
   beforeEach(() => {
@@ -419,105 +401,94 @@ describe("Plugin Debugger", () => {
     });
   });
 
-  it("should test a plugin successfully", async () => {
+  it('should test a plugin successfully', async () => {
     const testPlugin = new TestPlugin();
 
     const context: EnigmaPluginContext = {
-      projectPath: "/test/project",
-      filePath: "test.css",
+      projectPath: '/test/project',
+      filePath: 'test.css',
       options: {},
       utils: {} as any,
     };
 
     const result = await pluginDebugger.testPlugin(
       testPlugin,
-      "color: red; background: white;",
-      context,
+      'color: red; background: white;',
+      context
     );
 
     expect(result.success).toBe(true);
-    expect(result.pluginName).toBe("test-plugin");
-    expect(result.output).toBe("color: blue; background: white;");
+    expect(result.pluginName).toBe('test-plugin');
+    expect(result.output).toBe('color: blue; background: white;');
     expect(result.executionTime).toBeGreaterThan(0);
   });
 
-  it("should handle plugin failures", async () => {
+  it('should handle plugin failures', async () => {
     const errorPlugin = new ErrorPlugin();
 
     const context: EnigmaPluginContext = {
-      projectPath: "/test/project",
-      filePath: "test.css",
+      projectPath: '/test/project',
+      filePath: 'test.css',
       options: {},
       utils: {} as any,
     };
 
-    const result = await pluginDebugger.testPlugin(
-      errorPlugin,
-      "color: red;",
-      context,
-    );
+    const result = await pluginDebugger.testPlugin(errorPlugin, 'color: red;', context);
 
     expect(result.success).toBe(false);
     expect(result.error).toBeDefined();
-    expect(result.error?.message).toBe("Intentional test error");
+    expect(result.error?.message).toBe('Intentional test error');
   });
 
-  it("should run test suites", async () => {
+  it('should run test suites', async () => {
     const testPlugin = new TestPlugin();
 
     const testCases = [
       {
-        name: "simple-test",
-        description: "Simple color change",
-        input: "color: red;",
-        expectedOutput: "color: blue;",
+        name: 'simple-test',
+        description: 'Simple color change',
+        input: 'color: red;',
+        expectedOutput: 'color: blue;',
       },
       {
-        name: "no-change-test",
-        description: "No matching pattern",
-        input: "background: green;",
-        expectedOutput: "background: green;",
+        name: 'no-change-test',
+        description: 'No matching pattern',
+        input: 'background: green;',
+        expectedOutput: 'background: green;',
       },
     ];
 
     const context: EnigmaPluginContext = {
-      projectPath: "/test/project",
-      filePath: "test.css",
+      projectPath: '/test/project',
+      filePath: 'test.css',
       options: {},
       utils: {} as any,
     };
 
-    const results = await pluginDebugger.runTestSuite(
-      testPlugin,
-      testCases,
-      context,
-    );
+    const results = await pluginDebugger.runTestSuite(testPlugin, testCases, context);
 
     expect(results).toHaveLength(2);
     expect(results[0].success).toBe(true);
     expect(results[1].success).toBe(true);
   });
 
-  it("should compare plugins", async () => {
+  it('should compare plugins', async () => {
     const pluginA = new TestPlugin();
 
     // Create a slightly different plugin
     class TestPluginB extends TestPlugin {
-      readonly meta = { ...TestPlugin.prototype.meta, name: "test-plugin-b" };
+      readonly meta = { ...TestPlugin.prototype.meta, name: 'test-plugin-b' };
 
-      async processCss(
-        css: string,
-        _context: EnigmaPluginContext,
-      ): Promise<string> {
-        return css.replace(/background:\s*white/g, "background: black");
+      async processCss(css: string, _context: EnigmaPluginContext): Promise<string> {
+        return css.replace(/background:\s*white/g, 'background: black');
       }
     }
 
     const pluginB = new TestPluginB();
 
     const context: EnigmaPluginContext = {
-      projectPath: "/test/project",
-      filePath: "test.css",
+      projectPath: '/test/project',
+      filePath: 'test.css',
       options: {},
       utils: {} as any,
     };
@@ -525,8 +496,8 @@ describe("Plugin Debugger", () => {
     const comparison = await pluginDebugger.comparePlugins(
       pluginA,
       pluginB,
-      "color: red; background: white;",
-      context,
+      'color: red; background: white;',
+      context
     );
 
     expect(comparison.pluginA.success).toBe(true);
@@ -535,33 +506,31 @@ describe("Plugin Debugger", () => {
     expect(comparison.comparison.winner).toBeDefined();
   });
 
-  it("should generate default test cases", () => {
+  it('should generate default test cases', () => {
     const testCases = pluginDebugger.generateDefaultTestCases();
 
     expect(testCases.length).toBeGreaterThan(0);
-    expect(testCases.some((tc) => tc.name === "empty-input")).toBe(true);
-    expect(testCases.some((tc) => tc.name === "simple-css")).toBe(true);
+    expect(testCases.some((tc) => tc.name === 'empty-input')).toBe(true);
+    expect(testCases.some((tc) => tc.name === 'simple-css')).toBe(true);
     expect(testCases.some((tc) => tc.shouldFail === true)).toBe(true);
   });
 });
 
-describe("Plugin Templates", () => {
-  it("should provide basic plugin template structure", async () => {
+describe('Plugin Templates', () => {
+  it('should provide basic plugin template structure', async () => {
     // Import the template
-    const { MyCustomPlugin, pluginInfo } = await import(
-      "../src/templates/pluginTemplate"
-    );
+    const { MyCustomPlugin, pluginInfo } = await import('../src/templates/pluginTemplate');
 
     const plugin = new MyCustomPlugin();
 
-    expect(plugin.meta.name).toBe("my-custom-plugin");
-    expect(plugin.meta.version).toBe("1.0.0");
-    expect(pluginInfo.name).toBe("my-custom-plugin");
+    expect(plugin.meta.name).toBe('my-custom-plugin');
+    expect(plugin.meta.version).toBe('1.0.0');
+    expect(pluginInfo.name).toBe('my-custom-plugin');
 
     // Test basic functionality
     const context: EnigmaPluginContext = {
-      projectPath: "/test/project",
-      filePath: "test.css",
+      projectPath: '/test/project',
+      filePath: 'test.css',
       options: {},
       utils: {} as any,
     };
@@ -571,29 +540,27 @@ describe("Plugin Templates", () => {
     expect(isValid).toBe(true);
 
     const health = plugin.getHealth();
-    expect(health.name).toBe("my-custom-plugin");
+    expect(health.name).toBe('my-custom-plugin');
   });
 
-  it("should provide PostCSS plugin template structure", async () => {
+  it('should provide PostCSS plugin template structure', async () => {
     // Import the PostCSS template
-    const { MyPostCSSPlugin, pluginInfo } = await import(
-      "../src/templates/postcssPluginTemplate"
-    );
+    const { MyPostCSSPlugin, pluginInfo } = await import('../src/templates/postcssPluginTemplate');
 
     const plugin = new MyPostCSSPlugin();
 
-    expect(plugin.meta.name).toBe("my-postcss-plugin");
-    expect(plugin.meta.version).toBe("1.0.0");
-    expect(pluginInfo.type).toBe("postcss");
+    expect(plugin.meta.name).toBe('my-postcss-plugin');
+    expect(plugin.meta.version).toBe('1.0.0');
+    expect(pluginInfo.type).toBe('postcss');
 
     // Test PostCSS plugin creation
     const postcssPlugin = plugin.createPostCSSPlugin();
-    expect(postcssPlugin.postcssPlugin).toBe("my-postcss-plugin");
+    expect(postcssPlugin.postcssPlugin).toBe('my-postcss-plugin');
   });
 });
 
-describe("Plugin System Integration", () => {
-  it("should integrate all components seamlessly", async () => {
+describe('Plugin System Integration', () => {
+  it('should integrate all components seamlessly', async () => {
     // Create a complete plugin system with all enhancements
     const pluginManager = createSecurePluginManager({
       enableSandbox: true,
@@ -614,37 +581,35 @@ describe("Plugin System Integration", () => {
 
       // Test with debugger
       const context: EnigmaPluginContext = {
-        projectPath: "/test/project",
-        filePath: "test.css",
+        projectPath: '/test/project',
+        filePath: 'test.css',
         options: {},
         utils: {} as any,
       };
 
       const debugResult = await pluginDebugger.testPlugin(
         testPlugin,
-        "color: red; background: white;",
-        context,
+        'color: red; background: white;',
+        context
       );
 
       expect(debugResult.success).toBe(true);
 
       // Execute through manager without sandbox
       pluginManager.disableSecurity();
-      const managerResult = await pluginManager.executePlugin(
-        "test-plugin",
-        async () =>
-          testPlugin.processCss("color: red; background: white;", context),
+      const managerResult = await pluginManager.executePlugin('test-plugin', async () =>
+        testPlugin.processCss('color: red; background: white;', context)
       );
 
       expect(managerResult).toBe(debugResult.output);
 
       // Check health
-      const health = pluginManager.getPluginHealth("test-plugin");
+      const health = pluginManager.getPluginHealth('test-plugin');
       expect(health.isHealthy).toBe(true);
 
       // Check metrics
       const metrics = pluginManager.getResourceMetrics();
-      expect(metrics["test-plugin"]).toBeDefined();
+      expect(metrics['test-plugin']).toBeDefined();
     } finally {
       pluginManager.cleanup();
     }

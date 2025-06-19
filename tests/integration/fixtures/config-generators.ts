@@ -331,8 +331,6 @@ export class ConfigFixtureGenerator {
       },
     ];
   }
-}
-
   /**
    * Generate minimal config for testing
    */
@@ -387,7 +385,10 @@ export class ConfigFixtureGenerator {
   /**
    * Generate config with environment overrides
    */
-  generateConfigWithEnvOverrides(baseConfig: Record<string, any>, envVars: Record<string, string>): {
+  generateConfigWithEnvOverrides(
+    baseConfig: Record<string, any>,
+    envVars: Record<string, string>
+  ): {
     config: Record<string, any>;
     env: Record<string, string>;
   } {

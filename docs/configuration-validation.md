@@ -40,7 +40,7 @@ import { createEnhancedConfigManager } from './src/config.js';
 const configManager = createEnhancedConfigManager('development', {
   enableWatching: true,
   enableBackup: true,
-  enablePerformanceValidation: true
+  enablePerformanceValidation: true,
 });
 
 // Load and validate configuration
@@ -85,6 +85,7 @@ const schemaResult = await validateConfigSchema(config);
 ```
 
 **Features:**
+
 - Type checking for all configuration fields
 - Cross-field validation (e.g., output path different from input)
 - Security validation (path traversal protection)
@@ -118,6 +119,7 @@ runtimeValidator.startMonitoring();
 ```
 
 **Features:**
+
 - File system path validation
 - Resource constraint monitoring (memory, CPU, disk)
 - Real-time constraint violation detection
@@ -137,21 +139,24 @@ const manager = createEnhancedConfigManager('production', {
   enablePerformanceValidation: true,
   enableMigration: true,
   validateOnLoad: true,
-  createBackupOnLoad: false
+  createBackupOnLoad: false,
 });
 
 // Load configuration with full validation
 const result = await manager.loadConfig('./project-root');
 
 // Update configuration safely
-const updateResult = await manager.updateConfig({
-  concurrency: 8,
-  minify: true
-}, {
-  createBackup: true,
-  validateBeforeUpdate: true,
-  description: 'Increase concurrency for production'
-});
+const updateResult = await manager.updateConfig(
+  {
+    concurrency: 8,
+    minify: true,
+  },
+  {
+    createBackup: true,
+    validateBeforeUpdate: true,
+    description: 'Increase concurrency for production',
+  }
+);
 
 // Get performance metrics
 const metrics = await manager.getPerformanceMetrics();
@@ -159,7 +164,7 @@ const metrics = await manager.getPerformanceMetrics();
 // List backups
 const backups = manager.listBackups({
   tags: ['manual'],
-  limit: 10
+  limit: 10,
 });
 
 // Restore from backup
@@ -186,7 +191,7 @@ const defaultsManager = createConfigDefaults('development');
 // Apply defaults to partial configuration
 const partialConfig = {
   inputPaths: ['./src'],
-  concurrency: 4
+  concurrency: 4,
 };
 
 const completeConfig = defaultsManager.createConfigWithDefaults(partialConfig);
@@ -197,20 +202,24 @@ const fallbackChain = defaultsManager.getFallbackChain();
 
 **Environment Defaults:**
 
-| Setting | Development | Production | Test | CI |
-|---------|-------------|------------|------|-----|
-| `watch` | `true` | `false` | `false` | `false` |
-| `minify` | `false` | `true` | `false` | `true` |
-| `sourceMaps` | `true` | `false` | `true` | `false` |
-| `concurrency` | `2` | `4` | `1` | `2` |
-| `optimization.removeUnused` | `false` | `true` | `false` | `true` |
+| Setting                     | Development | Production | Test    | CI      |
+| --------------------------- | ----------- | ---------- | ------- | ------- |
+| `watch`                     | `true`      | `false`    | `false` | `false` |
+| `minify`                    | `false`     | `true`     | `false` | `true`  |
+| `sourceMaps`                | `true`      | `false`    | `true`  | `false` |
+| `concurrency`               | `2`         | `4`        | `1`     | `2`     |
+| `optimization.removeUnused` | `false`     | `true`     | `false` | `true`  |
 
 ## Migration System
 
 The migration system handles configuration upgrades between versions:
 
 ```typescript
-import { createConfigMigration, migrateConfig, needsConfigMigration } from './src/configMigration.js';
+import {
+  createConfigMigration,
+  migrateConfig,
+  needsConfigMigration,
+} from './src/configMigration.js';
 
 // Check if migration is needed
 const needsMigration = needsConfigMigration('./enigma.config.json');
@@ -218,7 +227,7 @@ const needsMigration = needsConfigMigration('./enigma.config.json');
 // Migrate configuration
 const migrationResult = await migrateConfig('./enigma.config.json', {
   autoMigrate: true,
-  createBackup: true
+  createBackup: true,
 });
 
 if (migrationResult.success) {
@@ -233,6 +242,7 @@ const availableMigrations = migration.getAvailableMigrations();
 ```
 
 **Supported Migrations:**
+
 - `0.1.0 → 0.2.0`: Restructure optimization settings into nested object
 - `0.2.0 → 0.3.0`: Add performance configuration section
 - `0.3.0 → 0.4.0`: Update output format options
@@ -242,7 +252,10 @@ const availableMigrations = migration.getAvailableMigrations();
 Performance validation analyzes configuration for bottlenecks and provides optimization recommendations:
 
 ```typescript
-import { createPerformanceValidator, analyzeConfigPerformance } from './src/performanceValidator.js';
+import {
+  createPerformanceValidator,
+  analyzeConfigPerformance,
+} from './src/performanceValidator.js';
 
 // Quick analysis
 const metrics = await analyzeConfigPerformance(config);
@@ -264,6 +277,7 @@ validator.startMonitoring();
 ```
 
 **Performance Metrics:**
+
 - **Overall Score**: 0-100 performance rating
 - **Memory Impact**: Estimated memory usage impact
 - **CPU Impact**: Estimated CPU usage impact
@@ -271,6 +285,7 @@ validator.startMonitoring();
 - **Network Impact**: Network operation impact
 
 **Common Recommendations:**
+
 - Increase concurrency for better parallelization
 - Enable caching to reduce redundant operations
 - Optimize file patterns to reduce I/O
@@ -287,7 +302,7 @@ import { createConfigBackup, backupConfig, restoreConfig } from './src/configBac
 // Quick backup
 const backup = await backupConfig('./enigma.config.json', {
   description: 'Before major changes',
-  tags: ['manual', 'important']
+  tags: ['manual', 'important'],
 });
 
 // Restore from backup
@@ -296,21 +311,21 @@ const restoreResult = await restoreConfig('./enigma.config.json', backup.id);
 // Advanced backup management
 const backupManager = createConfigBackup('./enigma.config.json', undefined, {
   maxBackups: 10,
-  autoCleanup: true
+  autoCleanup: true,
 });
 
 // Create backup with metadata
 const backup = await backupManager.createBackup({
   description: 'Production deployment config',
   tags: ['production', 'deployment'],
-  isAutomatic: false
+  isAutomatic: false,
 });
 
 // List backups with filters
 const backups = backupManager.listBackups({
   tags: ['production'],
   isAutomatic: false,
-  limit: 5
+  limit: 5,
 });
 
 // Verify backup integrity
@@ -322,6 +337,7 @@ if (!verification.isValid) {
 ```
 
 **Backup Features:**
+
 - Automatic backup creation before changes
 - Versioned storage with metadata
 - Integrity verification with checksums
@@ -339,7 +355,7 @@ import { createConfigWatcher } from './src/configWatcher.js';
 const watcher = createConfigWatcher('./enigma.config.json', {
   validateOnChange: true,
   createBackupOnChange: true,
-  debounceMs: 300
+  debounceMs: 300,
 });
 
 // Listen for events
@@ -369,6 +385,7 @@ await watcher.stop();
 ```
 
 **Watching Features:**
+
 - Real-time file change detection
 - Debounced validation to avoid excessive processing
 - Automatic backup creation on changes
@@ -420,15 +437,14 @@ try {
   if (error.code === 'CONFIG_VALIDATION_FAILED') {
     // Handle validation errors
     console.error('Configuration validation failed:', error.details);
-    
+
     // Try loading with defaults
     const defaultsManager = createConfigDefaults('development');
     const fallbackConfig = defaultsManager.createConfigWithDefaults({});
-    
   } else if (error.code === 'CONFIG_MIGRATION_FAILED') {
     // Handle migration errors
     console.error('Configuration migration failed:', error.details);
-    
+
     // Restore from backup
     await configManager.restoreFromBackup(lastKnownGoodBackup);
   }
@@ -446,14 +462,14 @@ Use environment-specific defaults and validation:
 const devManager = createEnhancedConfigManager('development', {
   enableWatching: true,
   enablePerformanceValidation: false, // Less strict in dev
-  createBackupOnLoad: false
+  createBackupOnLoad: false,
 });
 
 // Production
 const prodManager = createEnhancedConfigManager('production', {
   enableWatching: false,
   enablePerformanceValidation: true, // Strict in production
-  createBackupOnLoad: true
+  createBackupOnLoad: true,
 });
 ```
 
@@ -466,7 +482,7 @@ const manager = createEnhancedConfigManager('production', {
   enableMigration: true,
   enableBackup: true,
   enablePerformanceValidation: false, // Enable later
-  validateOnLoad: true
+  validateOnLoad: true,
 });
 ```
 
@@ -483,7 +499,7 @@ runtimeValidator.on('constraint-violation', (event) => {
     level: 'warning',
     message: `Configuration constraint violation: ${event.constraint}`,
     value: event.value,
-    threshold: event.threshold
+    threshold: event.threshold,
   });
 });
 ```
@@ -495,23 +511,26 @@ Implement a comprehensive backup strategy:
 ```typescript
 const backupManager = createConfigBackup('./enigma.config.json', undefined, {
   maxBackups: 20,
-  autoCleanup: true
+  autoCleanup: true,
 });
 
 // Create tagged backups for important changes
 await backupManager.createBackup({
   description: 'Before production deployment',
-  tags: ['production', 'deployment', 'critical']
+  tags: ['production', 'deployment', 'critical'],
 });
 
 // Regular automated backups
-setInterval(async () => {
-  await backupManager.createBackup({
-    description: 'Scheduled backup',
-    tags: ['automated'],
-    isAutomatic: true
-  });
-}, 24 * 60 * 60 * 1000); // Daily
+setInterval(
+  async () => {
+    await backupManager.createBackup({
+      description: 'Scheduled backup',
+      tags: ['automated'],
+      isAutomatic: true,
+    });
+  },
+  24 * 60 * 60 * 1000
+); // Daily
 ```
 
 ### 5. Performance Optimization
@@ -524,7 +543,7 @@ const metrics = await performanceValidator.analyzePerformance();
 
 if (metrics.score < 70) {
   console.warn('Configuration performance is below optimal');
-  
+
   // Apply recommendations
   for (const recommendation of metrics.recommendations) {
     if (recommendation.impact === 'high' && recommendation.effort === 'low') {
@@ -544,6 +563,7 @@ if (metrics.score < 70) {
 **Problem**: Configuration validation fails with unclear errors.
 
 **Solution**:
+
 ```typescript
 const validator = createConfigValidator();
 const result = await validator.validateFile('./enigma.config.json');
@@ -559,6 +579,7 @@ console.log('Field errors:', result.fieldErrors);
 **Problem**: Configuration migration fails or produces unexpected results.
 
 **Solution**:
+
 ```typescript
 // Check migration status
 const migration = createConfigMigration('./enigma.config.json');
@@ -568,7 +589,7 @@ const status = migration.getMigrationStatus();
 const result = await migration.migrate({
   autoMigrate: false, // Manual approval
   createBackup: true,
-  dryRun: true // Test first
+  dryRun: true, // Test first
 });
 ```
 
@@ -577,17 +598,18 @@ const result = await migration.migrate({
 **Problem**: Configuration validation is slow or impacts performance.
 
 **Solution**:
+
 ```typescript
 // Disable expensive validations in development
 const manager = createEnhancedConfigManager('development', {
   enablePerformanceValidation: false,
-  enableWatching: false // Disable if not needed
+  enableWatching: false, // Disable if not needed
 });
 
 // Use caching for repeated validations
 const validator = createConfigValidator({
   enableCaching: true,
-  cacheSize: 100
+  cacheSize: 100,
 });
 ```
 
@@ -596,11 +618,12 @@ const validator = createConfigValidator({
 **Problem**: File watcher not detecting changes or causing high CPU usage.
 
 **Solution**:
+
 ```typescript
 const watcher = createConfigWatcher('./enigma.config.json', {
   debounceMs: 1000, // Increase debounce
   validateOnChange: false, // Disable if not needed
-  ignorePatterns: ['**/.git/**', '**/node_modules/**'] // Ignore unnecessary files
+  ignorePatterns: ['**/.git/**', '**/node_modules/**'], // Ignore unnecessary files
 });
 ```
 
@@ -609,6 +632,7 @@ const watcher = createConfigWatcher('./enigma.config.json', {
 **Problem**: Configuration backups are corrupted or invalid.
 
 **Solution**:
+
 ```typescript
 const backupManager = createConfigBackup('./enigma.config.json');
 
@@ -649,4 +673,4 @@ For additional support:
 
 ---
 
-This configuration validation system provides robust, production-ready validation and safety features for Tailwind Enigma Core. By following this guide and best practices, you can ensure reliable and optimized configuration management for your projects. 
+This configuration validation system provides robust, production-ready validation and safety features for Tailwind Enigma Core. By following this guide and best practices, you can ensure reliable and optimized configuration management for your projects.

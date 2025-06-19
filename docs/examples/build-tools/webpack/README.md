@@ -18,7 +18,7 @@ The tw-enigma Webpack plugin provides seamless integration with your Webpack bui
 npm install @tw-enigma/core @tw-enigma/webpack-plugin --save-dev
 # or
 yarn add @tw-enigma/core @tw-enigma/webpack-plugin --dev
-# or  
+# or
 pnpm add @tw-enigma/core @tw-enigma/webpack-plugin --save-dev
 ```
 
@@ -28,43 +28,43 @@ pnpm add @tw-enigma/core @tw-enigma/webpack-plugin --save-dev
 
 ```javascript
 // webpack.config.js
-const { TwEnigmaWebpackPlugin } = require('@tw-enigma/webpack-plugin')
+const { TwEnigmaWebpackPlugin } = require('@tw-enigma/webpack-plugin');
 
 module.exports = {
   // ... other webpack config
-  
+
   plugins: [
     new TwEnigmaWebpackPlugin({
       // Enable optimization
       enabled: true,
-      
+
       // Optimization strategy
       strategy: 'hybrid',
-      
+
       // Development features
       development: {
         hmr: true,
-        analysis: true
-      }
-    })
-  ]
-}
+        analysis: true,
+      },
+    }),
+  ],
+};
 ```
 
 ### Environment-Specific Configuration
 
 ```javascript
 // webpack.config.js
-const { TwEnigmaWebpackPlugin } = require('@tw-enigma/webpack-plugin')
+const { TwEnigmaWebpackPlugin } = require('@tw-enigma/webpack-plugin');
 
-const isDevelopment = process.env.NODE_ENV === 'development'
-const isProduction = process.env.NODE_ENV === 'production'
+const isDevelopment = process.env.NODE_ENV === 'development';
+const isProduction = process.env.NODE_ENV === 'production';
 
 module.exports = {
   plugins: [
     new TwEnigmaWebpackPlugin({
       enabled: true,
-      
+
       // Development configuration
       ...(isDevelopment && {
         strategy: 'development',
@@ -72,10 +72,10 @@ module.exports = {
           hmr: true,
           sourceMaps: true,
           liveAnalysis: true,
-          performanceMonitoring: true
-        }
+          performanceMonitoring: true,
+        },
       }),
-      
+
       // Production configuration
       ...(isProduction && {
         strategy: 'aggressive',
@@ -83,12 +83,12 @@ module.exports = {
           minify: true,
           criticalCSS: true,
           extractUnused: true,
-          gzipAnalysis: true
-        }
-      })
-    })
-  ]
-}
+          gzipAnalysis: true,
+        },
+      }),
+    }),
+  ],
+};
 ```
 
 ## 🔧 Framework Integrations
@@ -97,71 +97,67 @@ module.exports = {
 
 ```javascript
 // webpack.config.js (React)
-const { TwEnigmaWebpackPlugin } = require('@tw-enigma/webpack-plugin')
-const HtmlWebpackPlugin = require('html-webpack-plugin')
+const { TwEnigmaWebpackPlugin } = require('@tw-enigma/webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
   entry: './src/index.tsx',
-  
+
   module: {
     rules: [
       {
         test: /\.(ts|tsx)$/,
         use: 'ts-loader',
-        exclude: /node_modules/
+        exclude: /node_modules/,
       },
       {
         test: /\.css$/,
-        use: [
-          'style-loader',
-          'css-loader',
-          'postcss-loader'
-        ]
-      }
-    ]
+        use: ['style-loader', 'css-loader', 'postcss-loader'],
+      },
+    ],
   },
-  
+
   plugins: [
     new HtmlWebpackPlugin({
-      template: './public/index.html'
+      template: './public/index.html',
     }),
-    
+
     new TwEnigmaWebpackPlugin({
       enabled: true,
       strategy: 'hybrid',
-      
+
       // React-specific configuration
       framework: 'react',
       jsx: {
         enabled: true,
         extensions: ['.jsx', '.tsx'],
-        classNameProps: ['className', 'class']
+        classNameProps: ['className', 'class'],
       },
-      
+
       // Component analysis
       components: {
         analyze: true,
         extractCSS: true,
-        generateReport: true
+        generateReport: true,
       },
-      
+
       // Development features
       development: {
         hmr: true,
         componentAnalysis: true,
-        unusedClassDetection: true
-      }
-    })
-  ]
-}
+        unusedClassDetection: true,
+      },
+    }),
+  ],
+};
 ```
 
 **React Component Example:**
 
 ```tsx
 // src/components/Button.tsx
-import React from 'react'
-import { VariantProps, cva } from 'class-variance-authority'
+import React from 'react';
+import { VariantProps, cva } from 'class-variance-authority';
 
 const buttonVariants = cva(
   'inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background',
@@ -173,105 +169,91 @@ const buttonVariants = cva(
         outline: 'border border-input hover:bg-accent hover:text-accent-foreground',
         secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
         ghost: 'hover:bg-accent hover:text-accent-foreground',
-        link: 'underline-offset-4 hover:underline text-primary'
+        link: 'underline-offset-4 hover:underline text-primary',
       },
       size: {
         default: 'h-10 py-2 px-4',
         sm: 'h-9 px-3 rounded-md',
         lg: 'h-11 px-8 rounded-md',
-        icon: 'h-10 w-10'
-      }
+        icon: 'h-10 w-10',
+      },
     },
     defaultVariants: {
       variant: 'default',
-      size: 'default'
-    }
+      size: 'default',
+    },
   }
-)
+);
 
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {}
 
-export const Button: React.FC<ButtonProps> = ({
-  className,
-  variant,
-  size,
-  ...props
-}) => {
-  return (
-    <button
-      className={buttonVariants({ variant, size, className })}
-      {...props}
-    />
-  )
-}
+export const Button: React.FC<ButtonProps> = ({ className, variant, size, ...props }) => {
+  return <button className={buttonVariants({ variant, size, className })} {...props} />;
+};
 ```
 
 ### Vue Application
 
 ```javascript
 // webpack.config.js (Vue)
-const { TwEnigmaWebpackPlugin } = require('@tw-enigma/webpack-plugin')
-const { VueLoaderPlugin } = require('vue-loader')
-const HtmlWebpackPlugin = require('html-webpack-plugin')
+const { TwEnigmaWebpackPlugin } = require('@tw-enigma/webpack-plugin');
+const { VueLoaderPlugin } = require('vue-loader');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
   entry: './src/main.ts',
-  
+
   module: {
     rules: [
       {
         test: /\.vue$/,
-        loader: 'vue-loader'
+        loader: 'vue-loader',
       },
       {
         test: /\.ts$/,
         loader: 'ts-loader',
         options: {
-          appendTsSuffixTo: [/\.vue$/]
-        }
+          appendTsSuffixTo: [/\.vue$/],
+        },
       },
       {
         test: /\.css$/,
-        use: [
-          'vue-style-loader',
-          'css-loader',
-          'postcss-loader'
-        ]
-      }
-    ]
+        use: ['vue-style-loader', 'css-loader', 'postcss-loader'],
+      },
+    ],
   },
-  
+
   plugins: [
     new VueLoaderPlugin(),
-    
+
     new HtmlWebpackPlugin({
-      template: './public/index.html'
+      template: './public/index.html',
     }),
-    
+
     new TwEnigmaWebpackPlugin({
       enabled: true,
       strategy: 'hybrid',
-      
+
       // Vue-specific configuration
       framework: 'vue',
       vue: {
         enabled: true,
         version: 3, // Vue 3
         classNameProps: ['class', ':class', 'v-bind:class'],
-        styleScoped: true
+        styleScoped: true,
       },
-      
+
       // Single File Component support
       sfc: {
         analyze: true,
         extractScoped: true,
-        optimizeStyles: true
-      }
-    })
-  ]
-}
+        optimizeStyles: true,
+      },
+    }),
+  ],
+};
 ```
 
 **Vue Component Example:**
@@ -285,8 +267,8 @@ module.exports = {
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { cva, type VariantProps } from 'class-variance-authority'
+import { computed } from 'vue';
+import { cva, type VariantProps } from 'class-variance-authority';
 
 const buttonVariants = cva(
   'inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background',
@@ -298,38 +280,38 @@ const buttonVariants = cva(
         outline: 'border border-input hover:bg-accent hover:text-accent-foreground',
         secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
         ghost: 'hover:bg-accent hover:text-accent-foreground',
-        link: 'underline-offset-4 hover:underline text-primary'
+        link: 'underline-offset-4 hover:underline text-primary',
       },
       size: {
         default: 'h-10 py-2 px-4',
         sm: 'h-9 px-3 rounded-md',
         lg: 'h-11 px-8 rounded-md',
-        icon: 'h-10 w-10'
-      }
+        icon: 'h-10 w-10',
+      },
     },
     defaultVariants: {
       variant: 'default',
-      size: 'default'
-    }
+      size: 'default',
+    },
   }
-)
+);
 
 interface Props extends VariantProps<typeof buttonVariants> {
-  class?: string
+  class?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   variant: 'default',
-  size: 'default'
-})
+  size: 'default',
+});
 
-const buttonClasses = computed(() => 
-  buttonVariants({ 
-    variant: props.variant, 
-    size: props.size, 
-    className: props.class 
+const buttonClasses = computed(() =>
+  buttonVariants({
+    variant: props.variant,
+    size: props.size,
+    className: props.class,
   })
-)
+);
 </script>
 ```
 
@@ -337,32 +319,32 @@ const buttonClasses = computed(() =>
 
 ```javascript
 // webpack.config.js (Angular - Custom Webpack Builder)
-const { TwEnigmaWebpackPlugin } = require('@tw-enigma/webpack-plugin')
+const { TwEnigmaWebpackPlugin } = require('@tw-enigma/webpack-plugin');
 
 module.exports = {
   plugins: [
     new TwEnigmaWebpackPlugin({
       enabled: true,
       strategy: 'hybrid',
-      
+
       // Angular-specific configuration
       framework: 'angular',
       angular: {
         enabled: true,
         templateAnalysis: true,
         componentStyleAnalysis: true,
-        hostBindingOptimization: true
+        hostBindingOptimization: true,
       },
-      
+
       // TypeScript support
       typescript: {
         enabled: true,
         decoratorSupport: true,
-        hostBindingAnalysis: true
-      }
-    })
-  ]
-}
+        hostBindingAnalysis: true,
+      },
+    }),
+  ],
+};
 ```
 
 **Angular Configuration:**
@@ -391,8 +373,8 @@ module.exports = {
 
 ```typescript
 // src/app/button/button.component.ts
-import { Component, Input } from '@angular/core'
-import { cva, type VariantProps } from 'class-variance-authority'
+import { Component, Input } from '@angular/core';
+import { cva, type VariantProps } from 'class-variance-authority';
 
 const buttonVariants = cva(
   'inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background',
@@ -404,23 +386,23 @@ const buttonVariants = cva(
         outline: 'border border-input hover:bg-accent hover:text-accent-foreground',
         secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
         ghost: 'hover:bg-accent hover:text-accent-foreground',
-        link: 'underline-offset-4 hover:underline text-primary'
+        link: 'underline-offset-4 hover:underline text-primary',
       },
       size: {
         default: 'h-10 py-2 px-4',
         sm: 'h-9 px-3 rounded-md',
         lg: 'h-11 px-8 rounded-md',
-        icon: 'h-10 w-10'
-      }
+        icon: 'h-10 w-10',
+      },
     },
     defaultVariants: {
       variant: 'default',
-      size: 'default'
-    }
+      size: 'default',
+    },
   }
-)
+);
 
-type ButtonVariants = VariantProps<typeof buttonVariants>
+type ButtonVariants = VariantProps<typeof buttonVariants>;
 
 @Component({
   selector: 'app-button',
@@ -428,20 +410,20 @@ type ButtonVariants = VariantProps<typeof buttonVariants>
     <button [class]="buttonClasses" [disabled]="disabled">
       <ng-content></ng-content>
     </button>
-  `
+  `,
 })
 export class ButtonComponent {
-  @Input() variant: ButtonVariants['variant'] = 'default'
-  @Input() size: ButtonVariants['size'] = 'default'
-  @Input() disabled = false
-  @Input() className = ''
+  @Input() variant: ButtonVariants['variant'] = 'default';
+  @Input() size: ButtonVariants['size'] = 'default';
+  @Input() disabled = false;
+  @Input() className = '';
 
   get buttonClasses(): string {
     return buttonVariants({
       variant: this.variant,
       size: this.size,
-      className: this.className
-    })
+      className: this.className,
+    });
   }
 }
 ```
@@ -452,7 +434,7 @@ export class ButtonComponent {
 
 ```javascript
 // webpack.config.js - Complete configuration
-const { TwEnigmaWebpackPlugin } = require('@tw-enigma/webpack-plugin')
+const { TwEnigmaWebpackPlugin } = require('@tw-enigma/webpack-plugin');
 
 module.exports = {
   plugins: [
@@ -460,22 +442,22 @@ module.exports = {
       // Basic settings
       enabled: true,
       strategy: 'hybrid', // 'atomic', 'chunked', 'hybrid', 'aggressive'
-      
+
       // Input/Output configuration
       input: {
         patterns: ['src/**/*.{js,jsx,ts,tsx,vue,svelte}'],
         exclude: ['node_modules/**', 'dist/**'],
-        includeDependencies: true
+        includeDependencies: true,
       },
-      
+
       output: {
         path: 'dist/css',
         filename: '[name].[contenthash:8].css',
         chunkFilename: '[name].[contenthash:8].chunk.css',
         publicPath: '/css/',
-        minimize: true
+        minimize: true,
       },
-      
+
       // Optimization settings
       optimization: {
         strategy: 'hybrid',
@@ -485,19 +467,19 @@ module.exports = {
         criticalCSS: {
           enabled: true,
           extractInline: true,
-          generateFiles: true
+          generateFiles: true,
         },
-        
+
         // Advanced optimization
         advanced: {
           shorthandProperties: true,
           mergeRules: true,
           removeComments: true,
           removeEmptyRules: true,
-          mergeLonghand: true
-        }
+          mergeLonghand: true,
+        },
       },
-      
+
       // Framework-specific settings
       framework: {
         name: 'react', // 'react', 'vue', 'angular', 'svelte', 'vanilla'
@@ -506,10 +488,10 @@ module.exports = {
           jsx: true,
           typescript: true,
           classNameProps: ['className', 'class'],
-          styleProps: ['style', 'sx']
-        }
+          styleProps: ['style', 'sx'],
+        },
       },
-      
+
       // Development features
       development: {
         enabled: process.env.NODE_ENV === 'development',
@@ -518,15 +500,15 @@ module.exports = {
         liveAnalysis: true,
         performanceMonitoring: true,
         debugOutput: false,
-        
+
         // Development dashboard
         dashboard: {
           enabled: true,
           port: 3001,
-          open: false
-        }
+          open: false,
+        },
       },
-      
+
       // Production features
       production: {
         enabled: process.env.NODE_ENV === 'production',
@@ -535,90 +517,90 @@ module.exports = {
         brotli: true,
         extractCritical: true,
         generateReport: true,
-        
+
         // Bundle analysis
         bundleAnalyzer: {
           enabled: false,
           openAnalyzer: false,
-          generateStatsFile: true
-        }
+          generateStatsFile: true,
+        },
       },
-      
+
       // Caching configuration
       caching: {
         enabled: true,
         type: 'filesystem', // 'memory', 'filesystem'
         cacheDirectory: 'node_modules/.cache/tw-enigma',
         hashFunction: 'xxhash64',
-        version: '1.0.0'
+        version: '1.0.0',
       },
-      
+
       // Error handling
       errorHandling: {
         onError: 'warn', // 'warn', 'error', 'ignore'
         continueOnError: true,
-        logLevel: 'info' // 'debug', 'info', 'warn', 'error'
+        logLevel: 'info', // 'debug', 'info', 'warn', 'error'
       },
-      
+
       // Hooks and lifecycle
       hooks: {
         beforeOptimization: (context) => {
-          console.log('Starting optimization...')
+          console.log('Starting optimization...');
         },
         afterOptimization: (context, results) => {
-          console.log(`Optimization complete: ${results.reduction}% reduction`)
+          console.log(`Optimization complete: ${results.reduction}% reduction`);
         },
         onError: (error) => {
-          console.error('Optimization error:', error)
-        }
-      }
-    })
-  ]
-}
+          console.error('Optimization error:', error);
+        },
+      },
+    }),
+  ],
+};
 ```
 
 ### Multi-Entry Configuration
 
 ```javascript
 // webpack.config.js - Multi-entry setup
-const { TwEnigmaWebpackPlugin } = require('@tw-enigma/webpack-plugin')
+const { TwEnigmaWebpackPlugin } = require('@tw-enigma/webpack-plugin');
 
 module.exports = {
   entry: {
     main: './src/index.js',
     admin: './src/admin.js',
-    public: './src/public.js'
+    public: './src/public.js',
   },
-  
+
   plugins: [
     new TwEnigmaWebpackPlugin({
       enabled: true,
-      
+
       // Entry-specific optimization
       entryOptimization: {
         main: {
           strategy: 'aggressive',
-          criticalCSS: true
+          criticalCSS: true,
         },
         admin: {
           strategy: 'chunked',
-          extractShared: true
+          extractShared: true,
         },
         public: {
           strategy: 'atomic',
-          minimalBundle: true
-        }
+          minimalBundle: true,
+        },
       },
-      
+
       // Shared optimization
       sharedOptimization: {
         enabled: true,
         extractCommon: true,
-        deduplicateAcrossEntries: true
-      }
-    })
-  ]
-}
+        deduplicateAcrossEntries: true,
+      },
+    }),
+  ],
+};
 ```
 
 ## 📊 Development Features
@@ -638,14 +620,15 @@ new TwEnigmaWebpackPlugin({
         'live-analysis',
         'performance-monitoring',
         'unused-detection',
-        'bundle-visualization'
-      ]
-    }
-  }
-})
+        'bundle-visualization',
+      ],
+    },
+  },
+});
 ```
 
 **Dashboard Features:**
+
 - **Live CSS Analysis** - Real-time optimization statistics
 - **Performance Monitoring** - Build time impact and bundle size tracking
 - **Unused Class Detection** - Identify unused Tailwind classes
@@ -662,13 +645,14 @@ new TwEnigmaWebpackPlugin({
       enabled: true,
       optimizeOnHMR: true,
       preserveState: true,
-      updateStrategy: 'incremental'
-    }
-  }
-})
+      updateStrategy: 'incremental',
+    },
+  },
+});
 ```
 
 **HMR Features:**
+
 - **Incremental Updates** - Only re-optimize changed files
 - **State Preservation** - Maintain component state during updates
 - **Fast Refresh** - Near-instant CSS updates
@@ -684,31 +668,26 @@ new TwEnigmaWebpackPlugin({
   production: {
     criticalCSS: {
       enabled: true,
-      
+
       // Extraction settings
       extraction: {
         above: 'fold', // Extract above-the-fold CSS
-        inline: true,   // Inline critical CSS
-        preload: true,  // Preload non-critical CSS
-        defer: false    // Defer non-critical CSS
+        inline: true, // Inline critical CSS
+        preload: true, // Preload non-critical CSS
+        defer: false, // Defer non-critical CSS
       },
-      
+
       // Viewport settings
       viewport: {
         width: 1920,
-        height: 1080
+        height: 1080,
       },
-      
+
       // URL analysis
-      urls: [
-        '/',
-        '/about',
-        '/contact',
-        '/products'
-      ]
-    }
-  }
-})
+      urls: ['/', '/about', '/contact', '/products'],
+    },
+  },
+});
 ```
 
 ### Bundle Splitting
@@ -725,44 +704,44 @@ module.exports = {
           test: /[\\/]node_modules[\\/].*\.css$/,
           name: 'vendor-css',
           chunks: 'all',
-          enforce: true
+          enforce: true,
         },
-        
+
         // Component CSS
         componentCSS: {
           test: /[\\/]src[\\/]components[\\/].*\.css$/,
           name: 'components-css',
           chunks: 'all',
-          enforce: true
-        }
-      }
-    }
+          enforce: true,
+        },
+      },
+    },
   },
-  
+
   plugins: [
     new TwEnigmaWebpackPlugin({
       optimization: {
         splitChunks: {
           enabled: true,
           strategy: 'by-route',
-          maxSize: 50000 // 50KB chunks
-        }
-      }
-    })
-  ]
-}
+          maxSize: 50000, // 50KB chunks
+        },
+      },
+    }),
+  ],
+};
 ```
 
 ## 📈 Performance Results
 
 ### Optimization Results
 
-| Project Type | Original Size | Optimized Size | Reduction | Build Time Impact |
-|--------------|---------------|----------------|-----------|-------------------|
-| **React SPA** | 2.1MB | 320KB | 84.8% | +15% |
-| **Vue MPA** | 1.8MB | 280KB | 84.4% | +12% |
-| **Angular App** | 2.3MB | 350KB | 84.8% | +18% |
-| **Vanilla JS** | 1.2MB | 180KB | 85.0% | +8% |
+| Project Type    | Original Size | Optimized Size | Reduction | Build Time Impact |
+| --------------- | ------------- | -------------- | --------- | ----------------- |
+| **React SPA**   | 2.1MB         | 320KB          | 84.8%     | +15%              |
+| **Vue MPA**     | 1.8MB         | 280KB          | 84.4%     | +12%              |
+| **Angular App** | 2.3MB         | 350KB          | 84.8%     | +18%              |
+| **Vanilla JS**  | 1.2MB         | 180KB          | 85.0%     | +8%               |
 
 ### Performance Metrics
 
@@ -783,9 +762,9 @@ module.exports = {
 module.exports = {
   plugins: [
     new TwEnigmaWebpackPlugin({ enabled: true }),
-    new MiniCssExtractPlugin({ filename: '[name].css' }) // After tw-enigma
-  ]
-}
+    new MiniCssExtractPlugin({ filename: '[name].css' }), // After tw-enigma
+  ],
+};
 ```
 
 **2. HMR Not Working with Optimization**
@@ -796,10 +775,10 @@ new TwEnigmaWebpackPlugin({
   development: {
     hmr: {
       enabled: true,
-      optimizeOnHMR: false // Disable optimization during HMR for faster updates
-    }
-  }
-})
+      optimizeOnHMR: false, // Disable optimization during HMR for faster updates
+    },
+  },
+});
 ```
 
 **3. Source Maps Not Generated**
@@ -808,15 +787,15 @@ new TwEnigmaWebpackPlugin({
 // Enable source maps in development
 module.exports = {
   devtool: 'source-map', // Enable webpack source maps
-  
+
   plugins: [
     new TwEnigmaWebpackPlugin({
       development: {
-        sourceMaps: true // Enable tw-enigma source maps
-      }
-    })
-  ]
-}
+        sourceMaps: true, // Enable tw-enigma source maps
+      },
+    }),
+  ],
+};
 ```
 
 **4. Build Performance Issues**
@@ -829,10 +808,10 @@ new TwEnigmaWebpackPlugin({
     workers: 4,
     caching: {
       enabled: true,
-      aggressive: true
-    }
-  }
-})
+      aggressive: true,
+    },
+  },
+});
 ```
 
 ### Debug Mode
@@ -858,27 +837,27 @@ new TwEnigmaWebpackPlugin({
   hooks: {
     beforeOptimization: (context) => {
       // Custom preprocessing
-      console.log('Starting optimization for:', context.entry)
+      console.log('Starting optimization for:', context.entry);
     },
-    
+
     afterOptimization: (context, results) => {
       // Custom post-processing
       if (results.reduction < 50) {
-        console.warn('Low optimization rate:', results.reduction)
+        console.warn('Low optimization rate:', results.reduction);
       }
     },
-    
+
     onChunkOptimized: (chunk, results) => {
       // Per-chunk optimization callback
-      console.log(`Chunk ${chunk.name}: ${results.reduction}% reduction`)
+      console.log(`Chunk ${chunk.name}: ${results.reduction}% reduction`);
     },
-    
+
     onError: (error, context) => {
       // Error handling
-      console.error('Optimization failed:', error.message)
-    }
-  }
-})
+      console.error('Optimization failed:', error.message);
+    },
+  },
+});
 ```
 
 ### Custom Transformers
@@ -891,23 +870,23 @@ new TwEnigmaWebpackPlugin({
       name: 'custom-prefixer',
       transform: (css, context) => {
         // Add custom prefix to all classes
-        return css.replace(/\.([\w-]+)/g, '.custom-$1')
-      }
+        return css.replace(/\.([\w-]+)/g, '.custom-$1');
+      },
     },
     {
-      name: 'theme-optimizer', 
+      name: 'theme-optimizer',
       transform: (css, context) => {
         // Custom theme-based optimization
         if (context.theme === 'dark') {
-          return css.replace(/text-gray-900/g, 'text-gray-100')
+          return css.replace(/text-gray-900/g, 'text-gray-100');
         }
-        return css
-      }
-    }
-  ]
-})
+        return css;
+      },
+    },
+  ],
+});
 ```
 
 ---
 
-**Ready to optimize your Webpack build?** The tw-enigma Webpack plugin provides powerful CSS optimization with framework-specific features, development tools, and production-ready performance enhancements. 
+**Ready to optimize your Webpack build?** The tw-enigma Webpack plugin provides powerful CSS optimization with framework-specific features, development tools, and production-ready performance enhancements.

@@ -1,12 +1,8 @@
-import { describe, test, expect, vi } from "vitest";
-import {
-  HtmlRewriter,
-  HtmlPattern,
-  createHtmlRewriter,
-} from "@tw-enigma/core";
+import { describe, test, expect, vi } from 'vitest';
+import { HtmlRewriter, HtmlPattern, createHtmlRewriter } from '@tw-enigma/core';
 
-describe("HtmlRewriter - Step 1: Core Foundation", () => {
-  test("should create HtmlRewriter instance with default options", () => {
+describe('HtmlRewriter - Step 1: Core Foundation', () => {
+  test('should create HtmlRewriter instance with default options', () => {
     const rewriter = createHtmlRewriter();
     expect(rewriter).toBeInstanceOf(HtmlRewriter);
 
@@ -17,7 +13,7 @@ describe("HtmlRewriter - Step 1: Core Foundation", () => {
     expect(stats.options.validateOutput).toBe(true);
   });
 
-  test("should accept custom options", () => {
+  test('should accept custom options', () => {
     const rewriter = createHtmlRewriter({
       createBackup: false,
       dryRun: true,
@@ -30,16 +26,16 @@ describe("HtmlRewriter - Step 1: Core Foundation", () => {
     expect(stats.options.maxFileSize).toBe(1024);
   });
 
-  test("should add valid pattern", () => {
+  test('should add valid pattern', () => {
     const rewriter = createHtmlRewriter();
 
     const pattern: HtmlPattern = {
-      id: "test-pattern",
-      name: "Test Pattern",
-      selector: ".test-class",
-      attribute: "class",
+      id: 'test-pattern',
+      name: 'Test Pattern',
+      selector: '.test-class',
+      attribute: 'class',
       pattern: /test-\w+/g,
-      replacement: "new-class",
+      replacement: 'new-class',
       priority: 1,
       enabled: true,
     };
@@ -52,38 +48,36 @@ describe("HtmlRewriter - Step 1: Core Foundation", () => {
 
     const patterns = rewriter.getPatterns();
     expect(patterns).toHaveLength(1);
-    expect(patterns[0].id).toBe("test-pattern");
+    expect(patterns[0].id).toBe('test-pattern');
   });
 
-  test("should reject invalid pattern", () => {
+  test('should reject invalid pattern', () => {
     const rewriter = createHtmlRewriter();
 
     const invalidPattern: HtmlPattern = {
-      id: "", // Invalid: empty ID
-      name: "Invalid Pattern",
-      selector: ".test",
-      attribute: "class",
-      pattern: "test",
-      replacement: "new",
+      id: '', // Invalid: empty ID
+      name: 'Invalid Pattern',
+      selector: '.test',
+      attribute: 'class',
+      pattern: 'test',
+      replacement: 'new',
       priority: 1,
       enabled: true,
     };
 
-    expect(() => rewriter.addPattern(invalidPattern)).toThrow(
-      "Invalid pattern",
-    );
+    expect(() => rewriter.addPattern(invalidPattern)).toThrow('Invalid pattern');
   });
 
-  test("should remove pattern by ID", () => {
+  test('should remove pattern by ID', () => {
     const rewriter = createHtmlRewriter();
 
     const pattern: HtmlPattern = {
-      id: "removable-pattern",
-      name: "Removable Pattern",
-      selector: ".test",
-      attribute: "class",
-      pattern: "test",
-      replacement: "new",
+      id: 'removable-pattern',
+      name: 'Removable Pattern',
+      selector: '.test',
+      attribute: 'class',
+      pattern: 'test',
+      replacement: 'new',
       priority: 1,
       enabled: true,
     };
@@ -91,50 +85,48 @@ describe("HtmlRewriter - Step 1: Core Foundation", () => {
     rewriter.addPattern(pattern);
     expect(rewriter.getStats().patternsCount).toBe(1);
 
-    const removed = rewriter.removePattern("removable-pattern");
+    const removed = rewriter.removePattern('removable-pattern');
     expect(removed).toBe(true);
     expect(rewriter.getStats().patternsCount).toBe(0);
 
-    const removedAgain = rewriter.removePattern("non-existent");
+    const removedAgain = rewriter.removePattern('non-existent');
     expect(removedAgain).toBe(false);
   });
 
-  test("should handle pattern validation", () => {
+  test('should handle pattern validation', () => {
     const rewriter = createHtmlRewriter();
 
     // Test missing required fields - this should definitely fail
     const invalidPattern: HtmlPattern = {
-      id: "invalid-pattern",
-      name: "Invalid Pattern",
-      selector: ".test",
-      attribute: "", // Invalid: empty attribute
-      pattern: "test",
-      replacement: "new",
+      id: 'invalid-pattern',
+      name: 'Invalid Pattern',
+      selector: '.test',
+      attribute: '', // Invalid: empty attribute
+      pattern: 'test',
+      replacement: 'new',
       priority: 1,
       enabled: true,
     };
 
-    expect(() => rewriter.addPattern(invalidPattern)).toThrow(
-      "Attribute is required",
-    );
+    expect(() => rewriter.addPattern(invalidPattern)).toThrow('Attribute is required');
   });
 
-  test("should process basic HTML without patterns (placeholder)", async () => {
+  test('should process basic HTML without patterns (placeholder)', async () => {
     const rewriter = createHtmlRewriter();
     const html = '<div class="test-class">Hello World</div>';
 
-    const result = await rewriter.rewriteHtml(html, "test-source");
+    const result = await rewriter.rewriteHtml(html, 'test-source');
 
     expect(result.success).toBe(true);
     expect(result.originalHtml).toBe(html);
     expect(result.modifiedHtml).toBe(html); // No patterns, so unchanged
     expect(result.appliedReplacements).toHaveLength(0);
     expect(result.conflicts).toHaveLength(0);
-    expect(result.metadata.source).toBe("test-source");
+    expect(result.metadata.source).toBe('test-source');
     expect(result.metadata.totalElements).toBeGreaterThan(0);
   });
 
-  test("should handle dry run mode", async () => {
+  test('should handle dry run mode', async () => {
     const rewriter = createHtmlRewriter({ dryRun: true });
     const html = '<div class="test-class">Hello World</div>';
 
@@ -144,7 +136,7 @@ describe("HtmlRewriter - Step 1: Core Foundation", () => {
     expect(result.modifiedHtml).toBe(html); // Dry run should return original
   });
 
-  test("should get cache statistics", () => {
+  test('should get cache statistics', () => {
     const rewriter = createHtmlRewriter();
 
     const cacheStats = rewriter.getCacheStats();
@@ -154,16 +146,16 @@ describe("HtmlRewriter - Step 1: Core Foundation", () => {
     expect(cacheStats.lastCleared).toBeInstanceOf(Date);
   });
 
-  test("should validate HTML output by default", async () => {
+  test('should validate HTML output by default', async () => {
     const rewriter = createHtmlRewriter();
-    const malformedHtml = "<div><span>Unclosed tags"; // This should still parse with cheerio
+    const malformedHtml = '<div><span>Unclosed tags'; // This should still parse with cheerio
 
     // Cheerio is quite forgiving, so this shouldn't throw
     const result = await rewriter.rewriteHtml(malformedHtml);
     expect(result.success).toBe(true);
   });
 
-  test("should skip validation when disabled", async () => {
+  test('should skip validation when disabled', async () => {
     const rewriter = createHtmlRewriter({ validateOutput: false });
     const html = '<div class="test">Valid HTML</div>';
 
@@ -171,60 +163,60 @@ describe("HtmlRewriter - Step 1: Core Foundation", () => {
     expect(result.success).toBe(true);
   });
 
-  test("should handle pattern conditions structure", () => {
+  test('should handle pattern conditions structure', () => {
     const rewriter = createHtmlRewriter();
 
     const conditionalPattern: HtmlPattern = {
-      id: "conditional-pattern",
-      name: "Conditional Pattern",
-      selector: ".conditional",
-      attribute: "class",
-      pattern: "old",
-      replacement: "new",
+      id: 'conditional-pattern',
+      name: 'Conditional Pattern',
+      selector: '.conditional',
+      attribute: 'class',
+      pattern: 'old',
+      replacement: 'new',
       priority: 1,
       enabled: true,
       conditions: {
-        tagNames: ["div", "span"],
-        hasAttributes: ["data-test"],
-        parentSelectors: [".parent"],
-        excludeSelectors: [".exclude"],
+        tagNames: ['div', 'span'],
+        hasAttributes: ['data-test'],
+        parentSelectors: ['.parent'],
+        excludeSelectors: ['.exclude'],
       },
     };
 
     rewriter.addPattern(conditionalPattern);
 
     const patterns = rewriter.getPatterns();
-    expect(patterns[0].conditions?.tagNames).toEqual(["div", "span"]);
-    expect(patterns[0].conditions?.hasAttributes).toEqual(["data-test"]);
+    expect(patterns[0].conditions?.tagNames).toEqual(['div', 'span']);
+    expect(patterns[0].conditions?.hasAttributes).toEqual(['data-test']);
   });
 });
 
-describe("HtmlRewriter - Step 2: Advanced Pattern Matching System", () => {
-  test("should add and manage pattern sets", () => {
+describe('HtmlRewriter - Step 2: Advanced Pattern Matching System', () => {
+  test('should add and manage pattern sets', () => {
     const rewriter = createHtmlRewriter();
 
     const patternSet: PatternSet = {
-      id: "tailwind-optimization",
-      name: "Tailwind CSS Optimization",
-      description: "Optimize common Tailwind patterns",
+      id: 'tailwind-optimization',
+      name: 'Tailwind CSS Optimization',
+      description: 'Optimize common Tailwind patterns',
       patterns: [
         {
-          id: "flex-center",
-          name: "Flex Center Pattern",
-          selector: ".container",
-          attribute: "class",
-          pattern: "flex justify-center items-center",
-          replacement: "flex-center",
+          id: 'flex-center',
+          name: 'Flex Center Pattern',
+          selector: '.container',
+          attribute: 'class',
+          pattern: 'flex justify-center items-center',
+          replacement: 'flex-center',
           priority: 1,
           enabled: true,
         },
         {
-          id: "text-styles",
-          name: "Text Style Pattern",
-          selector: ".text",
-          attribute: "class",
+          id: 'text-styles',
+          name: 'Text Style Pattern',
+          selector: '.text',
+          attribute: 'class',
           pattern: /text-lg font-semibold text-gray-900/,
-          replacement: "heading-text",
+          replacement: 'heading-text',
           priority: 2,
           enabled: true,
         },
@@ -239,24 +231,24 @@ describe("HtmlRewriter - Step 2: Advanced Pattern Matching System", () => {
 
     const sets = rewriter.getPatternSets();
     expect(sets).toHaveLength(1);
-    expect(sets[0].id).toBe("tailwind-optimization");
+    expect(sets[0].id).toBe('tailwind-optimization');
     expect(sets[0].patterns).toHaveLength(2);
   });
 
-  test("should validate patterns in pattern sets", () => {
+  test('should validate patterns in pattern sets', () => {
     const rewriter = createHtmlRewriter();
 
     const invalidPatternSet: PatternSet = {
-      id: "invalid-set",
-      name: "Invalid Set",
+      id: 'invalid-set',
+      name: 'Invalid Set',
       patterns: [
         {
-          id: "", // Invalid: empty ID
-          name: "Invalid Pattern",
-          selector: ".test",
-          attribute: "class",
-          pattern: "test",
-          replacement: "new",
+          id: '', // Invalid: empty ID
+          name: 'Invalid Pattern',
+          selector: '.test',
+          attribute: 'class',
+          pattern: 'test',
+          replacement: 'new',
           priority: 1,
           enabled: true,
         },
@@ -268,20 +260,20 @@ describe("HtmlRewriter - Step 2: Advanced Pattern Matching System", () => {
     };
 
     expect(() => rewriter.addPatternSet(invalidPatternSet)).toThrow(
-      "Pattern set validation failed",
+      'Pattern set validation failed'
     );
   });
 
-  test("should find patterns that match specific elements", () => {
+  test('should find patterns that match specific elements', () => {
     const rewriter = createHtmlRewriter();
 
     const pattern: HtmlPattern = {
-      id: "test-pattern",
-      name: "Test Pattern",
-      selector: ".test-class",
-      attribute: "class",
-      pattern: "btn",
-      replacement: "button",
+      id: 'test-pattern',
+      name: 'Test Pattern',
+      selector: '.test-class',
+      attribute: 'class',
+      pattern: 'btn',
+      replacement: 'button',
       priority: 1,
       enabled: true,
       multipleMatches: true,
@@ -290,23 +282,23 @@ describe("HtmlRewriter - Step 2: Advanced Pattern Matching System", () => {
     rewriter.addPattern(pattern);
 
     const html = '<div class="test-class btn btn-primary">Test</div>';
-    const results = rewriter.findMatchingPatterns(html, ".test-class");
+    const results = rewriter.findMatchingPatterns(html, '.test-class');
 
     expect(results).toHaveLength(1);
-    expect(results[0].pattern.id).toBe("test-pattern");
+    expect(results[0].pattern.id).toBe('test-pattern');
     expect(results[0].matches.length).toBeGreaterThan(0); // Should find 'btn' in 'btn btn-primary'
   });
 
-  test("should check if pattern would match without applying", () => {
+  test('should check if pattern would match without applying', () => {
     const rewriter = createHtmlRewriter();
 
     const pattern: HtmlPattern = {
-      id: "test-pattern",
-      name: "Test Pattern",
-      selector: ".test",
-      attribute: "class",
-      pattern: "primary",
-      replacement: "selected",
+      id: 'test-pattern',
+      name: 'Test Pattern',
+      selector: '.test',
+      attribute: 'class',
+      pattern: 'primary',
+      replacement: 'selected',
       priority: 1,
       enabled: true,
     };
@@ -316,36 +308,32 @@ describe("HtmlRewriter - Step 2: Advanced Pattern Matching System", () => {
     const htmlMatch = '<div class="test primary">Matches</div>';
     const htmlNoMatch = '<div class="test secondary">No match</div>';
 
-    expect(rewriter.wouldPatternMatch(htmlMatch, ".test", "test-pattern")).toBe(
-      true,
-    );
-    expect(
-      rewriter.wouldPatternMatch(htmlNoMatch, ".test", "test-pattern"),
-    ).toBe(false);
+    expect(rewriter.wouldPatternMatch(htmlMatch, '.test', 'test-pattern')).toBe(true);
+    expect(rewriter.wouldPatternMatch(htmlNoMatch, '.test', 'test-pattern')).toBe(false);
   });
 
-  test("should handle advanced pattern conditions", () => {
+  test('should handle advanced pattern conditions', () => {
     const rewriter = createHtmlRewriter();
 
     const pattern: HtmlPattern = {
-      id: "conditional-pattern",
-      name: "Conditional Pattern",
-      selector: ".component",
-      attribute: "class",
-      pattern: "old-style",
-      replacement: "new-style",
+      id: 'conditional-pattern',
+      name: 'Conditional Pattern',
+      selector: '.component',
+      attribute: 'class',
+      pattern: 'old-style',
+      replacement: 'new-style',
       priority: 1,
       enabled: true,
       conditions: [
         {
-          type: "attribute",
-          attribute: "data-version",
-          operator: "equals",
-          value: "v2",
+          type: 'attribute',
+          attribute: 'data-version',
+          operator: 'equals',
+          value: 'v2',
         },
         {
-          type: "parent",
-          selector: ".container",
+          type: 'parent',
+          selector: '.container',
         },
       ],
     };
@@ -357,44 +345,34 @@ describe("HtmlRewriter - Step 2: Advanced Pattern Matching System", () => {
     const htmlNoMatch =
       '<div class="wrapper"><div class="component old-style" data-version="v1">No match</div></div>';
 
-    expect(
-      rewriter.wouldPatternMatch(
-        htmlMatch,
-        ".component",
-        "conditional-pattern",
-      ),
-    ).toBe(true);
-    expect(
-      rewriter.wouldPatternMatch(
-        htmlNoMatch,
-        ".component",
-        "conditional-pattern",
-      ),
-    ).toBe(false);
+    expect(rewriter.wouldPatternMatch(htmlMatch, '.component', 'conditional-pattern')).toBe(true);
+    expect(rewriter.wouldPatternMatch(htmlNoMatch, '.component', 'conditional-pattern')).toBe(
+      false
+    );
   });
 
-  test("should handle case sensitivity and whole word matching", () => {
+  test('should handle case sensitivity and whole word matching', () => {
     const rewriter = createHtmlRewriter();
 
     const caseSensitivePattern: HtmlPattern = {
-      id: "case-sensitive",
-      name: "Case Sensitive",
-      selector: ".test",
-      attribute: "class",
-      pattern: "Btn",
-      replacement: "Button",
+      id: 'case-sensitive',
+      name: 'Case Sensitive',
+      selector: '.test',
+      attribute: 'class',
+      pattern: 'Btn',
+      replacement: 'Button',
       priority: 1,
       enabled: true,
       caseSensitive: true,
     };
 
     const wholeWordPattern: HtmlPattern = {
-      id: "whole-word",
-      name: "Whole Word",
-      selector: ".test2",
-      attribute: "class",
-      pattern: "btn",
-      replacement: "button",
+      id: 'whole-word',
+      name: 'Whole Word',
+      selector: '.test2',
+      attribute: 'class',
+      pattern: 'btn',
+      replacement: 'button',
       priority: 1,
       enabled: true,
       wholeWordOnly: true,
@@ -407,36 +385,27 @@ describe("HtmlRewriter - Step 2: Advanced Pattern Matching System", () => {
     const htmlCase = '<div class="test Btn">Case test</div>';
     const htmlCaseLower = '<div class="test btn">Case test</div>';
 
-    expect(
-      rewriter.wouldPatternMatch(htmlCase, ".test", "case-sensitive"),
-    ).toBe(true);
-    expect(
-      rewriter.wouldPatternMatch(htmlCaseLower, ".test", "case-sensitive"),
-    ).toBe(false);
+    expect(rewriter.wouldPatternMatch(htmlCase, '.test', 'case-sensitive')).toBe(true);
+    expect(rewriter.wouldPatternMatch(htmlCaseLower, '.test', 'case-sensitive')).toBe(false);
 
     // Whole word test
-    const htmlWholeWord =
-      '<div class="test2 btn primary">Whole word test</div>';
+    const htmlWholeWord = '<div class="test2 btn primary">Whole word test</div>';
     const htmlPartial = '<div class="test2 submitbtn">Partial word test</div>';
 
-    expect(
-      rewriter.wouldPatternMatch(htmlWholeWord, ".test2", "whole-word"),
-    ).toBe(true);
-    expect(
-      rewriter.wouldPatternMatch(htmlPartial, ".test2", "whole-word"),
-    ).toBe(false);
+    expect(rewriter.wouldPatternMatch(htmlWholeWord, '.test2', 'whole-word')).toBe(true);
+    expect(rewriter.wouldPatternMatch(htmlPartial, '.test2', 'whole-word')).toBe(false);
   });
 
-  test("should handle regex patterns with multiple matches", () => {
+  test('should handle regex patterns with multiple matches', () => {
     const rewriter = createHtmlRewriter();
 
     const regexPattern: HtmlPattern = {
-      id: "regex-pattern",
-      name: "Regex Pattern",
-      selector: ".test",
-      attribute: "class",
+      id: 'regex-pattern',
+      name: 'Regex Pattern',
+      selector: '.test',
+      attribute: 'class',
       pattern: /text-\w+-\d+/g,
-      replacement: "text-replacement",
+      replacement: 'text-replacement',
       priority: 1,
       enabled: true,
       multipleMatches: true,
@@ -444,23 +413,22 @@ describe("HtmlRewriter - Step 2: Advanced Pattern Matching System", () => {
 
     rewriter.addPattern(regexPattern);
 
-    const html =
-      '<div class="test text-red-500 text-blue-300 text-green-100">Regex test</div>';
-    const results = rewriter.findMatchingPatterns(html, ".test");
+    const html = '<div class="test text-red-500 text-blue-300 text-green-100">Regex test</div>';
+    const results = rewriter.findMatchingPatterns(html, '.test');
 
     expect(results).toHaveLength(1);
     expect(results[0].matches.length).toBeGreaterThan(1); // Should find multiple text-* patterns
   });
 
-  test("should handle function replacements with context", () => {
+  test('should handle function replacements with context', () => {
     const rewriter = createHtmlRewriter();
 
     const functionPattern: HtmlPattern = {
-      id: "function-replacement",
-      name: "Function Replacement",
-      selector: ".dynamic",
-      attribute: "class",
-      pattern: "btn-",
+      id: 'function-replacement',
+      name: 'Function Replacement',
+      selector: '.dynamic',
+      attribute: 'class',
+      pattern: 'btn-',
       replacement: (match, element, context) => {
         const tagName = context.tagName.toLowerCase();
         return `${tagName}-button-`;
@@ -472,22 +440,22 @@ describe("HtmlRewriter - Step 2: Advanced Pattern Matching System", () => {
     rewriter.addPattern(functionPattern);
 
     const html = '<div class="dynamic btn-primary">Function test</div>';
-    const results = rewriter.findMatchingPatterns(html, ".dynamic");
+    const results = rewriter.findMatchingPatterns(html, '.dynamic');
 
     expect(results).toHaveLength(1);
-    expect(results[0].matches[0].replacement).toBe("div-button-");
+    expect(results[0].matches[0].replacement).toBe('div-button-');
   });
 
-  test("should enforce max matches limit", () => {
+  test('should enforce max matches limit', () => {
     const rewriter = createHtmlRewriter();
 
     const limitedPattern: HtmlPattern = {
-      id: "limited-pattern",
-      name: "Limited Pattern",
-      selector: ".test",
-      attribute: "class",
-      pattern: "item",
-      replacement: "element",
+      id: 'limited-pattern',
+      name: 'Limited Pattern',
+      selector: '.test',
+      attribute: 'class',
+      pattern: 'item',
+      replacement: 'element',
       priority: 1,
       enabled: true,
       multipleMatches: true,
@@ -497,26 +465,26 @@ describe("HtmlRewriter - Step 2: Advanced Pattern Matching System", () => {
     rewriter.addPattern(limitedPattern);
 
     const html = '<div class="test item item item item">Limit test</div>';
-    const results = rewriter.findMatchingPatterns(html, ".test");
+    const results = rewriter.findMatchingPatterns(html, '.test');
 
     expect(results).toHaveLength(1);
     expect(results[0].matches.length).toBeLessThanOrEqual(2);
   });
 
-  test("should handle tag restrictions", () => {
+  test('should handle tag restrictions', () => {
     const rewriter = createHtmlRewriter();
 
     const tagRestrictedPattern: HtmlPattern = {
-      id: "tag-restricted",
-      name: "Tag Restricted",
-      selector: "*",
-      attribute: "class",
-      pattern: "special",
-      replacement: "modified",
+      id: 'tag-restricted',
+      name: 'Tag Restricted',
+      selector: '*',
+      attribute: 'class',
+      pattern: 'special',
+      replacement: 'modified',
       priority: 1,
       enabled: true,
-      tags: ["div", "span"],
-      excludeTags: ["script"],
+      tags: ['div', 'span'],
+      excludeTags: ['script'],
     };
 
     rewriter.addPattern(tagRestrictedPattern);
@@ -525,32 +493,26 @@ describe("HtmlRewriter - Step 2: Advanced Pattern Matching System", () => {
     const htmlButton = '<button class="special">Should not match</button>';
     const htmlScript = '<script class="special">Should not match</script>';
 
-    expect(rewriter.wouldPatternMatch(htmlDiv, "div", "tag-restricted")).toBe(
-      true,
-    );
-    expect(
-      rewriter.wouldPatternMatch(htmlButton, "button", "tag-restricted"),
-    ).toBe(false);
-    expect(
-      rewriter.wouldPatternMatch(htmlScript, "script", "tag-restricted"),
-    ).toBe(false);
+    expect(rewriter.wouldPatternMatch(htmlDiv, 'div', 'tag-restricted')).toBe(true);
+    expect(rewriter.wouldPatternMatch(htmlButton, 'button', 'tag-restricted')).toBe(false);
+    expect(rewriter.wouldPatternMatch(htmlScript, 'script', 'tag-restricted')).toBe(false);
   });
 
-  test("should handle custom conditions with functions", () => {
+  test('should handle custom conditions with functions', () => {
     const rewriter = createHtmlRewriter();
 
     const customPattern: HtmlPattern = {
-      id: "custom-condition",
-      name: "Custom Condition",
-      selector: ".component",
-      attribute: "class",
-      pattern: "old",
-      replacement: "new",
+      id: 'custom-condition',
+      name: 'Custom Condition',
+      selector: '.component',
+      attribute: 'class',
+      pattern: 'old',
+      replacement: 'new',
       priority: 1,
       enabled: true,
       conditions: [
         {
-          type: "custom",
+          type: 'custom',
           customCheck: (element, _$) => {
             const siblings = element.siblings();
             return siblings.length > 2; // Only match if element has more than 2 siblings
@@ -565,26 +527,22 @@ describe("HtmlRewriter - Step 2: Advanced Pattern Matching System", () => {
       '<div><span></span><span></span><div class="component old">Match</div><span></span></div>';
     const htmlNoMatch = '<div><div class="component old">No match</div></div>';
 
-    expect(
-      rewriter.wouldPatternMatch(htmlMatch, ".component", "custom-condition"),
-    ).toBe(true);
-    expect(
-      rewriter.wouldPatternMatch(htmlNoMatch, ".component", "custom-condition"),
-    ).toBe(false);
+    expect(rewriter.wouldPatternMatch(htmlMatch, '.component', 'custom-condition')).toBe(true);
+    expect(rewriter.wouldPatternMatch(htmlNoMatch, '.component', 'custom-condition')).toBe(false);
   });
 });
 
-describe("HtmlRewriter - Step 3: Class Replacement Engine", () => {
-  test("should apply basic class replacements", async () => {
+describe('HtmlRewriter - Step 3: Class Replacement Engine', () => {
+  test('should apply basic class replacements', async () => {
     const rewriter = createHtmlRewriter();
 
     const pattern: HtmlPattern = {
-      id: "btn-replacement",
-      name: "Button Replacement",
-      selector: ".button",
-      attribute: "class",
-      pattern: "btn-primary",
-      replacement: "button-main",
+      id: 'btn-replacement',
+      name: 'Button Replacement',
+      selector: '.button',
+      attribute: 'class',
+      pattern: 'btn-primary',
+      replacement: 'button-main',
       priority: 1,
       enabled: true,
     };
@@ -595,38 +553,36 @@ describe("HtmlRewriter - Step 3: Class Replacement Engine", () => {
     const result = await rewriter.rewriteHtml(html);
 
     expect(result.success).toBe(true);
-    expect(result.modifiedHtml).toContain("button-main");
-    expect(result.modifiedHtml).not.toContain("btn-primary");
+    expect(result.modifiedHtml).toContain('button-main');
+    expect(result.modifiedHtml).not.toContain('btn-primary');
     expect(result.appliedReplacements).toHaveLength(1);
-    expect(result.appliedReplacements![0].patternId).toBe("btn-replacement");
-    expect(result.appliedReplacements![0].originalValue).toBe(
-      "button btn-primary",
-    );
-    expect(result.appliedReplacements![0].newValue).toBe("button button-main");
+    expect(result.appliedReplacements![0].patternId).toBe('btn-replacement');
+    expect(result.appliedReplacements![0].originalValue).toBe('button btn-primary');
+    expect(result.appliedReplacements![0].newValue).toBe('button button-main');
   });
 
-  test("should handle multiple patterns with priority resolution", async () => {
+  test('should handle multiple patterns with priority resolution', async () => {
     const rewriter = createHtmlRewriter();
 
     // Add patterns that will both match the same text, creating a conflict
     const lowPriorityPattern: HtmlPattern = {
-      id: "low-priority",
-      name: "Low Priority Pattern",
-      selector: ".container",
-      attribute: "class",
-      pattern: "common-class", // Both patterns match this
-      replacement: "low-replacement",
+      id: 'low-priority',
+      name: 'Low Priority Pattern',
+      selector: '.container',
+      attribute: 'class',
+      pattern: 'common-class', // Both patterns match this
+      replacement: 'low-replacement',
       priority: 1,
       enabled: true,
     };
 
     const highPriorityPattern: HtmlPattern = {
-      id: "high-priority",
-      name: "High Priority Pattern",
-      selector: ".container",
-      attribute: "class",
-      pattern: "common-class", // Both patterns match this
-      replacement: "high-replacement",
+      id: 'high-priority',
+      name: 'High Priority Pattern',
+      selector: '.container',
+      attribute: 'class',
+      pattern: 'common-class', // Both patterns match this
+      replacement: 'high-replacement',
       priority: 10,
       enabled: true,
     };
@@ -639,22 +595,22 @@ describe("HtmlRewriter - Step 3: Class Replacement Engine", () => {
 
     expect(result.success).toBe(true);
     expect(result.appliedReplacements).toHaveLength(1);
-    expect(result.appliedReplacements![0].patternId).toBe("high-priority");
-    expect(result.modifiedHtml).toContain("high-replacement");
-    expect(result.modifiedHtml).not.toContain("low-replacement");
-    expect(result.modifiedHtml).not.toContain("common-class");
+    expect(result.appliedReplacements![0].patternId).toBe('high-priority');
+    expect(result.modifiedHtml).toContain('high-replacement');
+    expect(result.modifiedHtml).not.toContain('low-replacement');
+    expect(result.modifiedHtml).not.toContain('common-class');
   });
 
-  test("should handle multiple matches in single element", async () => {
+  test('should handle multiple matches in single element', async () => {
     const rewriter = createHtmlRewriter();
 
     const pattern: HtmlPattern = {
-      id: "multi-match",
-      name: "Multi Match Pattern",
-      selector: ".container",
-      attribute: "class",
-      pattern: "text-red", // Simple string pattern
-      replacement: "txt-red",
+      id: 'multi-match',
+      name: 'Multi Match Pattern',
+      selector: '.container',
+      attribute: 'class',
+      pattern: 'text-red', // Simple string pattern
+      replacement: 'txt-red',
       priority: 1,
       enabled: true,
       multipleMatches: true, // Enable multiple matches
@@ -662,26 +618,25 @@ describe("HtmlRewriter - Step 3: Class Replacement Engine", () => {
 
     rewriter.addPattern(pattern);
 
-    const html =
-      '<div class="container text-red text-blue text-green">Multi match test</div>';
+    const html = '<div class="container text-red text-blue text-green">Multi match test</div>';
     const result = await rewriter.rewriteHtml(html);
 
     expect(result.success).toBe(true);
     expect(result.appliedReplacements).toHaveLength(1);
-    expect(result.modifiedHtml).toContain("txt-red");
-    expect(result.modifiedHtml).not.toContain("text-red");
+    expect(result.modifiedHtml).toContain('txt-red');
+    expect(result.modifiedHtml).not.toContain('text-red');
   });
 
-  test("should respect max matches limit", async () => {
+  test('should respect max matches limit', async () => {
     const rewriter = createHtmlRewriter();
 
     const pattern: HtmlPattern = {
-      id: "max-matches",
-      name: "Max Matches Test",
-      selector: ".item",
-      attribute: "class",
-      pattern: "item",
-      replacement: "element",
+      id: 'max-matches',
+      name: 'Max Matches Test',
+      selector: '.item',
+      attribute: 'class',
+      pattern: 'item',
+      replacement: 'element',
       priority: 1,
       enabled: true,
       multipleMatches: true,
@@ -705,21 +660,20 @@ describe("HtmlRewriter - Step 3: Class Replacement Engine", () => {
 
     // All should be replaced since each element only has one match
     const elementCount = (result.modifiedHtml!.match(/element/g) || []).length;
-    const itemCount = (result.modifiedHtml!.match(/class="item"/g) || [])
-      .length;
+    const itemCount = (result.modifiedHtml!.match(/class="item"/g) || []).length;
     expect(elementCount).toBe(4);
     expect(itemCount).toBe(0); // All should be replaced
   });
 
-  test("should handle function-based replacements", async () => {
+  test('should handle function-based replacements', async () => {
     const rewriter = createHtmlRewriter();
 
     const pattern: HtmlPattern = {
-      id: "function-replacement",
-      name: "Function Replacement",
-      selector: ".dynamic",
-      attribute: "class",
-      pattern: "btn-",
+      id: 'function-replacement',
+      name: 'Function Replacement',
+      selector: '.dynamic',
+      attribute: 'class',
+      pattern: 'btn-',
       replacement: (match, element, context) => {
         const tagName = context.tagName.toLowerCase();
         return `${tagName}-button-`;
@@ -734,27 +688,25 @@ describe("HtmlRewriter - Step 3: Class Replacement Engine", () => {
     const result = await rewriter.rewriteHtml(html);
 
     expect(result.success).toBe(true);
-    expect(result.modifiedHtml).toContain("div-button-primary");
-    expect(result.modifiedHtml).not.toContain("btn-primary");
+    expect(result.modifiedHtml).toContain('div-button-primary');
+    expect(result.modifiedHtml).not.toContain('btn-primary');
     expect(result.appliedReplacements).toHaveLength(1);
-    expect(result.appliedReplacements![0].newValue).toBe(
-      "dynamic div-button-primary",
-    );
+    expect(result.appliedReplacements![0].newValue).toBe('dynamic div-button-primary');
   });
 
-  test("should handle tag restrictions", async () => {
+  test('should handle tag restrictions', async () => {
     const rewriter = createHtmlRewriter();
 
     const pattern: HtmlPattern = {
-      id: "div-only",
-      name: "Div Only",
-      selector: "*",
-      attribute: "class",
-      pattern: "special",
-      replacement: "modified",
+      id: 'div-only',
+      name: 'Div Only',
+      selector: '*',
+      attribute: 'class',
+      pattern: 'special',
+      replacement: 'modified',
       priority: 1,
       enabled: true,
-      tags: ["div"],
+      tags: ['div'],
     };
 
     rewriter.addPattern(pattern);
@@ -774,19 +726,19 @@ describe("HtmlRewriter - Step 3: Class Replacement Engine", () => {
     expect(result.appliedReplacements).toHaveLength(1);
   });
 
-  test("should handle exclude tag restrictions", async () => {
+  test('should handle exclude tag restrictions', async () => {
     const rewriter = createHtmlRewriter();
 
     const pattern: HtmlPattern = {
-      id: "no-scripts",
-      name: "No Scripts",
-      selector: "*",
-      attribute: "class",
-      pattern: "special",
-      replacement: "modified",
+      id: 'no-scripts',
+      name: 'No Scripts',
+      selector: '*',
+      attribute: 'class',
+      pattern: 'special',
+      replacement: 'modified',
       priority: 1,
       enabled: true,
-      excludeTags: ["script", "style"],
+      excludeTags: ['script', 'style'],
     };
 
     rewriter.addPattern(pattern);
@@ -806,19 +758,19 @@ describe("HtmlRewriter - Step 3: Class Replacement Engine", () => {
     expect(result.appliedReplacements).toHaveLength(1);
   });
 
-  test("should handle parent selector conditions", async () => {
+  test('should handle parent selector conditions', async () => {
     const rewriter = createHtmlRewriter();
 
     const pattern: HtmlPattern = {
-      id: "container-children",
-      name: "Container Children",
-      selector: ".item",
-      attribute: "class",
-      pattern: "old",
-      replacement: "new",
+      id: 'container-children',
+      name: 'Container Children',
+      selector: '.item',
+      attribute: 'class',
+      pattern: 'old',
+      replacement: 'new',
       priority: 1,
       enabled: true,
-      parentSelector: ".container",
+      parentSelector: '.container',
     };
 
     rewriter.addPattern(pattern);
@@ -836,24 +788,22 @@ describe("HtmlRewriter - Step 3: Class Replacement Engine", () => {
 
     expect(result.success).toBe(true);
     expect(result.modifiedHtml).toContain(
-      '<div class="container">\n        <div class="item new">',
+      '<div class="container">\n        <div class="item new">'
     );
-    expect(result.modifiedHtml).toContain(
-      '<div class="wrapper">\n        <div class="item old">',
-    );
+    expect(result.modifiedHtml).toContain('<div class="wrapper">\n        <div class="item old">');
     expect(result.appliedReplacements).toHaveLength(1);
   });
 
-  test("should track replacement metadata", async () => {
+  test('should track replacement metadata', async () => {
     const rewriter = createHtmlRewriter();
 
     const pattern: HtmlPattern = {
-      id: "metadata-test",
-      name: "Metadata Test",
-      selector: ".test",
-      attribute: "class",
-      pattern: "old",
-      replacement: "new",
+      id: 'metadata-test',
+      name: 'Metadata Test',
+      selector: '.test',
+      attribute: 'class',
+      pattern: 'old',
+      replacement: 'new',
       priority: 1,
       enabled: true,
     };
@@ -867,26 +817,26 @@ describe("HtmlRewriter - Step 3: Class Replacement Engine", () => {
     expect(result.appliedReplacements).toHaveLength(1);
 
     const replacement = result.appliedReplacements![0];
-    expect(replacement.metadata?.tagName).toBe("div"); // It's lowercase in cheerio
+    expect(replacement.metadata?.tagName).toBe('div'); // It's lowercase in cheerio
     expect(replacement.metadata?.attributes).toEqual({
-      class: "test old", // Original attributes before replacement
-      id: "test-element",
+      class: 'test old', // Original attributes before replacement
+      id: 'test-element',
     });
     expect(replacement.metadata?.depth).toBe(0);
     expect(replacement.metadata?.hasConflicts).toBe(false);
     expect(replacement.metadata?.appliedAt).toBeInstanceOf(Date);
   });
 
-  test("should handle disabled patterns", async () => {
+  test('should handle disabled patterns', async () => {
     const rewriter = createHtmlRewriter();
 
     const disabledPattern: HtmlPattern = {
-      id: "disabled-pattern",
-      name: "Disabled Pattern",
-      selector: ".test",
-      attribute: "class",
-      pattern: "old",
-      replacement: "new",
+      id: 'disabled-pattern',
+      name: 'Disabled Pattern',
+      selector: '.test',
+      attribute: 'class',
+      pattern: 'old',
+      replacement: 'new',
       priority: 1,
       enabled: false, // Disabled
     };
@@ -897,21 +847,21 @@ describe("HtmlRewriter - Step 3: Class Replacement Engine", () => {
     const result = await rewriter.rewriteHtml(html);
 
     expect(result.success).toBe(true);
-    expect(result.modifiedHtml).toContain("old");
-    expect(result.modifiedHtml).not.toContain("new");
+    expect(result.modifiedHtml).toContain('old');
+    expect(result.modifiedHtml).not.toContain('new');
     expect(result.appliedReplacements).toHaveLength(0);
   });
 
-  test("should provide comprehensive statistics", async () => {
+  test('should provide comprehensive statistics', async () => {
     const rewriter = createHtmlRewriter();
 
     const pattern: HtmlPattern = {
-      id: "stats-test",
-      name: "Statistics Test",
-      selector: ".target",
-      attribute: "class",
-      pattern: "old",
-      replacement: "new",
+      id: 'stats-test',
+      name: 'Statistics Test',
+      selector: '.target',
+      attribute: 'class',
+      pattern: 'old',
+      replacement: 'new',
       priority: 1,
       enabled: true,
     };
@@ -930,46 +880,44 @@ describe("HtmlRewriter - Step 3: Class Replacement Engine", () => {
     expect(result.statistics).toBeDefined();
     expect(result.statistics!.elementStats.totalProcessed).toBeGreaterThan(0);
     expect(result.statistics!.elementStats.totalModified).toBe(2);
-    expect(result.statistics!.patternStats.get("stats-test")).toEqual({
+    expect(result.statistics!.patternStats.get('stats-test')).toEqual({
       attempts: 2,
       successes: 2,
       failures: 0,
       conflicts: 0,
     });
-    expect(
-      result.statistics!.performanceStats.processingTime,
-    ).toBeGreaterThanOrEqual(0);
+    expect(result.statistics!.performanceStats.processingTime).toBeGreaterThanOrEqual(0);
   });
 });
 
-describe("HtmlRewriter - Debug Step 3", () => {
-  test("debug basic replacement", async () => {
+describe('HtmlRewriter - Debug Step 3', () => {
+  test('debug basic replacement', async () => {
     const rewriter = createHtmlRewriter();
 
     const pattern: HtmlPattern = {
-      id: "debug-test",
-      name: "Debug Test",
-      selector: ".button",
-      attribute: "class",
-      pattern: "btn-primary",
-      replacement: "button-main",
+      id: 'debug-test',
+      name: 'Debug Test',
+      selector: '.button',
+      attribute: 'class',
+      pattern: 'btn-primary',
+      replacement: 'button-main',
       priority: 1,
       enabled: true,
     };
 
     rewriter.addPattern(pattern);
-    console.log("Pattern added:", pattern);
+    console.log('Pattern added:', pattern);
 
     const html = '<div class="button btn-primary">Click me</div>';
-    console.log("Input HTML:", html);
+    console.log('Input HTML:', html);
 
     const result = await rewriter.rewriteHtml(html);
 
-    console.log("Result success:", result.success);
-    console.log("Result HTML:", result.modifiedHtml);
-    console.log("Applied replacements:", result.appliedReplacements);
-    console.log("Skipped replacements:", result.skippedReplacements);
-    console.log("Errors:", result.metadata?.errors);
+    console.log('Result success:', result.success);
+    console.log('Result HTML:', result.modifiedHtml);
+    console.log('Applied replacements:', result.appliedReplacements);
+    console.log('Skipped replacements:', result.skippedReplacements);
+    console.log('Errors:', result.metadata?.errors);
 
     // Should have applied the replacement
     expect(result.success).toBe(true);
@@ -977,29 +925,29 @@ describe("HtmlRewriter - Debug Step 3", () => {
   });
 });
 
-describe("HtmlRewriter - Step 4: Overlap Detection and Resolution", () => {
-  test("should detect exact pattern overlaps", () => {
+describe('HtmlRewriter - Step 4: Overlap Detection and Resolution', () => {
+  test('should detect exact pattern overlaps', () => {
     const rewriter = createHtmlRewriter();
 
     // Add patterns that will create exact overlaps
     const pattern1: HtmlPattern = {
-      id: "pattern-1",
-      name: "Pattern 1",
-      selector: ".test",
-      attribute: "class",
-      pattern: "btn-primary",
-      replacement: "button-main",
+      id: 'pattern-1',
+      name: 'Pattern 1',
+      selector: '.test',
+      attribute: 'class',
+      pattern: 'btn-primary',
+      replacement: 'button-main',
       priority: 1,
       enabled: true,
     };
 
     const pattern2: HtmlPattern = {
-      id: "pattern-2",
-      name: "Pattern 2",
-      selector: ".test",
-      attribute: "class",
-      pattern: "btn-primary", // Same pattern = exact overlap
-      replacement: "primary-button",
+      id: 'pattern-2',
+      name: 'Pattern 2',
+      selector: '.test',
+      attribute: 'class',
+      pattern: 'btn-primary', // Same pattern = exact overlap
+      replacement: 'primary-button',
       priority: 2,
       enabled: true,
     };
@@ -1011,33 +959,33 @@ describe("HtmlRewriter - Step 4: Overlap Detection and Resolution", () => {
     const overlaps = rewriter.detectPatternOverlaps(html);
 
     expect(overlaps).toHaveLength(1);
-    expect(overlaps[0].overlapType).toBe("exact");
-    expect(overlaps[0].severity).toBe("high");
-    expect(overlaps[0].recommendedResolution).toBe("highest-priority");
+    expect(overlaps[0].overlapType).toBe('exact');
+    expect(overlaps[0].severity).toBe('high');
+    expect(overlaps[0].recommendedResolution).toBe('highest-priority');
     expect(overlaps[0].conflictingPatterns).toHaveLength(2);
   });
 
-  test("should detect nested pattern overlaps", () => {
+  test('should detect nested pattern overlaps', () => {
     const rewriter = createHtmlRewriter();
 
     const outerPattern: HtmlPattern = {
-      id: "outer",
-      name: "Outer Pattern",
-      selector: ".test",
-      attribute: "class",
-      pattern: "btn-primary-large",
-      replacement: "button-xl",
+      id: 'outer',
+      name: 'Outer Pattern',
+      selector: '.test',
+      attribute: 'class',
+      pattern: 'btn-primary-large',
+      replacement: 'button-xl',
       priority: 1,
       enabled: true,
     };
 
     const innerPattern: HtmlPattern = {
-      id: "inner",
-      name: "Inner Pattern",
-      selector: ".test",
-      attribute: "class",
-      pattern: "primary", // Nested within 'btn-primary-large'
-      replacement: "main",
+      id: 'inner',
+      name: 'Inner Pattern',
+      selector: '.test',
+      attribute: 'class',
+      pattern: 'primary', // Nested within 'btn-primary-large'
+      replacement: 'main',
       priority: 2,
       enabled: true,
     };
@@ -1049,32 +997,32 @@ describe("HtmlRewriter - Step 4: Overlap Detection and Resolution", () => {
     const overlaps = rewriter.detectPatternOverlaps(html);
 
     expect(overlaps).toHaveLength(1);
-    expect(overlaps[0].overlapType).toBe("nested");
-    expect(overlaps[0].severity).toBe("medium");
-    expect(overlaps[0].recommendedResolution).toBe("split");
+    expect(overlaps[0].overlapType).toBe('nested');
+    expect(overlaps[0].severity).toBe('medium');
+    expect(overlaps[0].recommendedResolution).toBe('split');
   });
 
-  test("should detect partial pattern overlaps", () => {
+  test('should detect partial pattern overlaps', () => {
     const rewriter = createHtmlRewriter();
 
     const pattern1: HtmlPattern = {
-      id: "pattern-1",
-      name: "Pattern 1",
-      selector: ".test",
-      attribute: "class",
-      pattern: "btn-primary",
-      replacement: "button-main",
+      id: 'pattern-1',
+      name: 'Pattern 1',
+      selector: '.test',
+      attribute: 'class',
+      pattern: 'btn-primary',
+      replacement: 'button-main',
       priority: 1,
       enabled: true,
     };
 
     const pattern2: HtmlPattern = {
-      id: "pattern-2",
-      name: "Pattern 2",
-      selector: ".test",
-      attribute: "class",
-      pattern: "primary-large", // Partially overlaps with 'btn-primary'
-      replacement: "main-xl",
+      id: 'pattern-2',
+      name: 'Pattern 2',
+      selector: '.test',
+      attribute: 'class',
+      pattern: 'primary-large', // Partially overlaps with 'btn-primary'
+      replacement: 'main-xl',
       priority: 2,
       enabled: true,
     };
@@ -1086,31 +1034,31 @@ describe("HtmlRewriter - Step 4: Overlap Detection and Resolution", () => {
     const overlaps = rewriter.detectPatternOverlaps(html);
 
     expect(overlaps).toHaveLength(1);
-    expect(overlaps[0].overlapType).toBe("partial");
-    expect(overlaps[0].recommendedResolution).toBe("manual-review");
+    expect(overlaps[0].overlapType).toBe('partial');
+    expect(overlaps[0].recommendedResolution).toBe('manual-review');
   });
 
-  test("should resolve conflicts using highest priority strategy", () => {
+  test('should resolve conflicts using highest priority strategy', () => {
     const rewriter = createHtmlRewriter();
 
     const lowPriority: HtmlPattern = {
-      id: "low",
-      name: "Low Priority",
-      selector: ".test",
-      attribute: "class",
-      pattern: "btn",
-      replacement: "button",
+      id: 'low',
+      name: 'Low Priority',
+      selector: '.test',
+      attribute: 'class',
+      pattern: 'btn',
+      replacement: 'button',
       priority: 1,
       enabled: true,
     };
 
     const highPriority: HtmlPattern = {
-      id: "high",
-      name: "High Priority",
-      selector: ".test",
-      attribute: "class",
-      pattern: "btn",
-      replacement: "primary-btn",
+      id: 'high',
+      name: 'High Priority',
+      selector: '.test',
+      attribute: 'class',
+      pattern: 'btn',
+      replacement: 'primary-btn',
       priority: 10,
       enabled: true,
     };
@@ -1120,39 +1068,36 @@ describe("HtmlRewriter - Step 4: Overlap Detection and Resolution", () => {
 
     const html = '<div class="test btn">Test</div>';
     const overlaps = rewriter.detectPatternOverlaps(html);
-    const resolutions = rewriter.resolvePatternConflicts(
-      overlaps,
-      "highest-priority",
-    );
+    const resolutions = rewriter.resolvePatternConflicts(overlaps, 'highest-priority');
 
     expect(resolutions).toHaveLength(1);
-    expect(resolutions[0].resolution).toBe("highest-priority");
-    expect(resolutions[0].chosenPatterns).toEqual(["high"]);
+    expect(resolutions[0].resolution).toBe('highest-priority');
+    expect(resolutions[0].chosenPatterns).toEqual(['high']);
     expect(resolutions[0].success).toBe(true);
-    expect(resolutions[0].reason).toContain("highest priority (10)");
+    expect(resolutions[0].reason).toContain('highest priority (10)');
   });
 
-  test("should resolve conflicts using merge strategy", () => {
+  test('should resolve conflicts using merge strategy', () => {
     const rewriter = createHtmlRewriter();
 
     const pattern1: HtmlPattern = {
-      id: "pattern-1",
-      name: "Pattern 1",
-      selector: ".test",
-      attribute: "class",
-      pattern: "btn-primary",
-      replacement: "button-main",
+      id: 'pattern-1',
+      name: 'Pattern 1',
+      selector: '.test',
+      attribute: 'class',
+      pattern: 'btn-primary',
+      replacement: 'button-main',
       priority: 1,
       enabled: true,
     };
 
     const pattern2: HtmlPattern = {
-      id: "pattern-2",
-      name: "Pattern 2",
-      selector: ".test",
-      attribute: "class",
-      pattern: "primary-large",
-      replacement: "main-xl",
+      id: 'pattern-2',
+      name: 'Pattern 2',
+      selector: '.test',
+      attribute: 'class',
+      pattern: 'primary-large',
+      replacement: 'main-xl',
       priority: 1,
       enabled: true,
     };
@@ -1162,35 +1107,35 @@ describe("HtmlRewriter - Step 4: Overlap Detection and Resolution", () => {
 
     const html = '<div class="test btn-primary-large">Test</div>';
     const overlaps = rewriter.detectPatternOverlaps(html);
-    const resolutions = rewriter.resolvePatternConflicts(overlaps, "merge");
+    const resolutions = rewriter.resolvePatternConflicts(overlaps, 'merge');
 
     expect(resolutions).toHaveLength(1);
-    expect(resolutions[0].resolution).toBe("merge");
+    expect(resolutions[0].resolution).toBe('merge');
     expect(resolutions[0].success).toBe(true);
     expect(resolutions[0].chosenPatterns.length).toBeGreaterThan(0);
   });
 
-  test("should resolve conflicts using split strategy", () => {
+  test('should resolve conflicts using split strategy', () => {
     const rewriter = createHtmlRewriter();
 
     const outerPattern: HtmlPattern = {
-      id: "outer",
-      name: "Outer Pattern",
-      selector: ".test",
-      attribute: "class",
-      pattern: "btn-primary-large",
-      replacement: "button-xl",
+      id: 'outer',
+      name: 'Outer Pattern',
+      selector: '.test',
+      attribute: 'class',
+      pattern: 'btn-primary-large',
+      replacement: 'button-xl',
       priority: 1,
       enabled: true,
     };
 
     const innerPattern: HtmlPattern = {
-      id: "inner",
-      name: "Inner Pattern",
-      selector: ".test",
-      attribute: "class",
-      pattern: "primary",
-      replacement: "main",
+      id: 'inner',
+      name: 'Inner Pattern',
+      selector: '.test',
+      attribute: 'class',
+      pattern: 'primary',
+      replacement: 'main',
       priority: 1,
       enabled: true,
     };
@@ -1200,36 +1145,36 @@ describe("HtmlRewriter - Step 4: Overlap Detection and Resolution", () => {
 
     const html = '<div class="test btn-primary-large">Test</div>';
     const overlaps = rewriter.detectPatternOverlaps(html);
-    const resolutions = rewriter.resolvePatternConflicts(overlaps, "split");
+    const resolutions = rewriter.resolvePatternConflicts(overlaps, 'split');
 
     expect(resolutions).toHaveLength(1);
-    expect(resolutions[0].resolution).toBe("split");
+    expect(resolutions[0].resolution).toBe('split');
     expect(resolutions[0].success).toBe(true);
     expect(resolutions[0].chosenPatterns).toHaveLength(1);
-    expect(resolutions[0].reason).toContain("outermost pattern");
+    expect(resolutions[0].reason).toContain('outermost pattern');
   });
 
-  test("should use auto resolution strategy", () => {
+  test('should use auto resolution strategy', () => {
     const rewriter = createHtmlRewriter();
 
     const pattern1: HtmlPattern = {
-      id: "pattern-1",
-      name: "Pattern 1",
-      selector: ".test",
-      attribute: "class",
-      pattern: "btn",
-      replacement: "button",
+      id: 'pattern-1',
+      name: 'Pattern 1',
+      selector: '.test',
+      attribute: 'class',
+      pattern: 'btn',
+      replacement: 'button',
       priority: 5,
       enabled: true,
     };
 
     const pattern2: HtmlPattern = {
-      id: "pattern-2",
-      name: "Pattern 2",
-      selector: ".test",
-      attribute: "class",
-      pattern: "btn",
-      replacement: "primary-btn",
+      id: 'pattern-2',
+      name: 'Pattern 2',
+      selector: '.test',
+      attribute: 'class',
+      pattern: 'btn',
+      replacement: 'primary-btn',
       priority: 1,
       enabled: true,
     };
@@ -1239,15 +1184,15 @@ describe("HtmlRewriter - Step 4: Overlap Detection and Resolution", () => {
 
     const html = '<div class="test btn">Test</div>';
     const overlaps = rewriter.detectPatternOverlaps(html);
-    const resolutions = rewriter.resolvePatternConflicts(overlaps, "auto");
+    const resolutions = rewriter.resolvePatternConflicts(overlaps, 'auto');
 
     expect(resolutions).toHaveLength(1);
-    expect(resolutions[0].resolution).toBe("highest-priority"); // Auto should choose highest-priority for exact overlaps
-    expect(resolutions[0].chosenPatterns).toEqual(["pattern-1"]);
+    expect(resolutions[0].resolution).toBe('highest-priority'); // Auto should choose highest-priority for exact overlaps
+    expect(resolutions[0].chosenPatterns).toEqual(['pattern-1']);
     expect(resolutions[0].success).toBe(true);
   });
 
-  test("should handle complex multi-pattern conflicts", () => {
+  test('should handle complex multi-pattern conflicts', () => {
     const rewriter = createHtmlRewriter();
 
     // Add multiple conflicting patterns
@@ -1255,9 +1200,9 @@ describe("HtmlRewriter - Step 4: Overlap Detection and Resolution", () => {
       const pattern: HtmlPattern = {
         id: `pattern-${i}`,
         name: `Pattern ${i}`,
-        selector: ".test",
-        attribute: "class",
-        pattern: "btn",
+        selector: '.test',
+        attribute: 'class',
+        pattern: 'btn',
         replacement: `button-${i}`,
         priority: i,
         enabled: true,
@@ -1270,44 +1215,44 @@ describe("HtmlRewriter - Step 4: Overlap Detection and Resolution", () => {
 
     expect(overlaps).toHaveLength(1);
     expect(overlaps[0].conflictingPatterns).toHaveLength(5);
-    expect(overlaps[0].severity).toBe("critical"); // Should upgrade severity for many conflicts
+    expect(overlaps[0].severity).toBe('critical'); // Should upgrade severity for many conflicts
   });
 
-  test("should get conflict statistics", () => {
+  test('should get conflict statistics', () => {
     const rewriter = createHtmlRewriter();
 
     const stats = rewriter.getConflictStats();
 
-    expect(stats).toHaveProperty("totalConflicts");
-    expect(stats).toHaveProperty("resolvedConflicts");
-    expect(stats).toHaveProperty("unresolvedConflicts");
-    expect(stats).toHaveProperty("resolutionStrategies");
-    expect(stats).toHaveProperty("severityDistribution");
+    expect(stats).toHaveProperty('totalConflicts');
+    expect(stats).toHaveProperty('resolvedConflicts');
+    expect(stats).toHaveProperty('unresolvedConflicts');
+    expect(stats).toHaveProperty('resolutionStrategies');
+    expect(stats).toHaveProperty('severityDistribution');
     expect(stats.resolutionStrategies).toBeInstanceOf(Map);
     expect(stats.severityDistribution).toBeInstanceOf(Map);
   });
 
-  test("should handle no overlaps gracefully", () => {
+  test('should handle no overlaps gracefully', () => {
     const rewriter = createHtmlRewriter();
 
     const pattern1: HtmlPattern = {
-      id: "pattern-1",
-      name: "Pattern 1",
-      selector: ".test",
-      attribute: "class",
-      pattern: "btn",
-      replacement: "button",
+      id: 'pattern-1',
+      name: 'Pattern 1',
+      selector: '.test',
+      attribute: 'class',
+      pattern: 'btn',
+      replacement: 'button',
       priority: 1,
       enabled: true,
     };
 
     const pattern2: HtmlPattern = {
-      id: "pattern-2",
-      name: "Pattern 2",
-      selector: ".test",
-      attribute: "class",
-      pattern: "large",
-      replacement: "xl",
+      id: 'pattern-2',
+      name: 'Pattern 2',
+      selector: '.test',
+      attribute: 'class',
+      pattern: 'large',
+      replacement: 'xl',
       priority: 1,
       enabled: true,
     };
@@ -1322,14 +1267,14 @@ describe("HtmlRewriter - Step 4: Overlap Detection and Resolution", () => {
   });
 });
 
-describe("HtmlRewriter - Step 5: Format Preservation System", () => {
+describe('HtmlRewriter - Step 5: Format Preservation System', () => {
   const createHtmlRewriter = () =>
     new HtmlRewriter({
       validateOutput: false,
       preserveFormatting: true,
     });
 
-  test("should analyze HTML format correctly", () => {
+  test('should analyze HTML format correctly', () => {
     const rewriter = createHtmlRewriter();
 
     const html = `<!DOCTYPE html>
@@ -1350,13 +1295,13 @@ describe("HtmlRewriter - Step 5: Format Preservation System", () => {
     const analysis = rewriter.getFormatAnalysis();
 
     expect(analysis).toBeDefined();
-    expect(analysis!.indentationStyle).toBe("spaces");
+    expect(analysis!.indentationStyle).toBe('spaces');
     expect(analysis!.indentationSize).toBeGreaterThan(0);
     expect(analysis!.lineEndings).toMatch(/^(lf|crlf)$/);
     expect(analysis!.originalFormatting.totalLines).toBeGreaterThan(1);
   });
 
-  test("should detect different indentation styles", () => {
+  test('should detect different indentation styles', () => {
     const rewriter = createHtmlRewriter();
 
     const spacesHtml = `<div>
@@ -1370,32 +1315,32 @@ describe("HtmlRewriter - Step 5: Format Preservation System", () => {
     // Test spaces
     rewriter.rewriteHtml(spacesHtml);
     let analysis = rewriter.getFormatAnalysis();
-    expect(analysis!.indentationStyle).toBe("spaces");
+    expect(analysis!.indentationStyle).toBe('spaces');
 
     // Test tabs
     rewriter.rewriteHtml(tabsHtml);
     analysis = rewriter.getFormatAnalysis();
-    expect(analysis!.indentationStyle).toBe("tabs");
+    expect(analysis!.indentationStyle).toBe('tabs');
   });
 
-  test("should detect line ending styles", () => {
+  test('should detect line ending styles', () => {
     const rewriter = createHtmlRewriter();
 
-    const lfHtml = "<div>\n<span>LF</span>\n</div>";
-    const crlfHtml = "<div>\r\n<span>CRLF</span>\r\n</div>";
+    const lfHtml = '<div>\n<span>LF</span>\n</div>';
+    const crlfHtml = '<div>\r\n<span>CRLF</span>\r\n</div>';
 
     // Test LF
     rewriter.rewriteHtml(lfHtml);
     let analysis = rewriter.getFormatAnalysis();
-    expect(analysis!.lineEndings).toBe("lf");
+    expect(analysis!.lineEndings).toBe('lf');
 
     // Test CRLF
     rewriter.rewriteHtml(crlfHtml);
     analysis = rewriter.getFormatAnalysis();
-    expect(analysis!.lineEndings).toBe("crlf");
+    expect(analysis!.lineEndings).toBe('crlf');
   });
 
-  test("should detect and preserve comments", () => {
+  test('should detect and preserve comments', () => {
     const rewriter = createHtmlRewriter();
 
     const html = `<!-- Header comment -->
@@ -1409,16 +1354,15 @@ describe("HtmlRewriter - Step 5: Format Preservation System", () => {
     const analysis = rewriter.getFormatAnalysis();
 
     expect(analysis!.preservedComments).toHaveLength(3);
-    expect(analysis!.preservedComments[0].content).toContain("Header comment");
-    expect(analysis!.preservedComments[1].content).toContain("Inline comment");
-    expect(analysis!.preservedComments[2].content).toContain("Footer comment");
+    expect(analysis!.preservedComments[0].content).toContain('Header comment');
+    expect(analysis!.preservedComments[1].content).toContain('Inline comment');
+    expect(analysis!.preservedComments[2].content).toContain('Footer comment');
   });
 
-  test("should detect trailing whitespace", () => {
+  test('should detect trailing whitespace', () => {
     const rewriter = createHtmlRewriter();
 
-    const htmlWithTrailing =
-      '<div class="test">   \n<span>Content</span>  \n</div>';
+    const htmlWithTrailing = '<div class="test">   \n<span>Content</span>  \n</div>';
 
     rewriter.rewriteHtml(htmlWithTrailing);
     const analysis = rewriter.getFormatAnalysis();
@@ -1426,16 +1370,16 @@ describe("HtmlRewriter - Step 5: Format Preservation System", () => {
     expect(analysis!.hasTrailingWhitespace).toBe(true);
   });
 
-  test("should preserve indentation during replacement", async () => {
+  test('should preserve indentation during replacement', async () => {
     const rewriter = createHtmlRewriter();
 
     const pattern: HtmlPattern = {
-      id: "test-pattern",
-      name: "Test Pattern",
-      selector: ".test",
-      attribute: "class",
-      pattern: "btn",
-      replacement: "button",
+      id: 'test-pattern',
+      name: 'Test Pattern',
+      selector: '.test',
+      attribute: 'class',
+      pattern: 'btn',
+      replacement: 'button',
       priority: 1,
       enabled: true,
     };
@@ -1452,17 +1396,17 @@ describe("HtmlRewriter - Step 5: Format Preservation System", () => {
 
     // Should preserve indentation structure
     expect(result.modifiedHtml).toContain('  <div class="test button">');
-    expect(result.modifiedHtml).toContain("    <span>Content</span>");
+    expect(result.modifiedHtml).toContain('    <span>Content</span>');
   });
 
-  test("should configure format preservation options", () => {
+  test('should configure format preservation options', () => {
     const rewriter = createHtmlRewriter();
 
     const newOptions = {
       preserveWhitespace: false,
       preserveIndentation: true,
       preserveComments: false,
-      indentationStyle: "tabs" as const,
+      indentationStyle: 'tabs' as const,
       indentationSize: 4,
     };
 
@@ -1472,11 +1416,11 @@ describe("HtmlRewriter - Step 5: Format Preservation System", () => {
     expect(options.preserveWhitespace).toBe(false);
     expect(options.preserveIndentation).toBe(true);
     expect(options.preserveComments).toBe(false);
-    expect(options.indentationStyle).toBe("tabs");
+    expect(options.indentationStyle).toBe('tabs');
     expect(options.indentationSize).toBe(4);
   });
 
-  test("should handle mixed indentation gracefully", () => {
+  test('should handle mixed indentation gracefully', () => {
     const rewriter = createHtmlRewriter();
 
     const mixedHtml = `<div>
@@ -1491,7 +1435,7 @@ describe("HtmlRewriter - Step 5: Format Preservation System", () => {
     expect(analysis!.indentationStyle).toMatch(/^(spaces|tabs|mixed)$/);
   });
 
-  test("should preserve empty lines", () => {
+  test('should preserve empty lines', () => {
     const rewriter = createHtmlRewriter();
 
     const html = `<div class="test">
@@ -1507,19 +1451,19 @@ describe("HtmlRewriter - Step 5: Format Preservation System", () => {
     expect(analysis!.originalFormatting.emptyLines).toContain(3);
   });
 
-  test("should handle format preservation when disabled", async () => {
+  test('should handle format preservation when disabled', async () => {
     const rewriter = new HtmlRewriter({
       validateOutput: false,
       preserveFormatting: false,
     });
 
     const pattern: HtmlPattern = {
-      id: "test-pattern",
-      name: "Test Pattern",
-      selector: ".test",
-      attribute: "class",
-      pattern: "btn",
-      replacement: "button",
+      id: 'test-pattern',
+      name: 'Test Pattern',
+      selector: '.test',
+      attribute: 'class',
+      pattern: 'btn',
+      replacement: 'button',
       priority: 1,
       enabled: true,
     };
@@ -1530,35 +1474,34 @@ describe("HtmlRewriter - Step 5: Format Preservation System", () => {
     const result = await rewriter.rewriteHtml(html);
 
     // Should still process replacements even when formatting is disabled
-    expect(result.modifiedHtml).toContain("button");
+    expect(result.modifiedHtml).toContain('button');
     expect(result.success).toBe(true);
   });
 
-  test("should restore CRLF line endings when detected", async () => {
+  test('should restore CRLF line endings when detected', async () => {
     const rewriter = createHtmlRewriter();
 
     const pattern: HtmlPattern = {
-      id: "test-pattern",
-      name: "Test Pattern",
-      selector: ".test",
-      attribute: "class",
-      pattern: "btn",
-      replacement: "button",
+      id: 'test-pattern',
+      name: 'Test Pattern',
+      selector: '.test',
+      attribute: 'class',
+      pattern: 'btn',
+      replacement: 'button',
       priority: 1,
       enabled: true,
     };
 
     rewriter.addPattern(pattern);
 
-    const crlfHtml =
-      '<div class="test btn">\r\n  <span>Content</span>\r\n</div>';
+    const crlfHtml = '<div class="test btn">\r\n  <span>Content</span>\r\n</div>';
     const result = await rewriter.rewriteHtml(crlfHtml);
 
     // Should preserve CRLF line endings
-    expect(result.modifiedHtml).toContain("\r\n");
+    expect(result.modifiedHtml).toContain('\r\n');
   });
 
-  test("should track format analysis statistics", () => {
+  test('should track format analysis statistics', () => {
     const rewriter = createHtmlRewriter();
 
     const html = `<!DOCTYPE html>
@@ -1583,24 +1526,24 @@ describe("HtmlRewriter - Step 5: Format Preservation System", () => {
   });
 });
 
-describe("HtmlRewriter - Step 7: Testing Infrastructure & Edge Cases", () => {
+describe('HtmlRewriter - Step 7: Testing Infrastructure & Edge Cases', () => {
   const createHtmlRewriter = () =>
     new HtmlRewriter({
       validateOutput: false,
       preserveFormatting: true,
     });
 
-  describe("Edge Cases and Error Conditions", () => {
-    test("should handle malformed HTML gracefully", async () => {
+  describe('Edge Cases and Error Conditions', () => {
+    test('should handle malformed HTML gracefully', async () => {
       const rewriter = createHtmlRewriter();
 
       const pattern: HtmlPattern = {
-        id: "malformed-test",
-        name: "Malformed Test",
-        selector: "div",
-        attribute: "class",
-        pattern: "test",
-        replacement: "fixed",
+        id: 'malformed-test',
+        name: 'Malformed Test',
+        selector: 'div',
+        attribute: 'class',
+        pattern: 'test',
+        replacement: 'fixed',
         priority: 1,
         enabled: true,
       };
@@ -1619,31 +1562,31 @@ describe("HtmlRewriter - Step 7: Testing Infrastructure & Edge Cases", () => {
       for (const html of malformedCases) {
         const result = await rewriter.rewriteHtml(
           html,
-          `malformed-${malformedCases.indexOf(html)}`,
+          `malformed-${malformedCases.indexOf(html)}`
         );
         expect(result.success).toBe(true);
-        expect(result.modifiedHtml).toContain("fixed");
+        expect(result.modifiedHtml).toContain('fixed');
       }
 
       // Test case with just a comment (no elements to modify)
       const commentOnlyResult = await rewriter.rewriteHtml(
-        "<!-- Comment without proper HTML -->",
-        "comment-only",
+        '<!-- Comment without proper HTML -->',
+        'comment-only'
       );
       expect(commentOnlyResult.success).toBe(true);
       expect(commentOnlyResult.appliedReplacements).toHaveLength(0); // No elements to modify
     });
 
-    test("should handle extremely large HTML documents", async () => {
+    test('should handle extremely large HTML documents', async () => {
       const rewriter = createHtmlRewriter();
 
       const pattern: HtmlPattern = {
-        id: "large-doc-test",
-        name: "Large Document Test",
-        selector: ".test",
-        attribute: "class",
-        pattern: "large",
-        replacement: "optimized",
+        id: 'large-doc-test',
+        name: 'Large Document Test',
+        selector: '.test',
+        attribute: 'class',
+        pattern: 'large',
+        replacement: 'optimized',
         priority: 1,
         enabled: true,
       };
@@ -1653,11 +1596,11 @@ describe("HtmlRewriter - Step 7: Testing Infrastructure & Edge Cases", () => {
       // Generate large HTML document
       const largeHtml = Array.from(
         { length: 1000 },
-        (_, i) => `<div class="test large item-${i}">Content ${i}</div>`,
-      ).join("\n");
+        (_, i) => `<div class="test large item-${i}">Content ${i}</div>`
+      ).join('\n');
 
       const startTime = Date.now();
-      const result = await rewriter.rewriteHtml(largeHtml, "large-document");
+      const result = await rewriter.rewriteHtml(largeHtml, 'large-document');
       const processingTime = Date.now() - startTime;
 
       expect(result.success).toBe(true);
@@ -1666,16 +1609,16 @@ describe("HtmlRewriter - Step 7: Testing Infrastructure & Edge Cases", () => {
       expect(result.statistics.performanceStats.totalTime).toBeGreaterThan(0);
     });
 
-    test("should handle deeply nested HTML structures", async () => {
+    test('should handle deeply nested HTML structures', async () => {
       const rewriter = createHtmlRewriter();
 
       const pattern: HtmlPattern = {
-        id: "nested-test",
-        name: "Nested Test",
-        selector: ".nested",
-        attribute: "class",
-        pattern: "deep",
-        replacement: "shallow",
+        id: 'nested-test',
+        name: 'Nested Test',
+        selector: '.nested',
+        attribute: 'class',
+        pattern: 'deep',
+        replacement: 'shallow',
         priority: 1,
         enabled: true,
       };
@@ -1688,11 +1631,11 @@ describe("HtmlRewriter - Step 7: Testing Infrastructure & Edge Cases", () => {
         nestedHtml += `<div class="nested deep level-${i}">Level ${i}`;
       }
       for (let i = 0; i < 50; i++) {
-        nestedHtml += "</div>";
+        nestedHtml += '</div>';
       }
-      nestedHtml += "</div>";
+      nestedHtml += '</div>';
 
-      const result = await rewriter.rewriteHtml(nestedHtml, "deeply-nested");
+      const result = await rewriter.rewriteHtml(nestedHtml, 'deeply-nested');
 
       expect(result.success).toBe(true);
       expect(result.appliedReplacements.length).toBeGreaterThan(50);
@@ -1700,16 +1643,16 @@ describe("HtmlRewriter - Step 7: Testing Infrastructure & Edge Cases", () => {
       expect(result.modifiedHtml).toContain('class="nested shallow"');
     });
 
-    test("should handle special characters and encoding", async () => {
+    test('should handle special characters and encoding', async () => {
       const rewriter = createHtmlRewriter();
 
       const pattern: HtmlPattern = {
-        id: "encoding-test",
-        name: "Encoding Test",
-        selector: ".unicode",
-        attribute: "class",
-        pattern: "special",
-        replacement: "normal",
+        id: 'encoding-test',
+        name: 'Encoding Test',
+        selector: '.unicode',
+        attribute: 'class',
+        pattern: 'special',
+        replacement: 'normal',
         priority: 1,
         enabled: true,
       };
@@ -1724,25 +1667,25 @@ describe("HtmlRewriter - Step 7: Testing Infrastructure & Edge Cases", () => {
         <div class="unicode special">Special chars: &lt; &gt; &amp; &quot;</div>
       `;
 
-      const result = await rewriter.rewriteHtml(unicodeHtml, "unicode-test");
+      const result = await rewriter.rewriteHtml(unicodeHtml, 'unicode-test');
 
       expect(result.success).toBe(true);
       // Cheerio may encode Unicode characters, so check for the presence of the class changes
       expect(result.modifiedHtml).toContain('class="unicode normal"');
-      expect(result.modifiedHtml).toContain("&lt; &gt; &amp;");
+      expect(result.modifiedHtml).toContain('&lt; &gt; &amp;');
       expect(result.appliedReplacements).toHaveLength(5);
     });
 
-    test("should handle concurrent processing safely", async () => {
+    test('should handle concurrent processing safely', async () => {
       const rewriter = createHtmlRewriter();
 
       const pattern: HtmlPattern = {
-        id: "concurrent-test",
-        name: "Concurrent Test",
-        selector: ".concurrent",
-        attribute: "class",
-        pattern: "original",
-        replacement: "modified",
+        id: 'concurrent-test',
+        name: 'Concurrent Test',
+        selector: '.concurrent',
+        attribute: 'class',
+        pattern: 'original',
+        replacement: 'modified',
         priority: 1,
         enabled: true,
       };
@@ -1752,12 +1695,11 @@ describe("HtmlRewriter - Step 7: Testing Infrastructure & Edge Cases", () => {
       // Create multiple concurrent requests
       const htmlTemplates = Array.from(
         { length: 10 },
-        (_, i) =>
-          `<div class="concurrent original test-${i}">Concurrent test ${i}</div>`,
+        (_, i) => `<div class="concurrent original test-${i}">Concurrent test ${i}</div>`
       );
 
       const promises = htmlTemplates.map((html, i) =>
-        rewriter.rewriteHtml(html, `concurrent-${i}`),
+        rewriter.rewriteHtml(html, `concurrent-${i}`)
       );
 
       const results = await Promise.all(promises);
@@ -1766,23 +1708,23 @@ describe("HtmlRewriter - Step 7: Testing Infrastructure & Edge Cases", () => {
         expect(result.success).toBe(true);
         expect(result.appliedReplacements).toHaveLength(1);
         expect(result.metadata.source).toBe(`concurrent-${i}`);
-        expect(result.modifiedHtml).toContain("modified");
+        expect(result.modifiedHtml).toContain('modified');
       });
     });
   });
 
-  describe("Performance and Stress Testing", () => {
-    test("should handle patterns with complex regex efficiently", async () => {
+  describe('Performance and Stress Testing', () => {
+    test('should handle patterns with complex regex efficiently', async () => {
       const rewriter = createHtmlRewriter();
 
       const complexPattern: HtmlPattern = {
-        id: "complex-regex",
-        name: "Complex Regex",
-        selector: ".complex",
-        attribute: "class",
+        id: 'complex-regex',
+        name: 'Complex Regex',
+        selector: '.complex',
+        attribute: 'class',
         pattern:
           /(?:btn|button|action)-(?:primary|secondary|tertiary)-(?:sm|md|lg|xl)(?:-(?:rounded|square|outline))?/g,
-        replacement: "btn-optimized",
+        replacement: 'btn-optimized',
         priority: 1,
         enabled: true,
       };
@@ -1797,7 +1739,7 @@ describe("HtmlRewriter - Step 7: Testing Infrastructure & Edge Cases", () => {
       `;
 
       const startTime = Date.now();
-      const result = await rewriter.rewriteHtml(html, "complex-regex");
+      const result = await rewriter.rewriteHtml(html, 'complex-regex');
       const processingTime = Date.now() - startTime;
 
       expect(result.success).toBe(true);
@@ -1805,7 +1747,7 @@ describe("HtmlRewriter - Step 7: Testing Infrastructure & Edge Cases", () => {
       expect(result.appliedReplacements.length).toBeGreaterThan(0);
     });
 
-    test("should maintain memory efficiency with large pattern sets", () => {
+    test('should maintain memory efficiency with large pattern sets', () => {
       const rewriter = createHtmlRewriter();
 
       // Add many patterns
@@ -1813,8 +1755,8 @@ describe("HtmlRewriter - Step 7: Testing Infrastructure & Edge Cases", () => {
         const pattern: HtmlPattern = {
           id: `pattern-${i}`,
           name: `Pattern ${i}`,
-          selector: ".test",
-          attribute: "class",
+          selector: '.test',
+          attribute: 'class',
           pattern: `class-${i}`,
           replacement: `optimized-${i}`,
           priority: i,
@@ -1842,42 +1784,39 @@ describe("HtmlRewriter - Step 7: Testing Infrastructure & Edge Cases", () => {
     });
   });
 
-  describe("Integration Testing", () => {
-    test("should integrate with real-world HTML structures", async () => {
+  describe('Integration Testing', () => {
+    test('should integrate with real-world HTML structures', async () => {
       const rewriter = createHtmlRewriter();
 
       // Common CSS framework patterns
       const frameworkPatterns: HtmlPattern[] = [
         {
-          id: "bootstrap-btn",
-          name: "Bootstrap Button",
-          selector: ".btn",
-          attribute: "class",
-          pattern:
-            /btn-(?:primary|secondary|success|danger|warning|info|light|dark)/g,
-          replacement: "btn-optimized",
+          id: 'bootstrap-btn',
+          name: 'Bootstrap Button',
+          selector: '.btn',
+          attribute: 'class',
+          pattern: /btn-(?:primary|secondary|success|danger|warning|info|light|dark)/g,
+          replacement: 'btn-optimized',
           priority: 1,
           enabled: true,
         },
         {
-          id: "tailwind-spacing",
-          name: "Tailwind Spacing",
-          selector: "*",
-          attribute: "class",
-          pattern:
-            /(?:m|p)[trblxy]?-(?:0|1|2|3|4|5|6|8|10|12|16|20|24|32|40|48|56|64)/g,
-          replacement: "spacing-optimized",
+          id: 'tailwind-spacing',
+          name: 'Tailwind Spacing',
+          selector: '*',
+          attribute: 'class',
+          pattern: /(?:m|p)[trblxy]?-(?:0|1|2|3|4|5|6|8|10|12|16|20|24|32|40|48|56|64)/g,
+          replacement: 'spacing-optimized',
           priority: 2,
           enabled: true,
         },
         {
-          id: "utility-display",
-          name: "Utility Display",
-          selector: "*",
-          attribute: "class",
-          pattern:
-            /(?:block|inline|inline-block|flex|inline-flex|grid|inline-grid|hidden)/,
-          replacement: "display-optimized",
+          id: 'utility-display',
+          name: 'Utility Display',
+          selector: '*',
+          attribute: 'class',
+          pattern: /(?:block|inline|inline-block|flex|inline-flex|grid|inline-grid|hidden)/,
+          replacement: 'display-optimized',
           priority: 3,
           enabled: true,
         },
@@ -1918,33 +1857,33 @@ describe("HtmlRewriter - Step 7: Testing Infrastructure & Edge Cases", () => {
         </html>
       `;
 
-      const result = await rewriter.rewriteHtml(realWorldHtml, "real-world");
+      const result = await rewriter.rewriteHtml(realWorldHtml, 'real-world');
 
       expect(result.success).toBe(true);
       expect(result.appliedReplacements.length).toBeGreaterThan(0);
-      expect(result.modifiedHtml).toContain("btn-optimized");
-      expect(result.modifiedHtml).toContain("spacing-optimized");
-      expect(result.modifiedHtml).toContain("display-optimized");
+      expect(result.modifiedHtml).toContain('btn-optimized');
+      expect(result.modifiedHtml).toContain('spacing-optimized');
+      expect(result.modifiedHtml).toContain('display-optimized');
 
       // Verify HTML structure is preserved
-      expect(result.modifiedHtml).toContain("<!DOCTYPE html>");
+      expect(result.modifiedHtml).toContain('<!DOCTYPE html>');
       expect(result.modifiedHtml).toContain('<html lang="en">');
-      expect(result.modifiedHtml).toContain("</html>");
+      expect(result.modifiedHtml).toContain('</html>');
     });
 
-    test("should work with existing HTML extraction patterns", async () => {
+    test('should work with existing HTML extraction patterns', async () => {
       const rewriter = createHtmlRewriter();
 
       // Integration with HTML extractor patterns (from Task 6)
       const extractorPattern: HtmlPattern = {
-        id: "extractor-integration",
-        name: "Extractor Integration",
-        selector: "*", // Use broader selector to catch all elements
-        attribute: "class",
+        id: 'extractor-integration',
+        name: 'Extractor Integration',
+        selector: '*', // Use broader selector to catch all elements
+        attribute: 'class',
         pattern: /tw-[\w-]+/g,
         replacement: (match, _element, _context) => {
           // Simulate integration with name generation
-          return `gen-${match.replace("tw-", "")}`;
+          return `gen-${match.replace('tw-', '')}`;
         },
         priority: 1,
         enabled: true,
@@ -1959,27 +1898,27 @@ describe("HtmlRewriter - Step 7: Testing Infrastructure & Edge Cases", () => {
          </div>
        `;
 
-      const result = await rewriter.rewriteHtml(html, "extractor-integration");
+      const result = await rewriter.rewriteHtml(html, 'extractor-integration');
 
       expect(result.success).toBe(true);
-      expect(result.modifiedHtml).toContain("gen-bg-blue-500");
+      expect(result.modifiedHtml).toContain('gen-bg-blue-500');
       expect(result.appliedReplacements.length).toBeGreaterThan(0);
       // Check that some tw- classes were replaced
       expect(result.modifiedHtml).toMatch(/gen-[\w-]+/);
     });
   });
 
-  describe("Error Recovery and Resilience", () => {
-    test("should recover from invalid selectors gracefully", () => {
+  describe('Error Recovery and Resilience', () => {
+    test('should recover from invalid selectors gracefully', () => {
       const rewriter = createHtmlRewriter();
 
       const invalidPattern: HtmlPattern = {
-        id: "invalid-selector",
-        name: "Invalid Selector",
-        selector: "<<invalid>>selector",
-        attribute: "class",
-        pattern: "test",
-        replacement: "fixed",
+        id: 'invalid-selector',
+        name: 'Invalid Selector',
+        selector: '<<invalid>>selector',
+        attribute: 'class',
+        pattern: 'test',
+        replacement: 'fixed',
         priority: 1,
         enabled: true,
       };
@@ -1988,17 +1927,17 @@ describe("HtmlRewriter - Step 7: Testing Infrastructure & Edge Cases", () => {
       expect(() => rewriter.addPattern(invalidPattern)).toThrow();
     });
 
-    test("should handle pattern processing errors without crashing", async () => {
+    test('should handle pattern processing errors without crashing', async () => {
       const rewriter = createHtmlRewriter();
 
       const errorPattern: HtmlPattern = {
-        id: "error-pattern",
-        name: "Error Pattern",
-        selector: ".test",
-        attribute: "class",
-        pattern: "error",
+        id: 'error-pattern',
+        name: 'Error Pattern',
+        selector: '.test',
+        attribute: 'class',
+        pattern: 'error',
         replacement: () => {
-          throw new Error("Pattern processing error");
+          throw new Error('Pattern processing error');
         },
         priority: 1,
         enabled: true,
@@ -2007,53 +1946,53 @@ describe("HtmlRewriter - Step 7: Testing Infrastructure & Edge Cases", () => {
       rewriter.addPattern(errorPattern);
 
       const html = '<div class="test error">Test</div>';
-      const result = await rewriter.rewriteHtml(html, "error-test");
+      const result = await rewriter.rewriteHtml(html, 'error-test');
 
       // Should not crash, should handle error gracefully
       expect(result.success).toBe(true);
       // Check if errors array exists and has content, or if error is handled differently
       if (result.errors && result.errors.length > 0) {
-        expect(result.errors[0]).toContain("Pattern processing error");
+        expect(result.errors[0]).toContain('Pattern processing error');
       } else {
         // Error might be handled silently or differently
         expect(result.appliedReplacements).toHaveLength(0);
       }
     });
 
-    test("should validate file operations safely", async () => {
+    test('should validate file operations safely', async () => {
       const rewriter = createHtmlRewriter();
 
       // Test with non-existent file - should throw an error
       try {
-        const result = await rewriter.rewriteFile("/non/existent/file.html");
+        const result = await rewriter.rewriteFile('/non/existent/file.html');
         // If we reach here, the operation unexpectedly succeeded
         expect(result.success).toBe(false);
       } catch (error) {
         // Expected behavior - should throw an error for non-existent file
         expect(error).toBeInstanceOf(Error);
-        expect(error.message).toContain("ENOENT");
+        expect(error.message).toContain('ENOENT');
       }
     });
   });
 });
 
-describe("HtmlRewriter - Step 6: Integration and File Operations", () => {
+describe('HtmlRewriter - Step 6: Integration and File Operations', () => {
   const createHtmlRewriter = () =>
     new HtmlRewriter({
       validateOutput: false,
       preserveFormatting: true,
     });
 
-  test("should configure integration components", () => {
+  test('should configure integration components', () => {
     const rewriter = createHtmlRewriter();
 
     const mockFileDiscovery = {
-      findFiles: vi.fn().mockResolvedValue(["test.html", "test2.html"]),
+      findFiles: vi.fn().mockResolvedValue(['test.html', 'test2.html']),
     };
 
     const mockNameGeneration = {
       generateNames: vi.fn().mockResolvedValue({
-        nameMap: new Map([["old-class", "new-class"]]),
+        nameMap: new Map([['old-class', 'new-class']]),
       }),
     };
 
@@ -2070,16 +2009,16 @@ describe("HtmlRewriter - Step 6: Integration and File Operations", () => {
     expect(status.config).toBe(false);
   });
 
-  test("should process batch of files with default options", async () => {
+  test('should process batch of files with default options', async () => {
     const rewriter = createHtmlRewriter();
 
     const pattern: HtmlPattern = {
-      id: "test-pattern",
-      name: "Test Pattern",
-      selector: ".test",
-      attribute: "class",
-      pattern: "btn",
-      replacement: "button",
+      id: 'test-pattern',
+      name: 'Test Pattern',
+      selector: '.test',
+      attribute: 'class',
+      pattern: 'btn',
+      replacement: 'button',
       priority: 1,
       enabled: true,
     };
@@ -2088,44 +2027,42 @@ describe("HtmlRewriter - Step 6: Integration and File Operations", () => {
 
     // Mock the rewriteFile method for testing
     const originalRewriteFile = rewriter.rewriteFile;
-    rewriter.rewriteFile = vi
-      .fn()
-      .mockImplementation(async (filePath: string) => {
-        return {
-          success: true,
-          originalHtml: '<div class="test btn">Test</div>',
-          modifiedHtml: '<div class="test button">Test</div>',
-          appliedReplacements: [{ patternId: "test-pattern" }],
-          skippedReplacements: [],
-          conflicts: [],
-          metadata: {
-            source: filePath,
-            processedAt: new Date(),
-            processingTime: 100,
-            totalElements: 1,
-            modifiedElements: 1,
-            errors: [],
-            warnings: [],
+    rewriter.rewriteFile = vi.fn().mockImplementation(async (filePath: string) => {
+      return {
+        success: true,
+        originalHtml: '<div class="test btn">Test</div>',
+        modifiedHtml: '<div class="test button">Test</div>',
+        appliedReplacements: [{ patternId: 'test-pattern' }],
+        skippedReplacements: [],
+        conflicts: [],
+        metadata: {
+          source: filePath,
+          processedAt: new Date(),
+          processingTime: 100,
+          totalElements: 1,
+          modifiedElements: 1,
+          errors: [],
+          warnings: [],
+        },
+        statistics: {
+          patternStats: new Map(),
+          elementStats: {
+            totalProcessed: 1,
+            totalModified: 1,
+            averageDepth: 0,
+            tagDistribution: new Map(),
           },
-          statistics: {
-            patternStats: new Map(),
-            elementStats: {
-              totalProcessed: 1,
-              totalModified: 1,
-              averageDepth: 0,
-              tagDistribution: new Map(),
-            },
-            performanceStats: {
-              parseTime: 10,
-              processingTime: 20,
-              serializationTime: 5,
-              totalTime: 35,
-            },
+          performanceStats: {
+            parseTime: 10,
+            processingTime: 20,
+            serializationTime: 5,
+            totalTime: 35,
           },
-        };
-      });
+        },
+      };
+    });
 
-    const files = ["test1.html", "test2.html", "test3.html"];
+    const files = ['test1.html', 'test2.html', 'test3.html'];
     const result = await rewriter.processBatch(files);
 
     expect(result.processedFiles).toHaveLength(3);
@@ -2139,54 +2076,52 @@ describe("HtmlRewriter - Step 6: Integration and File Operations", () => {
     rewriter.rewriteFile = originalRewriteFile;
   });
 
-  test("should handle batch processing errors gracefully", async () => {
+  test('should handle batch processing errors gracefully', async () => {
     const rewriter = createHtmlRewriter();
 
     // Mock rewriteFile to throw error on second file
     let callCount = 0;
     const originalRewriteFile = rewriter.rewriteFile;
-    rewriter.rewriteFile = vi
-      .fn()
-      .mockImplementation(async (filePath: string) => {
-        callCount++;
-        if (callCount === 2) {
-          throw new Error(`Mock error for ${filePath}`);
-        }
-        return {
-          success: true,
-          originalHtml: "<div>Test</div>",
-          modifiedHtml: "<div>Test</div>",
-          appliedReplacements: [],
-          skippedReplacements: [],
-          conflicts: [],
-          metadata: {
-            source: filePath,
-            processedAt: new Date(),
-            processingTime: 50,
-            totalElements: 1,
-            modifiedElements: 0,
-            errors: [],
-            warnings: [],
+    rewriter.rewriteFile = vi.fn().mockImplementation(async (filePath: string) => {
+      callCount++;
+      if (callCount === 2) {
+        throw new Error(`Mock error for ${filePath}`);
+      }
+      return {
+        success: true,
+        originalHtml: '<div>Test</div>',
+        modifiedHtml: '<div>Test</div>',
+        appliedReplacements: [],
+        skippedReplacements: [],
+        conflicts: [],
+        metadata: {
+          source: filePath,
+          processedAt: new Date(),
+          processingTime: 50,
+          totalElements: 1,
+          modifiedElements: 0,
+          errors: [],
+          warnings: [],
+        },
+        statistics: {
+          patternStats: new Map(),
+          elementStats: {
+            totalProcessed: 1,
+            totalModified: 0,
+            averageDepth: 0,
+            tagDistribution: new Map(),
           },
-          statistics: {
-            patternStats: new Map(),
-            elementStats: {
-              totalProcessed: 1,
-              totalModified: 0,
-              averageDepth: 0,
-              tagDistribution: new Map(),
-            },
-            performanceStats: {
-              parseTime: 10,
-              processingTime: 20,
-              serializationTime: 5,
-              totalTime: 35,
-            },
+          performanceStats: {
+            parseTime: 10,
+            processingTime: 20,
+            serializationTime: 5,
+            totalTime: 35,
           },
-        };
-      });
+        },
+      };
+    });
 
-    const files = ["test1.html", "test2.html", "test3.html"];
+    const files = ['test1.html', 'test2.html', 'test3.html'];
     const result = await rewriter.processBatch(files, {
       continueOnError: true,
     });
@@ -2194,14 +2129,14 @@ describe("HtmlRewriter - Step 6: Integration and File Operations", () => {
     expect(result.processedFiles).toHaveLength(3);
     expect(result.successfulFiles).toHaveLength(2);
     expect(result.failedFiles).toHaveLength(1);
-    expect(result.failedFiles[0].file).toBe("test2.html");
-    expect(result.failedFiles[0].error).toContain("Mock error");
+    expect(result.failedFiles[0].file).toBe('test2.html');
+    expect(result.failedFiles[0].error).toContain('Mock error');
 
     // Restore original method
     rewriter.rewriteFile = originalRewriteFile;
   });
 
-  test("should provide progress callback during batch processing", async () => {
+  test('should provide progress callback during batch processing', async () => {
     const rewriter = createHtmlRewriter();
 
     const progressEvents: Array<{
@@ -2214,13 +2149,13 @@ describe("HtmlRewriter - Step 6: Integration and File Operations", () => {
     const originalRewriteFile = rewriter.rewriteFile;
     rewriter.rewriteFile = vi.fn().mockResolvedValue({
       success: true,
-      originalHtml: "<div>Test</div>",
-      modifiedHtml: "<div>Test</div>",
+      originalHtml: '<div>Test</div>',
+      modifiedHtml: '<div>Test</div>',
       appliedReplacements: [],
       skippedReplacements: [],
       conflicts: [],
       metadata: {
-        source: "test",
+        source: 'test',
         processedAt: new Date(),
         processingTime: 10,
         totalElements: 1,
@@ -2245,7 +2180,7 @@ describe("HtmlRewriter - Step 6: Integration and File Operations", () => {
       },
     });
 
-    const files = ["test1.html", "test2.html"];
+    const files = ['test1.html', 'test2.html'];
     await rewriter.processBatch(files, {
       progressCallback: (processed, total, current) => {
         progressEvents.push({ processed, total, current });
@@ -2256,57 +2191,54 @@ describe("HtmlRewriter - Step 6: Integration and File Operations", () => {
     expect(progressEvents[0]).toEqual({
       processed: 1,
       total: 2,
-      current: "test1.html",
+      current: 'test1.html',
     });
     expect(progressEvents[1]).toEqual({
       processed: 2,
       total: 2,
-      current: "test2.html",
+      current: 'test2.html',
     });
 
     // Restore original method
     rewriter.rewriteFile = originalRewriteFile;
   });
 
-  test("should validate integration requirements", async () => {
+  test('should validate integration requirements', async () => {
     const rewriter = createHtmlRewriter();
 
     // Should throw error when file discovery is not configured
     await expect(rewriter.processDiscoveredFiles()).rejects.toThrow(
-      "File discovery integration not configured",
+      'File discovery integration not configured'
     );
 
     // Should throw error when name generation is not configured
     await expect(
-      rewriter.generateAndApplyNames('<div class="test">Test</div>', ["test"]),
-    ).rejects.toThrow("Name generation integration not configured");
+      rewriter.generateAndApplyNames('<div class="test">Test</div>', ['test'])
+    ).rejects.toThrow('Name generation integration not configured');
   });
 
-  test("should integrate with name generation system", async () => {
+  test('should integrate with name generation system', async () => {
     const rewriter = createHtmlRewriter();
 
     const mockNameGeneration = {
       generateNames: vi.fn().mockResolvedValue({
-        nameMap: new Map([["test", "generated-name"]]),
+        nameMap: new Map([['test', 'generated-name']]),
       }),
     };
 
     rewriter.setIntegration({ nameGeneration: mockNameGeneration });
 
     const htmlContent = '<div class="test">Content</div>';
-    const extractedClasses = ["test"];
+    const extractedClasses = ['test'];
 
-    const result = await rewriter.generateAndApplyNames(
-      htmlContent,
-      extractedClasses,
-    );
+    const result = await rewriter.generateAndApplyNames(htmlContent, extractedClasses);
 
-    expect(mockNameGeneration.generateNames).toHaveBeenCalledWith(["test"]);
-    expect(result.nameMapping.get("test")).toBe("generated-name");
-    expect(result.html).toContain("div");
+    expect(mockNameGeneration.generateNames).toHaveBeenCalledWith(['test']);
+    expect(result.nameMapping.get('test')).toBe('generated-name');
+    expect(result.html).toContain('div');
   });
 
-  test("should chunk arrays correctly for batch processing", () => {
+  test('should chunk arrays correctly for batch processing', () => {
     const rewriter = createHtmlRewriter();
 
     // Access private method through type assertion for testing
@@ -2321,7 +2253,7 @@ describe("HtmlRewriter - Step 6: Integration and File Operations", () => {
     expect(chunks[2]).toEqual([7, 8]);
   });
 
-  test("should handle empty file arrays gracefully", async () => {
+  test('should handle empty file arrays gracefully', async () => {
     const rewriter = createHtmlRewriter();
 
     const result = await rewriter.processBatch([]);
@@ -2333,16 +2265,16 @@ describe("HtmlRewriter - Step 6: Integration and File Operations", () => {
     expect(result.statistics.averageProcessingTime).toBe(0);
   });
 
-  test("should calculate statistics correctly", async () => {
+  test('should calculate statistics correctly', async () => {
     const rewriter = createHtmlRewriter();
 
     const pattern: HtmlPattern = {
-      id: "test-pattern",
-      name: "Test Pattern",
-      selector: ".test",
-      attribute: "class",
-      pattern: "btn",
-      replacement: "button",
+      id: 'test-pattern',
+      name: 'Test Pattern',
+      selector: '.test',
+      attribute: 'class',
+      pattern: 'btn',
+      replacement: 'button',
       priority: 1,
       enabled: true,
     };
@@ -2351,47 +2283,42 @@ describe("HtmlRewriter - Step 6: Integration and File Operations", () => {
 
     // Mock rewriteFile with specific statistics
     const originalRewriteFile = rewriter.rewriteFile;
-    rewriter.rewriteFile = vi
-      .fn()
-      .mockImplementation(async (filePath: string) => {
-        return {
-          success: true,
-          originalHtml: '<div class="test btn">Test</div>',
-          modifiedHtml: '<div class="test button">Test</div>',
-          appliedReplacements: [
-            { patternId: "test-pattern" },
-            { patternId: "test-pattern" },
-          ],
-          skippedReplacements: [],
-          conflicts: [{ patternIds: ["test-pattern"] }],
-          metadata: {
-            source: filePath,
-            processedAt: new Date(),
-            processingTime: 100,
-            totalElements: 1,
-            modifiedElements: 1,
-            errors: [],
-            warnings: [],
+    rewriter.rewriteFile = vi.fn().mockImplementation(async (filePath: string) => {
+      return {
+        success: true,
+        originalHtml: '<div class="test btn">Test</div>',
+        modifiedHtml: '<div class="test button">Test</div>',
+        appliedReplacements: [{ patternId: 'test-pattern' }, { patternId: 'test-pattern' }],
+        skippedReplacements: [],
+        conflicts: [{ patternIds: ['test-pattern'] }],
+        metadata: {
+          source: filePath,
+          processedAt: new Date(),
+          processingTime: 100,
+          totalElements: 1,
+          modifiedElements: 1,
+          errors: [],
+          warnings: [],
+        },
+        statistics: {
+          patternStats: new Map(),
+          elementStats: {
+            totalProcessed: 1,
+            totalModified: 1,
+            averageDepth: 0,
+            tagDistribution: new Map(),
           },
-          statistics: {
-            patternStats: new Map(),
-            elementStats: {
-              totalProcessed: 1,
-              totalModified: 1,
-              averageDepth: 0,
-              tagDistribution: new Map(),
-            },
-            performanceStats: {
-              parseTime: 10,
-              processingTime: 20,
-              serializationTime: 5,
-              totalTime: 35,
-            },
+          performanceStats: {
+            parseTime: 10,
+            processingTime: 20,
+            serializationTime: 5,
+            totalTime: 35,
           },
-        };
-      });
+        },
+      };
+    });
 
-    const files = ["test1.html", "test2.html"];
+    const files = ['test1.html', 'test2.html'];
     const result = await rewriter.processBatch(files);
 
     expect(result.statistics.totalPatterns).toBe(1);
@@ -2403,7 +2330,7 @@ describe("HtmlRewriter - Step 6: Integration and File Operations", () => {
     rewriter.rewriteFile = originalRewriteFile;
   });
 
-  test("should reject invalid integration components", () => {
+  test('should reject invalid integration components', () => {
     const rewriter = createHtmlRewriter();
 
     // Should not set integration when missing required methods

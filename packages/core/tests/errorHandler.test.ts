@@ -3,17 +3,9 @@
  * Tests circuit breaker functionality, error categorization, and recovery strategies
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import {
-  CircuitBreaker,
-  CircuitBreakerRegistry,
-  CircuitBreakerOpenError,
-} from "@tw-enigma/core";
-import {
-  ErrorHandler,
-  getErrorHandler,
-  handleError,
-} from "@tw-enigma/core";
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { CircuitBreaker, CircuitBreakerRegistry, CircuitBreakerOpenError } from '@tw-enigma/core';
+import { ErrorHandler, getErrorHandler, handleError } from '@tw-enigma/core';
 import {
   ErrorSeverity,
   ErrorCategory,
@@ -22,10 +14,10 @@ import {
   categorizeError,
   severityToNumber,
   isEnigmaError,
-} from "@tw-enigma/core";
+} from '@tw-enigma/core';
 
 // Mock the logger
-vi.mock("../src/logger.ts", () => ({
+vi.mock('../src/logger.ts', () => ({
   createLogger: vi.fn(() => ({
     debug: vi.fn(),
     info: vi.fn(),
@@ -35,41 +27,41 @@ vi.mock("../src/logger.ts", () => ({
   })),
 }));
 
-describe("Error Type Functions", () => {
-  describe("categorizeError", () => {
-    it("should categorize configuration errors", () => {
-      const error = new Error("Invalid configuration value");
+describe('Error Type Functions', () => {
+  describe('categorizeError', () => {
+    it('should categorize configuration errors', () => {
+      const error = new Error('Invalid configuration value');
       expect(categorizeError(error)).toBe(ErrorCategory.CONFIGURATION);
     });
 
-    it("should categorize validation errors", () => {
-      const error = new Error("Schema validation failed");
+    it('should categorize validation errors', () => {
+      const error = new Error('Schema validation failed');
       expect(categorizeError(error)).toBe(ErrorCategory.VALIDATION);
     });
 
-    it("should categorize resource errors", () => {
-      const error = new Error("Out of memory");
+    it('should categorize resource errors', () => {
+      const error = new Error('Out of memory');
       expect(categorizeError(error)).toBe(ErrorCategory.RESOURCE);
     });
 
-    it("should categorize external service errors", () => {
-      const error = new Error("Network timeout occurred");
+    it('should categorize external service errors', () => {
+      const error = new Error('Network timeout occurred');
       expect(categorizeError(error)).toBe(ErrorCategory.EXTERNAL_SERVICE);
     });
 
-    it("should categorize programming errors", () => {
-      const error = new TypeError("Cannot read property of undefined");
+    it('should categorize programming errors', () => {
+      const error = new TypeError('Cannot read property of undefined');
       expect(categorizeError(error)).toBe(ErrorCategory.PROGRAMMING);
     });
 
-    it("should default to operational errors", () => {
-      const error = new Error("Some unknown error");
+    it('should default to operational errors', () => {
+      const error = new Error('Some unknown error');
       expect(categorizeError(error)).toBe(ErrorCategory.OPERATIONAL);
     });
   });
 
-  describe("severityToNumber", () => {
-    it("should convert severity levels to numbers", () => {
+  describe('severityToNumber', () => {
+    it('should convert severity levels to numbers', () => {
       expect(severityToNumber(ErrorSeverity.CRITICAL)).toBe(4);
       expect(severityToNumber(ErrorSeverity.HIGH)).toBe(3);
       expect(severityToNumber(ErrorSeverity.MEDIUM)).toBe(2);
@@ -77,24 +69,24 @@ describe("Error Type Functions", () => {
     });
   });
 
-  describe("isEnigmaError", () => {
-    it("should identify enigma errors with severity", () => {
+  describe('isEnigmaError', () => {
+    it('should identify enigma errors with severity', () => {
       const error = { severity: ErrorSeverity.HIGH } as any;
       expect(isEnigmaError(error)).toBe(true);
     });
 
-    it("should identify regular errors without severity", () => {
-      const error = new Error("Regular error");
+    it('should identify regular errors without severity', () => {
+      const error = new Error('Regular error');
       expect(isEnigmaError(error)).toBe(false);
     });
   });
 });
 
-describe("CircuitBreaker", () => {
+describe('CircuitBreaker', () => {
   let circuitBreaker: CircuitBreaker;
 
   beforeEach(() => {
-    circuitBreaker = new CircuitBreaker("test-circuit", {
+    circuitBreaker = new CircuitBreaker('test-circuit', {
       failureThreshold: 3,
       recoveryTimeout: 1000,
       successThreshold: 2,
@@ -106,37 +98,35 @@ describe("CircuitBreaker", () => {
     circuitBreaker.destroy();
   });
 
-  describe("initialization", () => {
-    it("should start in CLOSED state", () => {
+  describe('initialization', () => {
+    it('should start in CLOSED state', () => {
       expect(circuitBreaker.getState()).toBe(CircuitBreakerState.CLOSED);
       expect(circuitBreaker.isHealthy()).toBe(true);
     });
   });
 
-  describe("call method", () => {
-    it("should execute successful operations", async () => {
-      const mockAction = vi.fn().mockResolvedValue("success");
+  describe('call method', () => {
+    it('should execute successful operations', async () => {
+      const mockAction = vi.fn().mockResolvedValue('success');
 
       const result = await circuitBreaker.call(mockAction);
 
-      expect(result).toBe("success");
+      expect(result).toBe('success');
       expect(mockAction).toHaveBeenCalledTimes(1);
       expect(circuitBreaker.getState()).toBe(CircuitBreakerState.CLOSED);
     });
 
-    it("should handle single failures", async () => {
-      const mockAction = vi.fn().mockRejectedValue(new Error("Test failure"));
+    it('should handle single failures', async () => {
+      const mockAction = vi.fn().mockRejectedValue(new Error('Test failure'));
 
-      await expect(circuitBreaker.call(mockAction)).rejects.toThrow(
-        "Test failure",
-      );
+      await expect(circuitBreaker.call(mockAction)).rejects.toThrow('Test failure');
 
       expect(circuitBreaker.getState()).toBe(CircuitBreakerState.CLOSED);
       expect(circuitBreaker.getMetrics().failureCount).toBe(1);
     });
 
-    it("should open circuit after failure threshold", async () => {
-      const mockAction = vi.fn().mockRejectedValue(new Error("Test failure"));
+    it('should open circuit after failure threshold', async () => {
+      const mockAction = vi.fn().mockRejectedValue(new Error('Test failure'));
 
       // Trigger failures to exceed threshold
       for (let i = 0; i < 3; i++) {
@@ -151,8 +141,8 @@ describe("CircuitBreaker", () => {
       expect(circuitBreaker.isHealthy()).toBe(false);
     });
 
-    it("should reject immediately when circuit is open", async () => {
-      const mockAction = vi.fn().mockRejectedValue(new Error("Test failure"));
+    it('should reject immediately when circuit is open', async () => {
+      const mockAction = vi.fn().mockRejectedValue(new Error('Test failure'));
 
       // Open the circuit
       for (let i = 0; i < 3; i++) {
@@ -164,17 +154,15 @@ describe("CircuitBreaker", () => {
       }
 
       // Circuit should now be open and reject immediately
-      await expect(circuitBreaker.call(mockAction)).rejects.toBeInstanceOf(
-        CircuitBreakerOpenError,
-      );
+      await expect(circuitBreaker.call(mockAction)).rejects.toBeInstanceOf(CircuitBreakerOpenError);
 
       // Action should not be called when circuit is open
       expect(mockAction).toHaveBeenCalledTimes(3); // Only the initial attempts
     });
 
-    it("should use fallback when circuit is open", async () => {
-      const mockAction = vi.fn().mockRejectedValue(new Error("Test failure"));
-      const mockFallback = vi.fn().mockReturnValue("fallback-result");
+    it('should use fallback when circuit is open', async () => {
+      const mockAction = vi.fn().mockRejectedValue(new Error('Test failure'));
+      const mockFallback = vi.fn().mockReturnValue('fallback-result');
 
       // Open the circuit
       for (let i = 0; i < 3; i++) {
@@ -188,14 +176,14 @@ describe("CircuitBreaker", () => {
       // Call with fallback
       const result = await circuitBreaker.call(mockAction, mockFallback);
 
-      expect(result).toBe("fallback-result");
+      expect(result).toBe('fallback-result');
       expect(mockFallback).toHaveBeenCalledTimes(1);
     });
   });
 
-  describe("recovery mechanism", () => {
-    it("should transition to HALF_OPEN after recovery timeout", async () => {
-      const mockAction = vi.fn().mockRejectedValue(new Error("Test failure"));
+  describe('recovery mechanism', () => {
+    it('should transition to HALF_OPEN after recovery timeout', async () => {
+      const mockAction = vi.fn().mockRejectedValue(new Error('Test failure'));
 
       // Open the circuit
       for (let i = 0; i < 3; i++) {
@@ -214,11 +202,11 @@ describe("CircuitBreaker", () => {
       expect(circuitBreaker.getState()).toBe(CircuitBreakerState.HALF_OPEN);
     });
 
-    it("should close circuit after successful operations in HALF_OPEN", async () => {
+    it('should close circuit after successful operations in HALF_OPEN', async () => {
       // Force circuit to HALF_OPEN state
       circuitBreaker.forceState(CircuitBreakerState.HALF_OPEN);
 
-      const mockAction = vi.fn().mockResolvedValue("success");
+      const mockAction = vi.fn().mockResolvedValue('success');
 
       // Execute successful operations to meet success threshold
       for (let i = 0; i < 2; i++) {
@@ -229,10 +217,10 @@ describe("CircuitBreaker", () => {
     });
   });
 
-  describe("metrics", () => {
-    it("should track metrics accurately", async () => {
-      const successAction = vi.fn().mockResolvedValue("success");
-      const failureAction = vi.fn().mockRejectedValue(new Error("failure"));
+  describe('metrics', () => {
+    it('should track metrics accurately', async () => {
+      const successAction = vi.fn().mockResolvedValue('success');
+      const failureAction = vi.fn().mockRejectedValue(new Error('failure'));
 
       // Execute some operations
       await circuitBreaker.call(successAction);
@@ -253,9 +241,9 @@ describe("CircuitBreaker", () => {
     });
   });
 
-  describe("reset functionality", () => {
-    it("should reset circuit to initial state", async () => {
-      const mockAction = vi.fn().mockRejectedValue(new Error("Test failure"));
+  describe('reset functionality', () => {
+    it('should reset circuit to initial state', async () => {
+      const mockAction = vi.fn().mockRejectedValue(new Error('Test failure'));
 
       // Generate some activity
       try {
@@ -275,7 +263,7 @@ describe("CircuitBreaker", () => {
   });
 });
 
-describe("CircuitBreakerRegistry", () => {
+describe('CircuitBreakerRegistry', () => {
   let registry: CircuitBreakerRegistry;
 
   beforeEach(() => {
@@ -286,25 +274,25 @@ describe("CircuitBreakerRegistry", () => {
     registry.destroyAll();
   });
 
-  it("should create and manage circuit breakers", () => {
-    const circuit1 = registry.getCircuit("test-1");
-    const circuit2 = registry.getCircuit("test-2");
+  it('should create and manage circuit breakers', () => {
+    const circuit1 = registry.getCircuit('test-1');
+    const circuit2 = registry.getCircuit('test-2');
 
     expect(circuit1).toBeInstanceOf(CircuitBreaker);
     expect(circuit2).toBeInstanceOf(CircuitBreaker);
     expect(circuit1).not.toBe(circuit2);
   });
 
-  it("should return same instance for same name", () => {
-    const circuit1 = registry.getCircuit("test");
-    const circuit2 = registry.getCircuit("test");
+  it('should return same instance for same name', () => {
+    const circuit1 = registry.getCircuit('test');
+    const circuit2 = registry.getCircuit('test');
 
     expect(circuit1).toBe(circuit2);
   });
 
-  it("should provide overall health status", () => {
-    registry.getCircuit("healthy");
-    const circuit2 = registry.getCircuit("unhealthy");
+  it('should provide overall health status', () => {
+    registry.getCircuit('healthy');
+    const circuit2 = registry.getCircuit('unhealthy');
 
     // Force one circuit to be unhealthy
     circuit2.forceState(CircuitBreakerState.OPEN);
@@ -317,9 +305,9 @@ describe("CircuitBreakerRegistry", () => {
     expect(health.degraded).toBe(0);
   });
 
-  it("should reset all circuits", () => {
-    const circuit1 = registry.getCircuit("test-1");
-    const circuit2 = registry.getCircuit("test-2");
+  it('should reset all circuits', () => {
+    const circuit1 = registry.getCircuit('test-1');
+    const circuit2 = registry.getCircuit('test-2');
 
     // Force circuits to unhealthy states
     circuit1.forceState(CircuitBreakerState.OPEN);
@@ -332,7 +320,7 @@ describe("CircuitBreakerRegistry", () => {
   });
 });
 
-describe("ErrorHandler", () => {
+describe('ErrorHandler', () => {
   let errorHandler: ErrorHandler;
 
   beforeEach(() => {
@@ -342,12 +330,12 @@ describe("ErrorHandler", () => {
       exponentialBackoff: false,
       circuitBreakerEnabled: true,
       enableAnalytics: true,
-      logLevel: "error",
+      logLevel: 'error',
     });
 
     // Suppress error event emissions during tests to prevent unhandled errors
-    errorHandler.removeAllListeners("error");
-    errorHandler.on("error", () => {
+    errorHandler.removeAllListeners('error');
+    errorHandler.on('error', () => {
       // Silently handle errors during tests
     });
   });
@@ -358,9 +346,9 @@ describe("ErrorHandler", () => {
     errorHandler.destroy();
   });
 
-  describe("error handling", () => {
-    it("should handle errors and update statistics", async () => {
-      const error = new Error("Test error");
+  describe('error handling', () => {
+    it('should handle errors and update statistics', async () => {
+      const error = new Error('Test error');
 
       const result = await errorHandler.handleError(error);
 
@@ -371,9 +359,9 @@ describe("ErrorHandler", () => {
       expect(stats.errorsByCategory[ErrorCategory.OPERATIONAL]).toBe(1);
     });
 
-    it("should categorize errors correctly", async () => {
-      const configError = new Error("Invalid configuration");
-      const networkError = new Error("Network timeout");
+    it('should categorize errors correctly', async () => {
+      const configError = new Error('Invalid configuration');
+      const networkError = new Error('Network timeout');
 
       await errorHandler.handleError(configError);
       await errorHandler.handleError(networkError);
@@ -383,20 +371,16 @@ describe("ErrorHandler", () => {
       expect(stats.errorsByCategory[ErrorCategory.EXTERNAL_SERVICE]).toBe(1);
     });
 
-    it("should attempt recovery when strategy provided", async () => {
-      const error = new Error("Test error");
+    it('should attempt recovery when strategy provided', async () => {
+      const error = new Error('Test error');
       const mockAction = vi.fn().mockResolvedValue(undefined);
 
       const recoveryStrategy = {
-        type: "retry" as const,
+        type: 'retry' as const,
         action: mockAction,
       };
 
-      const result = await errorHandler.handleError(
-        error,
-        undefined,
-        recoveryStrategy,
-      );
+      const result = await errorHandler.handleError(error, undefined, recoveryStrategy);
 
       expect(result).toBe(true);
       expect(mockAction).toHaveBeenCalled();
@@ -406,13 +390,13 @@ describe("ErrorHandler", () => {
       expect(stats.successfulRecoveries).toBe(1);
     });
 
-    it("should use circuit breaker for appropriate errors", async () => {
-      const networkError = new Error("Network timeout");
+    it('should use circuit breaker for appropriate errors', async () => {
+      const networkError = new Error('Network timeout');
 
       // Set up context to trigger circuit breaker usage
       const context = {
-        component: "NetworkService",
-        operationId: "api-call",
+        component: 'NetworkService',
+        operationId: 'api-call',
       };
 
       await errorHandler.handleError(networkError, context);
@@ -425,10 +409,10 @@ describe("ErrorHandler", () => {
     });
   });
 
-  describe("analytics", () => {
-    it("should provide comprehensive analytics", async () => {
-      const error1 = new Error("Test error 1");
-      const error2 = new Error("Network timeout");
+  describe('analytics', () => {
+    it('should provide comprehensive analytics', async () => {
+      const error1 = new Error('Test error 1');
+      const error2 = new Error('Network timeout');
 
       await errorHandler.handleError(error1);
       await errorHandler.handleError(error2);
@@ -442,14 +426,14 @@ describe("ErrorHandler", () => {
       expect(analytics.errorsBySeverity).toBeDefined();
     });
 
-    it("should calculate system health correctly", async () => {
+    it('should calculate system health correctly', async () => {
       // Initially should be healthy
       let analytics = errorHandler.getAnalytics();
       expect(analytics.systemHealth).toBe(HealthStatus.HEALTHY);
 
       // Add many high severity errors
       for (let i = 0; i < 6; i++) {
-        const error = new TypeError("Programming error");
+        const error = new TypeError('Programming error');
         await errorHandler.handleError(error);
       }
 
@@ -458,15 +442,15 @@ describe("ErrorHandler", () => {
     });
   });
 
-  describe("event emission", () => {
-    it("should emit error events", async () => {
+  describe('event emission', () => {
+    it('should emit error events', async () => {
       const errorEventSpy = vi.fn();
 
       // Remove the default silent handler and add our spy
-      errorHandler.removeAllListeners("error");
-      errorHandler.on("error", errorEventSpy);
+      errorHandler.removeAllListeners('error');
+      errorHandler.on('error', errorEventSpy);
 
-      const error = new Error("Test error");
+      const error = new Error('Test error');
       await errorHandler.handleError(error);
 
       expect(errorEventSpy).toHaveBeenCalledWith(
@@ -474,19 +458,19 @@ describe("ErrorHandler", () => {
           error,
           category: ErrorCategory.OPERATIONAL,
           severity: ErrorSeverity.MEDIUM,
-        }),
+        })
       );
     });
 
-    it("should emit recovery events", async () => {
+    it('should emit recovery events', async () => {
       const recoveryEventSpy = vi.fn();
 
       // Keep the error handler silent and just listen for recovery events
-      errorHandler.on("recovery", recoveryEventSpy);
+      errorHandler.on('recovery', recoveryEventSpy);
 
-      const error = new Error("Test error");
+      const error = new Error('Test error');
       const recoveryStrategy = {
-        type: "retry" as const,
+        type: 'retry' as const,
         action: vi.fn().mockResolvedValue(undefined),
       };
 
@@ -497,13 +481,13 @@ describe("ErrorHandler", () => {
           error,
           strategy: recoveryStrategy,
           success: true,
-        }),
+        })
       );
     });
   });
 
-  describe("singleton pattern", () => {
-    it("should return same instance", () => {
+  describe('singleton pattern', () => {
+    it('should return same instance', () => {
       const instance1 = ErrorHandler.getInstance();
       const instance2 = ErrorHandler.getInstance();
 
@@ -511,14 +495,14 @@ describe("ErrorHandler", () => {
     });
   });
 
-  describe("convenience functions", () => {
-    it("should provide global error handler access", () => {
+  describe('convenience functions', () => {
+    it('should provide global error handler access', () => {
       const handler = getErrorHandler();
       expect(handler).toBeInstanceOf(ErrorHandler);
     });
 
-    it("should provide global error handling function", async () => {
-      const error = new Error("Test error");
+    it('should provide global error handling function', async () => {
+      const error = new Error('Test error');
       const result = await handleError(error);
 
       expect(result).toBe(true);
@@ -526,15 +510,15 @@ describe("ErrorHandler", () => {
   });
 });
 
-describe("Error Recovery Strategies", () => {
+describe('Error Recovery Strategies', () => {
   let errorHandler: ErrorHandler;
 
   beforeEach(() => {
     errorHandler = ErrorHandler.getInstance();
 
     // Suppress error event emissions during tests
-    errorHandler.removeAllListeners("error");
-    errorHandler.on("error", () => {
+    errorHandler.removeAllListeners('error');
+    errorHandler.on('error', () => {
       // Silently handle errors during tests
     });
   });
@@ -544,69 +528,57 @@ describe("Error Recovery Strategies", () => {
     errorHandler.resetStats();
   });
 
-  it("should execute retry strategy", async () => {
-    const error = new Error("Temporary failure");
+  it('should execute retry strategy', async () => {
+    const error = new Error('Temporary failure');
     const mockAction = vi.fn().mockResolvedValue(undefined);
 
     const retryStrategy = {
-      type: "retry" as const,
+      type: 'retry' as const,
       config: { maxRetries: 3, retryDelay: 50 },
       action: mockAction,
     };
 
-    const result = await errorHandler.handleError(
-      error,
-      undefined,
-      retryStrategy,
-    );
+    const result = await errorHandler.handleError(error, undefined, retryStrategy);
 
     expect(result).toBe(true);
     expect(mockAction).toHaveBeenCalled();
   });
 
-  it("should execute fallback strategy", async () => {
-    const error = new Error("Service unavailable");
+  it('should execute fallback strategy', async () => {
+    const error = new Error('Service unavailable');
     const mockAction = vi.fn().mockResolvedValue(undefined);
 
     const fallbackStrategy = {
-      type: "fallback" as const,
-      config: { fallbackAction: "use-cache" },
+      type: 'fallback' as const,
+      config: { fallbackAction: 'use-cache' },
       action: mockAction,
     };
 
-    const result = await errorHandler.handleError(
-      error,
-      undefined,
-      fallbackStrategy,
-    );
+    const result = await errorHandler.handleError(error, undefined, fallbackStrategy);
 
     expect(result).toBe(true);
     expect(mockAction).toHaveBeenCalled();
   });
 
-  it("should execute graceful degradation strategy", async () => {
-    const error = new Error("Performance degraded");
+  it('should execute graceful degradation strategy', async () => {
+    const error = new Error('Performance degraded');
     const degradationEventSpy = vi.fn();
 
     // Listen for degradation events
-    errorHandler.on("degradation", degradationEventSpy);
+    errorHandler.on('degradation', degradationEventSpy);
 
     const degradationStrategy = {
-      type: "graceful-degradation" as const,
-      config: { degradationLevel: "partial" },
+      type: 'graceful-degradation' as const,
+      config: { degradationLevel: 'partial' },
     };
 
-    const result = await errorHandler.handleError(
-      error,
-      undefined,
-      degradationStrategy,
-    );
+    const result = await errorHandler.handleError(error, undefined, degradationStrategy);
 
     expect(result).toBe(true);
     expect(degradationEventSpy).toHaveBeenCalledWith(
       expect.objectContaining({
-        level: "partial",
-      }),
+        level: 'partial',
+      })
     );
   });
 });

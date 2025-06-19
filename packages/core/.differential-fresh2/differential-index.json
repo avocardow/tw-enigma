@@ -1,0 +1,29 @@
+{
+  "version": "1.0.0",
+  "currentFullBackup": {
+    "id": "backup_1750320904484_q8u0it",
+    "createdAt": "2025-06-19T08:15:04.484Z",
+    "filePath": "/tmp/compression-test-1750320904482/.backups-fresh2/diff-fresh2.2025-06-19T08-15-04-484Z.txt.backup",
+    "size": 30
+  },
+  "differentialChain": [],
+  "cumulativeFileStates": {
+    "/tmp/compression-test-1750320904482/diff-fresh2.txt": {
+      "filePath": "/tmp/compression-test-1750320904482/diff-fresh2.txt",
+      "size": 30,
+      "mtime": "2025-06-19T08:15:04.483Z",
+      "lastBackup": "2025-06-19T08:15:04.484Z",
+      "hasChanged": false
+    }
+  },
+  "stats": {
+    "totalDifferentials": 0,
+    "currentChainLength": 0,
+    "cumulativeSize": 0,
+    "cumulativeSizeRatio": 0,
+    "totalSpaceSaved": 0,
+    "lastBackupAt": "2025-06-19T08:15:04.484Z",
+    "timeSinceFullBackup": 0
+  },
+  "lastUpdated": "2025-06-19T08:15:04.484Z"
+}

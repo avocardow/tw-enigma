@@ -1,0 +1,90 @@
+{
+  "version": "1.0.0",
+  "currentFullBackup": {
+    "id": "backup_1750320904618_xaxrpd",
+    "createdAt": "2025-06-19T08:15:04.618Z",
+    "filePath": "/tmp/compression-test-1750320904616/.backups-perf/diff-performance.2025-06-19T08-15-04-618Z.txt.backup",
+    "size": 36
+  },
+  "differentialChain": [
+    {
+      "id": "backup_1750320904630_tivu49",
+      "type": "differential",
+      "baseFullBackupId": "backup_1750320904618_xaxrpd",
+      "backupPath": "/tmp/compression-test-1750320904616/.backups-perf/diff-performance.2025-06-19T08-15-04-630Z.txt.backup",
+      "originalPath": "/tmp/compression-test-1750320904616/diff-performance.txt",
+      "createdAt": "2025-06-19T08:15:04.630Z",
+      "cumulativeFiles": [
+        "/tmp/compression-test-1750320904616/diff-performance.txt"
+      ],
+      "cumulativeSize": 9,
+      "currentFiles": [
+        "/tmp/compression-test-1750320904616/diff-performance.txt"
+      ],
+      "currentSize": 9,
+      "changeDetectionMethod": "mtime",
+      "compressed": false,
+      "deduplicated": false,
+      "timeSinceFullBackup": 0.0000033333333333333333
+    },
+    {
+      "id": "backup_1750320904642_c9i2n0",
+      "type": "differential",
+      "baseFullBackupId": "backup_1750320904618_xaxrpd",
+      "backupPath": "/tmp/compression-test-1750320904616/.backups-perf/diff-performance.2025-06-19T08-15-04-642Z.txt.backup",
+      "originalPath": "/tmp/compression-test-1750320904616/diff-performance.txt",
+      "createdAt": "2025-06-19T08:15:04.642Z",
+      "cumulativeFiles": [
+        "/tmp/compression-test-1750320904616/diff-performance.txt"
+      ],
+      "cumulativeSize": 18,
+      "currentFiles": [
+        "/tmp/compression-test-1750320904616/diff-performance.txt"
+      ],
+      "currentSize": 9,
+      "changeDetectionMethod": "mtime",
+      "compressed": false,
+      "deduplicated": false,
+      "timeSinceFullBackup": 0.0000063888888888888885
+    },
+    {
+      "id": "backup_1750320904654_1s2okf",
+      "type": "differential",
+      "baseFullBackupId": "backup_1750320904618_xaxrpd",
+      "backupPath": "/tmp/compression-test-1750320904616/.backups-perf/diff-performance.2025-06-19T08-15-04-654Z.txt.backup",
+      "originalPath": "/tmp/compression-test-1750320904616/diff-performance.txt",
+      "createdAt": "2025-06-19T08:15:04.654Z",
+      "cumulativeFiles": [
+        "/tmp/compression-test-1750320904616/diff-performance.txt"
+      ],
+      "cumulativeSize": 27,
+      "currentFiles": [
+        "/tmp/compression-test-1750320904616/diff-performance.txt"
+      ],
+      "currentSize": 9,
+      "changeDetectionMethod": "mtime",
+      "compressed": false,
+      "deduplicated": false,
+      "timeSinceFullBackup": 0.00001
+    }
+  ],
+  "cumulativeFileStates": {
+    "/tmp/compression-test-1750320904616/diff-performance.txt": {
+      "filePath": "/tmp/compression-test-1750320904616/diff-performance.txt",
+      "size": 9,
+      "mtime": "2025-06-19T08:15:04.654Z",
+      "lastBackup": "2025-06-19T08:15:04.654Z",
+      "hasChanged": true
+    }
+  },
+  "stats": {
+    "totalDifferentials": 3,
+    "currentChainLength": 3,
+    "cumulativeSize": 27,
+    "cumulativeSizeRatio": 0.75,
+    "totalSpaceSaved": 0,
+    "lastBackupAt": "2025-06-19T08:15:04.654Z",
+    "timeSinceFullBackup": 0.00001
+  },
+  "lastUpdated": "2025-06-19T08:15:04.654Z"
+}

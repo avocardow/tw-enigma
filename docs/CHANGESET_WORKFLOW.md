@@ -35,6 +35,7 @@ tw-enigma/
 ### When to Create a Changeset
 
 Create a changeset when you:
+
 - ✅ Add new features to a package
 - ✅ Fix bugs in package code
 - ✅ Make breaking changes to APIs
@@ -48,21 +49,25 @@ Create a changeset when you:
 1. **Make your changes** to the packages
 
 2. **Run the changeset command**:
+
    ```bash
    pnpm changeset
    ```
 
 3. **Select packages** that were changed:
+
    - Use space to select/deselect packages
    - Use arrow keys to navigate
    - Press enter to continue
 
 4. **Choose change type**:
+
    - **patch**: Bug fixes, small improvements (0.0.X)
    - **minor**: New features, non-breaking changes (0.X.0)
    - **major**: Breaking changes (X.0.0)
 
 5. **Write a summary** of your changes:
+
    - Be descriptive and clear
    - Focus on user-facing changes
    - Use present tense ("Add feature X" not "Added feature X")
@@ -79,13 +84,14 @@ Changesets are markdown files with frontmatter:
 
 ```markdown
 ---
-"@tw-enigma/core": minor
-"@tw-enigma/cli": patch
+'@tw-enigma/core': minor
+'@tw-enigma/cli': patch
 ---
 
 Add new CSS optimization algorithm that reduces bundle size by 15%
 
 This improvement includes:
+
 - Enhanced class detection patterns
 - Better duplicate class removal
 - Improved minification strategies
@@ -135,6 +141,7 @@ pnpm release
 ### Workflows
 
 #### 1. **Changeset PR Management** (`.github/workflows/changeset-pr.yml`)
+
 - **Trigger**: Pull requests to main
 - **Purpose**: Validate changesets, preview releases, auto-label PRs
 - **Features**:
@@ -144,6 +151,7 @@ pnpm release
   - Skip changeset option with `skip-changeset` label
 
 #### 2. **Release Workflow** (`.github/workflows/release.yml`)
+
 - **Trigger**: Push to main, manual dispatch
 - **Purpose**: Automated versioning and publishing
 - **Steps**:
@@ -188,6 +196,7 @@ TURBO_TEAM         # Optional: Turborepo team name
 ### Linked Releases
 
 Our packages are configured as linked, meaning:
+
 - Both packages get the same version number
 - Releases are coordinated
 - Maintains compatibility between CLI and core
@@ -195,6 +204,7 @@ Our packages are configured as linked, meaning:
 ### Package Dependencies
 
 When updating dependencies:
+
 - **Internal dependencies**: Use `updateInternalDependencies: "patch"`
 - **External dependencies**: Create changesets for significant updates
 - **Dev dependencies**: Usually don't require changesets
@@ -204,12 +214,14 @@ When updating dependencies:
 ### Common Issues
 
 #### "No changesets found"
+
 ```bash
 # If you forgot to add a changeset:
 pnpm changeset add
 ```
 
 #### "Version already exists on npm"
+
 ```bash
 # Check current versions:
 npm view @tw-enigma/core versions --json
@@ -220,6 +232,7 @@ pnpm changeset version --ignore-private
 ```
 
 #### "Permission denied to npm"
+
 ```bash
 # Check npm authentication:
 npm whoami
@@ -232,6 +245,7 @@ npm access list packages @tw-enigma/core
 ```
 
 #### "Changeset validation failed"
+
 - Ensure changeset files have proper frontmatter
 - Check package names are correct
 - Verify bump types are valid (patch/minor/major)
@@ -239,17 +253,21 @@ npm access list packages @tw-enigma/core
 ### Manual Intervention
 
 #### Skip Changeset Requirement
+
 Add `skip-changeset` label to PR if:
+
 - Only documentation changes
 - Only development tool updates
 - CI/CD configuration changes
 
 #### Emergency Release
+
 1. Use manual workflow dispatch
 2. Select appropriate version bump
 3. Consider skipping tests if critical
 
 #### Rollback Release
+
 ```bash
 # Deprecate problematic version:
 npm deprecate @tw-enigma/core@1.2.3 "Version deprecated due to critical issue"
@@ -270,14 +288,17 @@ pnpm version && pnpm release
 ## 🔧 Configuration Files
 
 ### `.changeset/config.json`
+
 - Main changeset configuration
 - Controls linking, changelog generation, access levels
 
 ### GitHub Workflows
+
 - `changeset-pr.yml`: PR validation and preview
 - `release.yml`: Automated release pipeline
 
 ### Package Scripts
+
 ```json
 {
   "changeset": "changeset",
@@ -288,4 +309,4 @@ pnpm version && pnpm release
 
 ---
 
-For questions or issues with the release process, please open an issue or contact the maintainers. 
+For questions or issues with the release process, please open an issue or contact the maintainers.

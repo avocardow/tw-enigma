@@ -8,9 +8,7 @@
   ],
   "commit": false,
   "fixed": [],
-  "linked": [
-    ["@tw-enigma/core", "@tw-enigma/cli"]
-  ],
+  "linked": [["@tw-enigma/core", "@tw-enigma/cli"]],
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",

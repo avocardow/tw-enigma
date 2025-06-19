@@ -1,15 +1,15 @@
 {
   "version": "1.0.0",
   "totalEntries": 1,
-  "spaceSaved": 62500,
-  "lastUpdated": "2025-06-19T04:15:41.207Z",
+  "spaceSaved": 66500,
+  "lastUpdated": "2025-06-19T08:15:04.475Z",
   "entries": {
     "c38c2bf3055c516a98ac5d97f30e7c364e827bc0199e1c3415b794afbe55dcad": {
       "hash": "c38c2bf3055c516a98ac5d97f30e7c364e827bc0199e1c3415b794afbe55dcad",
       "algorithm": "sha256",
       "size": 500,
       "storagePath": "/Users/rowan/github/tw-enigma/tw-enigma/packages/core/.dedup/c38c2bf3055c516a98ac5d97f30e7c364e827bc0199e1c3415b794afbe55dcad.txt",
-      "referenceCount": 126,
+      "referenceCount": 134,
       "referencePaths": [
         "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750053712989/test1.txt",
         "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750053712989/test2.txt",
@@ -136,17 +136,25 @@
         "/tmp/compression-test-1750306100946/test1.txt",
         "/tmp/compression-test-1750306100946/test2.txt",
         "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750306541195/test1.txt",
-        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750306541195/test2.txt"
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750306541195/test2.txt",
+        "/tmp/compression-test-1750320546872/test1.txt",
+        "/tmp/compression-test-1750320546872/test2.txt",
+        "/tmp/compression-test-1750320591084/test1.txt",
+        "/tmp/compression-test-1750320591084/test2.txt",
+        "/tmp/compression-test-1750320751412/test1.txt",
+        "/tmp/compression-test-1750320751412/test2.txt",
+        "/tmp/compression-test-1750320904471/test1.txt",
+        "/tmp/compression-test-1750320904471/test2.txt"
       ],
       "firstSeen": "2025-06-16T06:01:52.992Z",
-      "lastAccessed": "2025-06-19T04:15:41.206Z",
+      "lastAccessed": "2025-06-19T08:15:04.475Z",
       "compressed": false
     }
   },
   "stats": {
-    "totalOriginalSize": 63000,
+    "totalOriginalSize": 67000,
     "totalDeduplicatedSize": 500,
-    "duplicatesFound": 125,
-    "averageReferenceCount": 126
+    "duplicatesFound": 133,
+    "averageReferenceCount": 134
   }
 }

@@ -1,0 +1,29 @@
+{
+  "version": "1.0.0",
+  "currentFullBackup": {
+    "id": "backup_1750320904528_2m7v8w",
+    "createdAt": "2025-06-19T08:15:04.528Z",
+    "filePath": "/tmp/compression-test-1750320904526/.backups-force-full/diff-force-full.2025-06-19T08-15-04-528Z.txt.backup",
+    "size": 35
+  },
+  "differentialChain": [],
+  "cumulativeFileStates": {
+    "/tmp/compression-test-1750320904526/diff-force-full.txt": {
+      "filePath": "/tmp/compression-test-1750320904526/diff-force-full.txt",
+      "size": 35,
+      "mtime": "2025-06-19T08:15:04.528Z",
+      "lastBackup": "2025-06-19T08:15:04.528Z",
+      "hasChanged": false
+    }
+  },
+  "stats": {
+    "totalDifferentials": 0,
+    "currentChainLength": 0,
+    "cumulativeSize": 0,
+    "cumulativeSizeRatio": 0,
+    "totalSpaceSaved": 0,
+    "lastBackupAt": "2025-06-19T08:15:04.528Z",
+    "timeSinceFullBackup": 0
+  },
+  "lastUpdated": "2025-06-19T08:15:04.528Z"
+}

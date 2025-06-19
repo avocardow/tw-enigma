@@ -1,0 +1,46 @@
+{
+  "version": "1.0.0",
+  "totalEntries": 1,
+  "spaceSaved": 57000,
+  "lastUpdated": "2025-06-19T08:15:04.831Z",
+  "entries": {
+    "e1630f843370f402870799e14abbf2b06af2d23b0153658e1211dffabc61ad8f": {
+      "hash": "e1630f843370f402870799e14abbf2b06af2d23b0153658e1211dffabc61ad8f",
+      "algorithm": "sha256",
+      "size": 3000,
+      "storagePath": "/Users/rowan/github/tw-enigma/tw-enigma/packages/core/.dedup-savings/e1630f843370f402870799e14abbf2b06af2d23b0153658e1211dffabc61ad8f.txt",
+      "referenceCount": 20,
+      "referencePaths": [
+        "/tmp/compression-test-1750320547232/integration-tests/duplicate-1.txt",
+        "/tmp/compression-test-1750320547232/integration-tests/duplicate-2.txt",
+        "/tmp/compression-test-1750320547232/integration-tests/duplicate-3.txt",
+        "/tmp/compression-test-1750320547232/integration-tests/duplicate-4.txt",
+        "/tmp/compression-test-1750320547232/integration-tests/duplicate-5.txt",
+        "/tmp/compression-test-1750320591428/integration-tests/duplicate-1.txt",
+        "/tmp/compression-test-1750320591428/integration-tests/duplicate-2.txt",
+        "/tmp/compression-test-1750320591428/integration-tests/duplicate-3.txt",
+        "/tmp/compression-test-1750320591428/integration-tests/duplicate-4.txt",
+        "/tmp/compression-test-1750320591428/integration-tests/duplicate-5.txt",
+        "/tmp/compression-test-1750320751761/integration-tests/duplicate-1.txt",
+        "/tmp/compression-test-1750320751761/integration-tests/duplicate-2.txt",
+        "/tmp/compression-test-1750320751761/integration-tests/duplicate-3.txt",
+        "/tmp/compression-test-1750320751761/integration-tests/duplicate-4.txt",
+        "/tmp/compression-test-1750320751761/integration-tests/duplicate-5.txt",
+        "/tmp/compression-test-1750320904824/integration-tests/duplicate-1.txt",
+        "/tmp/compression-test-1750320904824/integration-tests/duplicate-2.txt",
+        "/tmp/compression-test-1750320904824/integration-tests/duplicate-3.txt",
+        "/tmp/compression-test-1750320904824/integration-tests/duplicate-4.txt",
+        "/tmp/compression-test-1750320904824/integration-tests/duplicate-5.txt"
+      ],
+      "firstSeen": "2025-06-19T08:09:07.235Z",
+      "lastAccessed": "2025-06-19T08:15:04.831Z",
+      "compressed": false
+    }
+  },
+  "stats": {
+    "totalOriginalSize": 60000,
+    "totalDeduplicatedSize": 3000,
+    "duplicatesFound": 19,
+    "averageReferenceCount": 20
+  }
+}

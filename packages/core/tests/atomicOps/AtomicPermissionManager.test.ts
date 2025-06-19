@@ -2,14 +2,14 @@
  * @fileoverview Tests for AtomicPermissionManager permission and ownership handling
  */
 
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import * as fs from "fs/promises";
-import * as path from "path";
-import { AtomicPermissionManager } from "../../src/atomicOps/AtomicPermissionManager";
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import * as fs from 'fs/promises';
+import * as path from 'path';
+import { AtomicPermissionManager } from '../../src/atomicOps/AtomicPermissionManager';
 
 // Cross-platform permission validation helper
 function expectPermissions(actualMode: number, expectedMode: number): void {
-  if (process.platform === "win32") {
+  if (process.platform === 'win32') {
     // Windows permissions work differently - just check that file has some permissions
     expect(actualMode).toBeGreaterThan(0);
   } else {
@@ -18,17 +18,17 @@ function expectPermissions(actualMode: number, expectedMode: number): void {
   }
 }
 
-describe("AtomicPermissionManager", () => {
+describe('AtomicPermissionManager', () => {
   let manager: AtomicPermissionManager;
   let testDir: string;
   let testFile: string;
 
   beforeEach(async () => {
-    testDir = path.join(process.cwd(), "test-permissions");
+    testDir = path.join(process.cwd(), 'test-permissions');
     await fs.mkdir(testDir, { recursive: true });
 
-    testFile = path.join(testDir, "test.txt");
-    await fs.writeFile(testFile, "test content");
+    testFile = path.join(testDir, 'test.txt');
+    await fs.writeFile(testFile, 'test content');
 
     manager = new AtomicPermissionManager({
       preservePermissions: true,
@@ -46,41 +46,38 @@ describe("AtomicPermissionManager", () => {
     }
   });
 
-  describe("Permission Management", () => {
-    it("should change file permissions successfully", async () => {
+  describe('Permission Management', () => {
+    it('should change file permissions successfully', async () => {
       const newPermissions = 0o755;
       const result = await manager.changePermissions(testFile, newPermissions);
 
       expect(result.success).toBe(true);
       expect(result.rollbackOperation).toBeDefined();
-      expect(result.rollbackOperation?.type).toBe("permission_change");
+      expect(result.rollbackOperation?.type).toBe('permission_change');
 
       // Verify permissions were changed using cross-platform helper
       const stats = await fs.stat(testFile);
       expectPermissions(stats.mode & 0o777, newPermissions);
     });
 
-    it("should reject invalid permission modes", async () => {
+    it('should reject invalid permission modes', async () => {
       const invalidPermissions = 999; // Invalid mode (too large)
-      const result = await manager.changePermissions(
-        testFile,
-        invalidPermissions,
-      );
+      const result = await manager.changePermissions(testFile, invalidPermissions);
 
       expect(result.success).toBe(false);
-      expect(result.error?.message).toContain("Invalid permission mode");
+      expect(result.error?.message).toContain('Invalid permission mode');
     });
 
-    it("should preserve permissions from source to target", async () => {
-      const sourceFile = path.join(testDir, "source.txt");
-      const targetFile = path.join(testDir, "target.txt");
+    it('should preserve permissions from source to target', async () => {
+      const sourceFile = path.join(testDir, 'source.txt');
+      const targetFile = path.join(testDir, 'target.txt');
 
       // Create source with specific permissions
-      await fs.writeFile(sourceFile, "source content");
+      await fs.writeFile(sourceFile, 'source content');
       await fs.chmod(sourceFile, 0o644);
 
       // Create target with different permissions
-      await fs.writeFile(targetFile, "target content");
+      await fs.writeFile(targetFile, 'target content');
       await fs.chmod(targetFile, 0o777);
 
       // Preserve permissions
@@ -94,7 +91,7 @@ describe("AtomicPermissionManager", () => {
       expect(targetStats.mode & 0o777).toBe(sourceStats.mode & 0o777);
     });
 
-    it("should track permission history", async () => {
+    it('should track permission history', async () => {
       await manager.changePermissions(testFile, 0o755);
       await manager.changePermissions(testFile, 0o644);
 
@@ -104,7 +101,7 @@ describe("AtomicPermissionManager", () => {
       expect(history[1].newPermissions).toBe(0o644);
     });
 
-    it("should provide operation metrics", async () => {
+    it('should provide operation metrics', async () => {
       const initialMetrics = manager.getMetrics();
       expect(initialMetrics.totalOperations).toBe(0);
 
@@ -116,20 +113,20 @@ describe("AtomicPermissionManager", () => {
     });
   });
 
-  describe("Edge Cases", () => {
-    it("should handle non-existent files gracefully", async () => {
-      const nonExistentFile = path.join(testDir, "does-not-exist.txt");
+  describe('Edge Cases', () => {
+    it('should handle non-existent files gracefully', async () => {
+      const nonExistentFile = path.join(testDir, 'does-not-exist.txt');
       const result = await manager.changePermissions(nonExistentFile, 0o644);
 
       expect(result.success).toBe(false);
-      expect(result.error?.message).toContain("ENOENT");
+      expect(result.error?.message).toContain('ENOENT');
     });
 
-    it("should validate ownership values", async () => {
+    it('should validate ownership values', async () => {
       const result = await manager.changeOwnership(testFile, -1, 0);
 
       expect(result.success).toBe(false);
-      expect(result.error?.message).toContain("Invalid user ID");
+      expect(result.error?.message).toContain('Invalid user ID');
     });
   });
 });

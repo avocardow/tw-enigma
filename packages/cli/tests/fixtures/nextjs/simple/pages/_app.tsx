@@ -1,25 +1,20 @@
-import type { AppProps } from "next/app";
-import Head from "next/head";
-import "./globals.css";
+import type { AppProps } from 'next/app';
+import Head from 'next/head';
+import './globals.css';
 
 export default function MyApp({ Component, pageProps }: AppProps) {
   return (
     <>
       <Head>
         <title>Next.js Fixture App</title>
-        <meta
-          name="description"
-          content="Testing Tailwind CSS optimization with Next.js"
-        />
+        <meta name="description" content="Testing Tailwind CSS optimization with Next.js" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <div className="min-h-screen bg-gray-50">
         <header className="bg-white shadow-sm border-b border-gray-200">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center h-16">
-              <h1 className="text-xl font-semibold text-gray-900">
-                Next.js Test App
-              </h1>
+              <h1 className="text-xl font-semibold text-gray-900">Next.js Test App</h1>
               <nav className="hidden md:flex space-x-8">
                 <a
                   href="/"

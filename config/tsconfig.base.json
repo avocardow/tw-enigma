@@ -25,10 +25,5 @@
     "allowJs": true,
     "lib": ["ES2020", "DOM"]
   },
-  "exclude": [
-    "node_modules",
-    "tests/fixtures/**/*",
-    "dist",
-    "coverage"
-  ]
-} 
+  "exclude": ["node_modules", "tests/fixtures/**/*", "dist", "coverage"]
+}

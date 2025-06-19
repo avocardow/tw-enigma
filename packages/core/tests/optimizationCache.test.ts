@@ -7,11 +7,11 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { promises as fs } from 'fs';
-import { 
-  OptimizationCache, 
+import {
+  OptimizationCache,
   createOptimizationCache,
   getOptimizationCache,
-  type OptimizationCacheConfig 
+  type OptimizationCacheConfig,
 } from '../src/engine/optimizationCache.ts';
 import type { EnigmaConfig } from '../src/config.ts';
 import type { OptimizationResult } from '../src/output/assetHasher.ts';
@@ -35,7 +35,7 @@ vi.mock('chokidar', () => {
     close: vi.fn().mockResolvedValue(undefined),
     unwatch: vi.fn(),
   };
-  
+
   return {
     default: {
       watch: vi.fn().mockReturnValue(mockFileWatcher),
@@ -61,7 +61,7 @@ vi.mock('crypto', () => {
         let hash = 0;
         for (let i = 0; i < combined.length; i++) {
           const char = combined.charCodeAt(i);
-          hash = ((hash << 5) - hash) + char;
+          hash = (hash << 5) - hash + char;
           hash = hash & hash; // Convert to 32-bit integer
         }
         return `mock-hash-${Math.abs(hash)}-${combined.slice(0, 8)}`;
@@ -69,7 +69,7 @@ vi.mock('crypto', () => {
     };
     return hashObj;
   };
-  
+
   // Create the mock createHash function that returns the hash object
   const mockCreateHash = vi.fn().mockImplementation(() => createMockHashObject());
 
@@ -103,10 +103,10 @@ describe('OptimizationCache', () => {
     });
   });
 
-      beforeEach(async () => {
+  beforeEach(async () => {
     // Reset all mocks but preserve mock implementations
     vi.clearAllMocks();
-    
+
     // Mock file reading to return consistent content
     vi.mocked(fs.readFile).mockResolvedValue('mock file content');
 
@@ -165,7 +165,7 @@ describe('OptimizationCache', () => {
   describe('Basic Cache Operations', () => {
     it('should store and retrieve optimization results', async () => {
       const inputFiles = ['src/styles.css'];
-      
+
       // Store result
       const stored = await cache.set(inputFiles, mockConfig, mockOptimizationResult);
       expect(stored).toBe(true);
@@ -180,22 +180,22 @@ describe('OptimizationCache', () => {
 
     it('should return null for cache miss', async () => {
       const inputFiles = ['src/nonexistent.css'];
-      
+
       const result = await cache.get(inputFiles, mockConfig);
       expect(result).toBeNull();
     });
 
     it('should handle framework-specific caching', async () => {
       const inputFiles = ['src/component.vue'];
-      
+
       // Store with framework
       const stored = await cache.set(inputFiles, mockConfig, mockOptimizationResult, 'vue');
       expect(stored).toBe(true); // Verify the store operation succeeded
-      
+
       // Should retrieve with same framework
       const retrieved = await cache.get(inputFiles, mockConfig, 'vue');
       expect(retrieved).toBeTruthy();
-      
+
       // Should not retrieve with different framework
       const differentFramework = await cache.get(inputFiles, mockConfig, 'react');
       expect(differentFramework).toBeNull();
@@ -203,22 +203,22 @@ describe('OptimizationCache', () => {
 
     it('should track hit counts and access times', async () => {
       const inputFiles = ['src/styles.css'];
-      
+
       await cache.set(inputFiles, mockConfig, mockOptimizationResult);
-      
+
       // First access
       const first = await cache.get(inputFiles, mockConfig);
       expect(first?.hitCount).toBe(1);
       const firstTime = first!.lastAccessed.getTime();
-      
+
       // Small delay to ensure different timestamp
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
       // Second access
       const second = await cache.get(inputFiles, mockConfig);
       expect(second?.hitCount).toBe(2);
       const secondTime = second!.lastAccessed.getTime();
-      
+
       // Allow for small timing differences
       expect(secondTime).toBeGreaterThanOrEqual(firstTime);
     });
@@ -227,10 +227,10 @@ describe('OptimizationCache', () => {
   describe('Cache Key Generation', () => {
     it('should generate consistent cache keys', async () => {
       const inputFiles = ['src/styles.css'];
-      
+
       const key1 = await cache.generateCacheKey(inputFiles, mockConfig);
       const key2 = await cache.generateCacheKey(inputFiles, mockConfig);
-      
+
       // Keys should be generated and follow the expected pattern (fallback in test environment)
       expect(key1).toMatch(/^cache-key-\d+-\d+$/);
       expect(key2).toMatch(/^cache-key-\d+-\d+$/);
@@ -241,14 +241,14 @@ describe('OptimizationCache', () => {
     it('should generate different keys for different inputs', async () => {
       const files1 = ['src/styles1.css'];
       const files2 = ['src/styles2.css'];
-      
+
       const key1 = await cache.generateCacheKey(files1, mockConfig);
       const key2 = await cache.generateCacheKey(files2, mockConfig);
-      
+
       // Both should follow the fallback hash pattern in test environment
       expect(key1).toMatch(/^cache-key-\d+-\d+$/);
       expect(key2).toMatch(/^cache-key-\d+-\d+$/);
-      
+
       // They should be different due to different inputs
       expect(key1).not.toBe(key2);
     });
@@ -257,21 +257,25 @@ describe('OptimizationCache', () => {
       const inputFiles = ['src/styles.css'];
       const config1 = { ...mockConfig, output: { directory: 'dist1' } };
       const config2 = { ...mockConfig, output: { directory: 'dist2' } };
-      
+
       const key1 = await cache.generateCacheKey(inputFiles, config1);
       const key2 = await cache.generateCacheKey(inputFiles, config2);
-      
+
       // Both should follow the fallback hash pattern in test environment
       expect(key1).toMatch(/^cache-key-\d+-\d+$/);
       expect(key2).toMatch(/^cache-key-\d+-\d+$/);
-      
+
       // They should be different due to different configurations
       expect(key1).not.toBe(key2);
     });
   });
 
   describe('Cache Invalidation', () => {
-    const testFiles = ['/absolute/path/file1.css', '/absolute/path/file2.css', '/absolute/path/file3.css'];
+    const testFiles = [
+      '/absolute/path/file1.css',
+      '/absolute/path/file2.css',
+      '/absolute/path/file3.css',
+    ];
 
     beforeEach(async () => {
       // Set up some cached data with absolute paths
@@ -283,22 +287,22 @@ describe('OptimizationCache', () => {
     it('should invalidate cache by files', async () => {
       const invalidated = await cache.invalidateByFiles([testFiles[0]]);
       expect(invalidated).toBeGreaterThan(0);
-      
+
       // File1 should be invalidated
       const result1 = await cache.get([testFiles[0]], mockConfig);
       expect(result1).toBeNull();
-      
+
       // Other files should remain
       const result2 = await cache.get([testFiles[1]], mockConfig);
       expect(result2).toBeTruthy();
     });
 
     it('should invalidate cache by configuration changes', async () => {
-      const newConfig = { 
-        ...mockConfig, 
-        optimization: { enabled: false } 
+      const newConfig = {
+        ...mockConfig,
+        optimization: { enabled: false },
       };
-      
+
       // Since our mock returns the same hash, invalidation won't happen based on hash differences
       // but we can test that the method doesn't throw and completes
       const invalidated = await cache.invalidateByConfig(newConfig);
@@ -307,11 +311,11 @@ describe('OptimizationCache', () => {
 
     it('should clear all cache entries', async () => {
       await cache.clear();
-      
+
       const result1 = await cache.get(['file1.css'], mockConfig);
       const result2 = await cache.get(['file2.css'], mockConfig);
       const result3 = await cache.get(['file3.css'], mockConfig);
-      
+
       expect(result1).toBeNull();
       expect(result2).toBeNull();
       expect(result3).toBeNull();
@@ -321,21 +325,21 @@ describe('OptimizationCache', () => {
   describe('Analytics and Metrics', () => {
     it('should track cache analytics', async () => {
       const inputFiles = ['src/styles.css'];
-      
+
       // Initial analytics
       let analytics = cache.getAnalytics();
       expect(analytics.totalHits).toBe(0);
       expect(analytics.totalMisses).toBe(0);
-      
+
       // Cache miss
       await cache.get(inputFiles, mockConfig);
       analytics = cache.getAnalytics();
       expect(analytics.totalMisses).toBe(1);
-      
+
       // Cache set and hit
       await cache.set(inputFiles, mockConfig, mockOptimizationResult);
       await cache.get(inputFiles, mockConfig);
-      
+
       analytics = cache.getAnalytics();
       expect(analytics.totalHits).toBe(1);
       expect(analytics.hitRate).toBeGreaterThan(0);
@@ -345,7 +349,7 @@ describe('OptimizationCache', () => {
       await cache.get(['styles.css'], mockConfig); // miss
       await cache.get(['component.vue'], mockConfig); // miss
       await cache.get(['script.js'], mockConfig); // miss
-      
+
       const analytics = cache.getAnalytics();
       expect(analytics.topFileTypes.length).toBeGreaterThan(0);
     });
@@ -353,7 +357,7 @@ describe('OptimizationCache', () => {
     it('should track invalidation statistics', async () => {
       await cache.set(['file1.css'], mockConfig, mockOptimizationResult);
       await cache.invalidateByFiles(['file1.css'], 'file-changed');
-      
+
       const analytics = cache.getAnalytics();
       expect(analytics.invalidationStats.byReason['file-changed']).toBe(1);
       expect(analytics.invalidationStats.totalInvalidations).toBe(1);
@@ -363,9 +367,9 @@ describe('OptimizationCache', () => {
   describe('Error Handling', () => {
     it('should handle file read errors gracefully', async () => {
       vi.mocked(fs.readFile).mockRejectedValue(new Error('File not found'));
-      
+
       const inputFiles = ['nonexistent.css'];
-      
+
       // Should not throw, but include error in hash
       const key = await cache.generateCacheKey(inputFiles, mockConfig);
       expect(key).toBeTruthy();
@@ -375,66 +379,66 @@ describe('OptimizationCache', () => {
     it('should emit error events for cache operations', async () => {
       const errorHandler = vi.fn();
       cache.on('error', errorHandler);
-      
+
       // Force an error by providing invalid data
       vi.mocked(fs.readFile).mockRejectedValue(new Error('Simulated error'));
-      
+
       await cache.get(['error-file.css'], mockConfig);
-      
+
       // Error should be handled gracefully
       expect(errorHandler).not.toHaveBeenCalled(); // Should not emit error for get operations
     });
 
     it('should handle disabled cache gracefully', async () => {
       const disabledCache = createOptimizationCache({ enabled: false });
-      
+
       const result = await disabledCache.get(['test.css'], mockConfig);
       expect(result).toBeNull();
-      
+
       const stored = await disabledCache.set(['test.css'], mockConfig, mockOptimizationResult);
       expect(stored).toBe(false);
-      
+
       await disabledCache.destroy();
     });
   });
 
   describe('Configuration and Lifecycle', () => {
     it('should respect cache size limits', async () => {
-      const smallCache = createOptimizationCache({ 
+      const smallCache = createOptimizationCache({
         maxSize: 100, // Very small cache
         enabled: true,
         enableFileWatching: false, // Disable to avoid chokidar issues
       });
-      
+
       // Try to store data larger than cache limit
       const largeResult = {
         ...mockOptimizationResult,
         optimizedCSS: 'x'.repeat(1000), // Large CSS
       };
-      
+
       const stored = await smallCache.set(['large.css'], mockConfig, largeResult);
       // Should still succeed as the underlying cache manager handles size limits
       expect(stored).toBe(true);
-      
+
       await smallCache.destroy();
     });
 
     it('should respect TTL settings', async () => {
-      const shortTtlCache = createOptimizationCache({ 
+      const shortTtlCache = createOptimizationCache({
         ttl: 1, // 1ms TTL
         enabled: true,
         enableFileWatching: false, // Disable to avoid chokidar issues
       });
-      
+
       await shortTtlCache.set(['ttl-test.css'], mockConfig, mockOptimizationResult);
-      
+
       // Wait for TTL to expire
-      await new Promise(resolve => setTimeout(resolve, 10));
-      
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
       // Entry should be expired (handled by underlying cache manager)
       await shortTtlCache.get(['ttl-test.css'], mockConfig);
       // Note: TTL is handled by the underlying cache manager, so we can't easily test this
-      
+
       await shortTtlCache.destroy();
     });
 
@@ -442,10 +446,10 @@ describe('OptimizationCache', () => {
       const testCache = createOptimizationCache({
         enableFileWatching: false, // Disable to avoid chokidar issues
       });
-      
+
       // Add some data
       await testCache.set(['cleanup-test.css'], mockConfig, mockOptimizationResult);
-      
+
       // Destroy should not throw
       await expect(testCache.destroy()).resolves.not.toThrow();
     });
@@ -455,16 +459,16 @@ describe('OptimizationCache', () => {
     it('should provide global cache instance', () => {
       const global1 = getOptimizationCache();
       const global2 = getOptimizationCache();
-      
+
       expect(global1).toBe(global2); // Should be same instance
     });
 
     it('should create new cache instances', () => {
       const cache1 = createOptimizationCache();
       const cache2 = createOptimizationCache();
-      
+
       expect(cache1).not.toBe(cache2); // Should be different instances
-      
+
       // Clean up
       cache1.destroy();
       cache2.destroy();
@@ -477,32 +481,26 @@ describe('OptimizationCache', () => {
       const missHandler = vi.fn();
       const setHandler = vi.fn();
       const invalidatedHandler = vi.fn();
-      
+
       cache.on('cache-hit', hitHandler);
       cache.on('cache-miss', missHandler);
       cache.on('cache-set', setHandler);
       cache.on('cache-invalidated', invalidatedHandler);
-      
+
       const inputFiles = ['events-test.css'];
-      
+
       // Miss
       await cache.get(inputFiles, mockConfig);
-      expect(missHandler).toHaveBeenCalledWith(
-        expect.objectContaining({ inputFiles })
-      );
-      
+      expect(missHandler).toHaveBeenCalledWith(expect.objectContaining({ inputFiles }));
+
       // Set
       await cache.set(inputFiles, mockConfig, mockOptimizationResult);
-      expect(setHandler).toHaveBeenCalledWith(
-        expect.objectContaining({ inputFiles })
-      );
-      
+      expect(setHandler).toHaveBeenCalledWith(expect.objectContaining({ inputFiles }));
+
       // Hit
       await cache.get(inputFiles, mockConfig);
-      expect(hitHandler).toHaveBeenCalledWith(
-        expect.objectContaining({ inputFiles })
-      );
-      
+      expect(hitHandler).toHaveBeenCalledWith(expect.objectContaining({ inputFiles }));
+
       // Invalidation
       await cache.invalidateByFiles(inputFiles);
       expect(invalidatedHandler).toHaveBeenCalledWith(
@@ -514,27 +512,27 @@ describe('OptimizationCache', () => {
   describe('Edge Cases', () => {
     it('should handle empty input files', async () => {
       const emptyFiles: string[] = [];
-      
+
       const key = await cache.generateCacheKey(emptyFiles, mockConfig);
       expect(key).toBeTruthy();
-      
+
       const stored = await cache.set(emptyFiles, mockConfig, mockOptimizationResult);
       expect(stored).toBe(true);
-      
+
       const retrieved = await cache.get(emptyFiles, mockConfig);
       expect(retrieved).toBeTruthy();
     });
 
     it('should handle malformed configuration', async () => {
       const malformedConfig = {} as EnigmaConfig;
-      
+
       const key = await cache.generateCacheKey(['test.css'], malformedConfig);
       expect(key).toBeTruthy();
     });
 
     it('should handle concurrent operations', async () => {
       const inputFiles = ['concurrent-test.css'];
-      
+
       // Perform multiple concurrent operations
       const operations = [
         cache.set(inputFiles, mockConfig, mockOptimizationResult),
@@ -542,7 +540,7 @@ describe('OptimizationCache', () => {
         cache.set(inputFiles, mockConfig, mockOptimizationResult),
         cache.get(inputFiles, mockConfig),
       ];
-      
+
       // Should not throw
       await expect(Promise.all(operations)).resolves.not.toThrow();
     });
@@ -550,10 +548,10 @@ describe('OptimizationCache', () => {
     it('should handle very long file paths', async () => {
       const longPath = 'src/' + 'very-long-path-segment/'.repeat(50) + 'file.css';
       const inputFiles = [longPath];
-      
+
       const key = await cache.generateCacheKey(inputFiles, mockConfig);
       expect(key).toBeTruthy();
-      
+
       const stored = await cache.set(inputFiles, mockConfig, mockOptimizationResult);
       expect(stored).toBe(true);
     });
@@ -565,14 +563,14 @@ describe('OptimizationCache', () => {
         'src/file with spaces.css',
         'src/file-with-émojis-🎨.css',
       ];
-      
+
       for (const file of specialFiles) {
         const key = await cache.generateCacheKey([file], mockConfig);
         expect(key).toBeTruthy();
-        
+
         const stored = await cache.set([file], mockConfig, mockOptimizationResult);
         expect(stored).toBe(true);
       }
     });
   });
-}); 
+});

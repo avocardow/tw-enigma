@@ -101,7 +101,7 @@ export const cleanupTestFiles = async (filePaths: string[]) => {
 /**
  * Wait for async operations in tests
  */
-export const waitFor = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+export const waitFor = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
  * Create temporary test directory
@@ -110,8 +110,11 @@ export const createTempDir = async (prefix = 'tw-enigma-test') => {
   const os = await import('os');
   const path = await import('path');
   const fs = await import('fs/promises');
-  
-  const tempDir = path.join(os.tmpdir(), `${prefix}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`);
+
+  const tempDir = path.join(
+    os.tmpdir(),
+    `${prefix}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+  );
   await fs.mkdir(tempDir, { recursive: true });
   return tempDir;
 };
@@ -126,14 +129,16 @@ export const expectAsyncThrow = async (fn: () => Promise<any>, expectedMessage?:
   } catch (e) {
     error = e as Error;
   }
-  
+
   if (!error) {
     throw new Error('Expected function to throw, but it did not');
   }
-  
+
   if (expectedMessage && !error.message.includes(expectedMessage)) {
-    throw new Error(`Expected error message to contain "${expectedMessage}", but got "${error.message}"`);
+    throw new Error(
+      `Expected error message to contain "${expectedMessage}", but got "${error.message}"`
+    );
   }
-  
+
   return error;
-}; 
+};

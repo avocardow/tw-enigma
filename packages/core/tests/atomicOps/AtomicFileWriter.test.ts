@@ -3,39 +3,30 @@
  * @module tests/atomicOps/AtomicFileWriter
  */
 
-import {
-  describe,
-  it,
-  expect,
-  beforeEach,
-  afterEach,
-  beforeAll,
-  afterAll,
-} from "vitest";
-import * as fs from "fs/promises";
-import * as path from "path";
-import { AtomicFileWriter } from "../../src/atomicOps/AtomicFileWriter";
-import {
-  // AtomicOperationResult,
-  // AtomicOperationError,
-} from "../../src/types/atomicOps";
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from 'vitest';
+import * as fs from 'fs/promises';
+import * as path from 'path';
+import { AtomicFileWriter } from '../../src/atomicOps/AtomicFileWriter';
+import {} from // AtomicOperationResult,
+// AtomicOperationError,
+'../../src/types/atomicOps';
 
 // Test directories and files
-const TEST_DIR = path.join(__dirname, "../../test-temp/atomic-writer");
-const TEST_FILE = path.join(TEST_DIR, "test-file.txt");
-const TEST_JSON_FILE = path.join(TEST_DIR, "test-data.json");
-const EXISTING_FILE = path.join(TEST_DIR, "existing-file.txt");
-const APPEND_FILE = path.join(TEST_DIR, "append-file.txt");
-const LARGE_FILE = path.join(TEST_DIR, "large-file.txt");
+const TEST_DIR = path.join(__dirname, '../../test-temp/atomic-writer');
+const TEST_FILE = path.join(TEST_DIR, 'test-file.txt');
+const TEST_JSON_FILE = path.join(TEST_DIR, 'test-data.json');
+const EXISTING_FILE = path.join(TEST_DIR, 'existing-file.txt');
+const APPEND_FILE = path.join(TEST_DIR, 'append-file.txt');
+const LARGE_FILE = path.join(TEST_DIR, 'large-file.txt');
 
 // Test data
-const TEST_CONTENT = "Hello, World! This is a test file.\\n";
-const TEST_JSON_DATA = { name: "test", value: 42, items: [1, 2, 3] };
-const EXISTING_CONTENT = "This is existing content.\\n";
-const APPEND_CONTENT = "This content will be appended.\\n";
-const LARGE_CONTENT = "B".repeat(1024 * 50); // 50KB
+const TEST_CONTENT = 'Hello, World! This is a test file.\\n';
+const TEST_JSON_DATA = { name: 'test', value: 42, items: [1, 2, 3] };
+const EXISTING_CONTENT = 'This is existing content.\\n';
+const APPEND_CONTENT = 'This content will be appended.\\n';
+const LARGE_CONTENT = 'B'.repeat(1024 * 50); // 50KB
 
-describe("AtomicFileWriter", () => {
+describe('AtomicFileWriter', () => {
   let writer: AtomicFileWriter;
 
   beforeAll(async () => {
@@ -48,7 +39,7 @@ describe("AtomicFileWriter", () => {
     try {
       await fs.rm(TEST_DIR, { recursive: true, force: true });
     } catch (error) {
-      console.error("Failed to clean up test directory:", error);
+      console.error('Failed to clean up test directory:', error);
     }
   });
 
@@ -64,14 +55,8 @@ describe("AtomicFileWriter", () => {
     await writer.cleanup();
 
     // Clean up any test files with retry for Windows
-    const filesToClean = [
-      TEST_FILE,
-      TEST_JSON_FILE,
-      EXISTING_FILE,
-      APPEND_FILE,
-      LARGE_FILE,
-    ];
-    
+    const filesToClean = [TEST_FILE, TEST_JSON_FILE, EXISTING_FILE, APPEND_FILE, LARGE_FILE];
+
     for (const file of filesToClean) {
       await cleanupFileWithRetry(file);
     }
@@ -80,7 +65,7 @@ describe("AtomicFileWriter", () => {
     try {
       const files = await fs.readdir(TEST_DIR);
       for (const file of files) {
-        if (file.includes(".backup-") || file.startsWith(".tmp-")) {
+        if (file.includes('.backup-') || file.startsWith('.tmp-')) {
           await cleanupFileWithRetry(path.join(TEST_DIR, file));
         }
       }
@@ -100,33 +85,36 @@ describe("AtomicFileWriter", () => {
           // On final attempt, just continue (file might not exist)
           return;
         }
-        
+
         // Check if it's a retryable error (Windows file locking)
-        const isRetryable = error && typeof error === 'object' && 'code' in error &&
+        const isRetryable =
+          error &&
+          typeof error === 'object' &&
+          'code' in error &&
           (error.code === 'EBUSY' || error.code === 'EPERM' || error.code === 'EACCES');
-        
+
         if (!isRetryable) {
           return; // Not retryable, just continue
         }
-        
+
         // Wait before retry
-        await new Promise(resolve => setTimeout(resolve, 50 * (attempt + 1)));
+        await new Promise((resolve) => setTimeout(resolve, 50 * (attempt + 1)));
       }
     }
   }
 
   // Helper function for cross-platform permission expectations
   function expectPermissions(actualMode: number, expectedMode: number): void {
-    if (process.platform === "win32") {
+    if (process.platform === 'win32') {
       // Windows has different permission handling
       // Common Windows permissions: 0o666 (read/write) or 0o444 (readonly)
       // For 0o755 (rwxr-xr-x), Windows might give 0o666 (rw-rw-rw-)
-      // For 0o644 (rw-r--r--), Windows might give 0o666 (rw-rw-rw-)  
+      // For 0o644 (rw-r--r--), Windows might give 0o666 (rw-rw-rw-)
       // For 0o600 (rw-------), Windows might give 0o666 (rw-rw-rw-)
-      
+
       const isWriteable = (expectedMode & 0o200) !== 0; // Owner write permission
-      const isReadable = (expectedMode & 0o400) !== 0;  // Owner read permission
-      
+      const isReadable = (expectedMode & 0o400) !== 0; // Owner read permission
+
       if (isWriteable && isReadable) {
         // For any read/write permission, Windows typically gives 0o666
         expect(actualMode).toBe(0o666);
@@ -143,12 +131,12 @@ describe("AtomicFileWriter", () => {
     }
   }
 
-  describe("Basic File Writing", () => {
-    it("should write a new file successfully", async () => {
+  describe('Basic File Writing', () => {
+    it('should write a new file successfully', async () => {
       const result = await writer.writeFile(TEST_FILE, TEST_CONTENT);
 
       expect(result.success).toBe(true);
-      expect(result.operation).toBe("write");
+      expect(result.operation).toBe('write');
       expect(result.filePath).toBe(TEST_FILE);
       expect(result.bytesProcessed).toBe(Buffer.byteLength(TEST_CONTENT));
       expect(result.duration).toBeGreaterThan(0);
@@ -157,11 +145,11 @@ describe("AtomicFileWriter", () => {
       expect(result.error).toBeUndefined();
 
       // Verify file was created with correct content
-      const content = await fs.readFile(TEST_FILE, "utf8");
+      const content = await fs.readFile(TEST_FILE, 'utf8');
       expect(content).toBe(TEST_CONTENT);
     });
 
-    it("should write binary content successfully", async () => {
+    it('should write binary content successfully', async () => {
       const binaryContent = Buffer.from([0x00, 0x01, 0x02, 0x03, 0xff]);
       const result = await writer.writeFile(TEST_FILE, binaryContent);
 
@@ -173,7 +161,7 @@ describe("AtomicFileWriter", () => {
       expect(content.equals(binaryContent)).toBe(true);
     });
 
-    it("should handle large files efficiently", async () => {
+    it('should handle large files efficiently', async () => {
       const startTime = Date.now();
       const result = await writer.writeFile(LARGE_FILE, LARGE_CONTENT);
       const duration = Date.now() - startTime;
@@ -183,20 +171,20 @@ describe("AtomicFileWriter", () => {
       expect(duration).toBeLessThan(2000); // Should complete within 2 seconds
 
       // Verify content
-      const content = await fs.readFile(LARGE_FILE, "utf8");
+      const content = await fs.readFile(LARGE_FILE, 'utf8');
       expect(content).toBe(LARGE_CONTENT);
     });
 
-    it("should respect file size limits", async () => {
+    it('should respect file size limits', async () => {
       const result = await writer.writeFile(TEST_FILE, LARGE_CONTENT, {
         maxFileSize: 1024, // 1KB limit
       });
 
       expect(result.success).toBe(false);
-      expect(result.error?.message).toContain("exceeds maximum allowed size");
+      expect(result.error?.message).toContain('exceeds maximum allowed size');
     });
 
-    it("should set file permissions correctly", async () => {
+    it('should set file permissions correctly', async () => {
       const result = await writer.writeFile(TEST_FILE, TEST_CONTENT, {
         mode: 0o755,
       });
@@ -208,8 +196,8 @@ describe("AtomicFileWriter", () => {
     });
   });
 
-  describe("File Overwriting with Backup", () => {
-    it("should create backup when overwriting existing file", async () => {
+  describe('File Overwriting with Backup', () => {
+    it('should create backup when overwriting existing file', async () => {
       const result = await writer.writeFile(EXISTING_FILE, TEST_CONTENT, {
         createBackup: true,
       });
@@ -217,16 +205,16 @@ describe("AtomicFileWriter", () => {
       expect(result.success).toBe(true);
 
       // Verify new content
-      const newContent = await fs.readFile(EXISTING_FILE, "utf8");
+      const newContent = await fs.readFile(EXISTING_FILE, 'utf8');
       expect(newContent).toBe(TEST_CONTENT);
 
       // Verify backup was cleaned up after successful operation
       const files = await fs.readdir(TEST_DIR);
-      const backupFiles = files.filter((f) => f.includes(".backup-"));
+      const backupFiles = files.filter((f) => f.includes('.backup-'));
       expect(backupFiles).toHaveLength(0); // Backup should be cleaned up
     });
 
-    it("should not create backup when disabled", async () => {
+    it('should not create backup when disabled', async () => {
       const result = await writer.writeFile(EXISTING_FILE, TEST_CONTENT, {
         createBackup: false,
       });
@@ -235,11 +223,11 @@ describe("AtomicFileWriter", () => {
 
       // Verify no backup files exist
       const files = await fs.readdir(TEST_DIR);
-      const backupFiles = files.filter((f) => f.includes(".backup-"));
+      const backupFiles = files.filter((f) => f.includes('.backup-'));
       expect(backupFiles).toHaveLength(0);
     });
 
-    it("should preserve original permissions when overwriting", async () => {
+    it('should preserve original permissions when overwriting', async () => {
       // Set specific permissions on existing file
       await fs.chmod(EXISTING_FILE, 0o600);
 
@@ -254,79 +242,77 @@ describe("AtomicFileWriter", () => {
     });
   });
 
-  describe("Append Operations", () => {
-    it("should append content to existing file", async () => {
+  describe('Append Operations', () => {
+    it('should append content to existing file', async () => {
       const result = await writer.appendToFile(APPEND_FILE, APPEND_CONTENT);
 
       expect(result.success).toBe(true);
-      expect(result.bytesProcessed).toBe(
-        EXISTING_CONTENT.length + APPEND_CONTENT.length,
-      );
+      expect(result.bytesProcessed).toBe(EXISTING_CONTENT.length + APPEND_CONTENT.length);
 
       // Verify appended content
-      const content = await fs.readFile(APPEND_FILE, "utf8");
+      const content = await fs.readFile(APPEND_FILE, 'utf8');
       expect(content).toBe(EXISTING_CONTENT + APPEND_CONTENT);
     });
 
-    it("should create new file when appending to non-existent file", async () => {
-      const newFile = path.join(TEST_DIR, "new-append.txt");
+    it('should create new file when appending to non-existent file', async () => {
+      const newFile = path.join(TEST_DIR, 'new-append.txt');
       const result = await writer.appendToFile(newFile, APPEND_CONTENT);
 
       expect(result.success).toBe(true);
 
-      const content = await fs.readFile(newFile, "utf8");
+      const content = await fs.readFile(newFile, 'utf8');
       expect(content).toBe(APPEND_CONTENT);
 
       await fs.unlink(newFile);
     });
 
-    it("should use append mode with writeFile", async () => {
+    it('should use append mode with writeFile', async () => {
       const result = await writer.writeFile(APPEND_FILE, APPEND_CONTENT, {
         append: true,
       });
 
       expect(result.success).toBe(true);
 
-      const content = await fs.readFile(APPEND_FILE, "utf8");
+      const content = await fs.readFile(APPEND_FILE, 'utf8');
       expect(content).toBe(EXISTING_CONTENT + APPEND_CONTENT);
     });
   });
 
-  describe("JSON File Writing", () => {
-    it("should write JSON data successfully", async () => {
+  describe('JSON File Writing', () => {
+    it('should write JSON data successfully', async () => {
       const result = await writer.writeJsonFile(TEST_JSON_FILE, TEST_JSON_DATA);
 
       expect(result.success).toBe(true);
-      expect(result.operation).toBe("write");
+      expect(result.operation).toBe('write');
 
       // Verify JSON content
-      const content = await fs.readFile(TEST_JSON_FILE, "utf8");
+      const content = await fs.readFile(TEST_JSON_FILE, 'utf8');
       const parsedData = JSON.parse(content);
       expect(parsedData).toEqual(TEST_JSON_DATA);
     });
 
-    it("should handle JSON serialization errors", async () => {
-      const circularData = { name: "test" };
+    it('should handle JSON serialization errors', async () => {
+      const circularData = { name: 'test' };
       (circularData as any).self = circularData; // Create circular reference
 
       const result = await writer.writeJsonFile(TEST_JSON_FILE, circularData);
 
       expect(result.success).toBe(false);
-      expect(result.error?.code).toBe("JSON_SERIALIZATION_ERROR");
+      expect(result.error?.code).toBe('JSON_SERIALIZATION_ERROR');
     });
 
-    it("should format JSON with proper indentation", async () => {
+    it('should format JSON with proper indentation', async () => {
       const result = await writer.writeJsonFile(TEST_JSON_FILE, TEST_JSON_DATA);
 
       expect(result.success).toBe(true);
 
-      const content = await fs.readFile(TEST_JSON_FILE, "utf8");
-      expect(content).toContain("\n  "); // Should have indentation (actual newline + spaces)
+      const content = await fs.readFile(TEST_JSON_FILE, 'utf8');
+      expect(content).toContain('\n  '); // Should have indentation (actual newline + spaces)
     });
   });
 
-  describe("Content Verification", () => {
-    it("should verify content after writing when enabled", async () => {
+  describe('Content Verification', () => {
+    it('should verify content after writing when enabled', async () => {
       const result = await writer.writeFile(TEST_FILE, TEST_CONTENT, {
         verifyAfterWrite: true,
       });
@@ -335,7 +321,7 @@ describe("AtomicFileWriter", () => {
       expect(result.metadata.verificationPassed).toBe(true);
     });
 
-    it("should fail when verification detects corruption", async () => {
+    it('should fail when verification detects corruption', async () => {
       // This test is challenging to implement as it requires simulating corruption
       // For now, we'll test the verification feature exists
       const result = await writer.writeFile(TEST_FILE, TEST_CONTENT, {
@@ -345,7 +331,7 @@ describe("AtomicFileWriter", () => {
       expect(result.success).toBe(true);
     });
 
-    it("should disable verification when requested", async () => {
+    it('should disable verification when requested', async () => {
       const result = await writer.writeFile(TEST_FILE, TEST_CONTENT, {
         verifyAfterWrite: false,
       });
@@ -355,8 +341,8 @@ describe("AtomicFileWriter", () => {
     });
   });
 
-  describe("Batch Operations", () => {
-    it("should write multiple files successfully", async () => {
+  describe('Batch Operations', () => {
+    it('should write multiple files successfully', async () => {
       const files = [
         { path: TEST_FILE, content: TEST_CONTENT },
         { path: TEST_JSON_FILE, content: JSON.stringify(TEST_JSON_DATA) },
@@ -369,22 +355,23 @@ describe("AtomicFileWriter", () => {
       expect(results[1].success).toBe(true);
 
       // Verify both files were created
-      const content1 = await fs.readFile(TEST_FILE, "utf8");
+      const content1 = await fs.readFile(TEST_FILE, 'utf8');
       expect(content1).toBe(TEST_CONTENT);
 
-      const content2 = await fs.readFile(TEST_JSON_FILE, "utf8");
+      const content2 = await fs.readFile(TEST_JSON_FILE, 'utf8');
       expect(content2).toBe(JSON.stringify(TEST_JSON_DATA));
     });
 
-    it("should handle mixed success/failure in batch", async () => {
+    it('should handle mixed success/failure in batch', async () => {
       // Create a cross-platform invalid path
-      const invalidPath = process.platform === "win32" 
-        ? "Z:\\nonexistent\\invalid\\path\\file.txt"
-        : "/invalid/path/file.txt";
-      
+      const invalidPath =
+        process.platform === 'win32'
+          ? 'Z:\\nonexistent\\invalid\\path\\file.txt'
+          : '/invalid/path/file.txt';
+
       const files = [
         { path: TEST_FILE, content: TEST_CONTENT },
-        { path: invalidPath, content: "invalid" }, // This will fail
+        { path: invalidPath, content: 'invalid' }, // This will fail
         { path: TEST_JSON_FILE, content: JSON.stringify(TEST_JSON_DATA) },
       ];
 
@@ -396,15 +383,16 @@ describe("AtomicFileWriter", () => {
       expect(results[2].success).toBe(true);
     });
 
-    it("should stop on error when configured", async () => {
+    it('should stop on error when configured', async () => {
       // Create a cross-platform invalid path
-      const invalidPath = process.platform === "win32" 
-        ? "Z:\\nonexistent\\invalid\\path\\file.txt"
-        : "/invalid/path/file.txt";
-      
+      const invalidPath =
+        process.platform === 'win32'
+          ? 'Z:\\nonexistent\\invalid\\path\\file.txt'
+          : '/invalid/path/file.txt';
+
       const files = [
         { path: TEST_FILE, content: TEST_CONTENT },
-        { path: invalidPath, content: "invalid" },
+        { path: invalidPath, content: 'invalid' },
         { path: TEST_JSON_FILE, content: JSON.stringify(TEST_JSON_DATA) },
       ];
 
@@ -419,12 +407,12 @@ describe("AtomicFileWriter", () => {
       // First file should be rolled back
       const fileExists = await fs.access(TEST_FILE).then(
         () => true,
-        () => false,
+        () => false
       );
       expect(fileExists).toBe(false);
     });
 
-    it("should handle batch operations with custom options", async () => {
+    it('should handle batch operations with custom options', async () => {
       const files = [
         {
           path: TEST_FILE,
@@ -450,8 +438,8 @@ describe("AtomicFileWriter", () => {
     });
   });
 
-  describe("Fsync and Durability", () => {
-    it("should use fsync when enabled", async () => {
+  describe('Fsync and Durability', () => {
+    it('should use fsync when enabled', async () => {
       const result = await writer.writeFile(TEST_FILE, TEST_CONTENT, {
         enableFsync: true,
       });
@@ -460,7 +448,7 @@ describe("AtomicFileWriter", () => {
       expect(result.metadata.fsyncUsed).toBe(true);
     });
 
-    it("should skip fsync when disabled", async () => {
+    it('should skip fsync when disabled', async () => {
       const customWriter = new AtomicFileWriter({ enableFsync: false });
 
       const result = await customWriter.writeFile(TEST_FILE, TEST_CONTENT, {
@@ -473,7 +461,7 @@ describe("AtomicFileWriter", () => {
       await customWriter.cleanup();
     });
 
-    it("should track fsync calls in metrics", async () => {
+    it('should track fsync calls in metrics', async () => {
       await writer.writeFile(TEST_FILE, TEST_CONTENT, { enableFsync: true });
       await writer.writeFile(TEST_JSON_FILE, JSON.stringify(TEST_JSON_DATA), {
         enableFsync: true,
@@ -484,17 +472,18 @@ describe("AtomicFileWriter", () => {
     });
   });
 
-  describe("Performance and Metrics", () => {
-    it("should track performance metrics correctly", async () => {
+  describe('Performance and Metrics', () => {
+    it('should track performance metrics correctly', async () => {
       // Perform several operations
       await writer.writeFile(TEST_FILE, TEST_CONTENT);
       await writer.writeJsonFile(TEST_JSON_FILE, TEST_JSON_DATA);
 
       // Attempt an operation that will fail with a cross-platform invalid path
-      const invalidPath = process.platform === "win32"
-        ? "Z:\\nonexistent\\deeply\\nested\\invalid\\path.txt"
-        : "/nonexistent/deeply/nested/invalid/path.txt";
-      await writer.writeFile(invalidPath, "content");
+      const invalidPath =
+        process.platform === 'win32'
+          ? 'Z:\\nonexistent\\deeply\\nested\\invalid\\path.txt'
+          : '/nonexistent/deeply/nested/invalid/path.txt';
+      await writer.writeFile(invalidPath, 'content');
 
       const metrics = writer.getMetrics();
 
@@ -506,12 +495,9 @@ describe("AtomicFileWriter", () => {
       expect(metrics.averageDuration).toBeGreaterThan(0);
     });
 
-    it("should handle concurrent writes safely", async () => {
+    it('should handle concurrent writes safely', async () => {
       const promises = Array.from({ length: 5 }, (_, i) =>
-        writer.writeFile(
-          path.join(TEST_DIR, `concurrent-${i}.txt`),
-          `Content ${i}`,
-        ),
+        writer.writeFile(path.join(TEST_DIR, `concurrent-${i}.txt`), `Content ${i}`)
       );
 
       const results = await Promise.all(promises);
@@ -523,33 +509,26 @@ describe("AtomicFileWriter", () => {
 
       // Verify all files were created correctly
       for (let i = 0; i < 5; i++) {
-        const content = await fs.readFile(
-          path.join(TEST_DIR, `concurrent-${i}.txt`),
-          "utf8",
-        );
+        const content = await fs.readFile(path.join(TEST_DIR, `concurrent-${i}.txt`), 'utf8');
         expect(content).toBe(`Content ${i}`);
         await fs.unlink(path.join(TEST_DIR, `concurrent-${i}.txt`));
       }
     });
 
-    it("should measure operation duration accurately", async () => {
+    it('should measure operation duration accurately', async () => {
       const result = await writer.writeFile(TEST_FILE, LARGE_CONTENT);
 
       expect(result.success).toBe(true);
       expect(result.duration).toBeGreaterThan(0);
-      expect(result.metadata.endTime).toBeGreaterThan(
-        result.metadata.startTime,
-      );
-      expect(result.duration).toBe(
-        result.metadata.endTime - result.metadata.startTime,
-      );
+      expect(result.metadata.endTime).toBeGreaterThan(result.metadata.startTime);
+      expect(result.duration).toBe(result.metadata.endTime - result.metadata.startTime);
     });
   });
 
-  describe("Error Handling and Rollback", () => {
-    it("should handle directory creation errors gracefully", async () => {
+  describe('Error Handling and Rollback', () => {
+    it('should handle directory creation errors gracefully', async () => {
       // Use a path with null byte which is invalid on all platforms
-      const invalidPath = "invalid\x00directory/file.txt";
+      const invalidPath = 'invalid\x00directory/file.txt';
       const result = await writer.writeFile(invalidPath, TEST_CONTENT);
 
       expect(result.success).toBe(false);
@@ -557,9 +536,9 @@ describe("AtomicFileWriter", () => {
       expect(result.duration).toBeGreaterThan(0);
     });
 
-    it("should provide detailed error information", async () => {
+    it('should provide detailed error information', async () => {
       // Use a path with null byte which is invalid on all platforms
-      const invalidPath = "restricted\x00file.txt";
+      const invalidPath = 'restricted\x00file.txt';
       const result = await writer.writeFile(invalidPath, TEST_CONTENT);
 
       expect(result.success).toBe(false);
@@ -568,8 +547,8 @@ describe("AtomicFileWriter", () => {
       expect(result.error?.message).toBeDefined();
     });
 
-    it("should handle temp file creation in custom directory", async () => {
-      const customTempDir = path.join(TEST_DIR, "custom-temp");
+    it('should handle temp file creation in custom directory', async () => {
+      const customTempDir = path.join(TEST_DIR, 'custom-temp');
       await fs.mkdir(customTempDir, { recursive: true });
 
       const customWriter = new AtomicFileWriter({
@@ -584,22 +563,22 @@ describe("AtomicFileWriter", () => {
       await fs.rmdir(customTempDir);
     });
 
-    it("should clean up temp files on failure", async () => {
+    it('should clean up temp files on failure', async () => {
       // Attempt to write to invalid location using path with null byte
-      const invalidPath = "temp\x00cleanup.txt";
+      const invalidPath = 'temp\x00cleanup.txt';
       await writer.writeFile(invalidPath, TEST_CONTENT);
 
       // Check that no temp files remain in test directory
       const files = await fs.readdir(TEST_DIR);
-      const tempFiles = files.filter((f) => f.startsWith(".tmp-"));
+      const tempFiles = files.filter((f) => f.startsWith('.tmp-'));
       expect(tempFiles).toHaveLength(0);
     });
   });
 
-  describe("Configuration Options", () => {
-    it("should work with custom global options", async () => {
+  describe('Configuration Options', () => {
+    it('should work with custom global options', async () => {
       const customWriter = new AtomicFileWriter({
-        tempPrefix: ".custom-tmp-",
+        tempPrefix: '.custom-tmp-',
         operationTimeout: 5000,
         preservePermissions: false,
       });
@@ -611,7 +590,7 @@ describe("AtomicFileWriter", () => {
       await customWriter.cleanup();
     });
 
-    it("should merge global and operation-specific options correctly", async () => {
+    it('should merge global and operation-specific options correctly', async () => {
       const customWriter = new AtomicFileWriter({
         enableFsync: false,
         createBackup: false,
@@ -628,7 +607,7 @@ describe("AtomicFileWriter", () => {
       await customWriter.cleanup();
     });
 
-    it("should handle different buffer sizes", async () => {
+    it('should handle different buffer sizes', async () => {
       const result = await writer.writeFile(TEST_FILE, LARGE_CONTENT, {
         bufferSize: 1024 * 8, // 8KB buffer
       });
@@ -638,8 +617,8 @@ describe("AtomicFileWriter", () => {
     });
   });
 
-  describe("Resource Management", () => {
-    it("should clean up resources properly", async () => {
+  describe('Resource Management', () => {
+    it('should clean up resources properly', async () => {
       // Create some operations
       await writer.writeFile(TEST_FILE, TEST_CONTENT);
       await writer.writeFile(TEST_JSON_FILE, JSON.stringify(TEST_JSON_DATA));
@@ -656,13 +635,10 @@ describe("AtomicFileWriter", () => {
       expect(metricsAfter.totalOperations).toBe(metricsBefore.totalOperations);
     });
 
-    it("should handle cleanup of active operations", async () => {
+    it('should handle cleanup of active operations', async () => {
       // Start some operations but don't wait for them
       const promise1 = writer.writeFile(TEST_FILE, LARGE_CONTENT);
-      const promise2 = writer.writeFile(
-        TEST_JSON_FILE,
-        JSON.stringify(TEST_JSON_DATA),
-      );
+      const promise2 = writer.writeFile(TEST_JSON_FILE, JSON.stringify(TEST_JSON_DATA));
 
       // Clean up immediately (should wait for operations or clean them up)
       await writer.cleanup();
@@ -674,16 +650,13 @@ describe("AtomicFileWriter", () => {
       expect(results).toHaveLength(2);
     });
 
-    it("should handle stale operation cleanup", async () => {
+    it('should handle stale operation cleanup', async () => {
       const shortTimeoutWriter = new AtomicFileWriter({
         operationTimeout: 100, // Very short timeout
       });
 
       // Write a file
-      const result = await shortTimeoutWriter.writeFile(
-        TEST_FILE,
-        TEST_CONTENT,
-      );
+      const result = await shortTimeoutWriter.writeFile(TEST_FILE, TEST_CONTENT);
       expect(result.success).toBe(true);
 
       // Wait longer than timeout
@@ -692,7 +665,7 @@ describe("AtomicFileWriter", () => {
       // Should still work normally (stale cleanup should happen in background)
       const result2 = await shortTimeoutWriter.writeFile(
         TEST_JSON_FILE,
-        JSON.stringify(TEST_JSON_DATA),
+        JSON.stringify(TEST_JSON_DATA)
       );
       expect(result2.success).toBe(true);
 
