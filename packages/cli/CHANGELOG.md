@@ -1,6 +1,36 @@
 # Changelog - @tw-enigma/cli
 
-## 1.0.1
+All notable changes to the @tw-enigma/cli package will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+## [1.0.2] - 2025-01-22
+
+### Changed
+
+- Comprehensive codebase cleanup and organization
+- Removed temporary development files and debugging artifacts
+- Improved project structure and maintainability
+
+### Removed
+
+- Temporary debugging logs and test result files
+- Legacy development artifacts
+
+### Fixed
+
+- Project organization and cleanliness
+- Development workflow efficiency
+
+### Dependencies
+
+- Updated dependencies
+  - @tw-enigma/core@1.0.2
+
+## [1.0.1] - Previous Release
 
 ### Patch Changes
 
@@ -12,7 +42,7 @@
   - Ensures proper environment variable isolation between test cases
   - Resolves issue where GitHub Actions env vars were persisting and overriding test mocks
 
-## 1.0.0
+## [1.0.0] - Initial Release
 
 ### Major Changes
 
@@ -22,13 +52,6 @@
 
 - Updated dependencies []:
   - @tw-enigma/core@1.0.0
-
-All notable changes to the @tw-enigma/cli package will be documented in this file.
-
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-
-## [Unreleased]
 
 ### Added
 
