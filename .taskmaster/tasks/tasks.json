@@ -74,7 +74,7 @@
         "dependencies": [
           1
         ],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -122,7 +122,7 @@
               4
             ],
             "details": "Write integration tests that simulate real-world usage scenarios, including valid and invalid inputs. Verify output correctness and error reporting. Success criteria: All tests pass and coverage includes all major code paths.",
-            "status": "pending"
+            "status": "done"
           }
         ]
       },
@@ -130,7 +130,7 @@
         "id": 3,
         "title": "Implement CSS selector discovery",
         "description": "Create the core functionality to scan and identify tw-enigma generated class selectors in stylesheets.",
-        "status": "pending",
+        "status": "done",
         "dependencies": [
           2
         ],
@@ -143,8 +143,8 @@
             "title": "Implement Selector Scanning Function",
             "description": "Develop the core function that traverses the DOM, extracts selectors, and matches them against CSS rules. Ensure support for various selector types (ID, class, attribute, etc.) and handle dynamic or complex selectors using regex where necessary.",
             "dependencies": [],
-            "details": "The function should use DOM APIs (e.g., querySelectorAll) to discover elements and their associated selectors. It must be modular to allow integration with error handling and retry logic in later steps. Success is defined by accurate extraction and matching of selectors for a representative set of DOM elements.",
-            "status": "pending"
+            "details": "The function should use DOM APIs (e.g., querySelectorAll) to discover elements and their associated selectors. It must be modular to allow integration with error handling and retry logic in later steps. Success is defined by accurate extraction and matching of selectors for a representative set of DOM elements.\n<info added on 2025-06-19T13:13:23.818Z>\n# Implementation Exploration Plan for CSS Selector Discovery\n\n**Date: 2025-06-19**\n\n## Goal\nBuild `discoverTwEnigmaSelectors()` function that scans document.styleSheets and extracts selectors matching the required regex `^\\.[a-z][a-z0-9]*$`.\n\n## Scope for this iteration:\n\n### 1. Code skeleton\n- Create new file `packages/scramble/src/utils/selector-discovery.ts` exporting:\n  - `interface CSSRuleInfo { rule: CSSStyleRule; originalSelector: string; className: string; stylesheetHref: string | null; }`\n  - `function discoverTwEnigmaSelectors(): CSSRuleInfo[]`\n  - `async function discoverWithRetry(maxRetries = CONFIG.RETRY_ATTEMPTS, delayMs = 100): Promise<CSSRuleInfo[]>`\n- Include CONFIG import or fallback to constant for now\n\n### 2. Core algorithm details\n- Iterate over document.styleSheets\n- Wrap access in try/catch to skip cross-origin sheets; log via debug()\n- Filter CSSStyleRule only (ignore @media, etc.)\n- For each selectorText that may contain multiple selectors (comma-separated), split and test each piece against regex\n- On match push CSSRuleInfo with cleaned className minus leading dot\n\n### 3. Retry logic\n- If first pass returns 0 results, loop up to maxRetries with delay using await new Promise(res => setTimeout(res, delayMs))\n\n### 4. Edge cases considered\n- Stylesheets disabled or not yet loaded\n- Multiple selectors separated by commas\n- Pseudo-classes (we ignore by requiring exact regex match without colon)\n- Performance: break early if results exceed MAX_REGISTRY_SIZE when integrated\n\n### 5. Unit/integration tests plan\n- Use JSDOM environment to create mock document with inline and external styles\n- Mock cross-origin error by overriding cssRules getter to throw\n- Verify correct extraction array length and className values\n- Test retry logic by initially having 0 rules then injecting stylesheet after first tick\n\n### 6. File placement & exports alignment with scramble build pipeline\n\n### 7. Next steps after code\n- Implement unit tests under packages/scramble/tests/selector-discovery.test.ts\n- Update subtask 3.2 once selector scanning done\n</info added on 2025-06-19T13:13:23.818Z>",
+            "status": "done"
           },
           {
             "id": 2,
@@ -153,8 +153,8 @@
             "dependencies": [
               1
             ],
-            "details": "Implement try/catch blocks or feature detection to skip or log inaccessible stylesheets without breaking the scanning process. Success is defined by the function continuing to operate and reporting inaccessible stylesheets when encountering cross-origin restrictions.",
-            "status": "pending"
+            "details": "Implement try/catch blocks or feature detection to skip or log inaccessible stylesheets without breaking the scanning process. Success is defined by the function continuing to operate and reporting inaccessible stylesheets when encountering cross-origin restrictions.\n<info added on 2025-06-19T13:41:39.181Z>\nImplementation Plan for Handling Cross-Origin Stylesheets:\n\n1. Early Origin Check:  Before attempting to access `sheet.cssRules`, inspect `sheet.href`. Use `new URL(sheet.href, location.href).origin` and compare it to `location.origin`. If they differ, log a debug message (e.g., `Skipping cross-origin stylesheet at ${sheet.href}`) and `continue` to the next stylesheet without throwing.\n\n2. Enhanced Try/Catch:  Retain existing `try/catch` around `sheet.cssRules` access for stylesheets without a valid `href` or for browsers that set `href` to `null` for inline styles. In the `catch`, distinguish between cross-origin errors (check `e.name === 'SecurityError'` or similar) and other errors. Log appropriate debug messages for each case.\n\n3. Unit Tests:  Create test fixtures to simulate:\n   - A same-origin stylesheet (accessible rules).\n   - A cross-origin stylesheet (mock `sheet.href` with different origin and throw a `SecurityError` on `cssRules`).\n   - An inline `<style>` block (href `null` or empty) to ensure it still processes rules.\n   - A malformed stylesheet that throws an unexpected error to ensure it is caught and logged.\n\n4. Integration:  Update `discoverTwEnigmaSelectors` to include the origin check before the nested `try/catch`. Ensure the retry logic in `discoverWithRetry` still functions seamlessly with skipped stylesheets.\n\n5. Logging:  Use the existing `debug` utility to provide clear messages for:\n   - Sheets skipped due to cross-origin.\n   - Sheets processed after origin check.\n   - Errors during rules access, both security and generic.\n\nSuccess Criteria:\n- No uncaught exceptions when stylesheets are cross-origin.\n- Correct selectors from same-origin and inline stylesheets.\n- Clear debug logs illustrating skip and error handling.\n- All new and existing tests pass.\n</info added on 2025-06-19T13:41:39.181Z>",
+            "status": "done"
           },
           {
             "id": 3,
@@ -164,7 +164,7 @@
               2
             ],
             "details": "Implement a retry mechanism that attempts to access problematic stylesheets a set number of times before failing gracefully. Success is defined by the function successfully retrying and recovering from transient errors, or failing with clear error reporting after exhausting retries.",
-            "status": "pending"
+            "status": "done"
           },
           {
             "id": 4,
@@ -174,7 +174,7 @@
               1
             ],
             "details": "The interface should include fields for selector, rule type (e.g., style, media), stylesheet URL, and any error or access metadata. Success is defined by all scanning and error-handling logic outputting results conforming to this interface.",
-            "status": "pending"
+            "status": "done"
           },
           {
             "id": 5,
@@ -187,7 +187,7 @@
               4
             ],
             "details": "Tests should use representative HTML/CSS fixtures and simulate cross-origin and transient error conditions. Success is defined by all tests passing, with clear assertions for selector extraction accuracy, error handling, and retry outcomes.",
-            "status": "pending"
+            "status": "done"
           }
         ]
       },
@@ -906,7 +906,7 @@
     ],
     "metadata": {
       "created": "2025-06-16T01:49:25.526Z",
-      "updated": "2025-06-19T12:14:08.609Z",
+      "updated": "2025-06-19T13:50:26.289Z",
       "description": "Tasks for master context"
     }
   }

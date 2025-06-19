@@ -1,23 +1,24 @@
 {
   "version": "1.0.0",
   "totalEntries": 4,
-  "spaceSaved": 60486,
-  "lastUpdated": "2025-06-19T08:15:04.823Z",
+  "spaceSaved": 80648,
+  "lastUpdated": "2025-06-19T13:49:55.396Z",
   "entries": {
     "c5af0a58a5babf28f45c0efdb6e78b904d9e4176394a98b1f977dac345aaf95b": {
       "hash": "c5af0a58a5babf28f45c0efdb6e78b904d9e4176394a98b1f977dac345aaf95b",
       "algorithm": "sha256",
       "size": 5040,
       "storagePath": "/Users/rowan/github/tw-enigma/tw-enigma/packages/core/.dedup-perf/c5af0a58a5babf28f45c0efdb6e78b904d9e4176394a98b1f977dac345aaf95b.txt",
-      "referenceCount": 4,
+      "referenceCount": 5,
       "referencePaths": [
         "/tmp/compression-test-1750320547224/integration-tests/integration-test-7.txt",
         "/tmp/compression-test-1750320591420/integration-tests/integration-test-7.txt",
         "/tmp/compression-test-1750320751753/integration-tests/integration-test-7.txt",
-        "/tmp/compression-test-1750320904816/integration-tests/integration-test-7.txt"
+        "/tmp/compression-test-1750320904816/integration-tests/integration-test-7.txt",
+        "/tmp/compression-test-1750340995387/integration-tests/integration-test-7.txt"
       ],
       "firstSeen": "2025-06-19T08:09:07.229Z",
-      "lastAccessed": "2025-06-19T08:15:04.819Z",
+      "lastAccessed": "2025-06-19T13:49:55.392Z",
       "compressed": false
     },
     "f9ad23cf48f76f6172e6dcd93b5ba185394ecc4e9e72460281ffc8feee3e308e": {
@@ -25,15 +26,16 @@
       "algorithm": "sha256",
       "size": 5040,
       "storagePath": "/Users/rowan/github/tw-enigma/tw-enigma/packages/core/.dedup-perf/f9ad23cf48f76f6172e6dcd93b5ba185394ecc4e9e72460281ffc8feee3e308e.txt",
-      "referenceCount": 4,
+      "referenceCount": 5,
       "referencePaths": [
         "/tmp/compression-test-1750320547224/integration-tests/integration-test-8.txt",
         "/tmp/compression-test-1750320591420/integration-tests/integration-test-8.txt",
         "/tmp/compression-test-1750320751753/integration-tests/integration-test-8.txt",
-        "/tmp/compression-test-1750320904816/integration-tests/integration-test-8.txt"
+        "/tmp/compression-test-1750320904816/integration-tests/integration-test-8.txt",
+        "/tmp/compression-test-1750340995387/integration-tests/integration-test-8.txt"
       ],
       "firstSeen": "2025-06-19T08:09:07.229Z",
-      "lastAccessed": "2025-06-19T08:15:04.821Z",
+      "lastAccessed": "2025-06-19T13:49:55.394Z",
       "compressed": false
     },
     "3280032ec64d3662034848b75300c0e33c89200f8e5f40bb81b4908272b358d2": {
@@ -41,15 +43,16 @@
       "algorithm": "sha256",
       "size": 5040,
       "storagePath": "/Users/rowan/github/tw-enigma/tw-enigma/packages/core/.dedup-perf/3280032ec64d3662034848b75300c0e33c89200f8e5f40bb81b4908272b358d2.txt",
-      "referenceCount": 4,
+      "referenceCount": 5,
       "referencePaths": [
         "/tmp/compression-test-1750320547224/integration-tests/integration-test-9.txt",
         "/tmp/compression-test-1750320591420/integration-tests/integration-test-9.txt",
         "/tmp/compression-test-1750320751753/integration-tests/integration-test-9.txt",
-        "/tmp/compression-test-1750320904816/integration-tests/integration-test-9.txt"
+        "/tmp/compression-test-1750320904816/integration-tests/integration-test-9.txt",
+        "/tmp/compression-test-1750340995387/integration-tests/integration-test-9.txt"
       ],
       "firstSeen": "2025-06-19T08:09:07.230Z",
-      "lastAccessed": "2025-06-19T08:15:04.822Z",
+      "lastAccessed": "2025-06-19T13:49:55.395Z",
       "compressed": false
     },
     "3cc7a924f288543c22c5b758189197eeebffa67902c5bf62e010977d9d923f59": {
@@ -57,22 +60,23 @@
       "algorithm": "sha256",
       "size": 5042,
       "storagePath": "/Users/rowan/github/tw-enigma/tw-enigma/packages/core/.dedup-perf/3cc7a924f288543c22c5b758189197eeebffa67902c5bf62e010977d9d923f59.txt",
-      "referenceCount": 4,
+      "referenceCount": 5,
       "referencePaths": [
         "/tmp/compression-test-1750320547224/integration-tests/integration-test-10.txt",
         "/tmp/compression-test-1750320591420/integration-tests/integration-test-10.txt",
         "/tmp/compression-test-1750320751753/integration-tests/integration-test-10.txt",
-        "/tmp/compression-test-1750320904816/integration-tests/integration-test-10.txt"
+        "/tmp/compression-test-1750320904816/integration-tests/integration-test-10.txt",
+        "/tmp/compression-test-1750340995387/integration-tests/integration-test-10.txt"
       ],
       "firstSeen": "2025-06-19T08:09:07.231Z",
-      "lastAccessed": "2025-06-19T08:15:04.822Z",
+      "lastAccessed": "2025-06-19T13:49:55.396Z",
       "compressed": false
     }
   },
   "stats": {
-    "totalOriginalSize": 80648,
+    "totalOriginalSize": 100810,
     "totalDeduplicatedSize": 20162,
-    "duplicatesFound": 12,
-    "averageReferenceCount": 4
+    "duplicatesFound": 16,
+    "averageReferenceCount": 5
   }
 }

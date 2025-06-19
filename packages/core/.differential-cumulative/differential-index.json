@@ -1,26 +1,26 @@
 {
   "version": "1.0.0",
   "currentFullBackup": {
-    "id": "backup_1750320904501_q3vuaq",
-    "createdAt": "2025-06-19T08:15:04.501Z",
-    "filePath": "/tmp/compression-test-1750320904499/.backups-cumulative/diff-test1-cumulative.2025-06-19T08-15-04-500Z.txt.backup",
+    "id": "backup_1750340995070_bpjxzx",
+    "createdAt": "2025-06-19T13:49:55.070Z",
+    "filePath": "/tmp/compression-test-1750340995069/.backups-cumulative/diff-test1-cumulative.2025-06-19T13-49-55-070Z.txt.backup",
     "size": 35
   },
   "differentialChain": [
     {
-      "id": "backup_1750320904513_bts7ha",
+      "id": "backup_1750340995082_s1ha7o",
       "type": "differential",
-      "baseFullBackupId": "backup_1750320904501_q3vuaq",
-      "backupPath": "/tmp/compression-test-1750320904499/.backups-cumulative/diff-test2-cumulative.2025-06-19T08-15-04-513Z.txt.backup",
-      "originalPath": "/tmp/compression-test-1750320904499/diff-test2-cumulative.txt",
-      "createdAt": "2025-06-19T08:15:04.513Z",
+      "baseFullBackupId": "backup_1750340995070_bpjxzx",
+      "backupPath": "/tmp/compression-test-1750340995069/.backups-cumulative/diff-test2-cumulative.2025-06-19T13-49-55-082Z.txt.backup",
+      "originalPath": "/tmp/compression-test-1750340995069/diff-test2-cumulative.txt",
+      "createdAt": "2025-06-19T13:49:55.082Z",
       "cumulativeFiles": [
-        "/tmp/compression-test-1750320904499/diff-test1-cumulative.txt",
-        "/tmp/compression-test-1750320904499/diff-test2-cumulative.txt"
+        "/tmp/compression-test-1750340995069/diff-test1-cumulative.txt",
+        "/tmp/compression-test-1750340995069/diff-test2-cumulative.txt"
       ],
       "cumulativeSize": 24,
       "currentFiles": [
-        "/tmp/compression-test-1750320904499/diff-test2-cumulative.txt"
+        "/tmp/compression-test-1750340995069/diff-test2-cumulative.txt"
       ],
       "currentSize": 24,
       "changeDetectionMethod": "mtime",
@@ -29,19 +29,19 @@
       "timeSinceFullBackup": 0.0000030555555555555556
     },
     {
-      "id": "backup_1750320904525_wcjv2f",
+      "id": "backup_1750340995093_9aze0r",
       "type": "differential",
-      "baseFullBackupId": "backup_1750320904501_q3vuaq",
-      "backupPath": "/tmp/compression-test-1750320904499/.backups-cumulative/diff-test1-cumulative.2025-06-19T08-15-04-525Z.txt.backup",
-      "originalPath": "/tmp/compression-test-1750320904499/diff-test1-cumulative.txt",
-      "createdAt": "2025-06-19T08:15:04.525Z",
+      "baseFullBackupId": "backup_1750340995070_bpjxzx",
+      "backupPath": "/tmp/compression-test-1750340995069/.backups-cumulative/diff-test1-cumulative.2025-06-19T13-49-55-093Z.txt.backup",
+      "originalPath": "/tmp/compression-test-1750340995069/diff-test1-cumulative.txt",
+      "createdAt": "2025-06-19T13:49:55.093Z",
       "cumulativeFiles": [
-        "/tmp/compression-test-1750320904499/diff-test1-cumulative.txt",
-        "/tmp/compression-test-1750320904499/diff-test2-cumulative.txt"
+        "/tmp/compression-test-1750340995069/diff-test1-cumulative.txt",
+        "/tmp/compression-test-1750340995069/diff-test2-cumulative.txt"
       ],
       "cumulativeSize": 39,
       "currentFiles": [
-        "/tmp/compression-test-1750320904499/diff-test1-cumulative.txt"
+        "/tmp/compression-test-1750340995069/diff-test1-cumulative.txt"
       ],
       "currentSize": 15,
       "changeDetectionMethod": "mtime",
@@ -51,18 +51,18 @@
     }
   ],
   "cumulativeFileStates": {
-    "/tmp/compression-test-1750320904499/diff-test1-cumulative.txt": {
-      "filePath": "/tmp/compression-test-1750320904499/diff-test1-cumulative.txt",
+    "/tmp/compression-test-1750340995069/diff-test1-cumulative.txt": {
+      "filePath": "/tmp/compression-test-1750340995069/diff-test1-cumulative.txt",
       "size": 15,
-      "mtime": "2025-06-19T08:15:04.525Z",
-      "lastBackup": "2025-06-19T08:15:04.525Z",
+      "mtime": "2025-06-19T13:49:55.093Z",
+      "lastBackup": "2025-06-19T13:49:55.093Z",
       "hasChanged": true
     },
-    "/tmp/compression-test-1750320904499/diff-test2-cumulative.txt": {
-      "filePath": "/tmp/compression-test-1750320904499/diff-test2-cumulative.txt",
+    "/tmp/compression-test-1750340995069/diff-test2-cumulative.txt": {
+      "filePath": "/tmp/compression-test-1750340995069/diff-test2-cumulative.txt",
       "size": 24,
-      "mtime": "2025-06-19T08:15:04.513Z",
-      "lastBackup": "2025-06-19T08:15:04.513Z",
+      "mtime": "2025-06-19T13:49:55.082Z",
+      "lastBackup": "2025-06-19T13:49:55.082Z",
       "hasChanged": true
     }
   },
@@ -72,8 +72,8 @@
     "cumulativeSize": 39,
     "cumulativeSizeRatio": 1.1142857142857143,
     "totalSpaceSaved": 0,
-    "lastBackupAt": "2025-06-19T08:15:04.525Z",
+    "lastBackupAt": "2025-06-19T13:49:55.093Z",
     "timeSinceFullBackup": 0.0000063888888888888885
   },
-  "lastUpdated": "2025-06-19T08:15:04.525Z"
+  "lastUpdated": "2025-06-19T13:49:55.093Z"
 }

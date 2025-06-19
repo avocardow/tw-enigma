@@ -1,25 +1,25 @@
 {
   "version": "1.0.0",
   "currentFullBackup": {
-    "id": "backup_1750320904531_y79ll0",
-    "createdAt": "2025-06-19T08:15:04.531Z",
-    "filePath": "/tmp/compression-test-1750320904529/.backups-isolated/diff-test-isolated.2025-06-19T08-15-04-531Z.txt.backup",
+    "id": "backup_1750340995099_8nul1t",
+    "createdAt": "2025-06-19T13:49:55.099Z",
+    "filePath": "/tmp/compression-test-1750340995097/.backups-isolated/diff-test-isolated.2025-06-19T13-49-55-098Z.txt.backup",
     "size": 33
   },
   "differentialChain": [
     {
-      "id": "backup_1750320904543_t9fh2f",
+      "id": "backup_1750340995111_f533ec",
       "type": "differential",
-      "baseFullBackupId": "backup_1750320904531_y79ll0",
-      "backupPath": "/tmp/compression-test-1750320904529/.backups-isolated/diff-test-isolated.2025-06-19T08-15-04-543Z.txt.backup",
-      "originalPath": "/tmp/compression-test-1750320904529/diff-test-isolated.txt",
-      "createdAt": "2025-06-19T08:15:04.543Z",
+      "baseFullBackupId": "backup_1750340995099_8nul1t",
+      "backupPath": "/tmp/compression-test-1750340995097/.backups-isolated/diff-test-isolated.2025-06-19T13-49-55-110Z.txt.backup",
+      "originalPath": "/tmp/compression-test-1750340995097/diff-test-isolated.txt",
+      "createdAt": "2025-06-19T13:49:55.111Z",
       "cumulativeFiles": [
-        "/tmp/compression-test-1750320904529/diff-test-isolated.txt"
+        "/tmp/compression-test-1750340995097/diff-test-isolated.txt"
       ],
       "cumulativeSize": 25,
       "currentFiles": [
-        "/tmp/compression-test-1750320904529/diff-test-isolated.txt"
+        "/tmp/compression-test-1750340995097/diff-test-isolated.txt"
       ],
       "currentSize": 25,
       "changeDetectionMethod": "mtime",
@@ -29,11 +29,11 @@
     }
   ],
   "cumulativeFileStates": {
-    "/tmp/compression-test-1750320904529/diff-test-isolated.txt": {
-      "filePath": "/tmp/compression-test-1750320904529/diff-test-isolated.txt",
+    "/tmp/compression-test-1750340995097/diff-test-isolated.txt": {
+      "filePath": "/tmp/compression-test-1750340995097/diff-test-isolated.txt",
       "size": 25,
-      "mtime": "2025-06-19T08:15:04.543Z",
-      "lastBackup": "2025-06-19T08:15:04.543Z",
+      "mtime": "2025-06-19T13:49:55.110Z",
+      "lastBackup": "2025-06-19T13:49:55.111Z",
       "hasChanged": true
     }
   },
@@ -43,8 +43,8 @@
     "cumulativeSize": 25,
     "cumulativeSizeRatio": 0.7575757575757576,
     "totalSpaceSaved": 0,
-    "lastBackupAt": "2025-06-19T08:15:04.543Z",
+    "lastBackupAt": "2025-06-19T13:49:55.111Z",
     "timeSinceFullBackup": 0.0000030555555555555556
   },
-  "lastUpdated": "2025-06-19T08:15:04.543Z"
+  "lastUpdated": "2025-06-19T13:49:55.111Z"
 }
