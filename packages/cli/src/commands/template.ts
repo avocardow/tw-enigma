@@ -116,7 +116,9 @@ export function createTemplateCommand(): Command {
               logger.info(`  📝 Inline config: ${JSON.stringify(inlineConfig, null, 2)}`);
             }
           } catch (error) {
-            throw new Error(`Invalid JSON in --config option: ${error.message}`);
+            throw new Error(
+              `Invalid JSON in --config option: ${error instanceof Error ? error.message : String(error)}`
+            );
           }
         }
 

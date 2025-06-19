@@ -310,7 +310,12 @@ export function processScrambleTemplate(
   userConfig: Partial<TemplateConfig> = {},
   options: { debug?: boolean } = {}
 ): ProcessingResult {
-  const config = { ...DEFAULT_SCRAMBLE_TEMPLATE_CONFIG, ...userConfig };
+  // Filter out undefined values from userConfig to ensure proper typing
+  const filteredUserConfig: TemplateConfig = Object.fromEntries(
+    Object.entries(userConfig).filter(([_, value]) => value !== undefined)
+  ) as TemplateConfig;
+
+  const config = { ...DEFAULT_SCRAMBLE_TEMPLATE_CONFIG, ...filteredUserConfig };
   const processor = new TemplateProcessor({ debug: options.debug });
 
   const result = processor.process(template, config);
