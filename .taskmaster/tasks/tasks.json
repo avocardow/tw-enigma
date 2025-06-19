@@ -102,7 +102,7 @@
               2
             ],
             "details": "Use a CLI parsing library to define flags for template path, output path, and placeholder key-value pairs. Implement input validation and help text. Success criteria: CLI accepts all required arguments and displays errors/help as needed.\n<info added on 2025-06-19T11:41:23.524Z>\nCLI implementation complete with Commander.js integration. Created a comprehensive `template` command that accepts template file path as a required argument. Added multiple configuration options including `--config` for inline JSON, `--config-file` for external JSON files, `--set KEY=VALUE` for individual values, and `--scramble` for built-in defaults. Implemented processing options for validation-only mode, strict mode, and custom output paths. Added thorough input validation with helpful error messages for missing files, invalid JSON, and malformed arguments. Developed a complete help system with examples and option descriptions. Implemented robust error handling with clean exit codes and informative messages. Conducted integration testing across multiple scenarios including default scramble values and custom configurations. The CLI now successfully processes templates with replacement logging, warnings for unused values, and detailed output summaries.\n</info added on 2025-06-19T11:41:23.524Z>",
-            "status": "in-progress"
+            "status": "done"
           },
           {
             "id": 4,
@@ -111,8 +111,8 @@
             "dependencies": [
               3
             ],
-            "details": "Add a CLI flag (e.g., --debug) that, when enabled, prints step-by-step logs of the injection process. Ensure logs are clear and actionable. Success criteria: Debug output is comprehensive and aids troubleshooting.",
-            "status": "pending"
+            "details": "Add a CLI flag (e.g., --debug) that, when enabled, prints step-by-step logs of the injection process. Ensure logs are clear and actionable. Success criteria: Debug output is comprehensive and aids troubleshooting.\n<info added on 2025-06-19T12:14:03.761Z>\nDebug utility implementation is now complete with comprehensive features:\n\n1. Enhanced TemplateProcessor with debug support:\n   - Added `debug` option to TemplateProcessorOptions interface\n   - Created DebugInfo interface tracking template metrics, processing steps, validation steps, and replacement details\n   - Modified process() method to collect detailed debug information\n   - Enhanced validateTemplate() with debug logging\n\n2. CLI debug flag integration:\n   - Leveraged existing `--debug` flag from addCommonOptions\n   - Fixed option access using `cmd.optsWithGlobals()`\n   - Implemented structured debug output sections with clear headers and emojis\n\n3. Added processScrambleTemplate debug support:\n   - Updated function signature for debug options\n   - Added context for scramble defaults and overrides\n   - Debug steps show configuration key information\n\n4. Improved validation logic:\n   - Fixed false positive detection in validateTemplate\n   - Updated malformed pattern regex to handle valid JavaScript syntax\n   - Properly detects actual malformed placeholders\n\n5. Testing confirms functionality:\n   - All 24 existing tests pass\n   - Manual testing verified debug output across all processing modes\n   - Error cases provide detailed debugging information\n\nThe debug output includes step-by-step logs with timestamps, type information, replacement details, configuration building steps, validation analysis, and comprehensive statistics summary.\n</info added on 2025-06-19T12:14:03.761Z>",
+            "status": "done"
           },
           {
             "id": 5,
@@ -906,7 +906,7 @@
     ],
     "metadata": {
       "created": "2025-06-16T01:49:25.526Z",
-      "updated": "2025-06-19T11:38:06.018Z",
+      "updated": "2025-06-19T12:14:08.609Z",
       "description": "Tasks for master context"
     }
   }
