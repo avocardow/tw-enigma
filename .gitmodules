@@ -1,0 +1,3 @@
+[submodule "packages-private/scramble"]
+	path = packages-private/scramble
+	url = https://github.com/avocardow/tw-enigma-scramble.git
