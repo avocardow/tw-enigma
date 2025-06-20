@@ -35,3 +35,6 @@ export interface CoreOptimizationOptions {
 // Placeholder exports for future development
 export type OptimizationEngine = 'default' | 'aggressive' | 'conservative';
 export type OutputFormat = 'css' | 'json' | 'both';
+
+// Registry types
+export * from './types/registry';

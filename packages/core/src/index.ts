@@ -33,6 +33,64 @@ export * from './engine/optimizationCache';
 export * from './engine/optimizationCacheIntegration';
 
 // =============================================================================
+// REGISTRY EXPORTS - DOM Element Mapping
+// =============================================================================
+
+// DOM Element Registry - Task 4 Implementation
+export {
+  buildRegistry,
+  createMemoryManager,
+  createRegistry,
+  createRegistryBuilder,
+  createStressTester,
+  createTestRegistry,
+  DEFAULT_MEMORY_CONFIG,
+  DEFAULT_REGISTRY_CONFIG,
+  DEFAULT_STRESS_CONFIG,
+  destroyGlobalMemoryManager,
+  destroyGlobalRegistryBuilder,
+  DOMElementRegistryImpl,
+  getGlobalMemoryManager,
+  getGlobalRegistryBuilder,
+  // Memory Manager exports
+  MemoryManager,
+  RegistryBuilderError,
+  // Registry Builder exports
+  RegistryBuilderImpl,
+  runMemoryLeakTest,
+  // Stress Tester exports
+  StressTester,
+} from './registry';
+
+export type {
+  BuilderMetrics,
+  ClassRegistry,
+  ClassRegistryEntry,
+  CSSRuleInfo,
+  DOMElementRegistry,
+  ElementReference,
+  FrameworkLifecycleManager,
+  MemoryLeakReport,
+  // Memory Manager types
+  MemoryManagerConfig,
+  MemoryPressureLevel,
+  MemoryStats,
+  RegistryBuilder,
+  RegistryBuilderConfig,
+  RegistryConfig,
+  RegistryEvent,
+  RegistryEventHandler,
+  RegistryEventType,
+  RegistryInstance,
+  RegistryStats,
+  ScenarioResult,
+  // Stress Tester types
+  StressTestConfig,
+  StressTestResults,
+  StressTestScenario,
+} from './registry';
+
+// =============================================================================
 // PROCESSORS EXPORTS
 // =============================================================================
 

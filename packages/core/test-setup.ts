@@ -23,4 +23,19 @@ for (const dir of testConfigDirs) {
   }
 }
 
+// Add localStorage polyfill for JSDOM to prevent SecurityError
+if (typeof window !== 'undefined' && !window.localStorage) {
+  Object.defineProperty(window, 'localStorage', {
+    value: {
+      getItem: () => null,
+      setItem: () => {},
+      removeItem: () => {},
+      clear: () => {},
+      key: () => null,
+      length: 0,
+    },
+    writable: true,
+  });
+}
+
 console.log('✨ Test environment ready');

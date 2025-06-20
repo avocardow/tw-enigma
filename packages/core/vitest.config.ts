@@ -4,8 +4,17 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   test: {
     // Environment setup
-    environment: 'node',
+    environment: 'jsdom',
+    environmentMatchGlobs: [['tests/registry/StressTester.integration.test.ts', 'node']],
+    environmentOptions: {
+      jsdom: {
+        url: 'http://localhost/',
+      },
+    },
     globals: true,
+
+    // Use real timers
+    fakeTimers: false,
 
     // Test file patterns
     include: ['tests/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
