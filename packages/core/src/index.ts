@@ -42,11 +42,9 @@ export {
   createMemoryManager,
   createRegistry,
   createRegistryBuilder,
-  createStressTester,
   createTestRegistry,
   DEFAULT_MEMORY_CONFIG,
   DEFAULT_REGISTRY_CONFIG,
-  DEFAULT_STRESS_CONFIG,
   destroyGlobalMemoryManager,
   destroyGlobalRegistryBuilder,
   DOMElementRegistryImpl,
@@ -57,7 +55,6 @@ export {
   RegistryBuilderError,
   // Registry Builder exports
   RegistryBuilderImpl,
-  runMemoryLeakTest,
   // Stress Tester exports
   StressTester,
 } from './registry';
@@ -83,11 +80,10 @@ export type {
   RegistryEventType,
   RegistryInstance,
   RegistryStats,
-  ScenarioResult,
   // Stress Tester types
-  StressTestConfig,
-  StressTestResults,
-  StressTestScenario,
+  ScenarioName,
+  ScenarioOptions,
+  StressTestReport,
 } from './registry';
 
 // =============================================================================

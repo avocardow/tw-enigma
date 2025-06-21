@@ -274,7 +274,7 @@ export class DOMElementRegistryImpl implements DOMElementRegistry {
       entry.elements = entry.elements.filter((ref) => {
         const element = ref.weakRef.deref();
         const isAlive = element && element.isConnected;
-        ref.isConnected = isAlive;
+        ref.isConnected = !!isAlive;
         return isAlive;
       });
 

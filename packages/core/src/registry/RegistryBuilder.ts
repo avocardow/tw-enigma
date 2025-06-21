@@ -100,7 +100,7 @@ export class RegistryBuilderError extends Error {
 export class RegistryBuilder {
   private _config: RegistryBuilderConfig;
   private _registries: Map<string, RegistryInstance> = new Map();
-  private _eventHandlers: Map<string, Set<RegistryEventHandler>> = new Map();
+  private _eventHandlers: Map<RegistryEventType, Set<RegistryEventHandler>> = new Map();
   private _metrics: BuilderMetrics;
   private _isDestroyed = false;
   private _initializationPromises: Map<string, Promise<DOMElementRegistry>> = new Map();
@@ -203,7 +203,7 @@ export class RegistryBuilder {
       this._metrics.errorCount++;
       this._initializationPromises.delete(id);
       throw new RegistryBuilderError(
-        `Failed to create registry '${id}': ${error.message}`,
+        `Failed to create registry '${id}': ${error instanceof Error ? error.message : String(error)}`,
         'CREATION_FAILED',
         id
       );
@@ -252,7 +252,7 @@ export class RegistryBuilder {
       instance.status = 'active'; // Revert status on error
       this._metrics.errorCount++;
       throw new RegistryBuilderError(
-        `Failed to update registry '${id}': ${error.message}`,
+        `Failed to update registry '${id}': ${error instanceof Error ? error.message : String(error)}`,
         'UPDATE_FAILED',
         id
       );
@@ -279,7 +279,7 @@ export class RegistryBuilder {
     } catch (error) {
       this._metrics.errorCount++;
       throw new RegistryBuilderError(
-        `Failed to destroy registry '${id}': ${error.message}`,
+        `Failed to destroy registry '${id}': ${error instanceof Error ? error.message : String(error)}`,
         'DESTRUCTION_FAILED',
         id
       );
@@ -313,7 +313,7 @@ export class RegistryBuilder {
           const result = await operation(registry, id);
           results.set(id, result);
         } catch (error) {
-          results.set(id, error);
+          results.set(id, error instanceof Error ? error : new Error(String(error)));
           this._metrics.errorCount++;
         }
       })

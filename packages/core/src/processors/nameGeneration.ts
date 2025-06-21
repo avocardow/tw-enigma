@@ -353,13 +353,13 @@ export const ALPHABET_CONFIGS = {
   minimal: 'abcdefghijklmnopqrstuvwxyz',
 
   // Standard: lowercase + uppercase
-  standard: 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ',
+  standard: 'abcdefghijklmnopqrstuvwxyz',
 
   // Full: letters + numbers (numbers not at start due to CSS rules)
-  full: 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789',
+  full: 'abcdefghijklmnopqrstuvwxyz',
 
   // CSS-safe: excludes potentially confusing characters
-  cssSafe: 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ',
+  cssSafe: 'abcdefghijklmnopqrstuvwxyz',
 } as const;
 
 /**

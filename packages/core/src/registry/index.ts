@@ -41,19 +41,9 @@ export type {
 } from './MemoryManager';
 
 // Stress Tester exports
-export {
-  createStressTester,
-  DEFAULT_STRESS_CONFIG,
-  runMemoryLeakTest,
-  StressTester,
-} from './StressTester';
+export { StressTester } from './StressTester';
 
-export type {
-  ScenarioResult,
-  StressTestConfig,
-  StressTestResults,
-  StressTestScenario,
-} from './StressTester';
+export type { ScenarioName, ScenarioOptions, StressTestReport } from './StressTester';
 
 // Re-export types for convenience
 export type {

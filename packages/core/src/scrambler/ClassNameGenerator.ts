@@ -13,7 +13,7 @@
 import { ClassNameRegistry } from '../types/registry';
 
 // Using a-z and 0-9 for the character set.
-const CHARSET = 'abcdefghijklmnopqrstuvwxyz0123456789';
+const CHARSET = 'abcdefghijklmnopqrstuvwxyz';
 
 /**
  * Generates a random class name.

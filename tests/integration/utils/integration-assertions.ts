@@ -568,7 +568,7 @@ export const IntegrationTestData = {
    */
   generateRandomNames(length: number, count: number): string[] {
     const names: string[] = [];
-    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    const chars = 'abcdefghijklmnopqrstuvwxyz';
 
     for (let i = 0; i < count; i++) {
       let name = '';

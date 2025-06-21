@@ -49,7 +49,7 @@ const CONFIG = {
   SCRAMBLE_INTERVAL: {{SCRAMBLE_INTERVAL}}, // Default: 150
   SCRAMBLE_MODE: "{{SCRAMBLE_MODE}}", // Default: "all"
   DEBUG_MODE: {{DEBUG_MODE}}, // Default: false
-  CHARSET: "{{CHARSET}}" // Default: "abcdefghijklmnopqrstuvwxyz0123456789"
+  CHARSET: "{{CHARSET}}" // Default: "abcdefghijklmnopqrstuvwxyz"
 };
 
 function debug(...args) {
@@ -82,7 +82,7 @@ function debug(...args) {
       expect(output).toContain('SCRAMBLE_INTERVAL: 150');
       expect(output).toContain('SCRAMBLE_MODE: "all"');
       expect(output).toContain('DEBUG_MODE: false');
-      expect(output).toContain('CHARSET: "abcdefghijklmnopqrstuvwxyz0123456789"');
+      expect(output).toContain('CHARSET: "abcdefghijklmnopqrstuvwxyz"');
 
       // Verify result contains success feedback
       expect(result).toMatch(/template processed successfully|template processed/i);
@@ -317,7 +317,7 @@ const CONFIG = {
       // Verify all default values are applied
       expect(result.output).toContain('SCRAMBLE_INTERVAL: 150');
       expect(result.output).toContain('SCRAMBLE_MODE: "all"');
-      expect(result.output).toContain('CHARSET: "abcdefghijklmnopqrstuvwxyz0123456789"');
+      expect(result.output).toContain('CHARSET: "abcdefghijklmnopqrstuvwxyz"');
       expect(result.output).toContain('DEBUG_MODE: false');
       expect(result.output).toContain('RETRY_ATTEMPTS: 3');
       expect(result.output).toContain('CLEANUP_INTERVAL: 30');
@@ -522,7 +522,7 @@ const CONFIG = {
   const CONFIG = {
     SCRAMBLE_INTERVAL: {{SCRAMBLE_INTERVAL}}, // Default: 150
     SCRAMBLE_MODE: "{{SCRAMBLE_MODE}}", // Default: "all"
-    CHARSET: "{{CHARSET}}", // Default: "abcdefghijklmnopqrstuvwxyz0123456789"
+    CHARSET: "{{CHARSET}}", // Default: "abcdefghijklmnopqrstuvwxyz"
     DEBUG_MODE: {{DEBUG_MODE}}, // Default: false
     RETRY_ATTEMPTS: {{RETRY_ATTEMPTS}}, // Default: 3
     CLEANUP_INTERVAL: {{CLEANUP_INTERVAL}}, // Default: 30
@@ -557,7 +557,7 @@ const CONFIG = {
       expect(result.output).toContain('PERFORMANCE_MONITORING: true');
 
       // Verify defaults are applied for unspecified values
-      expect(result.output).toContain('CHARSET: "abcdefghijklmnopqrstuvwxyz0123456789"');
+      expect(result.output).toContain('CHARSET: "abcdefghijklmnopqrstuvwxyz"');
       expect(result.output).toContain('RETRY_ATTEMPTS: 3');
       expect(result.output).toContain('CLEANUP_INTERVAL: 30');
       expect(result.output).toContain('MAX_REGISTRY_SIZE: 1000');

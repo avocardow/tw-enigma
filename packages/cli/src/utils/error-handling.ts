@@ -52,6 +52,14 @@ export function handleCLIError(error: unknown, logger: Logger): never {
       console.error(chalk.gray('Error details:'), error.details);
     }
     process.exit(error.exitCode);
+  } else if (error instanceof Error && error.name === 'PackageResolutionError') {
+    // Handle PackageResolutionError with detailed diagnostic output
+    console.error(error.toString());
+    process.exit(1);
+  } else if (error instanceof Error && error.name === 'TemplateFileError') {
+    // Handle TemplateFileError with detailed diagnostic output
+    console.error(error.toString());
+    process.exit(1);
   } else if (error instanceof Error) {
     logger.error('Unexpected error occurred', {
       error: error.message,

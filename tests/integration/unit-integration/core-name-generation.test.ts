@@ -153,7 +153,7 @@ describe('Core Name Generation Integration', () => {
       const alphabets = [
         'abcdef0123456789', // Hex-like
         'xyz', // Minimal
-        'abcdefghijklmnopqrstuvwxyz0123456789', // Full alphanumeric
+        'abcdefghijklmnopqrstuvwxyz', // Full alphanumeric
         'qwertyuiop', // Keyboard layout
       ];
 

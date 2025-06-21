@@ -299,7 +299,7 @@ export class TemplateProcessor {
 export const DEFAULT_SCRAMBLE_TEMPLATE_CONFIG: TemplateConfig = {
   SCRAMBLE_INTERVAL: 150,
   SCRAMBLE_MODE: 'all',
-  CHARSET: 'abcdefghijklmnopqrstuvwxyz0123456789',
+  CHARSET: 'abcdefghijklmnopqrstuvwxyz',
   DEBUG_MODE: false,
   RETRY_ATTEMPTS: 3,
   CLEANUP_INTERVAL: 30,

@@ -14,7 +14,7 @@ describe('Scramble Command', () => {
 const CONFIG = {
   SCRAMBLE_INTERVAL: {{SCRAMBLE_INTERVAL}}, // Default: 150
   SCRAMBLE_MODE: "{{SCRAMBLE_MODE}}", // Default: "all"
-  CHARSET: "{{CHARSET}}", // Default: "abcdefghijklmnopqrstuvwxyz0123456789"
+  CHARSET: "{{CHARSET}}", // Default: "abcdefghijklmnopqrstuvwxyz"
   DEBUG_MODE: {{DEBUG_MODE}}, // Default: false
   RETRY_ATTEMPTS: {{RETRY_ATTEMPTS}}, // Default: 3
   CLEANUP_INTERVAL: {{CLEANUP_INTERVAL}}, // Default: 30
