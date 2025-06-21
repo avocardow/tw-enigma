@@ -1,18 +1,18 @@
 {
   "version": "1.0.0",
   "currentFullBackup": {
-    "id": "backup_1750340995096_fwb45f",
-    "createdAt": "2025-06-19T13:49:55.096Z",
-    "filePath": "/tmp/compression-test-1750340995094/.backups-force-full/diff-force-full.2025-06-19T13-49-55-096Z.txt.backup",
+    "id": "backup_1750511559466_qnqop1",
+    "createdAt": "2025-06-21T13:12:39.466Z",
+    "filePath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750511559464/.backups-force-full/diff-force-full.2025-06-21T13-12-39-466Z.txt.backup",
     "size": 35
   },
   "differentialChain": [],
   "cumulativeFileStates": {
-    "/tmp/compression-test-1750340995094/diff-force-full.txt": {
-      "filePath": "/tmp/compression-test-1750340995094/diff-force-full.txt",
+    "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750511559464/diff-force-full.txt": {
+      "filePath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750511559464/diff-force-full.txt",
       "size": 35,
-      "mtime": "2025-06-19T13:49:55.096Z",
-      "lastBackup": "2025-06-19T13:49:55.096Z",
+      "mtime": "2025-06-21T13:12:39.466Z",
+      "lastBackup": "2025-06-21T13:12:39.466Z",
       "hasChanged": false
     }
   },
@@ -22,8 +22,8 @@
     "cumulativeSize": 0,
     "cumulativeSizeRatio": 0,
     "totalSpaceSaved": 0,
-    "lastBackupAt": "2025-06-19T13:49:55.096Z",
+    "lastBackupAt": "2025-06-21T13:12:39.466Z",
     "timeSinceFullBackup": 0
   },
-  "lastUpdated": "2025-06-19T13:49:55.096Z"
+  "lastUpdated": "2025-06-21T13:12:39.466Z"
 }

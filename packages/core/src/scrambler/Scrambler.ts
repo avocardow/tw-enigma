@@ -39,11 +39,11 @@ export function updateDomElement(
   }
 
   for (const elementRef of entry.elements) {
-    if (!elementRef.weakRef) {
+    if (!elementRef?.weakRef) {
       console.warn(`Invalid element reference: missing weakRef for class ${originalClassName}`);
       continue;
     }
-    const element = elementRef.weakRef.deref();
+    const element = elementRef.weakRef?.deref();
     if (element) {
       element.classList.remove(originalClassName);
       element.classList.add(newClassName);

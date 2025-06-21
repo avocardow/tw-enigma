@@ -1,39 +1,39 @@
 {
   "version": "1.0.0",
   "currentFullBackup": {
-    "id": "backup_1750340995166_vn59vz",
-    "createdAt": "2025-06-19T13:49:55.166Z",
-    "filePath": "/tmp/compression-test-1750340995164/.backups-dedup/diff-dedup.2025-06-19T13-49-55-165Z.txt.backup",
+    "id": "backup_1750511559554_3nad1w",
+    "createdAt": "2025-06-21T13:12:39.554Z",
+    "filePath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750511559548/.backups-dedup/diff-dedup.2025-06-21T13-12-39-553Z.txt.backup",
     "size": 29
   },
   "differentialChain": [
     {
-      "id": "backup_1750340995178_loxkhc",
+      "id": "backup_1750511559566_5n3s0m",
       "type": "differential",
-      "baseFullBackupId": "backup_1750340995166_vn59vz",
-      "backupPath": "/tmp/compression-test-1750340995164/.backups-dedup/diff-dedup.2025-06-19T13-49-55-177Z.txt.backup",
-      "originalPath": "/tmp/compression-test-1750340995164/diff-dedup.txt",
-      "createdAt": "2025-06-19T13:49:55.178Z",
+      "baseFullBackupId": "backup_1750511559554_3nad1w",
+      "backupPath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750511559548/.backups-dedup/diff-dedup.2025-06-21T13-12-39-566Z.txt.backup",
+      "originalPath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750511559548/diff-dedup.txt",
+      "createdAt": "2025-06-21T13:12:39.566Z",
       "cumulativeFiles": [
-        "/tmp/compression-test-1750340995164/diff-dedup.txt"
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750511559548/diff-dedup.txt"
       ],
       "cumulativeSize": 38,
       "currentFiles": [
-        "/tmp/compression-test-1750340995164/diff-dedup.txt"
+        "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750511559548/diff-dedup.txt"
       ],
       "currentSize": 38,
       "changeDetectionMethod": "mtime",
       "compressed": false,
       "deduplicated": false,
-      "timeSinceFullBackup": 0.0000030555555555555556
+      "timeSinceFullBackup": 0.0000033333333333333333
     }
   ],
   "cumulativeFileStates": {
-    "/tmp/compression-test-1750340995164/diff-dedup.txt": {
-      "filePath": "/tmp/compression-test-1750340995164/diff-dedup.txt",
+    "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750511559548/diff-dedup.txt": {
+      "filePath": "/var/folders/6q/psxprvw97dnd9v_p7vhmvnrm0000gn/T/compression-test-1750511559548/diff-dedup.txt",
       "size": 38,
-      "mtime": "2025-06-19T13:49:55.177Z",
-      "lastBackup": "2025-06-19T13:49:55.178Z",
+      "mtime": "2025-06-21T13:12:39.566Z",
+      "lastBackup": "2025-06-21T13:12:39.566Z",
       "hasChanged": true
     }
   },
@@ -43,8 +43,8 @@
     "cumulativeSize": 38,
     "cumulativeSizeRatio": 1.3103448275862069,
     "totalSpaceSaved": 0,
-    "lastBackupAt": "2025-06-19T13:49:55.178Z",
-    "timeSinceFullBackup": 0.0000030555555555555556
+    "lastBackupAt": "2025-06-21T13:12:39.566Z",
+    "timeSinceFullBackup": 0.0000033333333333333333
   },
-  "lastUpdated": "2025-06-19T13:49:55.178Z"
+  "lastUpdated": "2025-06-21T13:12:39.566Z"
 }
