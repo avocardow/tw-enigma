@@ -11,6 +11,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { glob } from 'glob';
 import { dirname, join, relative, resolve } from 'path';
 import { addCommonOptions, createLoggerFromArgv, handleCLIError } from '../utils';
+import { createDefaultCliLogger } from '../utils/logger-config';
 import { processScrambleTemplate, type TemplateConfig } from '../utils/template-processor';
 
 /**
@@ -216,8 +217,7 @@ async function diagnosePackageResolutionFailure(): Promise<PackageResolutionDiag
         hasScrambleDependency: '@tw-enigma/scramble' in allDeps,
         dependencies: Object.keys(allDeps),
       };
-    } catch (e) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch {
       packageJsonStatus.exists = true;
       packageJsonStatus.path = packageJsonPath;
     }
@@ -294,8 +294,7 @@ async function diagnoseTemplateFileFailure(templatePath: string): Promise<Templa
       );
 
       similarFiles.push(...scrambleFiles.slice(0, 5)); // Limit to 5 files
-    } catch (e) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch {
       // Ignore glob errors
     }
   }
@@ -356,8 +355,7 @@ async function logPackageResolutionDetails(packagePath: string, logger: any): Pr
           logger.info(`   Package exports: configured`);
         }
       }
-    } catch (e) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch {
       logger.info('   Package.json: not found via require.resolve');
     }
 
@@ -368,9 +366,8 @@ async function logPackageResolutionDetails(packagePath: string, logger: any): Pr
     } else {
       logger.info(`   Resolution method: fresh lookup`);
     }
-  } catch (e) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    logger.warn(`   Error getting package details: ${e}`);
+  } catch {
+    logger.warn('   Error getting package details');
   }
 }
 
@@ -415,7 +412,7 @@ async function detectScramblePackage(): Promise<string | null> {
     if (!resolvedPath) {
       try {
         resolvedPath = require.resolve('@tw-enigma/scramble/dist/scramble.min.js');
-      } catch (e) {
+      } catch {
         // Try alternative entry points
         const altEntryPoints = [
           '@tw-enigma/scramble',
@@ -427,7 +424,7 @@ async function detectScramblePackage(): Promise<string | null> {
           try {
             resolvedPath = require.resolve(entry);
             break;
-          } catch (resolveError) {
+          } catch {
             // Continue to next entry point
           }
         }
@@ -444,8 +441,8 @@ async function detectScramblePackage(): Promise<string | null> {
     // Cache negative result to avoid repeated failed lookups
     packageResolutionCache.set(cacheKey, null);
     return null;
-  } catch (e) {
-    console.warn('⚠️ Error detecting scramble package:', e);
+  } catch {
+    console.warn('⚠️ Error detecting scramble package');
     packageResolutionCache.set(cacheKey, null);
     return null;
   }
@@ -461,7 +458,7 @@ async function resolvePackageWithPackageJson(packageName: string): Promise<strin
     let packageJsonPath: string;
     try {
       packageJsonPath = require.resolve(`${packageName}/package.json`);
-    } catch (e) {
+    } catch {
       return null;
     }
 
@@ -503,7 +500,7 @@ async function resolvePackageWithPackageJson(packageName: string): Promise<strin
     }
 
     return null;
-  } catch (e) {
+  } catch {
     return null;
   }
 }
@@ -555,7 +552,7 @@ function resolveExportsField(exports: any, packageDir: string): string | null {
     }
 
     return null;
-  } catch (e) {
+  } catch {
     return null;
   }
 }
@@ -619,9 +616,9 @@ async function injectScrambleConfiguration(
     writeFileSync(outputPath, result.output, 'utf8');
 
     console.log('✅ Scramble configuration injected successfully');
-  } catch (e) {
-    console.error('❌ Error injecting scramble configuration:', e);
-    throw e;
+  } catch (error) {
+    console.error('❌ Error injecting scramble configuration:', error);
+    throw error;
   }
 }
 
@@ -637,7 +634,7 @@ async function findHtmlFiles(buildDir: string): Promise<string[]> {
       ignore: ['**/node_modules/**'],
     });
     htmlFiles.push(...files);
-  } catch (e) {
+  } catch {
     // Suppress glob errors
   }
   return htmlFiles;
@@ -670,8 +667,8 @@ async function injectScriptIntoHtml(htmlFile: string, scriptPath: string): Promi
 
     console.log(`✅ Injected script into ${htmlFile}`);
     return true;
-  } catch (e) {
-    console.error(`❌ Error injecting script into ${htmlFile}:`, e);
+  } catch (error) {
+    console.error(`❌ Error injecting script into ${htmlFile}:`, error);
     return false;
   }
 }
@@ -693,8 +690,8 @@ async function injectScrambleIntoHtmlFiles(buildDir: string, scriptPath: string)
     }
 
     console.log(`✅ Injected scramble script into ${successCount}/${htmlFiles.length} HTML files`);
-  } catch (e) {
-    console.error('❌ Error injecting scramble script into HTML files:', e);
+  } catch (error) {
+    console.error('❌ Error injecting scramble script into HTML files:', error);
   }
 }
 
@@ -705,7 +702,7 @@ async function integrateScrambleEffect(
   scramblePackagePath: string,
   options: ScrambleOptions
 ): Promise<void> {
-  const logger = createLoggerFromArgv(process.argv);
+  const logger = createDefaultCliLogger();
   const templatePath = scramblePackagePath;
   const outDir = options.outDir || 'dist';
   const outputPath = join(outDir, 'scramble.js');
@@ -733,16 +730,25 @@ export function createScrambleCommand(): Command {
   addCommonOptions(program);
 
   program
-    .description('Integrate and configure the scramble effect')
-    .option('--scramble-speed <number>', 'Set the scramble animation speed')
+    .description('Integrate scramble effect into build output')
+    .option('--scramble-speed <number>', 'Set the scramble animation speed', (value) => {
+      const speed = parseInt(value, 10);
+      if (isNaN(speed) || speed < 50 || speed > 1000) {
+        throw new Error(`Invalid scramble speed: ${value}. Must be between 50-1000ms.`);
+      }
+      return speed;
+    })
     .option('--scramble-debug', 'Enable debug mode for the scramble effect')
     .option('--scramble-mode <mode>', 'Set the scramble mode (e.g., "recursive")')
     .option('--scramble-charset <charset>', 'Define a custom character set for scrambling')
     .option('--build-scramble', 'Inject into HTML files for production builds')
     .option('--out-dir <dir>', 'Specify the output directory for build artifacts')
     .option('--template-path <path>', 'Specify a custom path to the scramble script template')
-    .action(async (options) => {
-      const logger = createLoggerFromArgv(process.argv);
+    .option('--template <path>', 'Alias for --template-path')
+    .option('--skip-html-injection', 'Skip injecting scramble script into HTML files')
+    .option('--force', 'Force overwrite existing files')
+    .action(async (options, cmd) => {
+      const logger = createLoggerFromArgv(cmd.optsWithGlobals());
 
       try {
         let scramblePackagePath: string | null = null;
@@ -775,8 +781,7 @@ export function createScrambleCommand(): Command {
         if (options.buildScramble) {
           try {
             execSync('pnpm --filter @tw-enigma/scramble build', { stdio: 'inherit' });
-          } catch (e) {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          } catch {
             console.warn(
               '⚠️ Could not build scramble package automatically. Using existing build.'
             );
@@ -785,9 +790,8 @@ export function createScrambleCommand(): Command {
 
         try {
           await integrateScrambleEffect(scramblePackagePath, options);
-        } catch (e: any) {
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          logger.error('Error during scramble effect integration:', e);
+        } catch (error: any) {
+          logger.error('Error during scramble effect integration:', error);
           // process.exit(1);
         }
       } catch (error: any) {
