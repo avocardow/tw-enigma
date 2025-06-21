@@ -187,10 +187,11 @@ export class MemoryManager {
     // For now, always create a new reference
     // TODO: Implement proper pooling logic
     return {
-      element,
-      id: Math.random().toString(36).substr(2, 9),
-      timestamp: Date.now(),
-      metadata: new Map(),
+      weakRef: new WeakRef(element),
+      tagName: element.tagName.toLowerCase(),
+      classListSnapshot: Array.from(element.classList),
+      createdAt: Date.now(),
+      isConnected: element.isConnected,
     };
   }
 
