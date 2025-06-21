@@ -277,11 +277,12 @@ export class MemoryManager {
     for (const registry of this._registries) {
       if (registry.stats.memoryUsage > 10 * 1024 * 1024) {
         // 10MB threshold
+        const registryId = 'registry-' + Math.random().toString(36).substr(2, 9);
         potentialLeaks.push({
-          description: `Registry ${registry.config.name || 'unnamed'} has high memory usage`,
+          description: `Registry ${registryId} has high memory usage`,
           severity: 'medium',
           recommendation: 'Inspect registry for detached elements',
-          affectedRegistries: [registry.config.name || 'unnamed'],
+          affectedRegistries: [registryId],
         });
       }
     }
@@ -327,7 +328,7 @@ export class MemoryManager {
    * Manually trigger a memory stats update.
    */
   updateMemoryStats(): void {
-    this._updateMemoryStats();
+    this._updateStats();
   }
 
   /**

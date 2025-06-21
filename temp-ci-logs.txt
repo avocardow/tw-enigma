@@ -1,0 +1,73 @@
+2025-06-21T04:09:36.5961542Z Current runner version: '2.325.0'
+2025-06-21T04:09:36.5985399Z ##[group]Runner Image Provisioner
+2025-06-21T04:09:36.5986224Z Hosted Compute Agent
+2025-06-21T04:09:36.5986847Z Version: 20250620.352
+2025-06-21T04:09:36.5987471Z Commit: f262f3aba23b10ea191b2a62bdee1ca4c3d344da
+2025-06-21T04:09:36.5988146Z Build Date: 2025-06-20T19:27:17Z
+2025-06-21T04:09:36.5988776Z ##[endgroup]
+2025-06-21T04:09:36.5989349Z ##[group]Operating System
+2025-06-21T04:09:36.5989886Z Ubuntu
+2025-06-21T04:09:36.5990447Z 24.04.2
+2025-06-21T04:09:36.5990888Z LTS
+2025-06-21T04:09:36.5991346Z ##[endgroup]
+2025-06-21T04:09:36.5991837Z ##[group]Runner Image
+2025-06-21T04:09:36.5992434Z Image: ubuntu-24.04
+2025-06-21T04:09:36.5992944Z Version: 20250602.3.0
+2025-06-21T04:09:36.5993918Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20250602.3/images/ubuntu/Ubuntu2404-Readme.md
+2025-06-21T04:09:36.5995792Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20250602.3
+2025-06-21T04:09:36.5996872Z ##[endgroup]
+2025-06-21T04:09:36.5997994Z ##[group]GITHUB_TOKEN Permissions
+2025-06-21T04:09:36.6000083Z Contents: read
+2025-06-21T04:09:36.6000637Z Metadata: read
+2025-06-21T04:09:36.6001187Z Packages: read
+2025-06-21T04:09:36.6001640Z ##[endgroup]
+2025-06-21T04:09:36.6004290Z Secret source: Actions
+2025-06-21T04:09:36.6005195Z Prepare workflow directory
+2025-06-21T04:09:36.6517593Z Prepare all required actions
+2025-06-21T04:09:36.6570052Z Complete job name: Validation Summary
+2025-06-21T04:09:36.7142943Z ##[group]Run echo "## 📊 CI Pipeline Cache Metrics" >> $GITHUB_STEP_SUMMARY
+2025-06-21T04:09:36.7144148Z [36;1mecho "## 📊 CI Pipeline Cache Metrics" >> $GITHUB_STEP_SUMMARY[0m
+2025-06-21T04:09:36.7145224Z [36;1mecho "| Component | Status | Cache Strategy |" >> $GITHUB_STEP_SUMMARY[0m
+2025-06-21T04:09:36.7146136Z [36;1mecho "|-----------|--------|----------------|" >> $GITHUB_STEP_SUMMARY[0m
+2025-06-21T04:09:36.7147017Z [36;1mecho "| Dependencies | ✅ | pnpm store + node_modules |" >> $GITHUB_STEP_SUMMARY[0m
+2025-06-21T04:09:36.7148144Z [36;1mecho "| TypeScript | ✅ | tsbuildinfo + compiler cache |" >> $GITHUB_STEP_SUMMARY[0m
+2025-06-21T04:09:36.7149241Z [36;1mecho "| ESLint | ✅ | eslint cache + results |" >> $GITHUB_STEP_SUMMARY[0m
+2025-06-21T04:09:36.7150155Z [36;1mecho "| Vitest | ✅ | test cache + results |" >> $GITHUB_STEP_SUMMARY[0m
+2025-06-21T04:09:36.7151107Z [36;1mecho "| Turborepo | ✅ | build cache + artifacts |" >> $GITHUB_STEP_SUMMARY[0m
+2025-06-21T04:09:36.7851010Z shell: /usr/bin/bash -e {0}
+2025-06-21T04:09:36.7852494Z env:
+2025-06-21T04:09:36.7853227Z   TURBO_TOKEN:
+2025-06-21T04:09:36.7854320Z   TURBO_TEAM:
+2025-06-21T04:09:36.7855262Z   PNPM_CACHE_FOLDER: .pnpm
+2025-06-21T04:09:36.7856114Z   HUSKY: 0
+2025-06-21T04:09:36.7856939Z ##[endgroup]
+2025-06-21T04:09:36.8255018Z ##[group]Run echo "## 🔍 Job Results Summary" >> $GITHUB_STEP_SUMMARY
+2025-06-21T04:09:36.8256018Z [36;1mecho "## 🔍 Job Results Summary" >> $GITHUB_STEP_SUMMARY[0m
+2025-06-21T04:09:36.8256905Z [36;1mecho "| Job | Status |" >> $GITHUB_STEP_SUMMARY[0m
+2025-06-21T04:09:36.8257660Z [36;1mecho "|-----|--------|" >> $GITHUB_STEP_SUMMARY[0m
+2025-06-21T04:09:36.8258363Z [36;1mecho "| Lint | failure |" >> $GITHUB_STEP_SUMMARY[0m
+2025-06-21T04:09:36.8259254Z [36;1mecho "| Type Check | failure |" >> $GITHUB_STEP_SUMMARY[0m
+2025-06-21T04:09:36.8260004Z [36;1mecho "| Build | skipped |" >> $GITHUB_STEP_SUMMARY[0m
+2025-06-21T04:09:36.8260765Z [36;1mecho "| Test | skipped |" >> $GITHUB_STEP_SUMMARY[0m
+2025-06-21T04:09:36.8261593Z [36;1mecho "| Security | success |" >> $GITHUB_STEP_SUMMARY[0m
+2025-06-21T04:09:36.8262302Z [36;1m[0m
+2025-06-21T04:09:36.8263552Z [36;1m# Check for both failure and skipped statuses (skipped jobs indicate upstream failures)[0m
+2025-06-21T04:09:36.8265479Z [36;1mif [[ "failure" =~ (failure|skipped) || \[0m
+2025-06-21T04:09:36.8266540Z [36;1m      "failure" =~ (failure|skipped) || \[0m
+2025-06-21T04:09:36.8267594Z [36;1m      "skipped" =~ (failure|skipped) || \[0m
+2025-06-21T04:09:36.8269032Z [36;1m      "skipped" =~ (failure|skipped) ]]; then[0m
+2025-06-21T04:09:36.8270051Z [36;1m  echo "❌ CI pipeline failed"[0m
+2025-06-21T04:09:36.8271083Z [36;1m  exit 1[0m
+2025-06-21T04:09:36.8271616Z [36;1melse[0m
+2025-06-21T04:09:36.8272092Z [36;1m  echo "✅ CI pipeline passed"[0m
+2025-06-21T04:09:36.8272719Z [36;1mfi[0m
+2025-06-21T04:09:36.8329576Z shell: /usr/bin/bash -e {0}
+2025-06-21T04:09:36.8330421Z env:
+2025-06-21T04:09:36.8331013Z   TURBO_TOKEN:
+2025-06-21T04:09:36.8331518Z   TURBO_TEAM:
+2025-06-21T04:09:36.8332005Z   PNPM_CACHE_FOLDER: .pnpm
+2025-06-21T04:09:36.8332601Z   HUSKY: 0
+2025-06-21T04:09:36.8333061Z ##[endgroup]
+2025-06-21T04:09:36.8581075Z ❌ CI pipeline failed
+2025-06-21T04:09:36.8591846Z ##[error]Process completed with exit code 1.
+2025-06-21T04:09:36.8748237Z Cleaning up orphan processes
