@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { ClassNameRegistry } from '../types/registry';
+import { ClassRegistry } from '../types/registry';
 
 /**
  * Updates the CSS rule for a given class name.
@@ -15,7 +15,7 @@ import { ClassNameRegistry } from '../types/registry';
  * @param newClassName The new class name.
  */
 export function updateCssRule(
-  registry: ClassNameRegistry,
+  registry: ClassRegistry,
   originalClassName: string,
   newClassName: string
 ): void {
@@ -28,7 +28,7 @@ export function updateCssRule(
 }
 
 export function updateDomElement(
-  registry: ClassNameRegistry,
+  registry: ClassRegistry,
   originalClassName: string,
   newClassName: string
 ) {
@@ -38,8 +38,11 @@ export function updateDomElement(
     return;
   }
 
-  for (const element of entry.elements) {
-    element.classList.remove(originalClassName);
-    element.classList.add(newClassName);
+  for (const elementRef of entry.elements) {
+    const element = elementRef.weakRef.deref();
+    if (element) {
+      element.classList.remove(originalClassName);
+      element.classList.add(newClassName);
+    }
   }
 }

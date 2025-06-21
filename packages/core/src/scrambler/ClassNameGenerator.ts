@@ -10,7 +10,7 @@
  * Core algorithm for generating random class names.
  */
 
-import { ClassNameRegistry } from '../types/registry';
+import { ClassRegistry } from '../types/registry';
 
 // Using a-z and 0-9 for the character set.
 const CHARSET = 'abcdefghijklmnopqrstuvwxyz';
@@ -42,7 +42,7 @@ export function generateRandomClassName(length = 1): string {
  * @param preferredLength The preferred starting length for the new class name.
  * @returns A unique class name string.
  */
-export function generateUniqueClassName(registry: ClassNameRegistry, preferredLength = 1): string {
+export function generateUniqueClassName(registry: ClassRegistry, preferredLength = 1): string {
   let length = preferredLength;
   let attempts = 0;
   let className: string;
