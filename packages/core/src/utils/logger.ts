@@ -8,7 +8,7 @@
 import chalk from 'chalk';
 import { createWriteStream, WriteStream, existsSync, mkdirSync, statSync, unlinkSync } from 'fs';
 import { dirname } from 'path';
-import { gzipSync } from 'zlib';
+import { gzipSync } from 'node:zlib';
 
 /**
  * Log levels following Log4j standard

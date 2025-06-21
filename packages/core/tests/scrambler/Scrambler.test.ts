@@ -7,14 +7,23 @@
 
 import { describe, expect, it, vi } from 'vitest';
 import { updateCssRule, updateDomElement } from '../../src/scrambler/Scrambler';
-import { ClassNameRegistry } from '../../src/types/registry';
 
 describe('Scrambler', () => {
   describe('updateCssRule', () => {
     it('should update the selectorText of the CSS rule', () => {
       const mockRule = { selectorText: '.original' } as CSSStyleRule;
-      const registry: ClassNameRegistry = {
-        original: { elements: new Set(), cssRule: mockRule },
+      const registry: ClassRegistry = {
+        original: {
+          elements: [],
+          cssRule: mockRule,
+          originalClassName: 'original',
+          lastUpdated: Date.now(),
+          stats: {
+            queryCount: 0,
+            activeElementCount: 0,
+            peakElementCount: 0,
+          },
+        },
       };
 
       updateCssRule(registry, 'original', 'scrambled');
@@ -24,7 +33,7 @@ describe('Scrambler', () => {
 
     it('should warn if the class name is not in the registry', () => {
       const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-      const registry: ClassNameRegistry = {};
+      const registry: ClassRegistry = {};
 
       updateCssRule(registry, 'nonexistent', 'scrambled');
 
@@ -34,8 +43,18 @@ describe('Scrambler', () => {
 
     it('should handle entries with no cssRule gracefully', () => {
       const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-      const registry: ClassNameRegistry = {
-        original: { elements: new Set(), cssRule: undefined as any },
+      const registry: ClassRegistry = {
+        original: {
+          elements: [],
+          cssRule: undefined as any,
+          originalClassName: 'original',
+          lastUpdated: Date.now(),
+          stats: {
+            queryCount: 0,
+            activeElementCount: 0,
+            peakElementCount: 0,
+          },
+        },
       };
 
       updateCssRule(registry, 'original', 'scrambled');
@@ -51,8 +70,34 @@ describe('Scrambler', () => {
       elem1.classList.add('original');
       const elem2 = document.createElement('span');
       elem2.classList.add('original');
-      const registry: ClassNameRegistry = {
-        original: { elements: new Set([elem1, elem2]), cssRule: undefined as any },
+
+      const registry: ClassRegistry = {
+        original: {
+          elements: [
+            {
+              weakRef: new WeakRef(elem1),
+              tagName: 'div',
+              classListSnapshot: ['original'],
+              createdAt: Date.now(),
+              isConnected: true,
+            },
+            {
+              weakRef: new WeakRef(elem2),
+              tagName: 'span',
+              classListSnapshot: ['original'],
+              createdAt: Date.now(),
+              isConnected: true,
+            },
+          ],
+          cssRule: undefined as any,
+          originalClassName: 'original',
+          lastUpdated: Date.now(),
+          stats: {
+            queryCount: 0,
+            activeElementCount: 2,
+            peakElementCount: 2,
+          },
+        },
       };
 
       updateDomElement(registry, 'original', 'scrambled');
@@ -65,7 +110,7 @@ describe('Scrambler', () => {
 
     it('should warn if registry entry is missing', () => {
       const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-      const registry: ClassNameRegistry = {};
+      const registry: ClassRegistry = {};
 
       updateDomElement(registry, 'nonexistent', 'scrambled');
 

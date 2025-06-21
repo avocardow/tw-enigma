@@ -18,7 +18,7 @@ import {
   createBrotliCompress,
   createBrotliDecompress,
   constants as zlibConstants,
-} from 'zlib';
+} from 'node:zlib';
 import { EventEmitter } from 'events';
 import { resolve, basename, extname, join, dirname } from 'path';
 import { createLogger } from './logger';

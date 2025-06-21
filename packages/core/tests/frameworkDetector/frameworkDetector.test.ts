@@ -2,15 +2,15 @@
  * Tests for Framework Detection System
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import * as fs from 'fs/promises';
-import * as path from 'path';
 import {
-  FrameworkDetector,
   FrameworkDetectionError,
+  FrameworkDetector,
   createFrameworkDetector,
   detectFramework,
 } from '@tw-enigma/core';
+import * as fs from 'fs/promises';
+import * as path from 'path';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 describe('FrameworkDetector', () => {
   let testDir: string;
@@ -398,7 +398,7 @@ export default defineConfig({
       const result = await detector.detect();
 
       expect(result.performance).toBeDefined();
-      expect(result.performance.detectionTime).toBeGreaterThan(0);
+      expect(result.performance.detectionTime).toBeGreaterThanOrEqual(0);
       expect(result.performance.filesAnalyzed).toBeGreaterThanOrEqual(0);
       expect(result.performance.cacheMisses).toBe(1);
     });

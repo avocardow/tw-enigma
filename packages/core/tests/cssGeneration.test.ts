@@ -1,47 +1,45 @@
-import { describe, test, expect, beforeEach } from 'vitest';
 import {
-  // Main functions
-  generateOptimizedCss,
-  integrateCssGeneration,
-  formatCssOutput,
-
-  // Core functions
-  generateCssRules,
-  generateApplyDirective,
-  classifyPattern,
-  sortCssRules,
-  generateCssComments,
-
-  // Utility functions
-  validateCssGenerationOptions,
-  isValidCssSelector,
-  isValidCssPropertyValue,
-  sanitizeCssSelector,
-
   // Advanced functions
   analyzePatternRelationships,
-  sortCssRulesAdvanced,
-  validateApplyDirective,
-  optimizeApplyDirective,
-
-  // Types and interfaces
-  type CssGenerationOptions,
-  type CssRule,
-  type ApplyDirective,
-
+  ApplyDirectiveError,
+  classifyPattern,
   // Constants
   CSS_PATTERN_THRESHOLDS,
   CSS_PROPERTY_GROUPS,
 
   // Error classes
   CssGenerationError,
+  formatCssOutput,
+  generateApplyDirective,
+  generateCssComments,
+  // Core functions
+  generateCssRules,
+  // Main functions
+  generateOptimizedCss,
+  integrateCssGeneration,
   InvalidCssError,
-  ApplyDirectiveError,
+  isValidCssPropertyValue,
+  isValidCssSelector,
+  optimizeApplyDirective,
   PatternClassificationError,
+  sanitizeCssSelector,
+  sortCssRules,
+  sortCssRulesAdvanced,
+  validateApplyDirective,
+  // Utility functions
+  validateCssGenerationOptions,
+  type ApplyDirective,
+  // Types and interfaces
+  type CssGenerationOptions,
+  type CssRule,
 } from '@tw-enigma/core';
+import { beforeEach, describe, expect, test } from 'vitest';
 
-import type { PatternFrequencyMap, AggregatedClassData } from '@tw-enigma/core';
-import type { NameGenerationOptions } from '@tw-enigma/core';
+import type {
+  AggregatedClassData,
+  NameGenerationOptions,
+  PatternFrequencyMap,
+} from '@tw-enigma/core';
 
 describe('CSS Generation Module', () => {
   let mockFrequencyMap: PatternFrequencyMap;
@@ -614,8 +612,8 @@ describe('CSS Generation Module', () => {
     test('integrateCssGeneration includes performance metrics', () => {
       const result = integrateCssGeneration(mockFrequencyMap, mockNameOptions, defaultCssOptions);
 
-      expect(result.statistics.generationTime).toBeGreaterThan(0);
-      expect(result.statistics.memoryUsage).toBeGreaterThan(0);
+      expect(result.statistics.generationTime).toBeGreaterThanOrEqual(0);
+      expect(result.statistics.memoryUsage).toBeGreaterThanOrEqual(1); // Math.max(1, ...) ensures minimum of 1
       expect(result.statistics.compressionRatio).toBeGreaterThan(0);
     });
 

@@ -6,7 +6,7 @@
  */
 
 import { createHash } from 'crypto';
-import { gzip, brotliCompress } from 'zlib';
+import { gzip, brotliCompress } from 'node:zlib';
 import { promisify } from 'util';
 // readFile, writeFile, stat imports removed - not used
 // join, dirname, basename, extname imports removed - not used
@@ -874,9 +874,9 @@ export class CompressionEngine {
       compressed = await this.brotliAsync(content, {
         params: {
           // eslint-disable-next-line @typescript-eslint/no-require-imports
-          [require('zlib').constants.BROTLI_PARAM_QUALITY]: Math.min(this.config.level, 11),
+          [require('node:zlib').constants.BROTLI_PARAM_QUALITY]: Math.min(this.config.level, 11),
           // eslint-disable-next-line @typescript-eslint/no-require-imports
-          [require('zlib').constants.BROTLI_PARAM_SIZE_HINT]: content.length,
+          [require('node:zlib').constants.BROTLI_PARAM_SIZE_HINT]: content.length,
         },
       });
     }
