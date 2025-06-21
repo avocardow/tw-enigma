@@ -23,19 +23,99 @@ for (const dir of testConfigDirs) {
   }
 }
 
-// Add localStorage polyfill for JSDOM to prevent SecurityError
-if (typeof window !== 'undefined' && !window.localStorage) {
-  Object.defineProperty(window, 'localStorage', {
-    value: {
-      getItem: () => null,
-      setItem: () => {},
-      removeItem: () => {},
-      clear: () => {},
-      key: () => null,
-      length: 0,
+// Add storage polyfills for JSDOM to prevent SecurityError
+// Create comprehensive storage mock that handles all edge cases
+const createStorageMock = () => {
+  const storage = new Map<string, string>();
+
+  return {
+    getItem: (key: string) => storage.get(key) || null,
+    setItem: (key: string, value: string) => {
+      storage.set(key, String(value));
     },
+    removeItem: (key: string) => {
+      storage.delete(key);
+    },
+    clear: () => {
+      storage.clear();
+    },
+    key: (index: number) => {
+      const keys = Array.from(storage.keys());
+      return keys[index] || null;
+    },
+    get length() {
+      return storage.size;
+    },
+  };
+};
+
+// Mock localStorage and sessionStorage globally for both window and globalThis
+const localStorageMock = createStorageMock();
+const sessionStorageMock = createStorageMock();
+
+// Handle window object (browser-like environment)
+if (typeof window !== 'undefined') {
+  Object.defineProperty(window, 'localStorage', {
+    value: localStorageMock,
     writable: true,
+    configurable: true,
   });
+
+  Object.defineProperty(window, 'sessionStorage', {
+    value: sessionStorageMock,
+    writable: true,
+    configurable: true,
+  });
+}
+
+// Handle globalThis (universal environment)
+if (typeof globalThis !== 'undefined') {
+  Object.defineProperty(globalThis, 'localStorage', {
+    value: localStorageMock,
+    writable: true,
+    configurable: true,
+  });
+
+  Object.defineProperty(globalThis, 'sessionStorage', {
+    value: sessionStorageMock,
+    writable: true,
+    configurable: true,
+  });
+}
+
+// Handle global (Node.js environment)
+if (typeof global !== 'undefined') {
+  Object.defineProperty(global, 'localStorage', {
+    value: localStorageMock,
+    writable: true,
+    configurable: true,
+  });
+
+  Object.defineProperty(global, 'sessionStorage', {
+    value: sessionStorageMock,
+    writable: true,
+    configurable: true,
+  });
+}
+
+// Re-apply to window if it exists to ensure our mock takes precedence
+if (typeof window !== 'undefined') {
+  // Mock other potentially missing APIs
+  if (!window.matchMedia) {
+    Object.defineProperty(window, 'matchMedia', {
+      writable: true,
+      value: (query: string) => ({
+        matches: false,
+        media: query,
+        onchange: null,
+        addListener: () => {},
+        removeListener: () => {},
+        addEventListener: () => {},
+        removeEventListener: () => {},
+        dispatchEvent: () => {},
+      }),
+    });
+  }
 }
 
 console.log('✨ Test environment ready');

@@ -8,7 +8,9 @@ export default defineConfig({
     environmentMatchGlobs: [['tests/registry/StressTester.integration.test.ts', 'node']],
     environmentOptions: {
       jsdom: {
-        url: 'http://localhost/',
+        url: 'http://localhost:3000/',
+        pretendToBeVisual: true,
+        resources: 'usable',
       },
     },
     globals: true,
@@ -35,6 +37,9 @@ export default defineConfig({
     // Mock and cleanup settings
     clearMocks: true,
     restoreMocks: true,
+
+    // Mock browser APIs globally
+    mockBrowser: true,
 
     // Reporter configuration
     reporter: ['verbose', 'json'],
