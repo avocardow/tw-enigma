@@ -164,7 +164,7 @@ export class StressTester {
     this.memoryManager.updateMemoryStats(); // Force stats update
     elements.forEach((el) => el.remove());
     registry.cleanup();
-    
+
     // Add small delay to make operations actually async and allow stop signal processing
     await new Promise((r) => setTimeout(r, 1));
   }
