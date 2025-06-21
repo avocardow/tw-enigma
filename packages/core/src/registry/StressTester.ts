@@ -218,10 +218,10 @@ export class StressTester {
 /**
  * Create a stress tester with configuration
  */
-export function createStressTester(config: StressConfig = {}): StressTester {
-  const finalConfig = { ...DEFAULT_STRESS_CONFIG, ...config };
+export function createStressTester(_config: StressConfig = {}): StressTester {
+  // Note: _config parameter available for future implementation
   // For now, return a basic StressTester - in a real implementation,
-  // this would create the necessary registries and memory manager
+  // this would create the necessary registries and memory manager based on _config
   const mockMemoryManager = {
     stats: { totalMemoryUsage: 0 },
     updateMemoryStats: () => {},
