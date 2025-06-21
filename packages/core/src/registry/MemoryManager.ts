@@ -181,29 +181,16 @@ export class MemoryManager {
   }
 
   /**
-   * Get element reference from pool or create new one
+   * Get an element reference from the pool or create a new one
    */
   getElementReference(element: Element): ElementReference {
-    if (this._config.enableObjectPooling && this._elementReferencePool.length > 0) {
-      const pooledRef = this._elementReferencePool.pop()!;
-
-      // Reuse pooled reference with new element
-      return {
-        weakRef: new WeakRef(element),
-        tagName: element.tagName,
-        classListSnapshot: Array.from(element.classList),
-        createdAt: Date.now(),
-        isConnected: element.isConnected,
-      };
-    }
-
-    // Create new reference
+    // For now, always create a new reference
+    // TODO: Implement proper pooling logic
     return {
-      weakRef: new WeakRef(element),
-      tagName: element.tagName,
-      classListSnapshot: Array.from(element.classList),
-      createdAt: Date.now(),
-      isConnected: element.isConnected,
+      element,
+      id: Math.random().toString(36).substr(2, 9),
+      timestamp: Date.now(),
+      metadata: new Map(),
     };
   }
 
@@ -229,13 +216,14 @@ export class MemoryManager {
 
     // Different cleanup strategies based on memory pressure
     switch (this._stats.pressureLevel) {
-      case 'critical':
+      case 'critical': {
         // Aggressive cleanup
         for (const registry of this._registries) {
           totalCleaned += registry.forceCleanup().cleanupCount || 0;
         }
         this._clearObjectPool();
         break;
+      }
 
       case 'moderate':
         // Standard cleanup
@@ -245,7 +233,7 @@ export class MemoryManager {
         this._trimObjectPool();
         break;
 
-      case 'low':
+      case 'low': {
         // Light cleanup
         const oldestRegistries = Array.from(this._registries).slice(
           0,
@@ -255,6 +243,7 @@ export class MemoryManager {
           totalCleaned += registry.cleanup();
         }
         break;
+      }
     }
 
     this._updateAdaptiveCleanupInterval();
@@ -483,10 +472,26 @@ export class MemoryManager {
     };
   }
 
-  private _log(message: string, ...args: any[]): void {
+  private _log(message: string, ...args: unknown[]): void {
     if (this._config.debug) {
       console.log(`[MemoryManager] ${message}`, ...args);
     }
+  }
+
+  private _warn(message: string, ...args: unknown[]): void {
+    console.warn(`[MemoryManager] ${message}`, ...args);
+  }
+
+  private _error(message: string, ...args: unknown[]): void {
+    console.error(`[MemoryManager] ${message}`, ...args);
+  }
+
+  private _addCleanupCallback(_callback: () => void): void {
+    // Implementation pending
+  }
+
+  private _removeCleanupCallback(_callback: () => void): void {
+    // Implementation pending
   }
 }
 
@@ -500,14 +505,14 @@ class ReactLifecycleManager implements FrameworkLifecycleManager {
     // e.g., using useEffect's cleanup function
     const originalComponentWillUnmount = (window as any).React.Component.prototype
       .componentWillUnmount;
-    (window as any).React.Component.prototype.componentWillUnmount = function () {
+    (window as any).React.Component.prototype.componentWillUnmount = function (...args: unknown[]) {
       callback();
       if (originalComponentWillUnmount) {
-        originalComponentWillUnmount.apply(this, arguments);
+        originalComponentWillUnmount.apply(this, args);
       }
     };
   }
-  onNavigation(callback: () => void): void {
+  onNavigation(_callback: () => void): void {
     // Hook into history changes
   }
   isMounted(): boolean {
@@ -523,14 +528,14 @@ class VueLifecycleManager implements FrameworkLifecycleManager {
     // Conceptual implementation for Vue
     // Would hook into `beforeDestroy` or `unmounted` lifecycle hooks
     const originalBeforeDestroy = (window as any).Vue.prototype.$destroy;
-    (window as any).Vue.prototype.$destroy = function () {
+    (window as any).Vue.prototype.$destroy = function (...args: unknown[]) {
       callback();
       if (originalBeforeDestroy) {
-        originalBeforeDestroy.apply(this, arguments);
+        originalBeforeDestroy.apply(this, args);
       }
     };
   }
-  onNavigation(callback: () => void): void {
+  onNavigation(_callback: () => void): void {
     // Hook into Vue Router
   }
   isMounted(): boolean {

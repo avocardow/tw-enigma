@@ -1,73 +1,982 @@
-2025-06-21T04:09:36.5961542Z Current runner version: '2.325.0'
-2025-06-21T04:09:36.5985399Z ##[group]Runner Image Provisioner
-2025-06-21T04:09:36.5986224Z Hosted Compute Agent
-2025-06-21T04:09:36.5986847Z Version: 20250620.352
-2025-06-21T04:09:36.5987471Z Commit: f262f3aba23b10ea191b2a62bdee1ca4c3d344da
-2025-06-21T04:09:36.5988146Z Build Date: 2025-06-20T19:27:17Z
-2025-06-21T04:09:36.5988776Z ##[endgroup]
-2025-06-21T04:09:36.5989349Z ##[group]Operating System
-2025-06-21T04:09:36.5989886Z Ubuntu
-2025-06-21T04:09:36.5990447Z 24.04.2
-2025-06-21T04:09:36.5990888Z LTS
-2025-06-21T04:09:36.5991346Z ##[endgroup]
-2025-06-21T04:09:36.5991837Z ##[group]Runner Image
-2025-06-21T04:09:36.5992434Z Image: ubuntu-24.04
-2025-06-21T04:09:36.5992944Z Version: 20250602.3.0
-2025-06-21T04:09:36.5993918Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20250602.3/images/ubuntu/Ubuntu2404-Readme.md
-2025-06-21T04:09:36.5995792Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20250602.3
-2025-06-21T04:09:36.5996872Z ##[endgroup]
-2025-06-21T04:09:36.5997994Z ##[group]GITHUB_TOKEN Permissions
-2025-06-21T04:09:36.6000083Z Contents: read
-2025-06-21T04:09:36.6000637Z Metadata: read
-2025-06-21T04:09:36.6001187Z Packages: read
-2025-06-21T04:09:36.6001640Z ##[endgroup]
-2025-06-21T04:09:36.6004290Z Secret source: Actions
-2025-06-21T04:09:36.6005195Z Prepare workflow directory
-2025-06-21T04:09:36.6517593Z Prepare all required actions
-2025-06-21T04:09:36.6570052Z Complete job name: Validation Summary
-2025-06-21T04:09:36.7142943Z ##[group]Run echo "## 📊 CI Pipeline Cache Metrics" >> $GITHUB_STEP_SUMMARY
-2025-06-21T04:09:36.7144148Z [36;1mecho "## 📊 CI Pipeline Cache Metrics" >> $GITHUB_STEP_SUMMARY[0m
-2025-06-21T04:09:36.7145224Z [36;1mecho "| Component | Status | Cache Strategy |" >> $GITHUB_STEP_SUMMARY[0m
-2025-06-21T04:09:36.7146136Z [36;1mecho "|-----------|--------|----------------|" >> $GITHUB_STEP_SUMMARY[0m
-2025-06-21T04:09:36.7147017Z [36;1mecho "| Dependencies | ✅ | pnpm store + node_modules |" >> $GITHUB_STEP_SUMMARY[0m
-2025-06-21T04:09:36.7148144Z [36;1mecho "| TypeScript | ✅ | tsbuildinfo + compiler cache |" >> $GITHUB_STEP_SUMMARY[0m
-2025-06-21T04:09:36.7149241Z [36;1mecho "| ESLint | ✅ | eslint cache + results |" >> $GITHUB_STEP_SUMMARY[0m
-2025-06-21T04:09:36.7150155Z [36;1mecho "| Vitest | ✅ | test cache + results |" >> $GITHUB_STEP_SUMMARY[0m
-2025-06-21T04:09:36.7151107Z [36;1mecho "| Turborepo | ✅ | build cache + artifacts |" >> $GITHUB_STEP_SUMMARY[0m
-2025-06-21T04:09:36.7851010Z shell: /usr/bin/bash -e {0}
-2025-06-21T04:09:36.7852494Z env:
-2025-06-21T04:09:36.7853227Z   TURBO_TOKEN:
-2025-06-21T04:09:36.7854320Z   TURBO_TEAM:
-2025-06-21T04:09:36.7855262Z   PNPM_CACHE_FOLDER: .pnpm
-2025-06-21T04:09:36.7856114Z   HUSKY: 0
-2025-06-21T04:09:36.7856939Z ##[endgroup]
-2025-06-21T04:09:36.8255018Z ##[group]Run echo "## 🔍 Job Results Summary" >> $GITHUB_STEP_SUMMARY
-2025-06-21T04:09:36.8256018Z [36;1mecho "## 🔍 Job Results Summary" >> $GITHUB_STEP_SUMMARY[0m
-2025-06-21T04:09:36.8256905Z [36;1mecho "| Job | Status |" >> $GITHUB_STEP_SUMMARY[0m
-2025-06-21T04:09:36.8257660Z [36;1mecho "|-----|--------|" >> $GITHUB_STEP_SUMMARY[0m
-2025-06-21T04:09:36.8258363Z [36;1mecho "| Lint | failure |" >> $GITHUB_STEP_SUMMARY[0m
-2025-06-21T04:09:36.8259254Z [36;1mecho "| Type Check | failure |" >> $GITHUB_STEP_SUMMARY[0m
-2025-06-21T04:09:36.8260004Z [36;1mecho "| Build | skipped |" >> $GITHUB_STEP_SUMMARY[0m
-2025-06-21T04:09:36.8260765Z [36;1mecho "| Test | skipped |" >> $GITHUB_STEP_SUMMARY[0m
-2025-06-21T04:09:36.8261593Z [36;1mecho "| Security | success |" >> $GITHUB_STEP_SUMMARY[0m
-2025-06-21T04:09:36.8262302Z [36;1m[0m
-2025-06-21T04:09:36.8263552Z [36;1m# Check for both failure and skipped statuses (skipped jobs indicate upstream failures)[0m
-2025-06-21T04:09:36.8265479Z [36;1mif [[ "failure" =~ (failure|skipped) || \[0m
-2025-06-21T04:09:36.8266540Z [36;1m      "failure" =~ (failure|skipped) || \[0m
-2025-06-21T04:09:36.8267594Z [36;1m      "skipped" =~ (failure|skipped) || \[0m
-2025-06-21T04:09:36.8269032Z [36;1m      "skipped" =~ (failure|skipped) ]]; then[0m
-2025-06-21T04:09:36.8270051Z [36;1m  echo "❌ CI pipeline failed"[0m
-2025-06-21T04:09:36.8271083Z [36;1m  exit 1[0m
-2025-06-21T04:09:36.8271616Z [36;1melse[0m
-2025-06-21T04:09:36.8272092Z [36;1m  echo "✅ CI pipeline passed"[0m
-2025-06-21T04:09:36.8272719Z [36;1mfi[0m
-2025-06-21T04:09:36.8329576Z shell: /usr/bin/bash -e {0}
-2025-06-21T04:09:36.8330421Z env:
-2025-06-21T04:09:36.8331013Z   TURBO_TOKEN:
-2025-06-21T04:09:36.8331518Z   TURBO_TEAM:
-2025-06-21T04:09:36.8332005Z   PNPM_CACHE_FOLDER: .pnpm
-2025-06-21T04:09:36.8332601Z   HUSKY: 0
-2025-06-21T04:09:36.8333061Z ##[endgroup]
-2025-06-21T04:09:36.8581075Z ❌ CI pipeline failed
-2025-06-21T04:09:36.8591846Z ##[error]Process completed with exit code 1.
-2025-06-21T04:09:36.8748237Z Cleaning up orphan processes
+2025-06-21T08:32:23.4865374Z Current runner version: '2.325.0'
+2025-06-21T08:32:23.4899422Z ##[group]Runner Image Provisioner
+2025-06-21T08:32:23.4900734Z Hosted Compute Agent
+2025-06-21T08:32:23.4901635Z Version: 20250620.352
+2025-06-21T08:32:23.4902609Z Commit: f262f3aba23b10ea191b2a62bdee1ca4c3d344da
+2025-06-21T08:32:23.4903950Z Build Date: 2025-06-20T19:27:17Z
+2025-06-21T08:32:23.4904848Z ##[endgroup]
+2025-06-21T08:32:23.4905850Z ##[group]Operating System
+2025-06-21T08:32:23.4906849Z Ubuntu
+2025-06-21T08:32:23.4907718Z 24.04.2
+2025-06-21T08:32:23.4908515Z LTS
+2025-06-21T08:32:23.4909453Z ##[endgroup]
+2025-06-21T08:32:23.4910341Z ##[group]Runner Image
+2025-06-21T08:32:23.4911200Z Image: ubuntu-24.04
+2025-06-21T08:32:23.4912210Z Version: 20250602.3.0
+2025-06-21T08:32:23.4914011Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20250602.3/images/ubuntu/Ubuntu2404-Readme.md
+2025-06-21T08:32:23.4916877Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20250602.3
+2025-06-21T08:32:23.4918714Z ##[endgroup]
+2025-06-21T08:32:23.4920439Z ##[group]GITHUB_TOKEN Permissions
+2025-06-21T08:32:23.4923009Z Contents: read
+2025-06-21T08:32:23.4923867Z Metadata: read
+2025-06-21T08:32:23.4924717Z Packages: read
+2025-06-21T08:32:23.4925778Z ##[endgroup]
+2025-06-21T08:32:23.4928543Z Secret source: Actions
+2025-06-21T08:32:23.4929730Z Prepare workflow directory
+2025-06-21T08:32:23.5659584Z Prepare all required actions
+2025-06-21T08:32:23.5714779Z Getting action download info
+2025-06-21T08:32:23.8366424Z ##[group]Download immutable action package 'actions/checkout@v4'
+2025-06-21T08:32:23.8367470Z Version: 4.2.2
+2025-06-21T08:32:23.8368459Z Digest: sha256:ccb2698953eaebd21c7bf6268a94f9c26518a7e38e27e0b83c1fe1ad049819b1
+2025-06-21T08:32:23.8369646Z Source commit SHA: 11bd71901bbe5b1630ceea73d27597364c9af683
+2025-06-21T08:32:23.8370400Z ##[endgroup]
+2025-06-21T08:32:23.9350092Z ##[group]Download immutable action package 'actions/setup-node@v4'
+2025-06-21T08:32:23.9350877Z Version: 4.4.0
+2025-06-21T08:32:23.9351663Z Digest: sha256:9427cefe82346e992fb5b949e3569b39d537ae41aa3086483b14eceebfc16bc1
+2025-06-21T08:32:23.9352548Z Source commit SHA: 49933ea5288caeca8642d1e84afbd3f7d6820020
+2025-06-21T08:32:23.9353306Z ##[endgroup]
+2025-06-21T08:32:24.0631836Z Download action repository 'pnpm/action-setup@v4' (SHA:a7487c7e89a18df4991f7f222e4898a00d66ddda)
+2025-06-21T08:32:24.3622645Z ##[group]Download immutable action package 'actions/cache@v4'
+2025-06-21T08:32:24.3623452Z Version: 4.2.3
+2025-06-21T08:32:24.3624173Z Digest: sha256:c8a3bb963e1f1826d8fcc8d1354f0dd29d8ac1db1d4f6f20247055ae11b81ed9
+2025-06-21T08:32:24.3625121Z Source commit SHA: 5a3ec84eff668545956fd18022155c47e93e2684
+2025-06-21T08:32:24.3626151Z ##[endgroup]
+2025-06-21T08:32:24.5841618Z Complete job name: Lint & Format (20.x)
+2025-06-21T08:32:24.6432488Z ##[group]Run actions/checkout@v4
+2025-06-21T08:32:24.6433288Z with:
+2025-06-21T08:32:24.6433651Z   fetch-depth: 0
+2025-06-21T08:32:24.6434057Z   repository: avocardow/tw-enigma
+2025-06-21T08:32:24.6434679Z   token: ***
+2025-06-21T08:32:24.6435060Z   ssh-strict: true
+2025-06-21T08:32:24.6435603Z   ssh-user: git
+2025-06-21T08:32:24.6435999Z   persist-credentials: true
+2025-06-21T08:32:24.6436432Z   clean: true
+2025-06-21T08:32:24.6436823Z   sparse-checkout-cone-mode: true
+2025-06-21T08:32:24.6437280Z   fetch-tags: false
+2025-06-21T08:32:24.6437661Z   show-progress: true
+2025-06-21T08:32:24.6438050Z   lfs: false
+2025-06-21T08:32:24.6438406Z   submodules: false
+2025-06-21T08:32:24.6438795Z   set-safe-directory: true
+2025-06-21T08:32:24.6439458Z env:
+2025-06-21T08:32:24.6439806Z   TURBO_TOKEN:
+2025-06-21T08:32:24.6440171Z   TURBO_TEAM:
+2025-06-21T08:32:24.6440551Z   PNPM_CACHE_FOLDER: .pnpm
+2025-06-21T08:32:24.6441009Z   HUSKY: 0
+2025-06-21T08:32:24.6441354Z ##[endgroup]
+2025-06-21T08:32:24.7492906Z Syncing repository: avocardow/tw-enigma
+2025-06-21T08:32:24.7494554Z ##[group]Getting Git version info
+2025-06-21T08:32:24.7495234Z Working directory is '/home/runner/work/tw-enigma/tw-enigma'
+2025-06-21T08:32:24.7496732Z [command]/usr/bin/git version
+2025-06-21T08:32:24.7543653Z git version 2.49.0
+2025-06-21T08:32:24.7569230Z ##[endgroup]
+2025-06-21T08:32:24.7582767Z Temporarily overriding HOME='/home/runner/work/_temp/7ebd43ff-0a86-45ad-943d-808db52dd065' before making global git config changes
+2025-06-21T08:32:24.7594459Z Adding repository directory to the temporary git global config as a safe directory
+2025-06-21T08:32:24.7595703Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/tw-enigma/tw-enigma
+2025-06-21T08:32:24.7630276Z Deleting the contents of '/home/runner/work/tw-enigma/tw-enigma'
+2025-06-21T08:32:24.7634104Z ##[group]Initializing the repository
+2025-06-21T08:32:24.7638920Z [command]/usr/bin/git init /home/runner/work/tw-enigma/tw-enigma
+2025-06-21T08:32:24.7706676Z hint: Using 'master' as the name for the initial branch. This default branch name
+2025-06-21T08:32:24.7708194Z hint: is subject to change. To configure the initial branch name to use in all
+2025-06-21T08:32:24.7709063Z hint: of your new repositories, which will suppress this warning, call:
+2025-06-21T08:32:24.7710042Z hint:
+2025-06-21T08:32:24.7710789Z hint: 	git config --global init.defaultBranch <name>
+2025-06-21T08:32:24.7711362Z hint:
+2025-06-21T08:32:24.7712187Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2025-06-21T08:32:24.7713799Z hint: 'development'. The just-created branch can be renamed via this command:
+2025-06-21T08:32:24.7715078Z hint:
+2025-06-21T08:32:24.7715965Z hint: 	git branch -m <name>
+2025-06-21T08:32:24.7717265Z Initialized empty Git repository in /home/runner/work/tw-enigma/tw-enigma/.git/
+2025-06-21T08:32:24.7723901Z [command]/usr/bin/git remote add origin https://github.com/avocardow/tw-enigma
+2025-06-21T08:32:24.7758388Z ##[endgroup]
+2025-06-21T08:32:24.7759081Z ##[group]Disabling automatic garbage collection
+2025-06-21T08:32:24.7762442Z [command]/usr/bin/git config --local gc.auto 0
+2025-06-21T08:32:24.7789736Z ##[endgroup]
+2025-06-21T08:32:24.7790368Z ##[group]Setting up auth
+2025-06-21T08:32:24.7796323Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2025-06-21T08:32:24.7825044Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2025-06-21T08:32:24.8111396Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2025-06-21T08:32:24.8139361Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2025-06-21T08:32:24.8354412Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2025-06-21T08:32:24.8395698Z ##[endgroup]
+2025-06-21T08:32:24.8396939Z ##[group]Fetching the repository
+2025-06-21T08:32:24.8405032Z [command]/usr/bin/git -c protocol.version=2 fetch --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*
+2025-06-21T08:32:28.6453604Z From https://github.com/avocardow/tw-enigma
+2025-06-21T08:32:28.6455730Z  * [new branch]      main                 -> origin/main
+2025-06-21T08:32:28.6457495Z  * [new tag]         @tw-enigma/cli@1.0.1 -> @tw-enigma/cli@1.0.1
+2025-06-21T08:32:28.6460030Z  * [new tag]         v1.0.0               -> v1.0.0
+2025-06-21T08:32:28.6461246Z  * [new tag]         v1.0.1               -> v1.0.1
+2025-06-21T08:32:28.6462716Z  * [new tag]         v1.0.2               -> v1.0.2
+2025-06-21T08:32:28.6464153Z  * [new tag]         v1.0.3               -> v1.0.3
+2025-06-21T08:32:28.6467038Z  * [new tag]         v1.0.4               -> v1.0.4
+2025-06-21T08:32:28.6506473Z [command]/usr/bin/git branch --list --remote origin/main
+2025-06-21T08:32:28.6527718Z   origin/main
+2025-06-21T08:32:28.6536493Z [command]/usr/bin/git rev-parse refs/remotes/origin/main
+2025-06-21T08:32:28.6556647Z 147847c134e4be56770636d0f23d14d3591a0193
+2025-06-21T08:32:28.6562888Z ##[endgroup]
+2025-06-21T08:32:28.6564639Z ##[group]Determining the checkout info
+2025-06-21T08:32:28.6566487Z ##[endgroup]
+2025-06-21T08:32:28.6567873Z [command]/usr/bin/git sparse-checkout disable
+2025-06-21T08:32:28.6606860Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2025-06-21T08:32:28.6631853Z ##[group]Checking out the ref
+2025-06-21T08:32:28.6634220Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+2025-06-21T08:32:28.7273332Z Switched to a new branch 'main'
+2025-06-21T08:32:28.7275390Z branch 'main' set up to track 'origin/main'.
+2025-06-21T08:32:28.7289818Z ##[endgroup]
+2025-06-21T08:32:28.7324670Z [command]/usr/bin/git log -1 --format=%H
+2025-06-21T08:32:28.7346514Z 147847c134e4be56770636d0f23d14d3591a0193
+2025-06-21T08:32:28.7634112Z ##[group]Run actions/setup-node@v4
+2025-06-21T08:32:28.7635257Z with:
+2025-06-21T08:32:28.7636182Z   node-version: 20.x
+2025-06-21T08:32:28.7637099Z   always-auth: false
+2025-06-21T08:32:28.7638024Z   check-latest: false
+2025-06-21T08:32:28.7639247Z   token: ***
+2025-06-21T08:32:28.7640083Z env:
+2025-06-21T08:32:28.7640834Z   TURBO_TOKEN:
+2025-06-21T08:32:28.7641689Z   TURBO_TEAM:
+2025-06-21T08:32:28.7642538Z   PNPM_CACHE_FOLDER: .pnpm
+2025-06-21T08:32:28.7643509Z   HUSKY: 0
+2025-06-21T08:32:28.7644284Z ##[endgroup]
+2025-06-21T08:32:28.9657711Z Found in cache @ /opt/hostedtoolcache/node/20.19.2/x64
+2025-06-21T08:32:28.9663596Z ##[group]Environment details
+2025-06-21T08:32:30.6662137Z node: v20.19.2
+2025-06-21T08:32:30.6662643Z npm: 10.8.2
+2025-06-21T08:32:30.6663014Z yarn: 1.22.22
+2025-06-21T08:32:30.6664388Z ##[endgroup]
+2025-06-21T08:32:30.6844275Z ##[group]Run pnpm/action-setup@v4
+2025-06-21T08:32:30.6844580Z with:
+2025-06-21T08:32:30.6844784Z   version: 10.10.0
+2025-06-21T08:32:30.6844998Z   dest: ~/setup-pnpm
+2025-06-21T08:32:30.6845223Z   run_install: null
+2025-06-21T08:32:30.6845745Z   package_json_file: package.json
+2025-06-21T08:32:30.6846108Z   standalone: false
+2025-06-21T08:32:30.6846345Z env:
+2025-06-21T08:32:30.6846552Z   TURBO_TOKEN:
+2025-06-21T08:32:30.6846760Z   TURBO_TEAM:
+2025-06-21T08:32:30.6846989Z   PNPM_CACHE_FOLDER: .pnpm
+2025-06-21T08:32:30.6847234Z   HUSKY: 0
+2025-06-21T08:32:30.6847433Z ##[endgroup]
+2025-06-21T08:32:30.7391373Z ##[group]Running self-installer...
+2025-06-21T08:32:31.2844284Z Progress: resolved 1, reused 0, downloaded 0, added 0
+2025-06-21T08:32:31.2925736Z Packages: +1
+2025-06-21T08:32:31.2926244Z +
+2025-06-21T08:32:31.7158979Z Progress: resolved 1, reused 0, downloaded 1, added 1, done
+2025-06-21T08:32:31.7426746Z
+2025-06-21T08:32:31.7427327Z dependencies:
+2025-06-21T08:32:31.7428197Z + pnpm 10.10.0 (10.12.1 is available)
+2025-06-21T08:32:31.7428502Z
+2025-06-21T08:32:31.7456025Z Done in 845ms
+2025-06-21T08:32:31.7627239Z ##[endgroup]
+2025-06-21T08:32:31.7631001Z Installation Completed!
+2025-06-21T08:32:31.8834682Z ##[group]Run actions/cache@v4
+2025-06-21T08:32:31.8834953Z with:
+2025-06-21T08:32:31.8835153Z   path: node_modules
+packages/*/node_modules
+
+2025-06-21T08:32:31.8835875Z   key: Linux-node-modules-10.10.0-eff0bf0079e3bb0b78ffa924c04c5c22280f60ea32b008a24687e366430843fb
+2025-06-21T08:32:31.8836400Z   restore-keys: Linux-node-modules-10.10.0-
+Linux-node-modules-
+
+2025-06-21T08:32:31.8836731Z   enableCrossOsArchive: false
+2025-06-21T08:32:31.8836949Z   fail-on-cache-miss: false
+2025-06-21T08:32:31.8837159Z   lookup-only: false
+2025-06-21T08:32:31.8837344Z   save-always: false
+2025-06-21T08:32:31.8837509Z env:
+2025-06-21T08:32:31.8837665Z   TURBO_TOKEN:
+2025-06-21T08:32:31.8837826Z   TURBO_TEAM:
+2025-06-21T08:32:31.8838008Z   PNPM_CACHE_FOLDER: .pnpm
+2025-06-21T08:32:31.8838196Z   HUSKY: 0
+2025-06-21T08:32:31.8838412Z   PNPM_HOME: /home/runner/setup-pnpm/node_modules/.bin
+2025-06-21T08:32:31.8838678Z ##[endgroup]
+2025-06-21T08:32:32.0871161Z Cache hit for: Linux-node-modules-10.10.0-eff0bf0079e3bb0b78ffa924c04c5c22280f60ea32b008a24687e366430843fb
+2025-06-21T08:32:32.5482233Z Received 75888204 of 75888204 (100.0%), 178.7 MBs/sec
+2025-06-21T08:32:32.5483634Z Cache Size: ~72 MB (75888204 B)
+2025-06-21T08:32:32.5515247Z [command]/usr/bin/tar -xf /home/runner/work/_temp/6d207bba-0aad-44b0-af57-8cae29a18041/cache.tzst -P -C /home/runner/work/tw-enigma/tw-enigma --use-compress-program unzstd
+2025-06-21T08:32:34.3033251Z Cache restored successfully
+2025-06-21T08:32:34.3264435Z Cache restored from key: Linux-node-modules-10.10.0-eff0bf0079e3bb0b78ffa924c04c5c22280f60ea32b008a24687e366430843fb
+2025-06-21T08:32:34.3398153Z ##[group]Run pnpm install --frozen-lockfile
+2025-06-21T08:32:34.3398534Z [36;1mpnpm install --frozen-lockfile[0m
+2025-06-21T08:32:34.3477478Z shell: /usr/bin/bash -e {0}
+2025-06-21T08:32:34.3477725Z env:
+2025-06-21T08:32:34.3477893Z   TURBO_TOKEN:
+2025-06-21T08:32:34.3478072Z   TURBO_TEAM:
+2025-06-21T08:32:34.3478265Z   PNPM_CACHE_FOLDER: .pnpm
+2025-06-21T08:32:34.3478467Z   HUSKY: 0
+2025-06-21T08:32:34.3478696Z   PNPM_HOME: /home/runner/setup-pnpm/node_modules/.bin
+2025-06-21T08:32:34.3478987Z ##[endgroup]
+2025-06-21T08:32:34.8971517Z Scope: all 3 workspace projects
+2025-06-21T08:32:35.0470738Z Lockfile is up to date, resolution step is skipped
+2025-06-21T08:32:35.1714236Z Already up to date
+2025-06-21T08:32:35.6922545Z  WARN  Failed to create bin at /home/runner/work/tw-enigma/tw-enigma/node_modules/.bin/enigma. ENOENT: no such file or directory, open '/home/runner/work/tw-enigma/tw-enigma/packages/cli/dist/enigma.js'
+2025-06-21T08:32:35.7906396Z
+2025-06-21T08:32:35.7907809Z ╭ Warning ─────────────────────────────────────────────────────────────────────╮
+2025-06-21T08:32:35.7908769Z │                                                                              │
+2025-06-21T08:32:35.7909777Z │   Ignored build scripts: @tailwindcss/oxide.                                 │
+2025-06-21T08:32:35.7911006Z │   Run "pnpm approve-builds" to pick which dependencies should be allowed     │
+2025-06-21T08:32:35.7912147Z │   to run scripts.                                                            │
+2025-06-21T08:32:35.7913076Z │                                                                              │
+2025-06-21T08:32:35.7914017Z ╰──────────────────────────────────────────────────────────────────────────────╯
+2025-06-21T08:32:35.7914413Z
+2025-06-21T08:32:35.8081763Z  WARN  Failed to create bin at /home/runner/work/tw-enigma/tw-enigma/node_modules/.bin/enigma. ENOENT: no such file or directory, open '/home/runner/work/tw-enigma/tw-enigma/node_modules/@tw-enigma/cli/dist/enigma.js'
+2025-06-21T08:32:35.8117908Z . postinstall$ echo 'Skipping postinstall build due to known core package issues'
+2025-06-21T08:32:35.8188121Z . postinstall: Skipping postinstall build due to known core package issues
+2025-06-21T08:32:35.8204573Z . postinstall: Done
+2025-06-21T08:32:35.8255648Z Done in 1.4s using pnpm v10.10.0
+2025-06-21T08:32:39.3348482Z ##[group]Run actions/cache@v4
+2025-06-21T08:32:39.3348928Z with:
+2025-06-21T08:32:39.3349297Z   path: node_modules/.cache/eslint/**
+.eslintcache
+
+2025-06-21T08:32:39.3350065Z   key: Linux-eslint-1d85478d7d3c6b9c9c994b00d99afe3a6503d03af8a2ee5ab266f8034aafc0d5
+2025-06-21T08:32:39.3350834Z   restore-keys: Linux-eslint-
+
+2025-06-21T08:32:39.3351269Z   enableCrossOsArchive: false
+2025-06-21T08:32:39.3351684Z   fail-on-cache-miss: false
+2025-06-21T08:32:39.3352054Z   lookup-only: false
+2025-06-21T08:32:39.3352391Z   save-always: false
+2025-06-21T08:32:39.3352760Z env:
+2025-06-21T08:32:39.3353029Z   TURBO_TOKEN:
+2025-06-21T08:32:39.3353339Z   TURBO_TEAM:
+2025-06-21T08:32:39.3353663Z   PNPM_CACHE_FOLDER: .pnpm
+2025-06-21T08:32:39.3354015Z   HUSKY: 0
+2025-06-21T08:32:39.3354390Z   PNPM_HOME: /home/runner/setup-pnpm/node_modules/.bin
+2025-06-21T08:32:39.3354852Z ##[endgroup]
+2025-06-21T08:32:39.5344651Z Cache not found for input keys: Linux-eslint-1d85478d7d3c6b9c9c994b00d99afe3a6503d03af8a2ee5ab266f8034aafc0d5, Linux-eslint-
+2025-06-21T08:32:39.5413245Z ##[group]Run pnpm turbo lint
+2025-06-21T08:32:39.5413516Z [36;1mpnpm turbo lint[0m
+2025-06-21T08:32:39.5467185Z shell: /usr/bin/bash -e {0}
+2025-06-21T08:32:39.5467578Z env:
+2025-06-21T08:32:39.5467744Z   TURBO_TOKEN:
+2025-06-21T08:32:39.5467921Z   TURBO_TEAM:
+2025-06-21T08:32:39.5468108Z   PNPM_CACHE_FOLDER: .pnpm
+2025-06-21T08:32:39.5468311Z   HUSKY: 0
+2025-06-21T08:32:39.5468531Z   PNPM_HOME: /home/runner/setup-pnpm/node_modules/.bin
+2025-06-21T08:32:39.5468802Z ##[endgroup]
+2025-06-21T08:32:39.9726829Z
+2025-06-21T08:32:39.9727025Z Attention:
+2025-06-21T08:32:39.9727845Z Turborepo now collects completely anonymous telemetry regarding usage.
+2025-06-21T08:32:39.9728587Z This information is used to shape the Turborepo roadmap and prioritize features.
+2025-06-21T08:32:39.9729608Z You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+2025-06-21T08:32:39.9730378Z https://turborepo.com/docs/telemetry
+2025-06-21T08:32:39.9730587Z
+2025-06-21T08:32:40.0235136Z • Packages in scope: @tw-enigma/cli, @tw-enigma/core
+2025-06-21T08:32:40.0236545Z • Running lint in 2 packages
+2025-06-21T08:32:40.0236875Z • Remote caching disabled
+2025-06-21T08:32:45.4586432Z [;31m@tw-enigma/core:lint[;0m
+2025-06-21T08:32:45.4587017Z cache miss, executing ecbd7c018cda6eb5
+2025-06-21T08:32:45.4587330Z
+2025-06-21T08:32:45.4587832Z > @tw-enigma/core@1.0.2 lint /home/runner/work/tw-enigma/tw-enigma/packages/core
+2025-06-21T08:32:45.4588481Z > eslint "src/**/*.ts"
+2025-06-21T08:32:45.4588697Z
+2025-06-21T08:32:45.4588706Z
+2025-06-21T08:32:45.4589295Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/atomicOps/AtomicFileCreator.ts
+2025-06-21T08:32:45.4620108Z ##[warning]  540:65  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4629126Z
+2025-06-21T08:32:45.4629678Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/atomicOps/index.ts
+2025-06-21T08:32:45.4631221Z ##[warning]  105:15  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4633340Z ##[warning]  113:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4635363Z ##[warning]  230:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4636808Z
+2025-06-21T08:32:45.4637293Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/config/config.ts
+2025-06-21T08:32:45.4638754Z ##[warning]   774:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4640878Z ##[warning]   779:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4642926Z ##[warning]   787:28  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4645006Z ##[warning]   799:24  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4647186Z ##[warning]   809:26  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4648992Z ##[warning]  1034:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4651066Z ##[warning]  1309:41  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4652834Z ##[warning]  1311:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4654853Z ##[warning]  1348:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4655922Z
+2025-06-21T08:32:45.4656280Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/config/configDefaults.ts
+2025-06-21T08:32:45.4657212Z ##[warning]  495:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4658884Z ##[warning]  498:50  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4659655Z
+2025-06-21T08:32:45.4659984Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/config/configMigration.ts
+2025-06-21T08:32:45.4660959Z ##[warning]   30:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4662190Z ##[warning]   30:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4663440Z ##[warning]   31:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4664885Z ##[warning]   31:39  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4667420Z ##[warning]   32:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4669713Z ##[warning]   94:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4671996Z ##[warning]  144:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4674202Z ##[warning]  166:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4676452Z ##[warning]  188:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4678400Z ##[warning]  216:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4680327Z ##[warning]  236:45  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4682103Z ##[warning]  270:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4683365Z ##[warning]  337:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4684582Z ##[warning]  443:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4686193Z ##[warning]  547:41  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4687531Z ##[warning]  576:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4688766Z ##[warning]  612:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4689959Z ##[warning]  612:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4690683Z
+2025-06-21T08:32:45.4691029Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/config/configSafeUpdater.ts
+2025-06-21T08:32:45.4691838Z ##[warning]  508:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4693050Z ##[warning]  508:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4694226Z ##[warning]  508:48  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4695575Z ##[warning]  525:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4696914Z ##[warning]  525:48  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4698104Z ##[warning]  525:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4698826Z
+2025-06-21T08:32:45.4699152Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/config/configValidator.ts
+2025-06-21T08:32:45.4699954Z ##[warning]  112:46  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4701146Z ##[warning]  112:71  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4702059Z
+2025-06-21T08:32:45.4702370Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/core/pluginManager.ts
+2025-06-21T08:32:45.4703262Z ##[warning]    71:41  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4704638Z ##[warning]   815:24  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4706329Z ##[warning]   816:24  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4707757Z ##[warning]   817:24  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4709262Z ##[warning]   818:24  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4710490Z ##[warning]  1025:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4711795Z ##[warning]  1026:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4712534Z
+2025-06-21T08:32:45.4712883Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/core/plugins/sourceMapper.ts
+2025-06-21T08:32:45.4713798Z ##[warning]  147:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4714533Z
+2025-06-21T08:32:45.4714824Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/core/postcssPlugin.ts
+2025-06-21T08:32:45.4715805Z ##[warning]  135:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4717058Z ##[warning]  136:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4718323Z ##[warning]  143:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4719540Z ##[warning]  144:36  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4720716Z ##[warning]  145:39  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4721894Z ##[warning]  146:41  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4723065Z ##[warning]  195:73  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4724246Z ##[warning]  291:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4724958Z
+2025-06-21T08:32:45.4725282Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/debugging/pluginDebugger.ts
+2025-06-21T08:32:45.4726386Z ##[warning]  511:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4727140Z
+2025-06-21T08:32:45.4727460Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/detectors/nextjsDetector.ts
+2025-06-21T08:32:45.4728315Z ##[warning]  129:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4729507Z ##[warning]  219:55  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4730229Z
+2025-06-21T08:32:45.4730542Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/detectors/reactDetector.ts
+2025-06-21T08:32:45.4731318Z ##[warning]  125:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4754908Z ##[warning]  227:55  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4756556Z
+2025-06-21T08:32:45.4757144Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/detectors/viteDetector.ts
+2025-06-21T08:32:45.4758615Z ##[warning]  135:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4760705Z ##[warning]  273:55  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4762136Z
+2025-06-21T08:32:45.4762624Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/devDashboard.ts
+2025-06-21T08:32:45.4763910Z ##[warning]   63:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4766259Z ##[warning]   90:24  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4768279Z ##[warning]  220:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4782954Z ##[error]@tw-enigma/core#lint: command (/home/runner/work/tw-enigma/tw-enigma/packages/core) /home/runner/setup-pnpm/node_modules/.bin/pnpm run lint exited (1)
+2025-06-21T08:32:45.4784905Z  ERROR  run failed: command  exited (1)
+2025-06-21T08:32:45.4786334Z ##[warning]  278:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4788184Z ##[warning]  278:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4789472Z ##[warning]  321:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4791388Z ##[warning]  330:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4792997Z ##[warning]  330:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4794222Z ##[warning]  338:46  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4795616Z ##[warning]  357:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4797021Z ##[warning]  376:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4798215Z ##[warning]  376:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4799409Z ##[warning]  776:36  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4800600Z ##[warning]  777:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4801803Z ##[warning]  798:52  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4802526Z
+2025-06-21T08:32:45.4802849Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/devDashboardEnhanced.ts
+2025-06-21T08:32:45.4803672Z ##[warning]   117:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4804902Z ##[warning]   118:15  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4806343Z ##[warning]   159:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4807558Z ##[warning]   212:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4808753Z ##[warning]   350:11  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4809935Z ##[warning]   372:15  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4811108Z ##[warning]   761:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4812282Z ##[warning]   835:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4813467Z ##[warning]   851:45  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4814654Z ##[warning]   859:65  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4816070Z ##[warning]   899:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4817476Z ##[warning]   908:36  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4818709Z ##[warning]   964:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4820071Z ##[warning]   969:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4821258Z ##[warning]   984:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4822442Z ##[warning]   995:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4823654Z ##[warning]  1010:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4824913Z ##[warning]  1015:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4826375Z ##[warning]  1028:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4827601Z ##[warning]  1041:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4828807Z ##[warning]  1048:45  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4829990Z ##[warning]  1069:65  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4830708Z
+2025-06-21T08:32:45.4830996Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/devDiagnostics.ts
+2025-06-21T08:32:45.4831748Z ##[warning]  203:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4832941Z ##[warning]  204:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4833654Z
+2025-06-21T08:32:45.4833933Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/devExperience.ts
+2025-06-21T08:32:45.4834675Z ##[warning]   93:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4836377Z ##[warning]   98:49  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4837940Z ##[warning]   99:57  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4839141Z ##[warning]  413:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4840325Z ##[warning]  416:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4841510Z ##[warning]  442:67  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4842724Z ##[warning]  474:49  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4844305Z ##[warning]  505:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4845798Z ##[warning]  513:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4847052Z ##[warning]  609:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4848242Z ##[warning]  620:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4849431Z ##[warning]  623:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4850622Z ##[warning]  633:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4851806Z ##[warning]  636:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4852522Z
+2025-06-21T08:32:45.4852806Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/devHotReload.ts
+2025-06-21T08:32:45.4853712Z ##[warning]  102:11  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4854952Z ##[warning]  125:45  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4856545Z ##[warning]  140:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4857753Z ##[warning]  153:65  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4858929Z ##[warning]  436:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4860096Z ##[warning]  436:57  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4861273Z ##[warning]  453:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4862442Z ##[warning]  453:56  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4863615Z ##[warning]  473:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4864790Z ##[warning]  505:55  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4866110Z ##[warning]  649:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4867333Z ##[warning]  758:62  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4868529Z ##[warning]  774:50  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4869704Z ##[warning]  818:55  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4870434Z
+2025-06-21T08:32:45.4870741Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/devIdeIntegration.ts
+2025-06-21T08:32:45.4871528Z ##[warning]   139:11  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4872734Z ##[warning]   147:53  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4873916Z ##[warning]   151:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4875097Z ##[warning]   168:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4876480Z ##[warning]   406:15  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4877674Z ##[warning]   564:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4878856Z ##[warning]   564:49  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4880038Z ##[warning]   590:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4881226Z ##[warning]   695:49  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4882414Z ##[warning]   695:63  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4883600Z ##[warning]   703:45  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4884789Z ##[warning]   703:59  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4886119Z ##[warning]   712:50  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4887316Z ##[warning]   712:64  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4888517Z ##[warning]  1143:41  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4889852Z ##[warning]  1301:55  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4890603Z
+2025-06-21T08:32:45.4890890Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/devPreview.ts
+2025-06-21T08:32:45.4891776Z ##[warning]  106:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4892530Z
+2025-06-21T08:32:45.4892882Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/dryRun/dryRunSimulator.ts
+2025-06-21T08:32:45.4893786Z ##[warning]   53:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4895005Z ##[warning]   61:41  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4896463Z ##[warning]   61:70  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4897679Z ##[warning]  220:69  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4898867Z ##[warning]  220:77  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4900069Z ##[warning]  250:45  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4901252Z ##[warning]  250:74  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4902436Z ##[warning]  259:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4903630Z ##[warning]  261:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4904815Z ##[warning]  264:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4906130Z ##[warning]  266:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4907332Z ##[warning]  269:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4908516Z ##[warning]  271:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4909698Z ##[warning]  274:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4910884Z ##[warning]  276:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4912078Z ##[warning]  279:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4913254Z ##[warning]  281:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4914448Z ##[warning]  338:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4915775Z ##[warning]  348:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4917004Z ##[warning]  355:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4918185Z ##[warning]  363:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4919378Z ##[warning]  367:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4920561Z ##[warning]  367:62  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4921276Z
+2025-06-21T08:32:45.4921592Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/dryRun/mockFileSystem.ts
+2025-06-21T08:32:45.4922373Z ##[warning]  124:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4923103Z
+2025-06-21T08:32:45.4923428Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/engine/core/pluginManager.ts
+2025-06-21T08:32:45.4924497Z ##[warning]    71:41  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4925898Z ##[warning]   815:24  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4927354Z ##[warning]   816:24  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4928582Z ##[warning]   817:24  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4929787Z ##[warning]   818:24  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4930983Z ##[warning]  1025:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4932181Z ##[warning]  1026:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4932916Z
+2025-06-21T08:32:45.4933290Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/engine/core/plugins/sourceMapper.ts
+2025-06-21T08:32:45.4934227Z ##[warning]  147:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4934988Z
+2025-06-21T08:32:45.4935317Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/engine/core/postcssPlugin.ts
+2025-06-21T08:32:45.4936339Z ##[warning]  135:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4937575Z ##[warning]  136:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4938776Z ##[warning]  143:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4939976Z ##[warning]  144:36  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4941184Z ##[warning]  145:39  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4942411Z ##[warning]  146:41  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4943617Z ##[warning]  195:73  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4944821Z ##[warning]  291:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4945699Z
+2025-06-21T08:32:45.4946025Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/engine/cssGeneration.ts
+2025-06-21T08:32:45.4946834Z ##[warning]    23:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4948039Z ##[warning]    23:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4949238Z ##[warning]    29:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4950422Z ##[warning]    31:25  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4951614Z ##[warning]   483:89  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4952828Z ##[warning]   499:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4954025Z ##[warning]   614:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4955806Z ##[warning]  1613:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4957225Z ##[warning]  2063:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4958461Z ##[warning]  2090:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4959656Z ##[warning]  3146:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4960996Z ##[warning]  3151:49  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4962271Z ##[warning]  3184:26  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4963623Z ##[warning]  3436:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4964833Z ##[warning]  3441:58  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4966205Z ##[warning]  3593:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4967415Z ##[warning]  3777:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4968625Z ##[warning]  3780:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4969829Z ##[warning]  3813:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4971019Z ##[warning]  3833:28  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4972220Z ##[warning]  3862:24  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4973408Z ##[warning]  3869:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4974595Z ##[warning]  3895:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4975986Z ##[warning]  3910:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4976766Z
+2025-06-21T08:32:45.4977107Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/engine/optimizationCache.ts
+2025-06-21T08:32:45.4977939Z ##[warning]  138:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4979170Z ##[warning]  480:25  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4980371Z ##[warning]  498:25  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4981572Z ##[warning]  523:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4982773Z ##[warning]  524:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4983968Z ##[warning]  572:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4984694Z
+2025-06-21T08:32:45.4985089Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/engine/optimizationCacheIntegration.ts
+2025-06-21T08:32:45.4986105Z ##[warning]  304:80  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4986861Z
+2025-06-21T08:32:45.4987243Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/errorHandler/circuitBreaker.ts
+2025-06-21T08:32:45.4988163Z ##[warning]  563:56  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4989397Z ##[warning]  563:74  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4990129Z
+2025-06-21T08:32:45.4990429Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/errorHandler/types.ts
+2025-06-21T08:32:45.4991195Z ##[warning]  227:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4991925Z
+2025-06-21T08:32:45.4992218Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/errors/ErrorHandler.ts
+2025-06-21T08:32:45.4993054Z ##[warning]  102:65  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4993790Z
+2025-06-21T08:32:45.4994254Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/errors/types.ts
+2025-06-21T08:32:45.4995021Z ##[warning]  374:71  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4996462Z ##[warning]  377:74  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4997864Z ##[warning]  380:72  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.4999073Z ##[warning]  383:74  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5000288Z ##[warning]  386:72  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5001024Z
+2025-06-21T08:32:45.5001314Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/frameworkDetector.ts
+2025-06-21T08:32:45.5002076Z ##[warning]   72:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5003266Z ##[warning]   93:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5004449Z ##[warning]   95:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5005759Z ##[warning]  329:75  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5006966Z ##[warning]  330:41  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5007695Z
+2025-06-21T08:32:45.5007937Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/index.ts
+2025-06-21T08:32:45.5008663Z ##[warning]  390:52  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5009842Z ##[warning]  390:68  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5010562Z
+2025-06-21T08:32:45.5010938Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/integrations/core/buildToolPlugin.ts
+2025-06-21T08:32:45.5011919Z ##[warning]   60:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5013153Z ##[warning]  243:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5014371Z ##[warning]  261:65  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5015680Z ##[warning]  282:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5016421Z
+2025-06-21T08:32:45.5016790Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/integrations/core/configDetector.ts
+2025-06-21T08:32:45.5017641Z ##[warning]  31:26  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5018364Z
+2025-06-21T08:32:45.5018700Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/integrations/core/hmrHandler.ts
+2025-06-21T08:32:45.5019504Z ##[warning]  114:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5020230Z
+2025-06-21T08:32:45.5020608Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/integrations/core/integrationManager.ts
+2025-06-21T08:32:45.5021465Z ##[warning]  295:59  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5022660Z ##[warning]  304:53  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5023850Z ##[warning]  387:75  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5024578Z
+2025-06-21T08:32:45.5024911Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/integrations/vite/vitePlugin.ts
+2025-06-21T08:32:45.5025926Z ##[warning]   46:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5027309Z ##[warning]   48:46  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5028552Z ##[warning]   57:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5029919Z ##[warning]  153:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5031119Z ##[warning]  168:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5032320Z ##[warning]  205:26  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5033510Z ##[warning]  205:53  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5034703Z ##[warning]  216:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5036046Z ##[warning]  311:63  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5037259Z ##[warning]  311:73  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5038454Z ##[warning]  444:45  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5039646Z ##[warning]  455:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5040822Z ##[warning]  654:25  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5041549Z
+2025-06-21T08:32:45.5041929Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/integrations/webpack/webpackPlugin.ts
+2025-06-21T08:32:45.5042847Z ##[warning]   51:39  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5044059Z ##[warning]  124:24  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5045261Z ##[warning]  138:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5046620Z ##[warning]  150:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5047827Z ##[warning]  158:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5049010Z ##[warning]  162:24  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5050197Z ##[warning]  190:26  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5051384Z ##[warning]  190:53  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5052573Z ##[warning]  201:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5053755Z ##[warning]  326:24  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5054949Z ##[warning]  326:39  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5056268Z ##[warning]  341:73  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5057520Z ##[warning]  354:26  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5058705Z ##[warning]  354:41  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5059882Z ##[warning]  370:77  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5061073Z ##[warning]  370:92  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5062263Z ##[warning]  384:60  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5063622Z ##[warning]  418:26  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5064860Z ##[warning]  418:41  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5066356Z ##[warning]  441:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5067555Z ##[warning]  441:57  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5068282Z
+2025-06-21T08:32:45.5068585Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/output/assetHasher.ts
+2025-06-21T08:32:45.5069450Z ##[warning]   555:39  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5070671Z ##[warning]   582:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5071873Z ##[warning]   605:53  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5073072Z ##[warning]   670:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5074270Z ##[warning]   692:46  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5075590Z ##[warning]   711:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5076840Z ##[warning]   948:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5078048Z ##[warning]   948:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5079235Z ##[warning]   949:58  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5080419Z ##[warning]   952:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5081613Z ##[warning]  1096:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5082806Z ##[warning]  1200:62  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5084002Z ##[warning]  1263:69  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5084728Z
+2025-06-21T08:32:45.5085032Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/output/ciIntegration.ts
+2025-06-21T08:32:45.5086021Z ##[warning]  404:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5087259Z ##[warning]  498:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5087998Z
+2025-06-21T08:32:45.5088337Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/output/criticalCssExtractor.ts
+2025-06-21T08:32:45.5089168Z ##[warning]  158:26  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5090375Z ##[warning]  160:48  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5091567Z ##[warning]  173:25  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5092764Z ##[warning]  186:25  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5093957Z ##[warning]  282:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5095152Z ##[warning]  288:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5096487Z ##[warning]  298:50  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5097677Z ##[warning]  302:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5099015Z ##[warning]  304:52  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5100242Z ##[warning]  326:26  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5101109Z
+2025-06-21T08:32:45.5101418Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/output/cssAnalyzer.ts
+2025-06-21T08:32:45.5102193Z ##[warning]  248:56  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5103390Z ##[warning]  260:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5104571Z ##[warning]  261:26  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5105886Z ##[warning]  262:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5107110Z ##[warning]  513:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5108331Z ##[warning]  514:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5109518Z ##[warning]  529:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5110714Z ##[warning]  532:63  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5111903Z ##[warning]  602:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5113080Z ##[warning]  674:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5114300Z ##[warning]  755:69  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5115682Z ##[warning]  910:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5116417Z
+2025-06-21T08:32:45.5116721Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/output/cssChunker.ts
+2025-06-21T08:32:45.5117515Z ##[warning]   854:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5118729Z ##[warning]  1265:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5119937Z ##[warning]  1311:24  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5121138Z ##[warning]  1357:56  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5122326Z ##[warning]  1382:48  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5123589Z ##[warning]  1395:53  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5124778Z ##[warning]  1395:69  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5126122Z ##[warning]  1396:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5127327Z ##[warning]  1399:36  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5128530Z ##[warning]  1632:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5129713Z ##[warning]  1891:41  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5130914Z ##[warning]  1903:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5132101Z ##[warning]  1905:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5133381Z ##[warning]  1950:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5134707Z ##[warning]  1956:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5136092Z ##[warning]  2196:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5137515Z ##[warning]  2242:24  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5138721Z ##[warning]  2273:53  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5139914Z ##[warning]  2273:69  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5141464Z ##[warning]  2282:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5143005Z ##[warning]  2316:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5144523Z ##[warning]  2325:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5146213Z ##[warning]  2346:36  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5147818Z ##[warning]  2369:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5148776Z
+2025-06-21T08:32:45.5149176Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/output/cssOutputConfig.ts
+2025-06-21T08:32:45.5150095Z ##[warning]   706:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5151654Z ##[warning]   709:76  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5153129Z ##[warning]  1182:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5154674Z ##[warning]  1210:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5156358Z ##[warning]  1355:28  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5157940Z ##[warning]  1355:45  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5159432Z ##[warning]  1355:53  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5188154Z ##[warning]  1356:26  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5189679Z ##[warning]  1357:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5190950Z ##[warning]  1376:26  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5192182Z ##[warning]  1384:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5193412Z ##[warning]  1391:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5194657Z ##[warning]  1391:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5196003Z ##[warning]  1436:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5197234Z ##[warning]  1436:59  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5198432Z ##[warning]  1436:65  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5199694Z ##[warning]  1505:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5200860Z ##[warning]  1585:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5202043Z ##[warning]  1621:51  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5203388Z ##[warning]  1628:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5204631Z ##[warning]  1737:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5206171Z ##[warning]  1737:46  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5207408Z ##[warning]  1737:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5208627Z ##[warning]  1738:26  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5209830Z ##[warning]  1739:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5211015Z ##[warning]  1757:49  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5212202Z ##[warning]  1757:71  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5213389Z ##[warning]  1782:62  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5214578Z ##[warning]  1784:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5215924Z ##[warning]  1808:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5217175Z ##[warning]  1865:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5218366Z ##[warning]  1865:69  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5219548Z ##[warning]  2127:51  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5220732Z ##[warning]  2220:50  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5221924Z ##[warning]  2233:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5222656Z
+2025-06-21T08:32:45.5223017Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/output/cssOutputOrchestrator.ts
+2025-06-21T08:32:45.5223870Z ##[warning]  180:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5225078Z ##[warning]  357:48  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5226004Z
+2025-06-21T08:32:45.5226354Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/output/cssReportGenerator.ts
+2025-06-21T08:32:45.5227180Z ##[warning]  185:15  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5228396Z ##[warning]  186:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5229582Z ##[warning]  187:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5230760Z ##[warning]  242:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5231948Z ##[warning]  245:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5233118Z ##[warning]  280:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5234350Z ##[warning]  282:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5235679Z ##[warning]  286:71  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5236899Z ##[warning]  318:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5238085Z ##[warning]  496:15  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5239391Z ##[warning]  603:36  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5240618Z ##[warning]  701:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5241991Z ##[warning]  710:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5243186Z ##[warning]  732:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5244379Z ##[warning]  753:49  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5245099Z
+2025-06-21T08:32:45.5245575Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/performance/config.ts
+2025-06-21T08:32:45.5246487Z ##[warning]  386:61  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5247243Z
+2025-06-21T08:32:45.5247591Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/performance/memoryProfiler.ts
+2025-06-21T08:32:45.5248400Z ##[warning]   95:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5249604Z ##[warning]  130:61  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5250795Z ##[warning]  368:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5251514Z
+2025-06-21T08:32:45.5251819Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/performance/profiler.ts
+2025-06-21T08:32:45.5252581Z ##[warning]  866:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5253768Z ##[warning]  867:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5254480Z
+2025-06-21T08:32:45.5254805Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/performance/regexOptimizer.ts
+2025-06-21T08:32:45.5255720Z ##[warning]  336:53  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5256971Z ##[warning]  353:58  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5257705Z
+2025-06-21T08:32:45.5258038Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/performance/streamOptimizer.ts
+2025-06-21T08:32:45.5258837Z ##[warning]  527:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5259558Z
+2025-06-21T08:32:45.5259882Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/performance/workerManager.ts
+2025-06-21T08:32:45.5260667Z ##[warning]  432:66  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5261849Z ##[warning]  448:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5263067Z ##[warning]  449:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5263789Z
+2025-06-21T08:32:45.5264092Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/performanceValidator.ts
+2025-06-21T08:32:45.5264873Z ##[warning]  513:55  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5265764Z
+2025-06-21T08:32:45.5266029Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/pluginApi.ts
+2025-06-21T08:32:45.5266771Z ##[warning]  202:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5267962Z ##[warning]  291:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5269145Z ##[warning]  336:50  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5269859Z
+2025-06-21T08:32:45.5270133Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/pluginConfig.ts
+2025-06-21T08:32:45.5271014Z ##[warning]  275:36  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5271760Z
+2025-06-21T08:32:45.5272056Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/postcssIntegration.ts
+2025-06-21T08:32:45.5272946Z ##[warning]   49:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5274163Z ##[warning]  113:49  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5275364Z ##[warning]  222:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5276702Z ##[warning]  254:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5277887Z ##[warning]  330:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5279084Z ##[warning]  342:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5279811Z
+2025-06-21T08:32:45.5280134Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/processors/htmlExtractor.ts
+2025-06-21T08:32:45.5281021Z ##[warning]  276:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5281762Z
+2025-06-21T08:32:45.5282076Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/processors/htmlRewriter.ts
+2025-06-21T08:32:45.5282883Z ##[warning]   125:68  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5284079Z ##[warning]   247:61  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5285273Z ##[warning]   248:45  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5286683Z ##[warning]   354:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5287873Z ##[warning]   355:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5289050Z ##[warning]   356:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5290241Z ##[warning]   357:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5291416Z ##[warning]   507:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5292605Z ##[warning]  1297:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5293802Z ##[warning]  1403:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5294992Z ##[warning]  1561:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5296319Z ##[warning]  1562:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5297532Z ##[warning]  1620:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5298726Z ##[warning]  1658:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5299906Z ##[warning]  1678:60  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5301100Z ##[warning]  1701:57  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5302353Z ##[warning]  1715:52  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5303073Z
+2025-06-21T08:32:45.5303384Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/processors/jsRewriter.ts
+2025-06-21T08:32:45.5304291Z ##[warning]   216:15  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5305692Z ##[warning]   609:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5306918Z ##[warning]  2010:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5308280Z ##[warning]  2028:41  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5309463Z ##[warning]  2047:46  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5310652Z ##[warning]  2047:67  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5311378Z
+2025-06-21T08:32:45.5311711Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/processors/patternAnalysis.ts
+2025-06-21T08:32:45.5312505Z ##[warning]   356:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5313691Z ##[warning]   377:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5314872Z ##[warning]   421:46  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5316274Z ##[warning]   430:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5317477Z ##[warning]   443:46  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5318667Z ##[warning]   463:51  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5319852Z ##[warning]  1241:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5320571Z
+2025-06-21T08:32:45.5320906Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/registry/DOMElementRegistry.ts
+2025-06-21T08:32:45.5321981Z ##[error]  522:33  error    'element' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+2025-06-21T08:32:45.5323428Z ##[warning]  632:42  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5324217Z
+2025-06-21T08:32:45.5324526Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/registry/MemoryManager.ts
+2025-06-21T08:32:45.5325561Z ##[error]  188:13  error    'pooledRef' is assigned a value but never used                              @typescript-eslint/no-unused-vars
+2025-06-21T08:32:45.5326948Z ##[error]  250:9   error    Unexpected lexical declaration in case block                                no-case-declarations
+2025-06-21T08:32:45.5328323Z ##[warning]  403:37  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5329703Z ##[warning]  419:55  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5331078Z ##[warning]  420:56  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5332448Z ##[warning]  451:22  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5333818Z ##[warning]  453:29  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5335190Z ##[warning]  486:42  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5336700Z ##[warning]  501:53  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5338073Z ##[warning]  503:16  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5339542Z ##[error]  506:50  error    Use the rest parameters instead of 'arguments'                              prefer-rest-params
+2025-06-21T08:32:45.5340994Z ##[error]  510:16  error    'callback' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+2025-06-21T08:32:45.5342575Z ##[warning]  525:46  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5343968Z ##[warning]  526:16  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5345319Z ##[error]  529:43  error    Use the rest parameters instead of 'arguments'                              prefer-rest-params
+2025-06-21T08:32:45.5346878Z ##[error]  533:16  error    'callback' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+2025-06-21T08:32:45.5347724Z
+2025-06-21T08:32:45.5348043Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/registry/StressTester.ts
+2025-06-21T08:32:45.5348851Z ##[warning]  100:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5349648Z
+2025-06-21T08:32:45.5349938Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/runtimeValidator.ts
+2025-06-21T08:32:45.5350705Z ##[warning]  431:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5351950Z ##[warning]  432:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5353251Z ##[warning]  545:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5354489Z ##[warning]  730:57  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5355833Z ##[warning]  751:62  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5357126Z ##[warning]  771:58  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5358378Z ##[warning]  789:58  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5359154Z
+2025-06-21T08:32:45.5359462Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/security/pluginSandbox.ts
+2025-06-21T08:32:45.5360321Z ##[warning]  126:48  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5361575Z ##[warning]  338:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5362809Z ##[warning]  339:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5364038Z ##[warning]  359:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5365273Z ##[warning]  360:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5366650Z ##[warning]  398:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5367911Z ##[warning]  399:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5368687Z
+2025-06-21T08:32:45.5368983Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/sourceMapGenerator.ts
+2025-06-21T08:32:45.5369743Z ##[warning]  135:58  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5370984Z ##[warning]  466:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5371807Z
+2025-06-21T08:32:45.5372115Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/types/legacy/atomicOps.ts
+2025-06-21T08:32:45.5373188Z ##[warning]  145:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5374519Z ##[warning]  343:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5375565Z
+2025-06-21T08:32:45.5375887Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/types/legacy/plugins.ts
+2025-06-21T08:32:45.5376682Z ##[warning]  177:64  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5377936Z ##[warning]  180:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5379181Z ##[warning]  183:25  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5380411Z ##[warning]  195:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5381647Z ##[warning]  372:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5382424Z
+2025-06-21T08:32:45.5382704Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/types/registry.ts
+2025-06-21T08:32:45.5383458Z ##[warning]  273:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5384706Z ##[warning]  276:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5386066Z ##[warning]  282:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5386848Z
+2025-06-21T08:32:45.5387122Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/types/vite.d.ts
+2025-06-21T08:32:45.5387859Z ##[warning]   3:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5389085Z ##[warning]   4:9   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5390316Z ##[warning]   5:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5391540Z ##[warning]   6:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5392759Z ##[warning]  11:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5393986Z ##[warning]  12:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5395219Z ##[warning]  22:55  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5396606Z ##[warning]  22:62  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5397849Z ##[warning]  24:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5399071Z ##[warning]  24:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5400302Z ##[warning]  25:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5401070Z
+2025-06-21T08:32:45.5401383Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/types/webpack.d.ts
+2025-06-21T08:32:45.5402133Z ##[warning]   4:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5403365Z ##[warning]   5:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5404584Z ##[warning]   6:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5405944Z ##[warning]   7:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5407195Z ##[warning]   8:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5408436Z ##[warning]   9:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5409799Z ##[warning]  13:15  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5411059Z ##[warning]  17:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5412429Z ##[warning]  18:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5413642Z ##[warning]  19:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5414420Z
+2025-06-21T08:32:45.5414710Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/utils/debugUtils.ts
+2025-06-21T08:32:45.5415668Z ##[warning]   78:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5416937Z ##[warning]   79:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5418175Z ##[warning]  325:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5419405Z ##[warning]  326:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5420651Z ##[warning]  460:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5421431Z
+2025-06-21T08:32:45.5421700Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/utils/errors.ts
+2025-06-21T08:32:45.5422442Z ##[warning]  381:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5423222Z
+2025-06-21T08:32:45.5423517Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/utils/fileIntegrity.ts
+2025-06-21T08:32:45.5424293Z ##[warning]  3837:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5425084Z
+2025-06-21T08:32:45.5425347Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/utils/logger.ts
+2025-06-21T08:32:45.5426213Z ##[warning]  594:25  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5427000Z
+2025-06-21T08:32:45.5427326Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/validation/ValidationChain.ts
+2025-06-21T08:32:45.5428216Z ##[warning]  217:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5429472Z ##[warning]  218:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5430703Z ##[warning]  230:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5431933Z ##[warning]  309:41  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5432699Z
+2025-06-21T08:32:45.5433006Z /home/runner/work/tw-enigma/tw-enigma/packages/core/src/workers/batchWorker.ts
+2025-06-21T08:32:45.5433843Z ##[warning]  356:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2025-06-21T08:32:45.5434623Z
+2025-06-21T08:32:45.5435007Z ✖ 524 problems (7 errors, 517 warnings)
+2025-06-21T08:32:45.5435183Z
+2025-06-21T08:32:45.5435585Z  ELIFECYCLE  Command failed with exit code 1.
+2025-06-21T08:32:45.5436467Z [ERROR] command finished with error: command (/home/runner/work/tw-enigma/tw-enigma/packages/core) /home/runner/setup-pnpm/node_modules/.bin/pnpm run lint exited (1)
+2025-06-21T08:32:45.5437043Z
+2025-06-21T08:32:45.5437160Z  Tasks:    0 successful, 1 total
+2025-06-21T08:32:45.5437419Z Cached:    0 cached, 1 total
+2025-06-21T08:32:45.5437642Z   Time:    5.465s
+2025-06-21T08:32:45.5437875Z Failed:    @tw-enigma/core#lint
+2025-06-21T08:32:45.5438029Z
+2025-06-21T08:32:45.5440389Z ##[error]Process completed with exit code 1.
+2025-06-21T08:32:45.5494147Z Post job cleanup.
+2025-06-21T08:32:45.6020937Z Pruning is unnecessary.
+2025-06-21T08:32:45.6108682Z Post job cleanup.
+2025-06-21T08:32:45.7056106Z [command]/usr/bin/git version
+2025-06-21T08:32:45.7091740Z git version 2.49.0
+2025-06-21T08:32:45.7136588Z Temporarily overriding HOME='/home/runner/work/_temp/fc431e73-9375-4782-bc8c-6305b7059ddd' before making global git config changes
+2025-06-21T08:32:45.7138400Z Adding repository directory to the temporary git global config as a safe directory
+2025-06-21T08:32:45.7143391Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/tw-enigma/tw-enigma
+2025-06-21T08:32:45.7179288Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2025-06-21T08:32:45.7211769Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2025-06-21T08:32:45.7433284Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2025-06-21T08:32:45.7453147Z http.https://github.com/.extraheader
+2025-06-21T08:32:45.7466187Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2025-06-21T08:32:45.7512001Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2025-06-21T08:32:45.7819412Z Cleaning up orphan processes

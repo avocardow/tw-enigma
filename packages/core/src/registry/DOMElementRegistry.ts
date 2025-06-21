@@ -519,7 +519,7 @@ export class DOMElementRegistryImpl implements DOMElementRegistry {
     });
   }
 
-  private _handleRemovedElement(element: Element): void {
+  private _handleRemovedElement(_element: Element): void {
     // Element is being removed, so we don't need to explicitly remove it
     // The cleanup process will handle stale references automatically
   }
@@ -629,7 +629,7 @@ export class DOMElementRegistryImpl implements DOMElementRegistry {
     }
   }
 
-  private _log(message: string, ...args: any[]): void {
+  private _log(message: string, ...args: unknown[]): void {
     if (this._config.debug) {
       console.log(`[DOMElementRegistry] ${message}`, ...args);
     }
