@@ -159,7 +159,7 @@ describe('Enhanced CLI Tests', () => {
       }
 
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('1.0.2');
+      expect(result.stdout).toContain('1.0.3');
     });
 
     it('should display version with -v flag', async () => {
@@ -170,7 +170,7 @@ describe('Enhanced CLI Tests', () => {
       }
 
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('1.0.2');
+      expect(result.stdout).toContain('1.0.3');
     });
 
     it('should display help with -h flag', async () => {
