@@ -5,19 +5,28 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { promises as fs } from 'fs';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { EnigmaConfig } from '../src/config.ts';
 import {
   OptimizationCache,
   createOptimizationCache,
   getOptimizationCache,
   type OptimizationCacheConfig,
 } from '../src/engine/optimizationCache.ts';
-import type { EnigmaConfig } from '../src/config.ts';
 import type { OptimizationResult } from '../src/output/assetHasher.ts';
 
 // Mock file system operations
 vi.mock('fs', () => ({
+  default: {
+    promises: {
+      readFile: vi.fn(),
+      writeFile: vi.fn(),
+      mkdir: vi.fn(),
+      access: vi.fn(),
+      stat: vi.fn(),
+    },
+  },
   promises: {
     readFile: vi.fn(),
     writeFile: vi.fn(),
@@ -74,6 +83,18 @@ vi.mock('crypto', () => {
   const mockCreateHash = vi.fn().mockImplementation(() => createMockHashObject());
 
   return {
+    default: {
+      createHash: mockCreateHash,
+      randomBytes: vi.fn().mockReturnValue(Buffer.from('mock-random-bytes')),
+      pbkdf2: vi.fn(),
+      scrypt: vi.fn(),
+      createHmac: vi.fn(),
+      createCipher: vi.fn(),
+      createDecipher: vi.fn(),
+      createSign: vi.fn(),
+      createVerify: vi.fn(),
+      constants: {},
+    },
     createHash: mockCreateHash,
     // Need to include other crypto exports that might be imported
     randomBytes: vi.fn().mockReturnValue(Buffer.from('mock-random-bytes')),

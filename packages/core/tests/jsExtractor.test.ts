@@ -1,24 +1,34 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import * as fs from 'fs/promises';
-import type { Stats } from 'fs';
 import {
-  JsExtractor,
   createJsExtractor,
   extractClassesFromJs,
   extractClassesFromJsFile,
-  JsParsingError,
-  JsFileReadError,
   JsExtractionOptionsSchema,
+  JsExtractor,
+  JsFileReadError,
+  JsParsingError,
 } from '@tw-enigma/core';
+import type { Stats } from 'fs';
+import * as fs from 'fs/promises';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock fs module - ensure fs/promises is mocked correctly
 vi.mock('fs/promises', () => ({
+  default: {
+    stat: vi.fn(),
+    readFile: vi.fn(),
+  },
   stat: vi.fn(),
   readFile: vi.fn(),
 }));
 
 // Also mock the old style for compatibility
 vi.mock('fs', () => ({
+  default: {
+    promises: {
+      stat: vi.fn(),
+      readFile: vi.fn(),
+    },
+  },
   promises: {
     stat: vi.fn(),
     readFile: vi.fn(),
@@ -524,10 +534,10 @@ describe('JsExtractor', () => {
       const code = `
         import React, { useState } from 'react';
         import clsx from 'clsx';
-        
+
         export default function Button({ variant = 'primary', size = 'md', disabled = false, children }) {
           const [isPressed, setIsPressed] = useState(false);
-          
+
           const baseClasses = "inline-flex items-center justify-center font-medium rounded-md transition-colors";
           const variantClasses = {
             primary: "bg-blue-600 text-white hover:bg-blue-700",
@@ -539,7 +549,7 @@ describe('JsExtractor', () => {
             md: "px-4 py-2 text-base",
             lg: "px-6 py-3 text-lg"
           };
-          
+
           return (
             <button
               className={clsx(

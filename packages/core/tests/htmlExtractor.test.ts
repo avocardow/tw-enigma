@@ -1,18 +1,40 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import * as fs from 'fs/promises';
-import type { Stats } from 'fs';
 import {
-  HtmlExtractor,
   createHtmlExtractor,
-  extractClassesFromHtml,
   extractClassesFromFile,
-  HtmlParsingError,
+  extractClassesFromHtml,
   FileReadError,
+  HtmlExtractor,
+  HtmlParsingError,
   type HtmlExtractionOptions,
 } from '@tw-enigma/core';
+import type { Stats } from 'fs';
+import * as fs from 'fs/promises';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock fs module
-vi.mock('fs/promises');
+vi.mock('fs/promises', () => ({
+  default: {
+    stat: vi.fn(),
+    readFile: vi.fn(),
+  },
+  stat: vi.fn(),
+  readFile: vi.fn(),
+}));
+
+// Also mock the old style for compatibility
+vi.mock('fs', () => ({
+  default: {
+    promises: {
+      stat: vi.fn(),
+      readFile: vi.fn(),
+    },
+  },
+  promises: {
+    stat: vi.fn(),
+    readFile: vi.fn(),
+  },
+}));
+
 const mockFs = vi.mocked(fs);
 
 describe('HtmlExtractor', () => {
