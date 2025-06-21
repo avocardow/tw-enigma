@@ -353,14 +353,12 @@ describe('Enhanced Plugin Manager', () => {
     };
 
     // Execute multiple times to trigger circuit breaker
+    // The error handler gracefully handles errors and returns null
     for (let i = 0; i < 4; i++) {
-      try {
-        await pluginManager.executePlugin('error-plugin', async () =>
-          errorPlugin.processCss('color: red;', context)
-        );
-      } catch {
-        // Expected to fail
-      }
+      const result = await pluginManager.executePlugin('error-plugin', async () =>
+        errorPlugin.processCss('color: red;', context)
+      );
+      expect(result).toBeNull(); // Error handler returns null on failures
     }
 
     const health = pluginManager.getPluginHealth('error-plugin');

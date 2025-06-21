@@ -1,6 +1,6 @@
 {
   "name": "@tw-enigma/core",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "CSS optimization engine for tw-enigma",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
