@@ -3,3 +3,4 @@ onlyBuiltDependencies:
 
 packages:
   - 'packages/*'
+  - 'examples/real-world-demo/nextjs-shop'

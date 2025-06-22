@@ -356,6 +356,15 @@ export * from './types/plugins';
 // Core integrations that should work
 export * from './integrations/core';
 
+// Webpack Integration
+export {
+  createWebpackPlugin,
+  defaultWebpackConfig,
+  EnigmaWebpackPlugin,
+} from './integrations/webpack/webpackPlugin';
+
+export type { WebpackPluginConfig } from './integrations/webpack/webpackPlugin';
+
 // =============================================================================
 // FRAMEWORK DETECTION
 // =============================================================================
@@ -386,20 +395,123 @@ export { default as tailwindEnigmaPlugin } from './tailwindPlugin.js';
 export { EnhancedCSSGenerator } from './engine/cssGeneration';
 export { logger as defaultLogger } from './utils/logger';
 
-// Placeholder optimizeCSS function - returns basic optimization result
-export function optimizeCSS(input: string, _data?: any, _options?: any): OptimizationResult {
-  // Simple placeholder implementation
-  return {
-    original: input,
-    optimized: input, // Return input as-is for now
-    stats: {
-      originalSize: input.length,
-      optimizedSize: input.length,
-      reduction: 0,
-      rulesRemoved: 0,
-      declarationsOptimized: 0,
-      optimizationTime: 0,
-    },
-    plugins: [],
-  };
+// CSS optimization function with Tailwind class scrambling
+export function optimizeCSS(input: string, _data?: any, options?: {
+  scrambleClassNames?: boolean;
+  enableOptimization?: boolean;
+  preserveSourceMaps?: boolean;
+}): OptimizationResult {
+  const startTime = performance.now();
+  
+  // If scrambling is disabled, return basic optimization
+  if (!options?.scrambleClassNames) {
+    return {
+      original: input,
+      optimized: input.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\s+/g, ' ').trim(),
+      stats: {
+        originalSize: input.length,
+        optimizedSize: input.length,
+        reduction: 0,
+        rulesRemoved: 0,
+        declarationsOptimized: 0,
+        optimizationTime: performance.now() - startTime,
+      },
+      plugins: [],
+    };
+  }
+
+  try {
+    let optimizedCSS = input;
+    let rulesProcessed = 0;
+    let classesScrambled = 0;
+    
+    // Generate mapping of original class names to scrambled names
+    const classMap = new Map<string, string>();
+    const usedNames = new Set<string>();
+    
+    // Generate a random scrambled class name
+    const generateScrambledName = (): string => {
+      const chars = 'abcdefghijklmnopqrstuvwxyz';
+      let name: string;
+      do {
+        name = chars[Math.floor(Math.random() * chars.length)];
+        for (let i = 1; i < 6; i++) {
+          name += chars[Math.floor(Math.random() * chars.length)];
+        }
+      } while (usedNames.has(name));
+      usedNames.add(name);
+      return name;
+    };
+
+    // Find and replace Tailwind utility classes
+    const tailwindClassPattern = /\.([\w-]+(?:\/[\w-]+)?(?:\[[\w%-]+\])?(?::\w+)*)\s*\{/g;
+    let match;
+    
+    while ((match = tailwindClassPattern.exec(input)) !== null) {
+      const originalClass = match[1];
+      
+      // Skip non-Tailwind classes (heuristic: Tailwind classes are usually short utility names)
+      if (originalClass.length > 20 || originalClass.includes('__') || originalClass.includes('container')) {
+        continue;
+      }
+      
+      if (!classMap.has(originalClass)) {
+        const scrambledName = generateScrambledName();
+        classMap.set(originalClass, scrambledName);
+        classesScrambled++;
+      }
+    }
+    
+    // Apply class name replacements in CSS
+    for (const [originalClass, scrambledClass] of classMap) {
+      const classSelector = new RegExp(`\\.${originalClass.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'g');
+      optimizedCSS = optimizedCSS.replace(classSelector, `.${scrambledClass}`);
+      rulesProcessed++;
+    }
+    
+    // Basic CSS minification
+    if (options?.enableOptimization) {
+      optimizedCSS = optimizedCSS
+        .replace(/\/\*[\s\S]*?\*\//g, '') // Remove comments
+        .replace(/\s+/g, ' ') // Normalize whitespace
+        .replace(/\s*{\s*/g, '{') // Remove whitespace around braces
+        .replace(/;\s*}/g, '}') // Remove unnecessary semicolons
+        .replace(/:\s+/g, ':') // Remove whitespace after colons
+        .replace(/;\s+/g, ';') // Remove whitespace after semicolons
+        .trim();
+    }
+
+    const endTime = performance.now();
+    const originalSize = Buffer.byteLength(input, 'utf-8');
+    const optimizedSize = Buffer.byteLength(optimizedCSS, 'utf-8');
+
+    return {
+      original: input,
+      optimized: optimizedCSS,
+      stats: {
+        originalSize,
+        optimizedSize,
+        reduction: Math.max(0, ((originalSize - optimizedSize) / originalSize) * 100),
+        rulesRemoved: rulesProcessed,
+        declarationsOptimized: classesScrambled,
+        optimizationTime: endTime - startTime,
+      },
+      plugins: [`tailwind-scrambler (${classesScrambled} classes scrambled)`],
+    };
+  } catch (error) {
+    // Fallback: return original CSS if optimization fails
+    return {
+      original: input,
+      optimized: input,
+      stats: {
+        originalSize: input.length,
+        optimizedSize: input.length,
+        reduction: 0,
+        rulesRemoved: 0,
+        declarationsOptimized: 0,
+        optimizationTime: performance.now() - startTime,
+      },
+      plugins: [`error: ${error instanceof Error ? error.message : String(error)}`],
+    };
+  }
 }

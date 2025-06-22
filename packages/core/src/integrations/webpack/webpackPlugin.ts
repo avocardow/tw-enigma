@@ -349,7 +349,7 @@ export class EnigmaWebpackPlugin implements WebpackPluginInstance, BuildToolPlug
         compilation.hooks.processAssets.tapAsync(
           {
             name: 'EnigmaWebpackPlugin',
-            stage: compiler.webpack.Compilation.PROCESS_ASSETS_STAGE_OPTIMIZE,
+            stage: compiler.webpack.Compilation.PROCESS_ASSETS_STAGE_OPTIMIZE_SIZE,
           },
           async (assets: any, callback: any) => {
             try {
@@ -443,6 +443,12 @@ export class EnigmaWebpackPlugin implements WebpackPluginInstance, BuildToolPlug
       (name) => name.endsWith('.css') || name.includes('.css')
     );
 
+    logger.info('Processing assets', { 
+      totalAssets: Object.keys(assets).length,
+      cssAssets: cssAssets.length,
+      assetNames: cssAssets
+    });
+
     for (const assetName of cssAssets) {
       try {
         const asset = assets[assetName];
@@ -453,11 +459,27 @@ export class EnigmaWebpackPlugin implements WebpackPluginInstance, BuildToolPlug
         const optimizedResult = await this.optimizeCSS(originalCSS, assetName);
 
         if (optimizedResult) {
-          // Replace asset with optimized version
-          compilation.updateAsset(
-            assetName,
-            new compilation.constructor.webpack.sources.RawSource(optimizedResult.css)
-          );
+          try {
+            // Replace asset with optimized version
+            const { RawSource } = compilation.compiler.webpack.sources;
+            compilation.updateAsset(
+              assetName,
+              new RawSource(optimizedResult.css)
+            );
+            
+            logger.info('CSS asset replaced', {
+              assetName,
+              originalLength: originalCSS.length,
+              optimizedLength: optimizedResult.css.length,
+              success: true
+            });
+          } catch (replaceError) {
+            logger.error('Failed to replace CSS asset', {
+              assetName,
+              error: replaceError instanceof Error ? replaceError.message : String(replaceError)
+            });
+            throw replaceError;
+          }
 
           // Update context with optimization results
           if (this.context) {
@@ -489,28 +511,77 @@ export class EnigmaWebpackPlugin implements WebpackPluginInstance, BuildToolPlug
   }
 
   /**
-   * Optimize CSS content (placeholder implementation)
+   * Optimize CSS content using actual Tailwind class scrambling
    */
-  private async optimizeCSS(css: string, _fileName: string): Promise<OptimizationResult> {
+  private async optimizeCSS(css: string, fileName: string): Promise<OptimizationResult> {
     const startTime = performance.now();
 
-    // This is a placeholder - in the real implementation, this would call
-    // the actual Tailwind Enigma CSS optimization engine
-    const optimizedCSS = css; // No actual optimization for now
+    try {
+      logger.info('Starting CSS scrambling optimization', { fileName, cssLength: css.length });
 
-    const endTime = performance.now();
-    const originalSize = Buffer.byteLength(css, 'utf-8');
-    const optimizedSize = Buffer.byteLength(optimizedCSS, 'utf-8');
+      // Import the real optimization function
+      const { optimizeCSS } = await import('../../index');
+      
+      // Call the real CSS optimization with scrambling
+      const result = optimizeCSS(css, undefined, {
+        scrambleClassNames: true,
+        enableOptimization: true,
+        preserveSourceMaps: false,
+      });
 
-    return {
-      originalSize,
-      optimizedSize,
-      reductionPercentage: ((originalSize - optimizedSize) / originalSize) * 100,
-      classesProcessed: 0,
-      classesRemoved: 0,
-      processingTime: endTime - startTime,
-      css: optimizedCSS,
-    };
+      logger.info('CSS optimization result', { 
+        fileName, 
+        originalSize: result.stats.originalSize,
+        optimizedSize: result.stats.optimizedSize,
+        reduction: result.stats.reduction,
+        plugins: result.plugins
+      });
+
+      const endTime = performance.now();
+      const originalSize = Buffer.byteLength(css, 'utf-8');
+      const optimizedSize = Buffer.byteLength(result.optimized, 'utf-8');
+
+      const optimization: OptimizationResult = {
+        originalSize,
+        optimizedSize,
+        reductionPercentage: Math.max(0, ((originalSize - optimizedSize) / originalSize) * 100),
+        classesProcessed: result.stats.rulesRemoved + result.stats.declarationsOptimized,
+        classesRemoved: result.stats.rulesRemoved,
+        processingTime: endTime - startTime,
+        css: result.optimized,
+      };
+
+      logger.debug('CSS scrambling optimization completed', {
+        fileName,
+        originalSize,
+        optimizedSize,
+        reductionPercentage: optimization.reductionPercentage,
+        processingTime: optimization.processingTime,
+        classesProcessed: optimization.classesProcessed,
+        classesRemoved: optimization.classesRemoved,
+      });
+
+      return optimization;
+    } catch (error) {
+      logger.error('CSS scrambling optimization failed', {
+        fileName,
+        error: error instanceof Error ? error.message : String(error),
+      });
+
+      // Fallback: return original CSS if optimization fails
+      const endTime = performance.now();
+      const originalSize = Buffer.byteLength(css, 'utf-8');
+
+      return {
+        originalSize,
+        optimizedSize: originalSize,
+        reductionPercentage: 0,
+        classesProcessed: 0,
+        classesRemoved: 0,
+        processingTime: endTime - startTime,
+        css, // Return original CSS on failure
+      };
+    }
   }
 
   /**

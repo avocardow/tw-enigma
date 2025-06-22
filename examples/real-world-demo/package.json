@@ -1,0 +1,54 @@
+{
+  "name": "tw-enigma-real-world-demo",
+  "version": "1.0.0",
+  "description": "Real-world demonstration of TW-Enigma CSS optimization and Scramble privacy protection",
+  "private": true,
+  "scripts": {
+    "install:all": "pnpm install && cd nextjs-shop && pnpm install",
+    "dev": "concurrently \"npm run dev:nextjs\"",
+    "dev:nextjs": "cd nextjs-shop && pnpm dev",
+    "dev:all": "npm run dev",
+    "build": "npm run build:nextjs",
+    "build:nextjs": "cd nextjs-shop && pnpm run build:enigma",
+    "build:all": "npm run build",
+    "start": "cd nextjs-shop && pnpm start",
+    "analyze": "npm run analyze:nextjs",
+    "analyze:nextjs": "cd nextjs-shop && pnpm run analyze",
+    "analyze:all": "npm run analyze",
+    "test": "npm run test:all",
+    "test:nextjs": "cd nextjs-shop && npm run test",
+    "test:all": "npm run test:nextjs",
+    "test:performance": "node scripts/performance-test.js",
+    "test:optimization": "node scripts/optimization-test.js",
+    "test:privacy": "node scripts/privacy-test.js",
+    "demo:setup": "node scripts/demo-setup.js",
+    "demo:reset": "node scripts/demo-reset.js",
+    "demo:run": "npm run demo:setup && npm run dev",
+    "clean": "npm run clean:nextjs",
+    "clean:nextjs": "cd nextjs-shop && rm -rf .next dist node_modules/.cache",
+    "clean:all": "npm run clean"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "chalk": "^4.1.2",
+    "lighthouse": "^11.4.0",
+    "puppeteer": "^21.6.1",
+    "@types/node": "^20.10.0"
+  },
+  "keywords": [
+    "tw-enigma",
+    "scramble",
+    "css-optimization",
+    "privacy-protection",
+    "tailwind-css",
+    "nextjs",
+    "demo"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/avocardow/tw-enigma.git",
+    "directory": "examples/real-world-demo"
+  },
+  "author": "Rowan Cardow",
+  "license": "MIT"
+}
