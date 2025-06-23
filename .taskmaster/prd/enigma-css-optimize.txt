@@ -1,0 +1,243 @@
+# Enigma Core Command Implementation - Product Requirements Document
+
+# Overview
+The **main `enigma` command** functionality is completely missing from the CLI. While the core CSS optimization engine is implemented in packages/core, there is no primary command that exposes the essential tw-enigma pattern consolidation workflow that users expect as the core product functionality.
+
+**Problem Solved:** The tw-enigma ecosystem has:
+✅ Comprehensive CSS optimization engine (packages/core)
+✅ Scramble integration capabilities (when scramble package exists)
+✅ Supporting commands (css-config, init-config, template, etc.)
+❌ **MISSING: The main `enigma` command** that performs pattern consolidation
+
+**This is the primary value proposition of tw-enigma** - converting patterns like `"top-0 z-50 w-full border-b border-gray-200/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"` into short identifiers like `"kqqygl"` with corresponding CSS generation.
+
+**Target Users:** All tw-enigma users who want to optimize their Tailwind CSS by consolidating repetitive class patterns.
+
+**Value Proposition:** The core command that performs pattern analysis, generates short identifiers, creates CSS with @apply directives, and rewrites asset files - the fundamental purpose of tw-enigma.
+
+# Core Features
+
+## 1. Main Enigma Command
+**What it does:** Performs complete CSS pattern optimization workflow
+- Analyzes HTML/JS files for Tailwind class patterns
+- Generates short identifiers for frequent patterns
+- Creates CSS with @apply directives
+- Rewrites asset files with consolidated classes
+- Integrates with Scramble when available
+**Why it's important:** This IS tw-enigma - the core functionality users install the package for
+**How it works:** Single command that orchestrates the entire optimization pipeline using existing core engine
+
+## 2. Build Integration Workflow
+**What it does:** Seamlessly integrates pattern optimization into build processes
+- Discovers build output directory automatically
+- Processes HTML and JavaScript files
+- Generates and injects optimized CSS
+- Handles file integrity and backups
+**Why it's important:** Zero-configuration optimization that works with any build tool
+**How it works:** Uses existing file discovery and processing logic from packages/core
+
+## 3. Scramble Integration Pipeline
+**What it does:** Automatically integrates with @tw-enigma/scramble when available
+- Detects scramble package presence
+- Builds scramble with user configuration
+- Injects scramble script into HTML files
+- Coordinates optimization + scrambling workflow
+**Why it's important:** Seamless integration between optimization and visual scrambling effects
+**How it works:** Follows the integration sequence defined in scramble PRD
+
+## 4. Configuration and Customization
+**What it does:** Accepts comprehensive configuration for optimization behavior
+- Pattern frequency thresholds
+- Output file locations
+- Custom identifier naming strategies
+- Scramble integration settings
+**Why it's important:** Flexible optimization that adapts to different project needs
+**How it works:** Uses existing configuration system from packages/core
+
+# User Experience
+
+## Primary User Flow (Core Command)
+```bash
+# Basic optimization
+enigma
+
+# With configuration
+enigma --build-dir dist --output-css assets/enigma.css
+
+# With scrambling effect
+enigma --scramble --scramble-speed 100
+
+# Dry run mode
+enigma --dry-run --verbose
+```
+
+## Integration with Existing Commands
+```bash
+# Setup and configuration
+enigma css-config --preset production
+
+# Main optimization (NEW)
+enigma
+
+# Scramble-only mode (existing)
+enigma scramble --speed 50
+```
+
+## Expected Workflow
+1. **Setup:** User runs `enigma css-config` to configure
+2. **Build:** User builds their project (Next.js, Vite, etc.)
+3. **Optimize:** User runs `enigma` to consolidate patterns
+4. **Result:** Optimized CSS and rewritten assets, with optional scrambling
+
+# Technical Architecture
+
+## Command Structure Integration
+**Main Command:** `enigma` (no subcommand) - primary optimization
+**Supporting Commands:** `css-config`, `init-config`, `template`, `scramble`
+
+## Integration Points
+- **packages/core:** All optimization logic already implemented
+- **Scramble Integration:** Uses existing detection and build logic
+- **Configuration:** Leverages existing config system
+- **File Processing:** Uses existing HTML/CSS processing pipelines
+
+## Workflow Integration Chain
+```
+enigma command →
+  Pattern Analysis (core) →
+  CSS Generation (core) →
+  Asset Rewriting (core) →
+  Scramble Detection →
+  Scramble Build (if available) →
+  HTML Injection (if scramble) →
+  Success Report
+```
+
+# Implementation Requirements
+
+## New Components Needed
+
+### 1. Main Enigma Command File
+**Location:** `packages/cli/src/commands/enigma.ts` (NEW)
+
+### 2. Updated CLI Structure
+**Update:** `packages/cli/src/commands/index.ts`
+```typescript
+// Add main command
+program.addCommand(createEnigmaCommand());
+
+// Keep existing supporting commands
+program.addCommand(createCssConfigCommand());
+program.addCommand(createScrambleCommand());
+// etc.
+```
+
+### 3. Command Integration Logic
+**Location:** `packages/cli/src/commands/enigma.ts`
+- Use existing core engine (`@tw-enigma/core`)
+- Integrate scramble detection and build logic
+- Use existing CLI utilities and error handling
+- Follow established command patterns
+
+## Files to Modify
+```
+packages/cli/src/commands/index.ts (add main command registration)
+packages/cli/bin/enigma.ts (potentially - verify main command routing)
+```
+
+## Integration Requirements
+
+### Core Engine Integration
+- Use existing `optimizeCSS()` function from packages/core
+- Use existing pattern analysis and CSS generation
+- Use existing file discovery and processing logic
+
+### Scramble Integration
+- Follow scramble PRD integration sequence
+- Use existing package detection logic
+- Use existing build and injection logic
+- Support all scramble flags and configuration
+
+### Configuration Integration
+- Use existing configuration system
+- Support all existing CLI options and flags
+- Maintain backward compatibility with current config
+
+# Development Roadmap
+
+## Phase 1: Basic Main Command (Week 1)
+- Create `packages/cli/src/commands/enigma.ts` following existing patterns
+- Register main command in commands/index.ts
+- Wire up basic integration with packages/core optimizeCSS()
+- Use existing CLI utilities and error handling
+- **Deliverable:** Working `enigma` command that performs optimization
+
+## Phase 2: Scramble Integration (Week 2)
+- Integrate scramble detection and conditional building
+- Add scramble configuration flags to main command
+- Implement HTML injection when scramble is available
+- Test end-to-end workflow with scramble package
+- **Deliverable:** Complete `enigma` command with scramble integration
+
+## Phase 3: Configuration and Polish (Week 3)
+- Add comprehensive configuration options
+- Implement dry-run mode and verbose logging
+- Add progress reporting and success summaries
+- Comprehensive error handling and validation
+- **Deliverable:** Production-ready main command
+
+## Phase 4: Testing and Documentation (Week 4)
+- Integration tests with real projects
+- Update CLI documentation and help text
+- Performance testing and optimization
+- Edge case handling and validation
+- **Deliverable:** Fully tested and documented main command
+
+# Success Criteria
+
+## Functional Requirements
+✅ `enigma` command performs complete optimization workflow
+✅ Integrates seamlessly with existing core engine
+✅ Automatically integrates with scramble when available
+✅ Maintains backward compatibility with existing commands
+✅ Uses established CLI patterns and utilities
+
+## User Experience Requirements
+✅ Single command optimizes entire project
+✅ Zero-configuration operation with sensible defaults
+✅ Clear progress reporting and error messages
+✅ Consistent with existing CLI design patterns
+✅ Comprehensive help and documentation
+
+## Integration Requirements
+✅ Uses all existing packages/core functionality
+✅ Follows scramble integration specification exactly
+✅ Supports all existing configuration options
+✅ Maintains all existing command functionality
+✅ No breaking changes to current API
+
+# Questions for Clarification
+
+Based on my review of all PRDs, I believe I understand the integration now, but I have a few questions:
+
+## 1. Command Naming and Structure
+**Question:** Should the main command be:
+- `enigma` (no subcommand) - the primary optimization workflow
+- `enigma optimize` - explicit subcommand for optimization
+- Keep existing pattern with `css-optimize` as separate command
+
+**From PRDs:** The core PRD suggests `enigma` is the main tool, scramble PRD shows `enigma css-config --scramble`, implying `enigma` is the base command.
+
+## 2. Default Behavior Integration
+**Question:** When someone runs `enigma` (main command), should it:
+- Always attempt scramble integration if package is detected?
+- Require explicit `--scramble` flag for scramble integration?
+- Have different default behaviors based on configuration?
+
+**From PRDs:** Scramble PRD shows scramble flags on existing commands, suggesting opt-in behavior.
+
+## 3. Backward Compatibility
+**Question:** Do existing commands like `enigma css-config` need to continue working exactly as they do now?
+**Assumption:** Yes, based on the established CLI patterns and user expectations.
+
+**My Understanding:** The main `enigma` command should be the core optimization workflow, with existing commands remaining as supporting utilities, and scramble integration should be opt-in via flags.

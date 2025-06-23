@@ -1,110 +1,14 @@
 {
 	"meta": {
-		"generatedAt": "2025-06-19T10:32:57.415Z",
-		"tasksAnalyzed": 15,
-		"totalTasks": 15,
+		"generatedAt": "2025-06-23T02:31:23.972Z",
+		"tasksAnalyzed": 12,
+		"totalTasks": 12,
 		"analysisCount": 15,
-		"thresholdScore": 6,
+		"thresholdScore": 5,
 		"projectName": "Taskmaster",
 		"usedResearch": true
 	},
 	"complexityAnalysis": [
-		{
-			"taskId": 1,
-			"taskTitle": "Set up private package structure",
-			"complexityScore": 3,
-			"recommendedSubtasks": 4,
-			"expansionPrompt": "Break down the setup of the private package structure into subtasks such as: creating the directory structure, initializing package.json, configuring tsup, and writing the initial README.md.",
-			"reasoning": "This task is straightforward and mostly involves file and configuration setup with minimal logic or branching. It is foundational but not complex, and can be efficiently split into a few clear steps."
-		},
-		{
-			"taskId": 2,
-			"taskTitle": "Implement configuration template system",
-			"complexityScore": 5,
-			"recommendedSubtasks": 5,
-			"expansionPrompt": "Expand this task into subtasks for defining the template structure, implementing the placeholder replacement logic, integrating CLI flag parsing, adding the debug utility, and testing the injection process.",
-			"reasoning": "This task introduces dynamic configuration and template processing, requiring careful handling of placeholders and CLI integration. It involves moderate logic and validation, making it more complex than basic setup."
-		},
-		{
-			"taskId": 3,
-			"taskTitle": "Implement CSS selector discovery",
-			"complexityScore": 6,
-			"recommendedSubtasks": 5,
-			"expansionPrompt": "Decompose into subtasks for implementing the selector scanning function, handling cross-origin stylesheets, integrating retry logic, defining the CSSRuleInfo interface, and writing tests for various scenarios.",
-			"reasoning": "Selector discovery involves DOM traversal, regex matching, error handling for cross-origin issues, and retry logic, increasing both cyclomatic and structural complexity[5]."
-		},
-		{
-			"taskId": 4,
-			"taskTitle": "Create DOM element mapping system",
-			"complexityScore": 6,
-			"recommendedSubtasks": 5,
-			"expansionPrompt": "Break down into subtasks for designing the registry structure, mapping CSS rules to elements, implementing the registry builder, adding cleanup logic, and validating with tests.",
-			"reasoning": "Mapping CSS rules to DOM elements and maintaining a live registry with cleanup introduces state management and requires careful handling of DOM mutations, making it moderately complex."
-		},
-		{
-			"taskId": 5,
-			"taskTitle": "Implement class name scrambling algorithm",
-			"complexityScore": 7,
-			"recommendedSubtasks": 6,
-			"expansionPrompt": "Expand into subtasks for random class name generation, uniqueness checks, updating CSS rules, updating DOM elements, updating the registry, and comprehensive testing.",
-			"reasoning": "This task involves algorithmic logic for randomization, uniqueness enforcement, and synchronized updates to both CSS and DOM, increasing the number of independent code paths and potential edge cases[5]."
-		},
-		{
-			"taskId": 6,
-			"taskTitle": "Implement synchronized update system",
-			"complexityScore": 7,
-			"recommendedSubtasks": 6,
-			"expansionPrompt": "Decompose into subtasks for implementing the main scramble loop, synchronizing updates, integrating requestAnimationFrame, handling cleanup intervals, managing state, and testing for visual flicker.",
-			"reasoning": "Synchronizing updates between CSS and DOM in real time, while preventing visual artifacts, requires careful timing and state management, adding to the overall complexity."
-		},
-		{
-			"taskId": 7,
-			"taskTitle": "Implement accessibility compliance",
-			"complexityScore": 4,
-			"recommendedSubtasks": 3,
-			"expansionPrompt": "Break down into subtasks for detecting reduced motion preference, modifying initialization logic, and adding a listener for preference changes.",
-			"reasoning": "This task is focused and leverages standard browser APIs, with limited branching and straightforward logic."
-		},
-		{
-			"taskId": 8,
-			"taskTitle": "Implement performance monitoring",
-			"complexityScore": 5,
-			"recommendedSubtasks": 4,
-			"expansionPrompt": "Expand into subtasks for implementing performance metric collection, integrating reporting, updating the scramble loop, and testing under load.",
-			"reasoning": "Performance monitoring adds conditional logic and data collection, but is isolated from the core scrambling logic, keeping complexity moderate."
-		},
-		{
-			"taskId": 9,
-			"taskTitle": "Implement main initialization and self-execution",
-			"complexityScore": 5,
-			"recommendedSubtasks": 4,
-			"expansionPrompt": "Decompose into subtasks for writing the main initialization function, handling DOM readiness, integrating motion preference logic, and wrapping in a self-executing function.",
-			"reasoning": "Initialization and self-execution require coordination of previously implemented systems, but the logic is mostly sequential and not deeply nested."
-		},
-		{
-			"taskId": 10,
-			"taskTitle": "Implement CLI integration for package discovery",
-			"complexityScore": 4,
-			"recommendedSubtasks": 3,
-			"expansionPrompt": "Break down into subtasks for implementing package path resolution, handling missing package scenarios, and integrating with CLI command handlers.",
-			"reasoning": "This task involves file system checks and CLI integration, with clear error handling but limited algorithmic complexity."
-		},
-		{
-			"taskId": 11,
-			"taskTitle": "Implement CLI configuration injection",
-			"complexityScore": 5,
-			"recommendedSubtasks": 4,
-			"expansionPrompt": "Expand into subtasks for reading the template, validating and preparing configuration, replacing placeholders, and writing the output file.",
-			"reasoning": "Configuration injection involves file I/O, validation, and string manipulation, with some branching for error handling and validation."
-		},
-		{
-			"taskId": 12,
-			"taskTitle": "Implement HTML discovery and script injection",
-			"complexityScore": 6,
-			"recommendedSubtasks": 5,
-			"expansionPrompt": "Decompose into subtasks for discovering HTML files, calculating script paths, injecting script tags, ensuring idempotence, and validating injection.",
-			"reasoning": "This task requires recursive file discovery, path calculations, and careful manipulation of HTML content, increasing the number of code paths and potential edge cases[5]."
-		},
 		{
 			"taskId": 13,
 			"taskTitle": "Implement end-to-end CLI integration",
@@ -128,6 +32,102 @@
 			"recommendedSubtasks": 4,
 			"expansionPrompt": "Expand into subtasks for writing the internal README, adding code comments, creating the CLI integration guide, and compiling the troubleshooting guide.",
 			"reasoning": "Documentation is content-heavy but not algorithmically complex, requiring organization and clarity rather than intricate logic."
+		},
+		{
+			"taskId": 1,
+			"taskTitle": "Create Main Enigma Command File Structure",
+			"complexityScore": 3,
+			"recommendedSubtasks": 3,
+			"expansionPrompt": "Break down the creation of the main Enigma command file into: (1) setting up the file and function skeleton, (2) defining command options and descriptions, and (3) ensuring consistency with other commands in the codebase.",
+			"reasoning": "This task is straightforward, involving file creation and following established patterns. It has low cyclomatic and cognitive complexity, but should be split to ensure codebase consistency and option coverage."
+		},
+		{
+			"taskId": 2,
+			"taskTitle": "Register Main Enigma Command in CLI",
+			"complexityScore": 2,
+			"recommendedSubtasks": 2,
+			"expansionPrompt": "Divide this into: (1) importing and registering the command in the CLI index, and (2) verifying and updating command routing in the CLI entry point.",
+			"reasoning": "This is a simple registration and verification task with minimal logic, but should be split to ensure both registration and routing are handled."
+		},
+		{
+			"taskId": 3,
+			"taskTitle": "Implement Configuration Loading and Validation",
+			"complexityScore": 5,
+			"recommendedSubtasks": 4,
+			"expansionPrompt": "Expand into: (1) importing and wiring up config utilities, (2) merging config sources (defaults, file, CLI), (3) validating configuration, and (4) supporting all required config options.",
+			"reasoning": "This involves merging multiple config sources, validation, and type safety, increasing cognitive and cyclomatic complexity. Multiple subtasks ensure each config aspect is robust."
+		},
+		{
+			"taskId": 4,
+			"taskTitle": "Implement Build Directory Discovery",
+			"complexityScore": 4,
+			"recommendedSubtasks": 3,
+			"expansionPrompt": "Break down into: (1) implementing the discovery utility, (2) integrating it into the command flow, and (3) handling edge cases and logging.",
+			"reasoning": "Automatic discovery logic adds moderate complexity, especially with fallback and logging. Subtasks help isolate utility creation, integration, and error handling."
+		},
+		{
+			"taskId": 5,
+			"taskTitle": "Integrate Core CSS Optimization Engine",
+			"complexityScore": 6,
+			"recommendedSubtasks": 4,
+			"expansionPrompt": "Expand into: (1) importing and wiring the core engine, (2) mapping and passing configuration, (3) handling dry run and verbose flags, and (4) logging and result handling.",
+			"reasoning": "Integration with a core engine and mapping multiple config options increases complexity, especially with dry run and verbose support. Subtasks ensure each integration aspect is covered."
+		},
+		{
+			"taskId": 6,
+			"taskTitle": "Implement Scramble Package Detection",
+			"complexityScore": 3,
+			"recommendedSubtasks": 2,
+			"expansionPrompt": "Divide into: (1) implementing the package detection utility, and (2) integrating detection logic into the command flow.",
+			"reasoning": "This is a simple detection and conditional logic task, but splitting ensures utility and integration are both robust."
+		},
+		{
+			"taskId": 7,
+			"taskTitle": "Implement Scramble Integration Pipeline",
+			"complexityScore": 6,
+			"recommendedSubtasks": 4,
+			"expansionPrompt": "Expand into: (1) dynamic import of scramble functions, (2) building scramble with config, (3) injecting scramble into HTML, and (4) integrating results and logging.",
+			"reasoning": "Dynamic imports, external package integration, and multi-step processing add significant complexity. Subtasks help manage each integration phase."
+		},
+		{
+			"taskId": 8,
+			"taskTitle": "Implement Dry Run Mode",
+			"complexityScore": 5,
+			"recommendedSubtasks": 3,
+			"expansionPrompt": "Break down into: (1) propagating dry run flag through all operations, (2) implementing dry run logic in each operation, and (3) reporting simulated results.",
+			"reasoning": "Ensuring dry run is respected across all operations and reporting accurate simulated results adds moderate complexity. Subtasks ensure coverage."
+		},
+		{
+			"taskId": 9,
+			"taskTitle": "Implement Verbose Logging and Progress Reporting",
+			"complexityScore": 4,
+			"recommendedSubtasks": 3,
+			"expansionPrompt": "Expand into: (1) implementing the progress reporter utility, (2) integrating verbose logging throughout the command, and (3) testing/reporting in both modes.",
+			"reasoning": "Adding detailed logging and progress reporting is moderately complex, especially ensuring consistency and clarity. Subtasks help separate utility, integration, and testing."
+		},
+		{
+			"taskId": 10,
+			"taskTitle": "Implement Comprehensive Error Handling",
+			"complexityScore": 6,
+			"recommendedSubtasks": 4,
+			"expansionPrompt": "Break down into: (1) creating error types/utilities, (2) integrating error handling in command flow, (3) mapping error codes to guidance, and (4) testing error scenarios.",
+			"reasoning": "Comprehensive error handling with actionable messages and code mapping increases complexity. Subtasks ensure each error handling aspect is robust."
+		},
+		{
+			"taskId": 11,
+			"taskTitle": "Implement Command Help and Documentation",
+			"complexityScore": 3,
+			"recommendedSubtasks": 3,
+			"expansionPrompt": "Divide into: (1) updating command help text and examples, (2) enhancing option descriptions, and (3) updating README documentation.",
+			"reasoning": "Documentation and help text are low complexity but should be split to cover CLI help, option details, and external docs."
+		},
+		{
+			"taskId": 12,
+			"taskTitle": "Implement End-to-End Integration Tests",
+			"complexityScore": 7,
+			"recommendedSubtasks": 5,
+			"expansionPrompt": "Expand into: (1) creating test fixtures, (2) writing integration test cases for core scenarios, (3) testing dry run and verbose modes, (4) testing scramble and error scenarios, and (5) CI integration.",
+			"reasoning": "Comprehensive integration testing across multiple scenarios, including setup, teardown, and CI, is high complexity and benefits from granular subtasks."
 		}
 	]
 }

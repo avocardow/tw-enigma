@@ -1,113 +1,136 @@
-# Dependencies
-/node_modules
+# .gitignore
 
-# Build output
-/dist
-
-# Logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-
-# Environment variables
-.env
-.env.local
-
-# IDE / Editor specific
-.vscode/
-.idea/
-
-# Added by Claude Task Master
-logs
-*.log
-dev-debug.log
-# Dependency directories
+#==============================================================================
+# Dependencies & Caches
+#==============================================================================
 node_modules/
-# Editor directories and files
-.idea
-.vscode
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-# OS specific
-.DS_Store
+.pnpm-debug.log*
+.yarn-integrity
+.yarn-error.log
+.npm-debug.log*
 
-# Monorepo specific
-.turbo
-.turbo/
-**/.turbo/
-.turbo/**
-packages/*/dist
-packages/*/node_modules
-packages/*/.next
-packages/*/coverage
-*.tsbuildinfo
-
-# Turborepo cache and artifacts
-.turbo/cache/
-.turbo/logs/
-.turbo/cookies/
-.turbo/daemon/
-.turbo/runs/
-.cache/
-**/.cache/
-
-# Build artifacts and outputs
+#==============================================================================
+# Build Artifacts & Output
+#==============================================================================
 dist/
 build/
 out/
 coverage/
 *.tgz
 *.tar.gz
+*.tsbuildinfo
+.tsbuildinfo
+tsconfig.tsbuildinfo
+tsbuildinfo.json
 .nyc_output/
 .coverage/
 .test-results/
 
-# Package manager artifacts
-.pnpm-debug.log*
-.yarn-integrity
-.yarn-error.log
-.npm-debug.log*
+#==============================================================================
+# Monorepo (Turborepo)
+#==============================================================================
+.turbo/
+packages/*/dist
+packages/*/node_modules
+packages/*/.next
+packages/*/coverage
+
+#==============================================================================
+# Logs
+#==============================================================================
+logs/
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
 lerna-debug.log*
+debug-*.log
+*.debug.log
+dev-debug.log
+temp-logs-debugging.txt
 
-# TypeScript build artifacts
-*.tsbuildinfo
-.tsbuildinfo
-tsbuildinfo.json
-tsconfig.tsbuildinfo
-
-# Vitest cache and coverage
-.vitest/
-**/coverage/
-**/.coverage/
-
-# ESLint cache
-.eslintcache
-**/.eslintcache
-
-# Prettier cache
-.prettier-cache
-**/.prettier-cache
-
-# 🔒 PRIVATE PACKAGES - SECURITY CRITICAL 🔒
-# Complete exclusion of all private/proprietary code
-packages-private/
-packages-private/*
-packages-private/**/*
-packages-private/.*
-packages-private/*/.*
-packages-private/**/.*
-
-# Private workspace configurations
+#==============================================================================
+# Local Environment & Configuration
+#==============================================================================
+.env
+.env.*
+.env*.local
+*.local
 pnpm-workspace.yaml.local
 pnpm-workspace.*.local
 workspace.local.*
+
+#==============================================================================
+# IDE & Editor Files
+#==============================================================================
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+#==============================================================================
+# OS Specific
+#==============================================================================
+.DS_Store
+
+#==============================================================================
+# Caching
+#==============================================================================
+.eslintcache
+.prettier-cache
+.cache/
+.vitest/
+
+#==============================================================================
+# 🤖 AI Assistant & Development Workflow
+#==============================================================================
+# AI instructions (potentially sensitive)
+CLAUDE.md
+AGENTS.md
+.windsurfrules
+.roomodes
+.trae
+.windsurf
+
+# AI working directories
+.roo/
+.cursor/
+.claude/
+.clinerules/
+.anthropic/
+.cursorignore
+
+# AI conversation logs and context
+conversation-*.json
+context-*.json
+*.conversation
+*.context
+
+# Local development artifacts
+dev-*.temp
+*.dev.temp
+
+#==============================================================================
+# 📊 Performance & Testing
+#==============================================================================
+performance-reports/
+performance-*.json
+benchmark-*.json
+load-test-results/
+test-temp/
+tests/temp/
+*.test.temp
+temp-test-*
+
+#==============================================================================
+# 🔒 Private Packages & Security Critical
+#==============================================================================
+# Complete exclusion of all private/proprietary code
+packages-private/
 
 # Private development files
 *.private.*
@@ -116,56 +139,13 @@ private-*
 **/private/**
 
 # Security: Prevent accidental exposure of private package references
-# (These patterns catch common mistakes)
 packages-private.zip
 packages-private.tar.*
 packages-private.backup
 .packages-private/
 
-# 🤖 AI ASSISTANT & DEVELOPMENT WORKFLOW 🤖
-# AI instructions and configurations (potentially sensitive)
-CLAUDE.md
-.windsurfrules
-.roomodes
-
-# AI assistant working directories
-.roo/
-.cursor/
-.claude/
-.anthropic/
-.cursorignore
-
-# Development workflow artifacts
-temp-debug-logs.txt
-debug-*.log
-*.debug.log
-dev-*.temp
-*.dev.temp
-
-# AI conversation logs and context
-conversation-*.json
-context-*.json
-*.conversation
-*.context
-
-# Local development configurations
-.env.development.local
-.env.test.local
-.env.production.local
-local.config.*
-*.local.config.*
-
-# 📊 PERFORMANCE & TESTING 📊
-# Performance reports and benchmarks
-**/performance-reports/
-performance-*.json
-benchmark-*.json
-load-test-results/
-
-# Test artifacts and temporary files
-test-temp/
-tests/temp/
-**/test-temp/
-*.test.temp
-temp-test-*
-temp-logs-debugging.txt
+#==============================================================================
+# Task Management (Commented out by user)
+#==============================================================================
+# tasks.json
+# tasks/

@@ -15,6 +15,11 @@
       "types": "./dist/webpack.d.ts",
       "import": "./dist/webpack.mjs",
       "require": "./dist/webpack.js"
+    },
+    "./tailwind": {
+      "types": "./dist/tailwindPlugin.d.ts",
+      "import": "./dist/tailwindPlugin.mjs",
+      "require": "./dist/tailwindPlugin.js"
     }
   },
   "files": [

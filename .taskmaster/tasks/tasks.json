@@ -3,910 +3,631 @@
     "tasks": [
       {
         "id": 1,
-        "title": "Set up private package structure",
-        "description": "Create the initial package structure for @tw-enigma/scramble as a private package within the monorepo.",
-        "status": "done",
-        "dependencies": [],
+        "title": "Create Main Enigma Command File Structure",
+        "description": "Create the main enigma command file structure in packages/cli/src/commands/enigma.ts that will serve as the entry point for the core optimization functionality.",
+        "details": "Create a new file at `packages/cli/src/commands/enigma.ts` following the established command pattern in the codebase. The file should export a function named `createEnigmaCommand()` that returns a Commander.js command object. The command should have no subcommand and should be the primary entry point for the pattern optimization workflow.\n\nImplement the basic command structure with:\n- Command name: 'enigma'\n- Description that explains the core pattern consolidation functionality\n- Basic option definitions for configuration parameters\n\nExample implementation:\n```typescript\nimport { Command } from 'commander';\nimport { logger } from '../utils/logger';\n\nexport function createEnigmaCommand(): Command {\n  const command = new Command('enigma');\n  \n  command\n    .description('Optimize Tailwind CSS by consolidating repetitive class patterns')\n    .option('--build-dir <dir>', 'Specify build output directory')\n    .option('--output-css <path>', 'Specify output CSS file location')\n    .option('--dry-run', 'Run without making changes to files')\n    .option('--verbose', 'Enable verbose logging')\n    .option('--scramble', 'Enable scramble integration')\n    .option('--scramble-speed <speed>', 'Set scramble animation speed')\n    .option('--scramble-debug', 'Enable scramble debug mode')\n    .action(async (options) => {\n      // Command action implementation will be added in subsequent tasks\n      logger.info('Enigma command executed');\n    });\n\n  return command;\n}\n```\n\nEnsure the command follows the same patterns as other commands in the codebase for consistency.",
+        "testStrategy": "Verify the command structure by running `enigma --help` and confirming the command appears with the correct description and options. Check that the basic command executes without errors by running `enigma` with the minimal implementation.",
         "priority": "high",
-        "details": "Create the following directory structure in packages-private/scramble:\n- src/index.ts (main source file)\n- tsup.config.ts (build configuration)\n- package.json (package configuration)\n\nPackage.json should include:\n```json\n{\n  \"name\": \"@tw-enigma/scramble\",\n  \"version\": \"0.1.0\",\n  \"private\": true,\n  \"main\": \"dist/scramble.min.js\",\n  \"scripts\": {\n    \"build\": \"tsup\",\n    \"dev\": \"tsup --watch\"\n  },\n  \"devDependencies\": {\n    \"tsup\": \"^7.1.0\",\n    \"typescript\": \"^5.1.6\"\n  }\n}\n```\n\ntsup.config.ts should configure for IIFE output:\n```typescript\nimport { defineConfig } from 'tsup';\n\nexport default defineConfig({\n  entry: ['src/index.ts'],\n  format: ['iife'],\n  minify: true,\n  clean: true,\n  outExtension: () => ({ js: '.min.js' }),\n  noExternal: ['*']\n});\n```\n\nCreate a basic README.md with development setup instructions.",
-        "testStrategy": "Verify the package structure is correctly set up by running `pnpm build` from the monorepo root and confirming that the scramble package builds successfully. Check that the dist/scramble.min.js file is generated with the expected IIFE format.",
+        "dependencies": [],
+        "status": "pending",
         "subtasks": [
           {
             "id": 1,
-            "title": "Create the Directory Structure",
-            "description": "Set up the foundational directory and file layout for the private package, ensuring all necessary folders and placeholder files are present.",
+            "title": "Set Up Main Enigma Command File and Function Skeleton",
+            "description": "Create the main Enigma command file and establish the basic function skeleton, including necessary imports and an entry point for the command logic.",
             "dependencies": [],
-            "details": "Create the root package directory. Inside, add a 'src' folder for source code, a 'tests' folder for test files, and include placeholder files such as 'src/index.ts' and 'tests/index.test.ts'. Ensure the structure matches best practices for private packages.",
-            "status": "done"
+            "details": "This involves creating a new file (e.g., enigmaCommand.js or enigma_command.py), adding standard headers, and defining the main function or class structure that will contain the command logic. Ensure the file is placed in the correct directory according to project conventions.",
+            "status": "pending",
+            "testStrategy": ""
           },
           {
             "id": 2,
-            "title": "Initialize package.json",
-            "description": "Generate and configure the package.json file with essential metadata and scripts for the private package.",
+            "title": "Define Command Options and Descriptions",
+            "description": "Specify the available command-line options, flags, and their descriptions within the command file, following the established patterns for option parsing and documentation.",
             "dependencies": [
               1
             ],
-            "details": "Run 'npm init -y' (or equivalent) in the root directory. Edit package.json to include the package name, version, description, main entry point, author, license, and set 'private': true. Add scripts for build, test, and lint as needed.",
-            "status": "done"
+            "details": "Implement option parsing using the project's preferred library or framework. Add descriptive help text for each option, ensuring clarity and completeness. Reference existing commands for naming and formatting consistency.",
+            "status": "pending",
+            "testStrategy": ""
           },
           {
             "id": 3,
-            "title": "Configure tsup",
-            "description": "Set up tsup for TypeScript compilation and bundling, ensuring the configuration aligns with project requirements.",
+            "title": "Ensure Consistency with Other Commands in the Codebase",
+            "description": "Review and align the new command file's structure, naming, and documentation with other commands in the codebase to maintain uniformity.",
             "dependencies": [
               2
             ],
-            "details": "Install tsup as a dev dependency. Create a 'tsup.config.ts' file in the root directory. Configure entry points, output directory, format (e.g., cjs, esm), and enable source maps. Update package.json build script to use tsup.",
-            "status": "done"
-          },
-          {
-            "id": 4,
-            "title": "Write the Initial README.md",
-            "description": "Draft a README.md file that documents the package purpose, usage, installation instructions, and development guidelines.",
-            "dependencies": [
-              3
-            ],
-            "details": "Create a README.md in the root directory. Include sections for project overview, installation steps, usage examples, build/test instructions, and contribution guidelines. Ensure clarity and completeness for new contributors.",
-            "status": "done"
-          },
-          {
-            "id": 5,
-            "title": "Verify Build Process",
-            "description": "Confirm that the package builds correctly from both the package directory and monorepo root.",
-            "dependencies": [
-              1,
-              2,
-              3,
-              4
-            ],
-            "details": "Test building the package using 'pnpm --filter' from the monorepo root and directly from the package directory. Verify that dist/scramble.min.js is generated correctly as an IIFE with the TwEnigmaScramble global name and ES2020 target.",
-            "status": "done"
+            "details": "Compare the new command file with similar command files in the project. Adjust function names, option formats, and documentation style as needed to match established conventions. Run any relevant linting or formatting tools.",
+            "status": "pending",
+            "testStrategy": ""
           }
         ]
       },
       {
         "id": 2,
-        "title": "Implement configuration template system",
-        "description": "Create a configuration template system that allows the CLI to inject build-time configuration into the scramble script.",
-        "details": "Create a configuration template in src/index.ts that will be replaced at build time:\n\n```typescript\n// Configuration injected at build time by CLI\nconst CONFIG = {\n  SCRAMBLE_INTERVAL: {{SCRAMBLE_INTERVAL}}, // Default: 150\n  SCRAMBLE_MODE: \"{{SCRAMBLE_MODE}}\", // Default: \"all\"\n  CHARSET: \"{{CHARSET}}\", // Default: \"abcdefghijklmnopqrstuvwxyz0123456789\"\n  DEBUG_MODE: {{DEBUG_MODE}}, // Default: false\n  RETRY_ATTEMPTS: {{RETRY_ATTEMPTS}}, // Default: 3\n  CLEANUP_INTERVAL: {{CLEANUP_INTERVAL}}, // Default: 30\n  MAX_REGISTRY_SIZE: {{MAX_REGISTRY_SIZE}}, // Default: 1000\n  PERFORMANCE_MONITORING: {{PERFORMANCE_MONITORING}} // Default: false\n};\n```\n\nImplement a debug logging utility that only logs when DEBUG_MODE is true:\n\n```typescript\nfunction debug(...args: any[]) {\n  if (CONFIG.DEBUG_MODE) {\n    console.log('[tw-enigma/scramble]', ...args);\n  }\n}\n```\n\nCreate a template processing function in the CLI that will replace these placeholders with actual values based on CLI flags.",
-        "testStrategy": "Test by manually replacing template variables with test values and verifying the script compiles correctly. Verify debug logging works when DEBUG_MODE is true and doesn't log when false.",
+        "title": "Register Main Enigma Command in CLI",
+        "description": "Register the newly created enigma command in the CLI's command index to make it available as the default command.",
+        "details": "Update the file `packages/cli/src/commands/index.ts` to import and register the new main enigma command. This will make the command available in the CLI.\n\n1. Import the createEnigmaCommand function:\n```typescript\nimport { createEnigmaCommand } from './enigma';\n```\n\n2. Register the command with the program object before the existing supporting commands:\n```typescript\n// Add main command as the primary command\nprogram.addCommand(createEnigmaCommand());\n\n// Keep existing supporting commands\nprogram.addCommand(createCssConfigCommand());\nprogram.addCommand(createInitConfigCommand());\n// etc.\n```\n\n3. Verify that the command routing in `packages/cli/bin/enigma.ts` correctly handles the main command. If necessary, update this file to ensure proper routing.\n\nThe goal is to make `enigma` (without subcommand) the primary entry point for the optimization workflow while preserving all existing subcommands.",
+        "testStrategy": "Test by running `enigma --help` to verify the main command appears in the help output. Also test that running `enigma` without subcommands executes the new command, while existing subcommands like `enigma css-config` continue to work as before.",
         "priority": "high",
         "dependencies": [
           1
         ],
-        "status": "done",
+        "status": "pending",
         "subtasks": [
           {
             "id": 1,
-            "title": "Define Template Structure",
-            "description": "Design and document the template format, specifying how placeholders are represented (e.g., {{PLACEHOLDER}}), supported data types, and any constraints. Ensure the structure is flexible for future extensions and easy to validate.",
+            "title": "Import and Register the Command in the CLI Index",
+            "description": "Import the new command module and add it to the CLI's command registry or index file to ensure it is recognized by the CLI framework.",
             "dependencies": [],
-            "details": "Create a sample template file with at least three distinct placeholders. Document the placeholder syntax and provide examples. Success criteria: Template structure is clearly defined, documented, and reviewed.\n<info added on 2025-06-19T11:31:04.010Z>\n✅ **Template Syntax Defined**: Using {{PLACEHOLDER}} format with UPPERCASE_SNAKE_CASE naming\n✅ **Data Types Documented**: Support for numbers, strings, and booleans with proper syntax rules\n✅ **Comprehensive Documentation**: Created TEMPLATE.md with full specification including:\n   - 8 configuration placeholders with defaults and descriptions\n   - Validation rules and error handling\n   - CLI integration examples\n   - Future extension guidelines\n✅ **Template Implementation**: Added CONFIG object with all placeholders to src/index.ts\n✅ **Debug Utility**: Implemented debug() function that respects DEBUG_MODE setting\n✅ **Compilation Verified**: Created test-template.ts with substituted values and confirmed it compiles without errors\n\nThe template structure is flexible, well-documented, and ready for the CLI integration in subsequent subtasks.\n</info added on 2025-06-19T11:31:04.010Z>",
-            "status": "done"
+            "details": "Locate the CLI index or command registry file. Import the new command module and add it to the list or object that tracks available commands. Confirm that the command is properly named and follows any naming conventions required by the CLI.",
+            "status": "pending",
+            "testStrategy": ""
           },
           {
             "id": 2,
-            "title": "Implement Placeholder Replacement Logic",
-            "description": "Develop the core logic to identify placeholders in the template and replace them with provided values. Handle edge cases such as missing or extra placeholders, and ensure type safety and error reporting.",
+            "title": "Verify and Update Command Routing in the CLI Entry Point",
+            "description": "Ensure the CLI entry point correctly routes user input to the newly registered command, updating routing logic if necessary.",
             "dependencies": [
               1
             ],
-            "details": "Write a function that takes a template string and a mapping of placeholder names to values, returning the processed string. Include unit tests for scenarios with missing, extra, and nested placeholders. Success criteria: All tests pass and logic handles edge cases robustly.\n<info added on 2025-06-19T11:37:51.536Z>\nImplementation complete! The TemplateProcessor class has been created with robust placeholder replacement functionality. Key features include:\n\n- Full TypeScript support with proper interfaces and type validation\n- Comprehensive error handling for missing values, invalid types, and malformed placeholders\n- Support for string, number, and boolean configuration values with proper escaping\n- Template validation with unmatched brace detection and malformed placeholder reporting\n- Built-in processScrambleTemplate function with default configuration\n- Warning system, strict/non-strict modes, and detailed processing results\n\nTesting is comprehensive with 18/19 tests passing, covering all edge cases and error scenarios. The one failing test involves a complex validation edge case that doesn't affect core functionality. The system is now ready for CLI integration.\n</info added on 2025-06-19T11:37:51.536Z>",
-            "status": "done"
-          },
-          {
-            "id": 3,
-            "title": "Integrate CLI Flag Parsing",
-            "description": "Add command-line interface (CLI) support to accept template file paths, placeholder values, and output options via flags. Validate input and provide helpful error messages for invalid or missing arguments.",
-            "dependencies": [
-              2
-            ],
-            "details": "Use a CLI parsing library to define flags for template path, output path, and placeholder key-value pairs. Implement input validation and help text. Success criteria: CLI accepts all required arguments and displays errors/help as needed.\n<info added on 2025-06-19T11:41:23.524Z>\nCLI implementation complete with Commander.js integration. Created a comprehensive `template` command that accepts template file path as a required argument. Added multiple configuration options including `--config` for inline JSON, `--config-file` for external JSON files, `--set KEY=VALUE` for individual values, and `--scramble` for built-in defaults. Implemented processing options for validation-only mode, strict mode, and custom output paths. Added thorough input validation with helpful error messages for missing files, invalid JSON, and malformed arguments. Developed a complete help system with examples and option descriptions. Implemented robust error handling with clean exit codes and informative messages. Conducted integration testing across multiple scenarios including default scramble values and custom configurations. The CLI now successfully processes templates with replacement logging, warnings for unused values, and detailed output summaries.\n</info added on 2025-06-19T11:41:23.524Z>",
-            "status": "done"
-          },
-          {
-            "id": 4,
-            "title": "Add Debug Utility",
-            "description": "Implement a debug mode that outputs detailed information about the template processing steps, including detected placeholders, replacement values, and any errors encountered.",
-            "dependencies": [
-              3
-            ],
-            "details": "Add a CLI flag (e.g., --debug) that, when enabled, prints step-by-step logs of the injection process. Ensure logs are clear and actionable. Success criteria: Debug output is comprehensive and aids troubleshooting.\n<info added on 2025-06-19T12:14:03.761Z>\nDebug utility implementation is now complete with comprehensive features:\n\n1. Enhanced TemplateProcessor with debug support:\n   - Added `debug` option to TemplateProcessorOptions interface\n   - Created DebugInfo interface tracking template metrics, processing steps, validation steps, and replacement details\n   - Modified process() method to collect detailed debug information\n   - Enhanced validateTemplate() with debug logging\n\n2. CLI debug flag integration:\n   - Leveraged existing `--debug` flag from addCommonOptions\n   - Fixed option access using `cmd.optsWithGlobals()`\n   - Implemented structured debug output sections with clear headers and emojis\n\n3. Added processScrambleTemplate debug support:\n   - Updated function signature for debug options\n   - Added context for scramble defaults and overrides\n   - Debug steps show configuration key information\n\n4. Improved validation logic:\n   - Fixed false positive detection in validateTemplate\n   - Updated malformed pattern regex to handle valid JavaScript syntax\n   - Properly detects actual malformed placeholders\n\n5. Testing confirms functionality:\n   - All 24 existing tests pass\n   - Manual testing verified debug output across all processing modes\n   - Error cases provide detailed debugging information\n\nThe debug output includes step-by-step logs with timestamps, type information, replacement details, configuration building steps, validation analysis, and comprehensive statistics summary.\n</info added on 2025-06-19T12:14:03.761Z>",
-            "status": "done"
-          },
-          {
-            "id": 5,
-            "title": "Test the Injection Process",
-            "description": "Develop and execute a suite of integration tests covering the full injection process, including CLI usage, placeholder replacement, error handling, and debug output.",
-            "dependencies": [
-              4
-            ],
-            "details": "Write integration tests that simulate real-world usage scenarios, including valid and invalid inputs. Verify output correctness and error reporting. Success criteria: All tests pass and coverage includes all major code paths.",
-            "status": "done"
+            "details": "Check the CLI entry point or main execution file to verify that the new command is accessible via the expected command-line syntax. Update any routing logic, switch statements, or command maps to include the new command. Test the CLI to confirm the command is invoked as intended.",
+            "status": "pending",
+            "testStrategy": ""
           }
         ]
       },
       {
         "id": 3,
-        "title": "Implement CSS selector discovery",
-        "description": "Create the core functionality to scan and identify tw-enigma generated class selectors in stylesheets.",
-        "status": "done",
+        "title": "Implement Configuration Loading and Validation",
+        "description": "Implement configuration loading and validation for the main enigma command, leveraging the existing configuration system from @tw-enigma/core.",
+        "status": "in-progress",
         "dependencies": [
           2
         ],
         "priority": "high",
-        "details": "Implement a function to scan all accessible stylesheets and identify tw-enigma generated class selectors using the regex pattern `^\\.[a-z][a-z0-9]*$`.\n\n```typescript\ninterface CSSRuleInfo {\n  rule: CSSStyleRule;\n  originalSelector: string;\n  className: string; // without the dot\n}\n\nfunction discoverTwEnigmaSelectors(): CSSRuleInfo[] {\n  const results: CSSRuleInfo[] = [];\n  const twEnigmaPattern = /^\\.[a-z][a-z0-9]*$/;\n  \n  try {\n    // Iterate through all document stylesheets\n    for (let i = 0; i < document.styleSheets.length; i++) {\n      const stylesheet = document.styleSheets[i];\n      \n      // Skip cross-origin stylesheets that can't be accessed\n      try {\n        // This will throw if stylesheet is cross-origin\n        const rules = stylesheet.cssRules || stylesheet.rules;\n        \n        // Process each rule in the stylesheet\n        for (let j = 0; j < rules.length; j++) {\n          const rule = rules[j];\n          \n          // Only process style rules (CSSStyleRule)\n          if (rule instanceof CSSStyleRule) {\n            const match = rule.selectorText.match(twEnigmaPattern);\n            if (match) {\n              results.push({\n                rule: rule,\n                originalSelector: rule.selectorText,\n                className: match[0].substring(1) // Remove the dot prefix\n              });\n            }\n          }\n        }\n      } catch (e) {\n        debug('Could not access stylesheet', i, e);\n        // Continue with next stylesheet\n      }\n    }\n  } catch (e) {\n    debug('Error discovering selectors', e);\n  }\n  \n  return results;\n}\n```\n\nImplement retry logic to handle cases where stylesheets might not be fully loaded:\n\n```typescript\nasync function discoverWithRetry(maxRetries = CONFIG.RETRY_ATTEMPTS): Promise<CSSRuleInfo[]> {\n  let results = discoverTwEnigmaSelectors();\n  let attempts = 0;\n  \n  while (results.length === 0 && attempts < maxRetries) {\n    debug(`No selectors found, retrying (${attempts + 1}/${maxRetries})...`);\n    await new Promise(resolve => setTimeout(resolve, 100));\n    results = discoverTwEnigmaSelectors();\n    attempts++;\n  }\n  \n  return results;\n}\n```\n<info added on 2025-06-19T10:45:16.952Z>\nThe regex pattern `^\\.[a-z][a-z0-9]*$` is THE CRITICAL pattern that MUST be used for tw-enigma class detection. This pattern specifically matches class selectors that start with a lowercase letter followed by any combination of lowercase letters and numbers, which is the exact format that tw-enigma generates. This pattern is mandatory and non-negotiable for proper scramble effect functionality. Any deviation from this pattern will result in incorrect selector identification and compromise the core functionality of the system.\n</info added on 2025-06-19T10:45:16.952Z>",
-        "testStrategy": "Test with a sample HTML page containing tw-enigma generated classes. Verify the function correctly identifies all tw-enigma class selectors and handles cross-origin stylesheets gracefully. Test the retry mechanism by artificially delaying stylesheet loading.",
+        "details": "Enhance the enigma command to load and validate configuration using the existing utilities from @tw-enigma/core:\n\n1. Import the necessary configuration utilities from the core package:\n```typescript\nimport { loadConfig, validateConfig, normalizeCliArguments } from '@tw-enigma/core';\nimport { defaultConfig } from '@tw-enigma/core/constants';\n```\n\n2. Implement configuration loading in the command action, following established patterns in the CLI:\n```typescript\n.action(async (options) => {\n  try {\n    // Normalize CLI arguments using existing utility\n    const normalizedOptions = normalizeCliArguments(options);\n    \n    // Load configuration from config file and CLI options using existing utility\n    const config = await loadConfig(normalizedOptions);\n    \n    // Validate the configuration using existing utility\n    const validatedConfig = validateConfig(config, defaultConfig);\n    \n    // Log configuration in verbose mode\n    if (validatedConfig.verbose) {\n      logger.debug('Configuration:', validatedConfig);\n    }\n    \n    // Command implementation will continue in subsequent tasks\n    \n  } catch (error) {\n    logger.error(`Error: ${error.message}`);\n    process.exit(1);\n  }\n});\n```\n\n3. Ensure all configuration options from the PRD are supported, including:\n- Build directory path\n- Output CSS file location\n- Pattern frequency thresholds\n- Custom identifier naming strategies\n- Scramble integration settings\n\nThe configuration should merge settings from:\n- Default configuration (from @tw-enigma/core/constants)\n- User config file (enigma.config.js)\n- Command line arguments (which take precedence)\n\nLeverage the existing TypeScript interfaces from @tw-enigma/core to ensure type safety for the configuration object.",
+        "testStrategy": "Test the main enigma command with various configuration scenarios: no config file, with config file, with CLI options overriding config file values. Verify that validation correctly identifies and reports invalid configuration values. Test with the --verbose flag to confirm configuration is properly logged. Ensure the command correctly uses the existing utilities from @tw-enigma/core.",
         "subtasks": [
           {
             "id": 1,
-            "title": "Implement Selector Scanning Function",
-            "description": "Develop the core function that traverses the DOM, extracts selectors, and matches them against CSS rules. Ensure support for various selector types (ID, class, attribute, etc.) and handle dynamic or complex selectors using regex where necessary.",
+            "title": "Import Configuration Utilities from @tw-enigma/core",
+            "description": "Import the existing configuration utilities from @tw-enigma/core package into the main enigma command.",
+            "status": "pending",
             "dependencies": [],
-            "details": "The function should use DOM APIs (e.g., querySelectorAll) to discover elements and their associated selectors. It must be modular to allow integration with error handling and retry logic in later steps. Success is defined by accurate extraction and matching of selectors for a representative set of DOM elements.\n<info added on 2025-06-19T13:13:23.818Z>\n# Implementation Exploration Plan for CSS Selector Discovery\n\n**Date: 2025-06-19**\n\n## Goal\nBuild `discoverTwEnigmaSelectors()` function that scans document.styleSheets and extracts selectors matching the required regex `^\\.[a-z][a-z0-9]*$`.\n\n## Scope for this iteration:\n\n### 1. Code skeleton\n- Create new file `packages/scramble/src/utils/selector-discovery.ts` exporting:\n  - `interface CSSRuleInfo { rule: CSSStyleRule; originalSelector: string; className: string; stylesheetHref: string | null; }`\n  - `function discoverTwEnigmaSelectors(): CSSRuleInfo[]`\n  - `async function discoverWithRetry(maxRetries = CONFIG.RETRY_ATTEMPTS, delayMs = 100): Promise<CSSRuleInfo[]>`\n- Include CONFIG import or fallback to constant for now\n\n### 2. Core algorithm details\n- Iterate over document.styleSheets\n- Wrap access in try/catch to skip cross-origin sheets; log via debug()\n- Filter CSSStyleRule only (ignore @media, etc.)\n- For each selectorText that may contain multiple selectors (comma-separated), split and test each piece against regex\n- On match push CSSRuleInfo with cleaned className minus leading dot\n\n### 3. Retry logic\n- If first pass returns 0 results, loop up to maxRetries with delay using await new Promise(res => setTimeout(res, delayMs))\n\n### 4. Edge cases considered\n- Stylesheets disabled or not yet loaded\n- Multiple selectors separated by commas\n- Pseudo-classes (we ignore by requiring exact regex match without colon)\n- Performance: break early if results exceed MAX_REGISTRY_SIZE when integrated\n\n### 5. Unit/integration tests plan\n- Use JSDOM environment to create mock document with inline and external styles\n- Mock cross-origin error by overriding cssRules getter to throw\n- Verify correct extraction array length and className values\n- Test retry logic by initially having 0 rules then injecting stylesheet after first tick\n\n### 6. File placement & exports alignment with scramble build pipeline\n\n### 7. Next steps after code\n- Implement unit tests under packages/scramble/tests/selector-discovery.test.ts\n- Update subtask 3.2 once selector scanning done\n</info added on 2025-06-19T13:13:23.818Z>",
-            "status": "done"
+            "details": "Identify and import the necessary configuration utilities (loadConfig, validateConfig, normalizeCliArguments) from @tw-enigma/core. Also import the defaultConfig from @tw-enigma/core/constants to use as the base configuration.",
+            "testStrategy": "Verify that imports are correctly set up and that the utilities are accessible within the command implementation."
           },
           {
             "id": 2,
-            "title": "Handle Cross-Origin Stylesheets",
-            "description": "Extend the selector scanning logic to detect and gracefully handle cross-origin stylesheet access issues, such as CORS errors or security exceptions.",
+            "title": "Implement Configuration Loading in Main Command",
+            "description": "Implement the main enigma command to use the existing configuration utilities following established CLI patterns.",
+            "status": "pending",
             "dependencies": [
               1
             ],
-            "details": "Implement try/catch blocks or feature detection to skip or log inaccessible stylesheets without breaking the scanning process. Success is defined by the function continuing to operate and reporting inaccessible stylesheets when encountering cross-origin restrictions.\n<info added on 2025-06-19T13:41:39.181Z>\nImplementation Plan for Handling Cross-Origin Stylesheets:\n\n1. Early Origin Check:  Before attempting to access `sheet.cssRules`, inspect `sheet.href`. Use `new URL(sheet.href, location.href).origin` and compare it to `location.origin`. If they differ, log a debug message (e.g., `Skipping cross-origin stylesheet at ${sheet.href}`) and `continue` to the next stylesheet without throwing.\n\n2. Enhanced Try/Catch:  Retain existing `try/catch` around `sheet.cssRules` access for stylesheets without a valid `href` or for browsers that set `href` to `null` for inline styles. In the `catch`, distinguish between cross-origin errors (check `e.name === 'SecurityError'` or similar) and other errors. Log appropriate debug messages for each case.\n\n3. Unit Tests:  Create test fixtures to simulate:\n   - A same-origin stylesheet (accessible rules).\n   - A cross-origin stylesheet (mock `sheet.href` with different origin and throw a `SecurityError` on `cssRules`).\n   - An inline `<style>` block (href `null` or empty) to ensure it still processes rules.\n   - A malformed stylesheet that throws an unexpected error to ensure it is caught and logged.\n\n4. Integration:  Update `discoverTwEnigmaSelectors` to include the origin check before the nested `try/catch`. Ensure the retry logic in `discoverWithRetry` still functions seamlessly with skipped stylesheets.\n\n5. Logging:  Use the existing `debug` utility to provide clear messages for:\n   - Sheets skipped due to cross-origin.\n   - Sheets processed after origin check.\n   - Errors during rules access, both security and generic.\n\nSuccess Criteria:\n- No uncaught exceptions when stylesheets are cross-origin.\n- Correct selectors from same-origin and inline stylesheets.\n- Clear debug logs illustrating skip and error handling.\n- All new and existing tests pass.\n</info added on 2025-06-19T13:41:39.181Z>",
-            "status": "done"
+            "details": "Create the main enigma command structure and implement the action handler to use normalizeCliArguments, loadConfig, and validateConfig from @tw-enigma/core. Follow the established patterns in the CLI for handling configuration.",
+            "testStrategy": "Test that the command correctly loads and validates configuration from different sources."
           },
           {
             "id": 3,
-            "title": "Integrate Retry Logic for Stylesheet Access",
-            "description": "Add robust retry logic to the stylesheet scanning process to handle transient errors (e.g., network delays, temporary CORS issues) with configurable retry limits and backoff strategies.",
+            "title": "Add Verbose Mode Configuration Logging",
+            "description": "Implement logging of the configuration object when verbose mode is enabled.",
+            "status": "pending",
             "dependencies": [
               2
             ],
-            "details": "Implement a retry mechanism that attempts to access problematic stylesheets a set number of times before failing gracefully. Success is defined by the function successfully retrying and recovering from transient errors, or failing with clear error reporting after exhausting retries.",
-            "status": "done"
+            "details": "Add logic to check if verbose mode is enabled in the validated configuration and log the complete configuration object using the logger utility.",
+            "testStrategy": "Test with and without the --verbose flag to verify that configuration is only logged when verbose mode is enabled."
           },
           {
             "id": 4,
-            "title": "Define CSSRuleInfo Interface",
-            "description": "Design and implement a TypeScript (or equivalent) interface named CSSRuleInfo to standardize the structure of extracted CSS rule data, including selector text, rule type, stylesheet source, and error metadata.",
+            "title": "Verify Support for All Required Configuration Options",
+            "description": "Ensure the command supports all configuration options specified in the PRD.",
+            "status": "pending",
             "dependencies": [
-              1
+              3
             ],
-            "details": "The interface should include fields for selector, rule type (e.g., style, media), stylesheet URL, and any error or access metadata. Success is defined by all scanning and error-handling logic outputting results conforming to this interface.",
-            "status": "done"
-          },
-          {
-            "id": 5,
-            "title": "Write Comprehensive Tests for Selector Scanning",
-            "description": "Develop automated tests covering various scenarios: standard selectors, dynamic selectors, cross-origin stylesheets, retry logic, and error cases. Ensure tests validate both successful extraction and correct error handling.",
-            "dependencies": [
-              1,
-              2,
-              3,
-              4
-            ],
-            "details": "Tests should use representative HTML/CSS fixtures and simulate cross-origin and transient error conditions. Success is defined by all tests passing, with clear assertions for selector extraction accuracy, error handling, and retry outcomes.",
-            "status": "done"
+            "details": "Review the configuration interfaces in @tw-enigma/core to ensure they include all required options from the PRD. If any options are missing, coordinate with the core package maintainers to add them. Test that all options are correctly handled by the command.",
+            "testStrategy": "Test each configuration option individually to verify it is correctly loaded, validated, and applied in the command execution."
           }
         ]
       },
       {
         "id": 4,
-        "title": "Create DOM element mapping system",
-        "description": "Implement a system to map CSS rules to their corresponding DOM elements and create a registry for synchronized updates.",
-        "details": "Create a registry data structure to map CSS rules to DOM elements:\n\n```typescript\ninterface ClassRegistry {\n  [className: string]: {\n    cssRule: CSSStyleRule;\n    elements: Element[];\n    originalClassName: string;\n  }\n}\n\nasync function buildRegistry(): Promise<ClassRegistry> {\n  const registry: ClassRegistry = {};\n  const selectors = await discoverWithRetry();\n  \n  debug(`Discovered ${selectors.length} tw-enigma selectors`);\n  \n  // Limit registry size to prevent performance issues\n  const limitedSelectors = selectors.slice(0, CONFIG.MAX_REGISTRY_SIZE);\n  \n  for (const { rule, className } of limitedSelectors) {\n    try {\n      // Find all elements with this class\n      const elements = Array.from(document.querySelectorAll(`.${className}`));\n      \n      if (elements.length > 0) {\n        registry[className] = {\n          cssRule: rule,\n          elements,\n          originalClassName: className\n        };\n      }\n    } catch (e) {\n      debug(`Error mapping elements for class ${className}`, e);\n    }\n  }\n  \n  debug(`Built registry with ${Object.keys(registry).length} active classes`);\n  return registry;\n}\n```\n\nImplement a registry cleanup function to prevent memory leaks:\n\n```typescript\nfunction cleanupRegistry(registry: ClassRegistry): void {\n  for (const className in registry) {\n    // Filter out elements that are no longer in the DOM\n    registry[className].elements = registry[className].elements.filter(el => el.isConnected);\n    \n    // Remove classes with no elements\n    if (registry[className].elements.length === 0) {\n      delete registry[className];\n    }\n  }\n  \n  debug(`Registry cleanup complete, ${Object.keys(registry).length} classes remaining`);\n}\n```",
-        "testStrategy": "Test with a sample page containing tw-enigma classes. Verify the registry correctly maps CSS rules to DOM elements. Test the cleanup function by removing elements from the DOM and checking that they're removed from the registry.",
-        "priority": "high",
+        "title": "Implement Build Directory Discovery",
+        "description": "Implement automatic discovery of the build output directory when not explicitly specified in configuration.",
+        "status": "in-progress",
         "dependencies": [
           3
         ],
-        "status": "done",
+        "priority": "medium",
+        "details": "Integrate the existing build directory discovery patterns into the main enigma command flow:\n\n1. Leverage the existing discovery logic in the codebase:\n```typescript\n// Use the existing discovery patterns from the core package\nimport { discoverBuildDirectory } from '@enigma/core/build-management';\n\n// Or reference the existing utility if it's in a different location\n```\n\n2. Integrate this function into the main command action:\n```typescript\n.action(async (options) => {\n  try {\n    // Load and validate configuration\n    const config = await loadConfig(options);\n    const validatedConfig = validateConfig(config, defaultConfig);\n    \n    // Discover build directory if not specified\n    if (!validatedConfig.buildDir) {\n      validatedConfig.buildDir = await discoverBuildDirectory(validatedConfig);\n    }\n    \n    // Log the build directory in verbose mode\n    if (validatedConfig.verbose) {\n      logger.debug(`Using build directory: ${validatedConfig.buildDir}`);\n    }\n    \n    // Continue with command implementation\n    \n  } catch (error) {\n    logger.error(`Error: ${error.message}`);\n    process.exit(1);\n  }\n});\n```\n\nThis implementation will utilize the existing sophisticated configuration handling in the CLI and the comprehensive build management from the core package, providing a zero-configuration experience for users.",
+        "testStrategy": "Test with various project structures to verify build directory discovery works correctly. Test with explicit configuration to ensure it takes precedence over automatic discovery. Test with non-existent directories to verify appropriate fallback behavior and warning messages. Ensure integration with existing CLI configuration handling works as expected.",
         "subtasks": [
           {
             "id": 1,
-            "title": "Design the Registry Data Structure",
-            "description": "Define a robust data structure to store and manage CSS rules mapped to DOM elements. Specify how rules are indexed, how elements are referenced, and how updates will be tracked. Ensure the structure supports efficient lookup, insertion, and removal.",
+            "title": "Identify Existing Discovery Logic",
+            "description": "Locate and analyze the existing build directory discovery patterns in the codebase, particularly in the core package's build management system.",
+            "status": "pending",
             "dependencies": [],
-            "details": "Document the registry schema, including types for CSS rules, element references (e.g., WeakMap for garbage collection), and any metadata needed for cleanup or updates. Success criteria: A clear, documented data structure ready for implementation.\n<info added on 2025-06-20T00:44:45.735Z>\n# Registry Data Structure Design Complete\n\n## Key Design Decisions\n\n1. **WeakRef-based Element Tracking**: Used WeakRef<Element> to prevent memory leaks and allow automatic garbage collection of DOM elements\n2. **Comprehensive Statistics**: Built-in performance monitoring and usage statistics for each class\n3. **Event System**: Event-driven architecture for registry changes (add/remove elements, cleanup, etc.)\n4. **Configurable Limits**: Configurable limits for registry size and elements per class to prevent performance issues\n5. **Computed Styles Caching**: Optional caching of computed styles for performance optimization\n\n## Core Data Structures Created\n\n### CSSRuleInfo Interface\n- Standardizes CSS rule information with rule, selector, className, and source\n- Matches the specification from Task 3 implementation\n\n### ElementReference Interface  \n- Uses WeakRef for automatic garbage collection\n- Includes metadata for debugging (tagName, classListSnapshot)\n- Tracks creation time and connection status\n\n### ClassRegistryEntry Interface\n- Maps each class to its CSS rule and element references\n- Includes usage statistics and optional computed styles cache\n- Tracks last update time for cleanup optimization\n\n### DOMElementRegistry Interface\n- Complete API for registry operations (add/remove classes and elements)\n- Built-in cleanup and statistics methods\n- Event system for reactive updates\n- Configuration management\n\n## Memory Management Strategy\n\n- **WeakRef**: Prevents memory leaks by allowing garbage collection\n- **Automatic Cleanup**: Background cleanup of stale references\n- **Configurable Limits**: Prevents unbounded growth\n- **Statistics Tracking**: Monitor memory usage and performance\n\n## Files Created\n- `packages/core/src/types/registry.ts` - Complete type definitions\n- Updated `packages/core/src/types.ts` - Export registry types\n\nThe registry data structure is now fully documented, type-safe, and ready for implementation.\n</info added on 2025-06-20T00:44:45.735Z>",
-            "status": "done"
+            "details": "Review the existing code to understand how build directory discovery is currently implemented. Document the interfaces, patterns, and configuration options that are already available. Identify any gaps or limitations in the current implementation.",
+            "testStrategy": "Verify understanding by creating a small test harness that uses the existing discovery logic."
           },
           {
             "id": 2,
-            "title": "Implement CSS Rule-to-Element Mapping Logic",
-            "description": "Develop the core logic that maps CSS rules to DOM elements, updating the registry as elements are added, removed, or mutated. Handle dynamic changes in the DOM and ensure the registry stays in sync.",
+            "title": "Integrate Discovery Utility into Command Flow",
+            "description": "Embed the existing discovery utility into the main enigma command execution flow so that discovery is triggered at the appropriate stage and its results are utilized by subsequent operations.",
+            "status": "pending",
             "dependencies": [
               1
             ],
-            "details": "Implement functions to add, update, and remove mappings. Integrate with DOM mutation observers if needed. Success criteria: Accurate, performant mapping logic with unit tests for edge cases (e.g., element removal, rule updates).\n<info added on 2025-06-20T00:48:40.872Z>\n# CSS Rule-to-Element Mapping Logic Implementation Complete\n\n## Core Implementation Features\n\n### 1. Complete DOMElementRegistryImpl Class\n- **Full Interface Implementation**: Implements all methods defined in DOMElementRegistry interface\n- **WeakRef Management**: Uses WeakRef<Element> for memory-safe element tracking\n- **Automatic Cleanup**: Background cleanup timer removes stale references\n- **Performance Monitoring**: Built-in timing and statistics collection\n\n### 2. Dynamic DOM Change Tracking\n- **MutationObserver Integration**: Automatically tracks DOM changes (class attributes, element addition/removal)\n- **Real-time Updates**: Registry stays synchronized with DOM mutations\n- **Efficient Change Detection**: Only processes relevant changes to tracked classes\n- **Automatic Element Discovery**: Finds new elements when they're added to the DOM\n\n### 3. Core Mapping Functions\n- **addClass()**: Add new CSS rules and their elements to registry\n- **removeClass()**: Remove classes from registry with cleanup\n- **addElement()**: Add individual elements to existing class entries\n- **removeElement()**: Remove elements from class entries\n- **getElements()**: Retrieve live elements for a class (filters out garbage collected)\n- **getCSSRule()**: Get CSS rule associated with a class\n\n### 4. Memory Management & Performance\n- **Configurable Limits**: maxRegistrySize and maxElementsPerClass prevent unbounded growth\n- **Stale Reference Cleanup**: Automatic removal of garbage collected or disconnected elements\n- **Performance Timers**: Track operation times for optimization\n- **Memory Estimation**: Rough calculation of registry memory usage\n- **Event System**: Emit events for registry changes (add/remove elements, cleanup)\n\n### 5. Factory Functions & Easy Usage\n- **createRegistry()**: Simple factory function for creating registry instances\n- **buildRegistry()**: Initialize registry from CSSRuleInfo array\n- **createTestRegistry()**: Utility for testing with mock CSS rules\n\n## Key Algorithm Details\n\n### Element Discovery Process\n1. Use document.querySelectorAll() to find elements with target class\n2. Create WeakRef for each element to allow garbage collection\n3. Store metadata (tagName, classList snapshot, timestamps) for debugging\n4. Limit element count per class to prevent performance issues\n\n### Mutation Handling Strategy  \n1. **Class Attribute Changes**: Detect when elements gain/lose tracked classes\n2. **DOM Node Addition**: Check new elements and descendants for tracked classes\n3. **DOM Node Removal**: Let cleanup process handle stale references automatically\n4. **Batch Processing**: Trigger cleanup when many classes change simultaneously\n\n### Memory Management Approach\n1. **WeakRef Usage**: Elements can be garbage collected when no longer referenced\n2. **Periodic Cleanup**: Timer-based cleanup removes stale references\n3. **Configurable Limits**: Prevent registry from growing too large\n4. **Statistics Tracking**: Monitor memory usage and cleanup effectiveness\n\n## Files Created/Modified\n- `packages/core/src/registry/DOMElementRegistry.ts` - Main implementation\n- `packages/core/src/registry/index.ts` - Factory functions and exports\n- `packages/core/src/index.ts` - Added registry exports to main package\n- `packages/core/src/types/registry.ts` - Complete type definitions (from subtask 4.1)\n\n## Integration Points\n- **MutationObserver API**: For DOM change detection\n- **WeakRef API**: For memory-safe element references\n- **performance.now()**: For timing measurements\n- **Event System**: For reactive updates and debugging\n\nThe mapping logic is complete with comprehensive DOM change tracking, automatic cleanup, and performance monitoring. Ready for testing and integration.\n</info added on 2025-06-20T00:48:40.872Z>\n<info added on 2025-06-20T00:57:07.869Z>\n# Implementation Complete - Subtask 4.2\n\n## Test Results Summary\n- ✅ 43/44 tests passing (97.7% success rate)\n- ✅ 89.26% code coverage on DOMElementRegistry.ts\n- ✅ One skipped test related to garbage collection edge cases (JSDOM localStorage limitation)\n\n## Technical Challenges Resolved\n- Fixed import issue with DEFAULT_REGISTRY_CONFIG\n- Configured JSDOM environment for DOM-based tests\n- Fixed Node.ELEMENT_NODE references for JSDOM compatibility\n- Resolved timing issues in tests\n\n## Test Coverage Areas\n- Registry Creation & Initialization\n- Class Management (add/remove)\n- Element Queries & Retrieval\n- Cleanup & Memory Management\n- Statistics & Performance Tracking\n- Event System\n- Configuration Management\n- Edge Cases & Error Handling\n- MutationObserver Integration\n\nAll core functionality is thoroughly tested and working as expected. The implementation meets all success criteria with accurate and performant mapping logic plus comprehensive unit tests for edge cases.\n</info added on 2025-06-20T00:57:07.869Z>",
-            "status": "done"
+            "details": "Modify the command flow to invoke the existing discovery utility, handle its outputs, and ensure seamless data handoff. Ensure the integration respects the CLI's sophisticated configuration handling. Document any changes to existing workflows.",
+            "testStrategy": "Test the integration with various configuration scenarios to ensure proper behavior."
           },
           {
             "id": 3,
-            "title": "Build the Registry Builder Component",
-            "description": "Create a component or module that initializes and manages the registry lifecycle, exposing an API for registering, querying, and updating CSS rules and their associated elements.",
+            "title": "Enhance Logging and Error Handling",
+            "description": "Review and enhance the logging and error handling for the build directory discovery process to ensure clear feedback to users.",
+            "status": "pending",
             "dependencies": [
               2
             ],
-            "details": "Implement initialization, teardown, and public methods for registry interaction. Ensure compatibility with server/client rendering if applicable. Success criteria: Registry builder passes integration tests and exposes a stable API.\n<info added on 2025-06-20T00:59:10.799Z>\nI've implemented the Registry Builder component with all required functionality. The class provides comprehensive lifecycle management for registry instances with unique IDs, properly handling initialization, updates, and destruction. The public API exposes stable methods for registry operations including element registration, lookup, and batch operations.\n\nIntegration with the CSS rule discovery system is complete, allowing seamless connection between discovered rules and their corresponding DOM elements. The implementation is fully compatible with both server-side and client-side rendering, with special handling for hydration scenarios.\n\nError handling is robust with try/catch blocks around critical operations, automatic recovery mechanisms, and detailed error reporting. Performance monitoring is included with timing metrics for key operations.\n\nAll integration tests are passing, confirming the Registry Builder correctly interfaces with other system components. Memory management is optimized with proper cleanup of references when registries are destroyed.\n\nThe API documentation is complete and includes usage examples for common scenarios.\n</info added on 2025-06-20T00:59:10.799Z>\n<info added on 2025-06-20T01:06:25.448Z>\n🎉 **SUBTASK 4.3 COMPLETE!** - Registry Builder Component Successfully Implemented\n\n**Implementation Summary:**\n✅ **Complete Registry Builder Class** - Full lifecycle management with comprehensive API\n✅ **Factory Functions** - `createRegistryBuilder`, global singleton with `getGlobalRegistryBuilder`\n✅ **Comprehensive Configuration** - SSR compatibility, auto-initialization, performance monitoring\n✅ **Multiple Registry Management** - Create, update, destroy registries with unique IDs\n✅ **Bulk Operations** - Efficient operations across multiple registries\n✅ **Event System Integration** - Full event management propagation to all registries\n✅ **Error Handling & Recovery** - Robust error boundaries with detailed error tracking\n✅ **Performance Metrics** - Built-in timing, memory usage, and operation statistics\n✅ **Memory Management** - Proper cleanup and resource management\n✅ **Testing Suite** - 34 comprehensive tests covering all functionality\n\n**Key Features Delivered:**\n1. **Lifecycle Management**: Complete initialization, update, and destruction workflows\n2. **Multi-Registry Architecture**: Support for managing multiple registry instances\n3. **SSR/Client Compatibility**: Intelligent server-side and client-side rendering support\n4. **Integration Ready**: Hook for CSS rule discovery (Task 3 integration point)\n5. **Production Ready**: Error recovery, performance monitoring, memory management\n\n**API Highlights:**\n- `createRegistry(id, config?, selectors?)` - Create new registry instances\n- `updateRegistry(id, selectors)` - Update existing registries\n- `bulkOperation(operation, registryIds?)` - Batch operations across registries\n- `getAggregatedStats()` - Combined statistics from all registries\n- `addEventListener/removeEventListener` - Global event management\n\n**Test Results:**\n- ✅ 34 tests passing (100% success rate)\n- ✅ 90.19% code coverage\n- ✅ All edge cases and error scenarios covered\n- ✅ Concurrent operations, SSR compatibility, and memory management tested\n\n**Integration Points Ready:**\n- CSS rule discovery function integration ready\n- Event propagation to individual registries working\n- Export integration complete in main package index\n- Type system fully integrated\n\nThe Registry Builder Component provides a complete, production-ready API for managing DOM element registries with enterprise-level features including robust error handling, performance monitoring, and comprehensive testing coverage.\n</info added on 2025-06-20T01:06:25.448Z>",
-            "status": "done"
-          },
-          {
-            "id": 4,
-            "title": "Add Cleanup and Memory Management Logic",
-            "description": "Implement logic to clean up unused CSS rules and element references from the registry, preventing memory leaks and stale state. Ensure cleanup is triggered on DOM mutations and component unmounts.",
-            "dependencies": [
-              3
-            ],
-            "details": "Use WeakMap or similar structures for element references. Add hooks or listeners for DOM changes. Success criteria: No memory leaks detected in stress tests; registry remains accurate after element removal.\n<info added on 2025-06-20T01:08:43.462Z>\n# Memory Management Implementation Plan\n\n## Advanced Memory Management\n- Implement Memory Pressure API integration to detect system memory constraints\n- Create adaptive cleanup frequency mechanism that adjusts based on memory pressure\n- Develop memory pool for element references to reduce allocation overhead\n- Implement LRU cache eviction strategy for registry entries\n\n## Framework Integration\n- Add React component lifecycle hooks for automatic cleanup on unmount\n- Create Vue component integration for lifecycle-aware reference management\n- Develop framework-agnostic unmount detection for broader compatibility\n- Implement SSR-specific memory management strategies\n\n## Monitoring & Detection\n- Build memory leak detection tools with visual reporting\n- Create stress testing utilities that simulate high DOM manipulation scenarios\n- Implement performance profiling to identify memory usage patterns\n- Add memory optimization recommendation system based on usage patterns\n\n## Success Criteria\n- System maintains stable memory footprint under high-stress conditions\n- Automatic cleanup correctly triggers based on component lifecycle events\n- Memory pressure detection successfully prioritizes cleanup when system resources are constrained\n- Stress tests show no memory leaks after 10,000+ element creation/destruction cycles\n</info added on 2025-06-20T01:08:43.462Z>",
-            "status": "done"
-          },
-          {
-            "id": 5,
-            "title": "Validate Implementation with Comprehensive Tests",
-            "description": "Develop and run a suite of unit and integration tests to validate all registry behaviors, including mapping, updates, cleanup, and edge cases. Ensure correctness under concurrent DOM mutations.",
-            "dependencies": [
-              4
-            ],
-            "details": "Write tests for all public APIs and internal logic. Include tests for rapid DOM changes, rule updates, and cleanup. Success criteria: All tests pass; code coverage meets project standards; no regressions found.",
-            "status": "done"
+            "details": "Ensure appropriate log levels are used for discovery information. Add detailed error messages for common failure scenarios. Verify that warnings are issued when falling back to default behavior. Make sure verbose mode provides sufficient debugging information.",
+            "testStrategy": "Test various error conditions and verify appropriate messages are displayed. Check that verbose mode provides useful debugging information."
           }
         ]
       },
       {
         "id": 5,
-        "title": "Implement class name scrambling algorithm",
-        "description": "Create the core algorithm for generating random class names and ensuring they don't conflict with existing classes.",
-        "details": "Implement functions to generate random class names and check for conflicts:\n\n```typescript\nfunction generateRandomClassName(length = 1): string {\n  let result = '';\n  const charset = CONFIG.CHARSET;\n  \n  // First character must be a letter (a-z)\n  result += charset.substring(0, 26).charAt(Math.floor(Math.random() * 26));\n  \n  // If length > 1, add more random characters (can include numbers)\n  for (let i = 1; i < length; i++) {\n    result += charset.charAt(Math.floor(Math.random() * charset.length));\n  }\n  \n  return result;\n}\n\nfunction generateUniqueClassName(registry: ClassRegistry, preferredLength = 1): string {\n  // Start with preferred length, increase if needed to find unique name\n  let length = preferredLength;\n  let attempts = 0;\n  let className;\n  \n  do {\n    className = generateRandomClassName(length);\n    attempts++;\n    \n    // If we've tried too many times at this length, increase length\n    if (attempts > 10) {\n      length++;\n      attempts = 0;\n    }\n  } while (registry[className]);\n  \n  return className;\n}\n```\n\nImplement the function to scramble a single class:\n\n```typescript\nfunction scrambleClass(registry: ClassRegistry, originalClassName: string): void {\n  const entry = registry[originalClassName];\n  if (!entry) return;\n  \n  try {\n    // Generate a new unique class name\n    const newClassName = generateUniqueClassName(registry, originalClassName.length);\n    \n    // Update the CSS rule\n    entry.cssRule.selectorText = `.${newClassName}`;\n    \n    // Update all DOM elements\n    for (const element of entry.elements) {\n      element.classList.remove(originalClassName);\n      element.classList.add(newClassName);\n    }\n    \n    // Update registry with new class name\n    registry[newClassName] = entry;\n    delete registry[originalClassName];\n  } catch (e) {\n    debug(`Error scrambling class ${originalClassName}`, e);\n  }\n}\n```",
-        "testStrategy": "Test the random class name generation to ensure it follows the pattern of starting with a letter and containing only allowed characters. Test the scrambling function with a sample registry and verify that both the CSS rule and DOM elements are updated correctly.",
-        "priority": "high",
+        "title": "Integrate Core CSS Optimization Engine",
+        "description": "Integrate the existing CSS optimization engine from packages/core to perform the pattern analysis, CSS generation, and asset rewriting.",
+        "status": "in-progress",
         "dependencies": [
           4
         ],
-        "status": "done",
+        "priority": "high",
+        "details": "Connect the main enigma command to the core CSS optimization engine that already exists in packages/core:\n\n1. Import the core optimization function (already available):\n```typescript\nimport { optimizeCSS } from '@tw-enigma/core';\n```\n\n2. Integrate it into the command action:\n```typescript\n.action(async (options) => {\n  try {\n    // Previous steps: load config, validate, discover build dir\n    \n    // Check for dry run mode\n    if (validatedConfig.dryRun) {\n      logger.info('Dry run mode: No files will be modified');\n    }\n    \n    // Log the start of optimization\n    logger.info('Starting Tailwind CSS pattern optimization...');\n    \n    // Call the core optimization engine\n    const result = await optimizeCSS({\n      buildDir: validatedConfig.buildDir,\n      outputCssPath: validatedConfig.outputCss,\n      patternThreshold: validatedConfig.patternThreshold,\n      dryRun: validatedConfig.dryRun,\n      verbose: validatedConfig.verbose,\n      // Pass all other relevant configuration options\n    });\n    \n    // Log optimization results\n    logger.info(`Optimization complete!`);\n    logger.info(`- Patterns analyzed: ${result.patternsAnalyzed}`);\n    logger.info(`- Patterns consolidated: ${result.patternsConsolidated}`);\n    logger.info(`- Files processed: ${result.filesProcessed}`);\n    logger.info(`- CSS size reduction: ${result.cssReduction}%`);\n    \n    // Continue with scramble integration if enabled\n    \n  } catch (error) {\n    logger.error(`Error during optimization: ${error.message}`);\n    process.exit(1);\n  }\n});\n```\n\n3. Ensure all configuration options are properly passed to the core engine, including:\n- Build directory path\n- Output CSS file location\n- Pattern frequency thresholds\n- Custom identifier naming strategies\n- Dry run mode flag\n- Verbose logging flag\n\nThe integration should leverage all existing functionality in the core engine without duplicating any logic. Since the core CSS optimization engine is already fully implemented in @tw-enigma/core and the CLI already imports from it, this task is focused on properly connecting the command interface to the existing engine.",
+        "testStrategy": "Test with a sample Tailwind CSS project to verify the optimization process works end-to-end. Verify pattern analysis, CSS generation, and asset rewriting all function correctly. Test with dry run mode to ensure no files are modified. Test with verbose logging to verify detailed progress reporting.",
         "subtasks": [
           {
             "id": 1,
-            "title": "Implement Random Class Name Generation",
-            "description": "Develop a function that generates random class names using a secure randomization algorithm. Ensure the generated names conform to CSS naming conventions and are of configurable length.",
+            "title": "Import and Wire the Core Engine",
+            "description": "Verify the core engine module is properly imported and accessible for subsequent operations.",
+            "status": "pending",
             "dependencies": [],
-            "details": "The function must avoid reserved keywords and invalid characters. Success is defined by generating a class name string that passes all CSS selector validation checks.",
-            "status": "done"
+            "details": "Since the CLI already imports from @tw-enigma/core, verify the import statement is correct and that the optimizeCSS function is properly accessible. No additional initialization is needed as the engine is already fully implemented.",
+            "testStrategy": "Verify the import statement works without errors and the optimizeCSS function can be called."
           },
           {
             "id": 2,
-            "title": "Enforce Uniqueness of Class Names",
-            "description": "Create a mechanism to check that each generated class name is unique within the current registry. If a collision is detected, regenerate until a unique name is found.",
+            "title": "Map and Pass Configuration",
+            "description": "Map user or system configuration options to the core engine's expected input format and pass them during execution.",
+            "status": "pending",
             "dependencies": [
               1
             ],
-            "details": "Maintain an in-memory or persistent registry of used class names. Success is defined by no duplicate class names being present after each generation.",
-            "status": "done"
+            "details": "Identify all relevant configuration parameters from the CLI options and ensure they are correctly provided to the optimizeCSS function. This includes buildDir, outputCssPath, patternThreshold, dryRun, verbose, and any other configuration options supported by the core engine.",
+            "testStrategy": "Test with various configuration options to ensure they are correctly passed to the core engine."
           },
           {
             "id": 3,
-            "title": "Update CSS Rules with New Class Names",
-            "description": "Develop logic to insert or update CSS rules in the stylesheet to reflect the new class names. Ensure that rules are correctly scoped and do not overwrite existing unrelated styles.",
+            "title": "Handle Dry Run and Verbose Flags",
+            "description": "Implement logic to support dry run and verbose modes, ensuring these flags are correctly interpreted and influence the engine's behavior as intended.",
+            "status": "pending",
             "dependencies": [
               2
             ],
-            "details": "CSS rules must be inserted into the correct stylesheet and be immediately effective in the DOM. Success is defined by the new class name having the intended visual effect.",
-            "status": "done"
+            "details": "Add checks for dry run and verbose flags in the configuration, ensure they are properly passed to the optimizeCSS function, and add appropriate logging to indicate when dry run mode is active.",
+            "testStrategy": "Test with dry run and verbose flags to verify the behavior matches expectations."
           },
           {
             "id": 4,
-            "title": "Update DOM Elements with Generated Class Names",
-            "description": "Implement a process to update relevant DOM elements to use the newly generated class names. Ensure that all affected elements are correctly targeted and updated.",
+            "title": "Logging and Result Handling",
+            "description": "Set up comprehensive logging and manage the results produced by the core engine, including error handling and output formatting.",
+            "status": "pending",
             "dependencies": [
               3
             ],
-            "details": "DOM updates must be atomic and not cause flicker or inconsistent state. Success is defined by all intended elements reflecting the new class name and associated styles.",
-            "status": "done"
-          },
-          {
-            "id": 5,
-            "title": "Synchronize and Update the Class Name Registry",
-            "description": "Update the class name registry to reflect all changes, ensuring it remains consistent with both the DOM and CSS rules. Handle edge cases such as rollbacks or failed updates.",
-            "dependencies": [
-              4
-            ],
-            "details": "The registry must accurately represent the current state of class names in use. Success is defined by no orphaned or stale entries after any operation.",
-            "status": "done"
-          },
-          {
-            "id": 6,
-            "title": "Comprehensive Testing of All Code Paths",
-            "description": "Design and execute tests covering all code paths, including random generation, uniqueness enforcement, CSS and DOM updates, and registry synchronization. Include edge cases and failure scenarios.",
-            "dependencies": [
-              5
-            ],
-            "details": "Tests must verify correctness, performance, and resilience to edge cases (e.g., rapid updates, collisions, DOM mutations). Success is defined by all tests passing and coverage of all identified code paths.",
-            "status": "done"
+            "details": "Implement structured logging for the optimization process, including start, completion, and error messages. Format and display the results returned by the optimizeCSS function, including patterns analyzed, patterns consolidated, files processed, and CSS size reduction.",
+            "testStrategy": "Verify that all expected log messages are displayed and that the results are properly formatted and shown to the user."
           }
         ]
       },
       {
         "id": 6,
-        "title": "Implement synchronized update system",
-        "description": "Create a system that synchronizes CSS rule and DOM element updates to prevent visual flicker during scrambling.",
-        "details": "Implement the main scramble function that updates all classes in the registry:\n\n```typescript\nfunction scrambleAllClasses(registry: ClassRegistry): void {\n  // Get all current class names (before we start modifying the registry)\n  const classNames = Object.keys(registry);\n  \n  // Process each class\n  for (const className of classNames) {\n    if (registry[className]) { // Check again as registry might have changed\n      scrambleClass(registry, className);\n    }\n  }\n}\n```\n\nImplement the main animation loop using requestAnimationFrame for optimal performance:\n\n```typescript\nlet lastScrambleTime = 0;\nlet registry: ClassRegistry = {};\nlet isRunning = false;\n\nfunction scrambleLoop(timestamp: number): void {\n  if (!isRunning) return;\n  \n  // Request next frame first to ensure smooth animation\n  requestAnimationFrame(scrambleLoop);\n  \n  // Check if it's time to scramble\n  if (timestamp - lastScrambleTime >= CONFIG.SCRAMBLE_INTERVAL) {\n    lastScrambleTime = timestamp;\n    \n    // Perform scrambling\n    scrambleAllClasses(registry);\n    \n    // Periodically clean up registry (every CLEANUP_INTERVAL seconds)\n    if (Math.floor(timestamp / 1000) % CONFIG.CLEANUP_INTERVAL === 0) {\n      cleanupRegistry(registry);\n    }\n  }\n}\n\nfunction startScrambling(): void {\n  if (isRunning) return;\n  isRunning = true;\n  requestAnimationFrame(scrambleLoop);\n  debug('Scrambling started');\n}\n\nfunction stopScrambling(): void {\n  isRunning = false;\n  debug('Scrambling stopped');\n}\n```",
-        "testStrategy": "Test the synchronized update system by running it on a sample page and verifying that CSS rules and DOM elements are updated in sync. Use browser DevTools to monitor for any visual flicker during updates. Verify that the animation loop respects the configured interval.",
-        "priority": "high",
+        "title": "Implement Scramble Package Detection",
+        "description": "Implement detection of the @tw-enigma/scramble package to enable conditional scramble integration.",
+        "status": "in-progress",
         "dependencies": [
           5
         ],
-        "status": "done",
+        "priority": "medium",
+        "details": "Leverage existing package detection patterns in the CLI utilities to detect if the scramble package is available and can be integrated:\n\n1. Reuse the dynamic import capabilities from `cli-helpers.ts` for package detection:\n```typescript\nimport { logger } from './logger';\n\n// Reuse existing patterns from cli-helpers.ts for package detection\nexport async function isPackageAvailable(packageName: string): Promise<boolean> {\n  try {\n    // Use the same dynamic import pattern that's already used in the scramble command\n    await import(packageName);\n    return true;\n  } catch (error) {\n    // Package not found or not installed\n    return false;\n  }\n}\n```\n\n2. Integrate scramble detection into the main command action, following the pattern used in the scramble command:\n```typescript\n.action(async (options) => {\n  try {\n    // Previous steps: load config, validate, optimize CSS\n    \n    // Check if scramble integration is requested\n    if (validatedConfig.scramble) {\n      // Reuse the dynamic import pattern from the scramble command\n      try {\n        logger.info('Attempting to load scramble package...');\n        // This follows the pattern already used in the scramble command\n        const scrambleModule = await import('@tw-enigma/scramble');\n        logger.info('Scramble package detected. Enabling scramble integration.');\n        // Scramble integration will be implemented in the next task\n      } catch (error) {\n        logger.warn('Scramble package not found. Install @tw-enigma/scramble to enable scrambling.');\n      }\n    }\n    \n    // Continue with command completion\n    \n  } catch (error) {\n    logger.error(`Error: ${error.message}`);\n    process.exit(1);\n  }\n});\n```\n\nThis implementation should only attempt to integrate with scramble when:\n1. The user has explicitly requested scramble integration with the `--scramble` flag\n2. The scramble package is actually available in the project\n\nThis follows the PRD requirement for opt-in behavior rather than automatic detection.",
+        "testStrategy": "Test with and without the scramble package installed to verify correct detection. Test with and without the --scramble flag to verify opt-in behavior. Verify appropriate log messages in each scenario.",
         "subtasks": [
           {
             "id": 1,
-            "title": "Implement Main Scramble Loop with requestAnimationFrame",
-            "description": "Develop the core scramble animation loop using requestAnimationFrame to ensure smooth, frame-synchronized updates. The loop should update the DOM or CSS properties as needed for the scramble effect.",
+            "title": "Implement Package Detection Utility",
+            "description": "Reuse existing dynamic import patterns from cli-helpers.ts to detect the scramble package, adapting the approach already used in the scramble command.",
+            "status": "pending",
             "dependencies": [],
-            "details": "The loop must be initiated and stopped cleanly, and each frame should only update the necessary elements. Success is defined by a visually smooth scramble effect with no dropped frames.",
-            "status": "done"
+            "details": "Instead of creating a new utility from scratch, adapt the existing dynamic import pattern from cli-helpers.ts that's already used in the scramble command. This ensures consistency across the codebase and leverages proven functionality.",
+            "testStrategy": "Test the utility with both existing and non-existing packages to verify it correctly identifies package availability."
           },
           {
             "id": 2,
-            "title": "Synchronize CSS and DOM Updates in Real Time",
-            "description": "Ensure that updates to CSS and DOM are tightly synchronized to prevent visual artifacts or flicker. Implement logic to batch or sequence updates as needed.",
+            "title": "Integrate Detection Logic into Command Flow",
+            "description": "Incorporate the package detection approach into the main command flow, following the pattern already established in the scramble command.",
+            "status": "pending",
             "dependencies": [
               1
             ],
-            "details": "Use techniques such as batching DOM changes or leveraging the Virtual DOM (if using React) to minimize layout thrashing. Success is defined by consistent visual output with no observable desynchronization between CSS and DOM changes.",
-            "status": "done"
-          },
-          {
-            "id": 3,
-            "title": "Integrate Cleanup and Interval Management",
-            "description": "Implement cleanup logic to clear intervals, timeouts, or animation frames when the scramble effect is stopped or the component is unmounted.",
-            "dependencies": [
-              1
-            ],
-            "details": "All timers and animation handles must be tracked and disposed of to prevent memory leaks or lingering effects. Success is defined by no residual intervals or animation frames after cleanup.",
-            "status": "done"
-          },
-          {
-            "id": 4,
-            "title": "Design and Manage Scramble State",
-            "description": "Create a robust state management system to track the current scramble status, animation progress, and any relevant data for the effect.",
-            "dependencies": [
-              1
-            ],
-            "details": "State should be updated atomically and in sync with the animation loop. If using React, leverage useState/useRef appropriately. Success is defined by accurate state reflection and no race conditions.",
-            "status": "done"
-          },
-          {
-            "id": 5,
-            "title": "Test for Visual Flicker and Artifacts",
-            "description": "Develop and execute tests (manual or automated) to detect and diagnose visual flicker, tearing, or artifacts during the scramble animation.",
-            "dependencies": [
-              2,
-              3,
-              4
-            ],
-            "details": "Tests should include rapid start/stop cycles, stress scenarios, and edge cases. Success is defined by the absence of visual flicker or artifacts under all tested conditions.",
-            "status": "done"
-          },
-          {
-            "id": 6,
-            "title": "Validate Synchronization and Performance",
-            "description": "Profile and validate that CSS and DOM updates remain synchronized and performant under various loads. Optimize as needed.",
-            "dependencies": [
-              5
-            ],
-            "details": "Use browser dev tools and performance profiling to ensure updates are efficient and synchronized. Success is defined by stable frame rates and no measurable lag or desync.",
-            "status": "done"
+            "details": "Adapt the main enigma command to use the same dynamic import pattern for @tw-enigma/scramble that's already used in the dedicated scramble command. Ensure proper error handling and conditional logic based on the --scramble flag.",
+            "testStrategy": "Test the integration with various combinations of flag settings and package availability to ensure correct behavior in all scenarios."
           }
         ]
       },
       {
         "id": 7,
-        "title": "Implement accessibility compliance",
-        "description": "Add support for respecting the prefers-reduced-motion media query to automatically disable the scrambling effect for users with motion sensitivity.",
-        "details": "Implement a function to check for reduced motion preference:\n\n```typescript\nfunction shouldReduceMotion(): boolean {\n  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;\n}\n```\n\nModify the initialization function to respect this preference:\n\n```typescript\nasync function initialize(): Promise<void> {\n  // Check for reduced motion preference\n  if (shouldReduceMotion()) {\n    debug('Reduced motion preference detected, scrambling disabled');\n    return;\n  }\n  \n  try {\n    // Build the registry\n    registry = await buildRegistry();\n    \n    // Start scrambling if we found any classes\n    if (Object.keys(registry).length > 0) {\n      startScrambling();\n    } else {\n      debug('No tw-enigma classes found, scrambling disabled');\n    }\n  } catch (e) {\n    debug('Error initializing scramble effect', e);\n  }\n}\n```\n\nAdd a listener for changes to the media query:\n\n```typescript\nfunction setupMotionPreferenceListener(): void {\n  const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');\n  \n  // Modern browsers\n  if (mediaQuery.addEventListener) {\n    mediaQuery.addEventListener('change', () => {\n      if (mediaQuery.matches) {\n        stopScrambling();\n      } else {\n        initialize();\n      }\n    });\n  }\n  // Older browsers\n  else if (mediaQuery.addListener) {\n    mediaQuery.addListener(() => {\n      if (mediaQuery.matches) {\n        stopScrambling();\n      } else {\n        initialize();\n      }\n    });\n  }\n}\n```",
-        "testStrategy": "Test by simulating the prefers-reduced-motion media query in browser DevTools. Verify that the scrambling effect is disabled when reduced motion is preferred and enabled when it's not. Test the listener by changing the preference while the page is open.",
+        "title": "Implement Scramble Integration Pipeline",
+        "description": "Implement the integration pipeline with @tw-enigma/scramble when available and requested, following the scramble PRD integration sequence.",
+        "details": "Implement the scramble integration pipeline that builds and injects the scramble functionality when requested:\n\n1. Import the necessary scramble functions (dynamically to avoid dependency errors):\n```typescript\nasync function integrateScramble(config, optimizationResult) {\n  // Dynamically import scramble functions to avoid dependency errors\n  // when scramble is not installed\n  const { buildScramble, injectScrambleIntoHtml } = require('@tw-enigma/scramble');\n  \n  logger.info('Building scramble with configuration...');\n  \n  // Build scramble with user configuration\n  const scrambleResult = await buildScramble({\n    speed: config.scrambleSpeed || 100,\n    debug: config.scrambleDebug || false,\n    // Pass other scramble configuration options\n  });\n  \n  logger.info('Injecting scramble into HTML files...');\n  \n  // Inject scramble script into HTML files\n  const injectionResult = await injectScrambleIntoHtml({\n    buildDir: config.buildDir,\n    scrambleScript: scrambleResult.script,\n    dryRun: config.dryRun,\n  });\n  \n  logger.info(`Scramble integration complete!`);\n  logger.info(`- HTML files injected: ${injectionResult.filesInjected}`);\n  \n  return {\n    ...optimizationResult,\n    scrambleEnabled: true,\n    scrambleFilesInjected: injectionResult.filesInjected,\n  };\n}\n```\n\n2. Integrate this function into the main command action:\n```typescript\n.action(async (options) => {\n  try {\n    // Previous steps: load config, validate, optimize CSS, detect scramble\n    \n    let result = optimizationResult;\n    \n    // Integrate with scramble if requested and available\n    if (validatedConfig.scramble && isScrambleAvailable) {\n      result = await integrateScramble(validatedConfig, result);\n    }\n    \n    // Log final results\n    logger.info('Enigma optimization complete!');\n    if (result.scrambleEnabled) {\n      logger.info('Scramble integration: Enabled');\n    }\n    \n    // Command completion\n    \n  } catch (error) {\n    logger.error(`Error during scramble integration: ${error.message}`);\n    process.exit(1);\n  }\n});\n```\n\nThis implementation should follow the scramble PRD integration sequence exactly, ensuring that scramble is only integrated when explicitly requested with the `--scramble` flag.",
+        "testStrategy": "Test the complete integration pipeline with the scramble package installed and the --scramble flag enabled. Verify scramble script is correctly built and injected into HTML files. Test with various scramble configuration options (speed, debug mode) to verify they are correctly passed to the scramble build function.",
         "priority": "medium",
         "dependencies": [
           6
         ],
-        "status": "done",
+        "status": "pending",
         "subtasks": [
           {
             "id": 1,
-            "title": "Detect Reduced Motion Preference Using JavaScript",
-            "description": "Implement logic to detect the user's reduced motion preference using the `window.matchMedia('(prefers-reduced-motion: reduce)')` API. Ensure the detection returns a boolean indicating whether the user prefers reduced motion.",
+            "title": "Implement Dynamic Import of Scramble Functions",
+            "description": "Set up code to dynamically import the scramble functions module using JavaScript's import() syntax, ensuring asynchronous loading and error handling.",
             "dependencies": [],
-            "details": "Write a function that returns true if the user has enabled reduced motion in their OS settings, and false otherwise. Use `window.matchMedia('(prefers-reduced-motion: reduce)').matches` as the detection mechanism. Validate that the function works across major browsers.",
-            "status": "done"
+            "details": "Use import() to load the scramble module only when needed. Handle the returned promise to access the module's exports and manage any loading errors appropriately.",
+            "status": "pending",
+            "testStrategy": ""
           },
           {
             "id": 2,
-            "title": "Modify Initialization Logic Based on Reduced Motion Preference",
-            "description": "Update the application's initialization logic to conditionally enable or disable animations and motion effects based on the detected reduced motion preference.",
+            "title": "Build Scramble with Configurable Options",
+            "description": "Develop logic to initialize and configure the scramble function using provided configuration parameters after the module is dynamically imported.",
             "dependencies": [
               1
             ],
-            "details": "Refactor the initialization code so that if reduced motion is preferred, all non-essential animations are disabled or replaced with static alternatives. Ensure that the logic is centralized and easy to maintain. Test that the application initializes correctly in both reduced and normal motion scenarios.",
-            "status": "done"
+            "details": "Once the scramble module is loaded, use the configuration object to build or initialize the scramble function, ensuring it adapts to different settings as required.",
+            "status": "pending",
+            "testStrategy": ""
           },
           {
             "id": 3,
-            "title": "Add Listener for Preference Changes",
-            "description": "Implement an event listener that responds to changes in the user's reduced motion preference at runtime, updating the application's behavior accordingly.",
+            "title": "Inject Scramble Output into HTML",
+            "description": "Create functionality to insert the result of the scramble function into the appropriate HTML element on the page.",
             "dependencies": [
-              1,
               2
             ],
-            "details": "Use the `addEventListener('change', ...)` method on the MediaQueryList returned by `window.matchMedia('(prefers-reduced-motion: reduce)')` to listen for changes. Ensure that when the preference changes, the application updates its animation and motion settings without requiring a page reload. Test by toggling the OS-level reduced motion setting and verifying dynamic updates.",
-            "status": "done"
+            "details": "After generating the scramble output, select the target HTML element and update its content with the scramble result, ensuring proper DOM manipulation.",
+            "status": "pending",
+            "testStrategy": ""
           },
           {
             "id": 4,
-            "title": "Implement Security Compliance Checks",
-            "description": "Add security validations for CSP compliance, iframe detection, and origin validation to ensure the scramble effect works safely in various environments.",
-            "details": "Implement checks for Content Security Policy compliance (inline script restrictions), detect iframe context to prevent clickjacking issues, and validate document origin to ensure the script runs only in expected contexts. Include graceful fallbacks when security restrictions prevent normal operation.",
-            "status": "done",
+            "title": "Integrate Results and Implement Logging",
+            "description": "Combine all previous steps into a cohesive workflow and add logging to track each phase and any errors encountered.",
             "dependencies": [
               3
             ],
-            "parentTaskId": 7
+            "details": "Ensure the dynamic import, configuration, HTML injection, and any errors are logged for debugging and monitoring. Integrate all steps into a single, maintainable process.",
+            "status": "pending",
+            "testStrategy": ""
           }
         ]
       },
       {
         "id": 8,
-        "title": "Implement performance monitoring",
-        "description": "Add performance monitoring capabilities to track CPU usage, memory consumption, and animation frame timing when in debug mode.",
-        "details": "Implement performance monitoring functions that only run when PERFORMANCE_MONITORING is enabled:\n\n```typescript\ninterface PerformanceMetrics {\n  frameTime: number[];\n  memoryUsage?: any;\n  lastReportTime: number;\n}\n\nconst metrics: PerformanceMetrics = {\n  frameTime: [],\n  lastReportTime: 0\n};\n\nfunction trackPerformance(startTime: number): void {\n  if (!CONFIG.PERFORMANCE_MONITORING) return;\n  \n  // Track frame time\n  const frameTime = performance.now() - startTime;\n  metrics.frameTime.push(frameTime);\n  \n  // Limit array size\n  if (metrics.frameTime.length > 100) {\n    metrics.frameTime.shift();\n  }\n  \n  // Track memory usage if available\n  if (performance.memory) {\n    metrics.memoryUsage = performance.memory;\n  }\n  \n  // Report metrics every 5 seconds\n  const now = performance.now();\n  if (now - metrics.lastReportTime > 5000) {\n    reportPerformanceMetrics();\n    metrics.lastReportTime = now;\n  }\n}\n\nfunction reportPerformanceMetrics(): void {\n  if (!CONFIG.PERFORMANCE_MONITORING) return;\n  \n  // Calculate average frame time\n  const avgFrameTime = metrics.frameTime.reduce((sum, time) => sum + time, 0) / metrics.frameTime.length;\n  \n  debug('Performance metrics:');\n  debug(`- Average frame time: ${avgFrameTime.toFixed(2)}ms`);\n  debug(`- Max frame time: ${Math.max(...metrics.frameTime).toFixed(2)}ms`);\n  \n  if (metrics.memoryUsage) {\n    debug(`- Memory usage: ${(metrics.memoryUsage.usedJSHeapSize / 1024 / 1024).toFixed(2)}MB`);\n  }\n}\n```\n\nModify the scramble loop to include performance tracking:\n\n```typescript\nfunction scrambleLoop(timestamp: number): void {\n  if (!isRunning) return;\n  \n  // Request next frame first\n  requestAnimationFrame(scrambleLoop);\n  \n  // Check if it's time to scramble\n  if (timestamp - lastScrambleTime >= CONFIG.SCRAMBLE_INTERVAL) {\n    const startTime = performance.now();\n    lastScrambleTime = timestamp;\n    \n    // Perform scrambling\n    scrambleAllClasses(registry);\n    \n    // Track performance\n    trackPerformance(startTime);\n    \n    // Periodically clean up registry\n    if (Math.floor(timestamp / 1000) % CONFIG.CLEANUP_INTERVAL === 0) {\n      cleanupRegistry(registry);\n    }\n  }\n}\n```",
-        "testStrategy": "Enable performance monitoring and test on a page with many tw-enigma classes. Verify that performance metrics are logged to the console every 5 seconds. Check that the metrics include frame time and memory usage (if available). Ensure that performance monitoring doesn't significantly impact the scrambling effect itself.",
-        "priority": "low",
+        "title": "Implement Dry Run Mode",
+        "description": "Implement a comprehensive dry run mode that simulates the entire optimization process without modifying any files.",
+        "status": "in-progress",
         "dependencies": [
-          6
+          5,
+          7
         ],
-        "status": "done",
+        "priority": "medium",
+        "details": "Integrate existing dry run capabilities from the core CSS optimization engine with the main enigma command:\n\n1. Update the command options to include dry run mode:\n```typescript\n.option('--dry-run', 'Simulate optimization without modifying files')\n```\n\n2. Implement dry run handling in the command action, leveraging the existing configuration handling system:\n```typescript\n.action(async (options) => {\n  try {\n    // Load and validate configuration\n    const config = await loadConfig(options);\n    const validatedConfig = validateConfig(config, defaultConfig);\n    \n    // Check for dry run mode and notify user\n    if (validatedConfig.dryRun) {\n      logger.info('DRY RUN MODE: No files will be modified');\n      logger.info('This will show what would happen if the command was run normally');\n    }\n    \n    // Use existing configuration handling to propagate dry run flag\n    // The core CSS optimization engine already supports dry run patterns\n    const result = await optimizeCSS({\n      ...validatedConfig,\n      dryRun: validatedConfig.dryRun,\n    });\n    \n    // Show detailed results in dry run mode\n    if (validatedConfig.dryRun) {\n      logger.info('--- Dry Run Results ---');\n      logger.info(`Files that would be processed: ${result.filesProcessed}`);\n      logger.info(`Patterns that would be consolidated: ${result.patternsConsolidated}`);\n      logger.info(`CSS that would be generated: ${result.outputCssPath}`);\n      \n      // Show sample of pattern replacements\n      if (result.patternReplacements && result.patternReplacements.length > 0) {\n        logger.info('Sample pattern replacements:');\n        result.patternReplacements.slice(0, 5).forEach(replacement => {\n          logger.info(`  \"${replacement.pattern}\" → \"${replacement.identifier}\"`); \n        });\n      }\n    }\n    \n    // Continue with scramble integration if enabled\n    // (also respecting dry run mode)\n    \n  } catch (error) {\n    logger.error(`Error: ${error.message}`);\n    process.exit(1);\n  }\n});\n```\n\nThe task is to connect the existing dry run capabilities in the core CSS optimization engine with the main enigma command, ensuring the dry run flag is properly propagated through the sophisticated configuration handling system that's already in place.",
+        "testStrategy": "Test dry run mode with a sample project and verify no files are modified. Compare the reported changes with actual changes when run without dry run mode to ensure accuracy. Test with verbose logging to verify detailed reporting of what would happen. Verify that the existing dry run patterns in the core CSS optimization engine are properly utilized.",
         "subtasks": [
           {
             "id": 1,
-            "title": "Define and Instrument Performance Metrics Collection",
-            "description": "Identify key performance metrics relevant to the scramble loop (e.g., execution time, memory usage, throughput, error rates). Instrument the codebase to collect these metrics at appropriate points, ensuring minimal impact on core logic. Use a standardized logging or monitoring library for consistency.",
+            "title": "Connect Dry Run Flag to Existing Configuration System",
+            "description": "Integrate the dry run flag with the existing sophisticated configuration handling system to ensure it's properly propagated to all components.",
+            "status": "pending",
             "dependencies": [],
-            "details": "Success criteria: Metrics are clearly defined, documented, and collected automatically during each scramble loop execution. Metrics collection does not interfere with core functionality.",
-            "status": "done"
+            "details": "Identify the configuration handling system's entry points and ensure the dry run flag is properly captured from command options and passed through the configuration validation process.",
+            "testStrategy": "Verify that when the --dry-run flag is provided, it's correctly reflected in the validated configuration object."
           },
           {
             "id": 2,
-            "title": "Integrate Metrics Reporting and Visualization",
-            "description": "Implement a reporting mechanism to aggregate and visualize collected performance metrics. Integrate with existing dashboards or monitoring tools, ensuring real-time or scheduled reporting. Provide clear, actionable visualizations for stakeholders.",
+            "title": "Leverage Existing Dry Run Patterns in Core Engine",
+            "description": "Ensure the main enigma command properly utilizes the existing dry run capabilities in the core CSS optimization engine.",
+            "status": "pending",
             "dependencies": [
               1
             ],
-            "details": "Success criteria: Metrics are accessible via dashboard or reports, updated in real-time or at defined intervals. Stakeholders can interpret and act on the reported data.",
-            "status": "done"
+            "details": "Review the core CSS optimization engine's dry run implementation and ensure the main command correctly passes the flag and handles the returned simulation results.",
+            "testStrategy": "Test that the core engine's dry run behavior is triggered correctly when the flag is passed from the main command."
           },
           {
             "id": 3,
-            "title": "Update Scramble Loop to Support Metrics Hooks",
-            "description": "Refactor the scramble loop to include hooks or callbacks for performance metric collection and reporting. Ensure the integration is modular and does not introduce side effects or performance regressions.",
+            "title": "Implement Comprehensive Results Reporting",
+            "description": "Create a detailed reporting mechanism for dry run mode that clearly shows what actions would have been taken.",
+            "status": "pending",
             "dependencies": [
-              1,
               2
             ],
-            "details": "Success criteria: Scramble loop executes with metrics hooks enabled, and performance data is collected and reported as designed. No regressions or logic errors are introduced.",
-            "status": "done"
-          },
-          {
-            "id": 4,
-            "title": "Conduct Load Testing and Validate Metrics Accuracy",
-            "description": "Design and execute load tests simulating high-traffic scenarios. Validate that performance metrics are accurately collected and reported under load. Identify and resolve any bottlenecks or inaccuracies in the metrics pipeline.",
-            "dependencies": [
-              3
-            ],
-            "details": "Success criteria: Metrics remain accurate and complete under load. Any issues with data integrity, reporting latency, or system performance are identified and resolved.",
-            "status": "done"
+            "details": "Implement logging that presents the simulated results in a user-friendly format, showing file counts, pattern consolidations, and sample replacements.",
+            "testStrategy": "Verify that the dry run output provides clear, accurate information about what would happen in a real run."
           }
         ]
       },
       {
         "id": 9,
-        "title": "Implement main initialization and self-execution",
-        "description": "Create the main initialization function and self-executing code to start the scrambling effect when the script loads.",
-        "details": "Implement the main initialization function that ties everything together:\n\n```typescript\nasync function main(): Promise<void> {\n  debug('tw-enigma/scramble initializing...');\n  debug('Configuration:', CONFIG);\n  \n  // Setup motion preference listener\n  setupMotionPreferenceListener();\n  \n  // Wait for DOM to be ready\n  if (document.readyState === 'loading') {\n    await new Promise(resolve => {\n      document.addEventListener('DOMContentLoaded', resolve);\n    });\n  }\n  \n  // Initialize scrambling\n  await initialize();\n}\n```\n\nAdd self-executing code at the end of the file:\n\n```typescript\n// Self-executing function\n(async () => {\n  try {\n    await main();\n  } catch (e) {\n    console.error('[tw-enigma/scramble] Fatal error:', e);\n  }\n})();\n```\n\nEnsure the script is wrapped in an IIFE to prevent global scope pollution:\n\n```typescript\n// The entire script should be wrapped in an IIFE\n(function() {\n  // All code goes here\n  \n  // Self-executing initialization at the end\n  (async () => {\n    try {\n      await main();\n    } catch (e) {\n      console.error('[tw-enigma/scramble] Fatal error:', e);\n    }\n  })();\n})();\n```",
-        "testStrategy": "Test the initialization by including the script in a sample HTML page. Verify that the scrambling effect starts automatically when the page loads. Test error handling by intentionally causing errors and verifying they're caught and logged properly.",
-        "priority": "medium",
+        "title": "Implement Verbose Logging and Progress Reporting",
+        "description": "Implement comprehensive verbose logging and progress reporting throughout the optimization process.",
+        "status": "in-progress",
         "dependencies": [
+          5,
           7
         ],
-        "status": "done",
+        "priority": "medium",
+        "details": "Integrate existing logging and progress tracking utilities into the enigma command:\n\n1. Update the command options to include verbose mode:\n```typescript\n.option('--verbose', 'Enable detailed logging of the optimization process')\n```\n\n2. Utilize the existing Logger configuration from `packages/cli/src/utils/logger-config.ts` that's imported from `@tw-enigma/core`:\n```typescript\nimport { Logger } from '@tw-enigma/core';\nimport { getLoggerConfig } from './utils/logger-config';\n\n// In the command action\nconst logger = new Logger(getLoggerConfig({\n  verbose: options.verbose,\n  enableProgressTracking: true\n}));\n```\n\n3. Integrate the existing logger throughout the command action:\n```typescript\n.action(async (options) => {\n  try {\n    // Initialize logger with appropriate configuration\n    const logger = new Logger(getLoggerConfig({\n      verbose: options.verbose,\n      enableProgressTracking: true\n    }));\n    \n    // Load and validate configuration\n    logger.startProgress('Loading configuration...');\n    const config = await loadConfig(options);\n    const validatedConfig = validateConfig(config, defaultConfig);\n    logger.completeProgress('Configuration loaded successfully');\n    \n    // Log detailed configuration if in verbose mode\n    if (options.verbose) {\n      logger.debug('Using configuration:', validatedConfig);\n    }\n    \n    // Use logger throughout the process\n    logger.startProgress('Analyzing Tailwind CSS patterns...');\n    // ... optimization steps\n    logger.updateProgress('Generating optimized CSS...');\n    // ... more steps\n    logger.completeProgress('Optimization complete!');\n    \n    // Log detailed results\n    if (options.verbose) {\n      logger.debug('Optimization details:', result);\n    }\n    \n    // Continue with command completion\n    \n  } catch (error) {\n    logger.error(`Error: ${error.message}`);\n    process.exit(1);\n  }\n});\n```\n\nThe verbose logging should provide detailed information about:\n- Configuration being used\n- Files being processed\n- Patterns being analyzed and consolidated\n- CSS being generated\n- Scramble integration steps\n\nThis helps users understand the optimization process and troubleshoot issues.",
+        "testStrategy": "Test with and without the --verbose flag to verify appropriate level of detail in logs. Verify progress reporting works correctly with the existing Logger configuration. Test error scenarios to ensure appropriate error reporting.",
         "subtasks": [
           {
             "id": 1,
-            "title": "Design and Implement the Main Initialization Function",
-            "description": "Create a main initialization function that sets up all required variables and state for the application. Ensure all variables are declared and initialized at the top of the function using 'let' or 'const' as appropriate, following JavaScript best practices to avoid global variables and undefined values.",
+            "title": "Integrate Existing Logger Configuration",
+            "description": "Integrate the existing Logger configuration from packages/cli/src/utils/logger-config.ts into the enigma command.",
+            "status": "pending",
             "dependencies": [],
-            "details": "The function should encapsulate all setup logic, declare variables at the top, and initialize them with default values. Use 'const' for objects and arrays to prevent accidental type changes. The function should not pollute the global namespace.",
-            "status": "done"
+            "details": "Import and utilize the existing Logger from @tw-enigma/core and the logger configuration utility. Ensure the logger is properly initialized with the correct verbosity level based on command options.",
+            "testStrategy": "Verify that the Logger is correctly initialized with different verbosity levels based on command options."
           },
           {
             "id": 2,
-            "title": "Implement DOM Readiness Handling",
-            "description": "Ensure the initialization function executes only after the DOM is fully loaded. Use appropriate event listeners or modern APIs to detect DOM readiness and trigger the main initialization function.",
+            "title": "Implement Progress Tracking in Command Flow",
+            "description": "Utilize the existing progress tracking capabilities of the Logger throughout the command execution flow.",
+            "status": "pending",
             "dependencies": [
               1
             ],
-            "details": "Attach the initialization function to the DOMContentLoaded event or use a similar mechanism to guarantee that DOM elements are accessible when initialization runs. Avoid using deprecated or unreliable methods.",
-            "status": "done"
+            "details": "Use the startProgress, updateProgress, and completeProgress methods at key points in the command execution to provide clear feedback to users about the current operation.",
+            "testStrategy": "Test that progress updates appear correctly during command execution and that they provide meaningful information about the current state."
           },
           {
             "id": 3,
-            "title": "Integrate Motion Preference Logic",
-            "description": "Add logic to detect the user's motion preferences (e.g., prefers-reduced-motion) and adjust initialization behavior accordingly. Ensure this logic is modular and does not interfere with other initialization steps.",
+            "title": "Add Detailed Logging for Verbose Mode",
+            "description": "Implement conditional detailed logging that only appears when verbose mode is enabled.",
+            "status": "pending",
             "dependencies": [
-              2
+              1
             ],
-            "details": "Use the 'window.matchMedia' API to check for motion preferences. Store the result in a local variable and use it to conditionally enable or disable motion-related features during initialization.",
-            "status": "done"
+            "details": "Add debug-level logging statements that provide detailed information about the optimization process, including configuration details, file processing, pattern analysis, and CSS generation.",
+            "testStrategy": "Verify that detailed logs only appear when the --verbose flag is used and that they provide useful diagnostic information."
           },
           {
             "id": 4,
-            "title": "Wrap All Logic in a Self-Executing Function",
-            "description": "Encapsulate the entire initialization process, including DOM readiness and motion preference logic, within a self-executing anonymous function to prevent global scope pollution.",
+            "title": "Test and Validate Logging Behavior",
+            "description": "Thoroughly test the command in both standard and verbose modes to verify that progress reporting and logging behave as expected.",
+            "status": "pending",
             "dependencies": [
+              2,
               3
             ],
-            "details": "Use an Immediately Invoked Function Expression (IIFE) to wrap all code. Ensure no variables or functions leak to the global scope. The IIFE should contain all previous logic in the correct order.\n<info added on 2025-06-19T10:41:29.988Z>\nImplement comprehensive error handling within the IIFE wrapper using try-catch blocks to isolate the scramble effect from the host page. Structure the error boundary to catch initialization errors, runtime exceptions, and any other potential failures. Include error logging functionality that provides meaningful debug information without exposing sensitive details. Implement graceful degradation patterns so that if the scramble effect fails, the original text remains visible and functional. Add specific error recovery mechanisms for common failure scenarios such as unsupported browsers, DOM manipulation failures, or animation timing issues. Ensure all error handlers are non-blocking and maintain the principle that script failures should never impact the core functionality of the host website.\n</info added on 2025-06-19T10:41:29.988Z>",
-            "status": "done"
+            "details": "Test the command with and without the --verbose flag to ensure appropriate level of detail in logs. Verify that progress tracking works correctly and that error scenarios are properly reported.",
+            "testStrategy": "Run the command with various configurations and verify that the logging output matches expectations. Test error scenarios to ensure they are properly reported."
           }
         ]
       },
       {
         "id": 10,
-        "title": "Implement CLI integration for package discovery",
-        "description": "Create the CLI integration logic to detect the scramble package and handle its absence gracefully.",
-        "details": "Implement the package discovery logic in the CLI:\n\n```typescript\n// In the CLI codebase\nimport { existsSync } from 'fs';\nimport { resolve } from 'path';\n\nasync function detectScramblePackage(): Promise<string | null> {\n  try {\n    // Try to resolve the package path\n    const packagePath = resolve(process.cwd(), 'packages-private/scramble/dist/scramble.min.js');\n    \n    // Check if the file exists\n    if (existsSync(packagePath)) {\n      return packagePath;\n    }\n    \n    // Alternative resolution methods\n    try {\n      // Try using require.resolve (works in Node.js environments)\n      return require.resolve('@tw-enigma/scramble/dist/scramble.min.js');\n    } catch (e) {\n      // Package not found via require.resolve\n    }\n    \n    return null;\n  } catch (e) {\n    console.warn('⚠️ Error detecting scramble package:', e);\n    return null;\n  }\n}\n\n// Usage in CLI command handler\nasync function handleScrambleFlag(options: any): Promise<void> {\n  if (options.scramble) {\n    const scramblePackagePath = await detectScramblePackage();\n    \n    if (scramblePackagePath) {\n      console.log('✅ Scramble package found at:', scramblePackagePath);\n      await integrateScrambleEffect(scramblePackagePath, options);\n    } else {\n      console.warn('⚠️ Scramble effect requires @tw-enigma/scramble package, which was not found. Skipping scramble integration.');\n      // Continue normal CLI operation without scramble\n    }\n  }\n}\n```",
-        "testStrategy": "Test the package discovery logic with and without the scramble package installed. Verify that it correctly finds the package when available and gracefully handles its absence. Test with different working directories to ensure path resolution works correctly.",
-        "priority": "medium",
+        "title": "Implement Comprehensive Error Handling",
+        "description": "Implement comprehensive error handling throughout the command to provide clear, actionable error messages for all failure scenarios.",
+        "status": "in-progress",
         "dependencies": [
+          5,
+          7,
+          8,
           9
         ],
-        "status": "done",
+        "priority": "medium",
+        "details": "Integrate the existing error handling utilities from `packages/cli/src/utils/error-handling.ts` into the enigma command:\n\n1. Use the existing error handling utilities:\n```typescript\nimport { CLIError, handleCLIError } from '../utils/error-handling';\n```\n\n2. Integrate error handling into the command action:\n```typescript\n.action(async (options) => {\n  try {\n    // Command implementation\n  } catch (error) {\n    handleCLIError(error);\n  }\n});\n```\n\n3. Use specific error types throughout the implementation:\n```typescript\n// Example of using specific error types\nif (!await fs.pathExists(config.buildDir)) {\n  throw new CLIError(\n    `Build directory \"${config.buildDir}\" not found.`, \n    'BUILD_DIR_NOT_FOUND'\n  );\n}\n\nif (config.scramble && !isScrambleAvailable) {\n  throw new CLIError(\n    'Scramble integration requested but @tw-enigma/scramble is not installed.', \n    'SCRAMBLE_NOT_INSTALLED'\n  );\n}\n```\n\nThis implementation leverages the existing error handling system which already provides proper exit codes, logging integration, and error categorization to deliver clear, actionable error messages for all failure scenarios.",
+        "testStrategy": "Test various error scenarios to verify appropriate error messages and exit codes. Test with specific error types to verify helpful guidance is provided. Test unexpected errors to verify graceful handling.",
         "subtasks": [
           {
             "id": 1,
-            "title": "Implement Package Path Resolution Logic",
-            "description": "Develop a function that resolves a package path given a module name and a base directory, following Node.js resolution semantics. The function should handle package.json lookups, consult relevant fields (e.g., exports, main, module), and return the absolute path or null if not found. Ensure memoization for performance and consistency with Node.js require behavior.",
+            "title": "Create Error Types and Utilities",
+            "description": "Design and implement a hierarchy of custom error types and utility functions to standardize error creation, encapsulate error details, and support exception chaining.",
+            "status": "done",
             "dependencies": [],
-            "details": "Technical requirements: Use file system APIs to traverse directories and locate package.json files. Parse package.json and check fields in the correct order (exports, browser, module, main). Memoize results for repeated lookups. Expected outcome: Given a valid module name and base directory, the function returns the resolved absolute path or null if the package cannot be found.",
-            "status": "done"
+            "details": "Define custom error classes that inherit from built-in exceptions, ensuring each error type is descriptive and supports additional context. Implement utility functions for error instantiation and propagation, following best practices for thorough error checking and exception handling.",
+            "testStrategy": ""
           },
           {
             "id": 2,
-            "title": "Handle Missing Package Scenarios and Error Reporting",
-            "description": "Extend the resolution logic to robustly handle cases where the package cannot be found or is missing required fields. Implement clear error messages or return values for missing packages, invalid package.json, or unresolved entry points. Ensure that error handling does not cause unhandled exceptions and provides actionable feedback.",
+            "title": "Integrate Error Handling in Command Flow",
+            "description": "Embed robust error handling mechanisms throughout the command execution flow, ensuring all potential failure points are covered and errors are caught and managed appropriately.",
+            "status": "pending",
             "dependencies": [
               1
             ],
-            "details": "Technical requirements: Detect missing package.json, missing entry fields, or invalid paths. Return null or throw a controlled error with a descriptive message. Log or propagate errors in a way that can be consumed by CLI handlers. Expected outcome: All missing or invalid package scenarios are handled gracefully, with clear and actionable error reporting.",
-            "status": "done"
+            "details": "Wrap command logic in try/catch blocks, use the existing CLIError types from packages/cli/src/utils/error-handling.ts, and ensure errors are handled with the handleCLIError function. Restore state and resources as needed to maintain program stability.",
+            "testStrategy": ""
           },
           {
             "id": 3,
-            "title": "Integrate Package Resolution with CLI Command Handlers",
-            "description": "Connect the package path resolution and error handling logic to CLI command handlers. Ensure that CLI commands can invoke the resolution logic, receive results or errors, and display appropriate output to the user. Provide CLI options for specifying base directories or module names, and ensure exit codes and messages reflect resolution outcomes.",
+            "title": "Map Error Codes to Actionable Guidance",
+            "description": "Leverage the existing error categorization system to ensure appropriate guidance messages are displayed for each error type.",
+            "status": "pending",
             "dependencies": [
+              1,
               2
             ],
-            "details": "Technical requirements: Expose resolution logic via CLI commands. Parse CLI arguments for module name and base directory. Display resolved paths or error messages to the user. Set appropriate exit codes for success or failure. Expected outcome: CLI commands correctly resolve package paths, handle errors, and provide clear user feedback.",
-            "status": "done"
+            "details": "Review the existing error code mappings in the error-handling.ts file and ensure all potential error scenarios in the enigma command are covered with appropriate error codes and messages. Add any missing error types or guidance messages specific to the command's functionality.",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Test Error Scenarios and Handling",
+            "description": "Design and execute comprehensive tests to simulate various error scenarios, verifying that error types, handling, and guidance mapping work as intended.",
+            "status": "pending",
+            "dependencies": [
+              1,
+              2,
+              3
+            ],
+            "details": "Write unit and integration tests that trigger different error conditions, assert correct error propagation, and validate that actionable messages are delivered. Include tests for both synchronous and asynchronous error flows.",
+            "testStrategy": ""
           }
         ]
       },
       {
         "id": 11,
-        "title": "Implement CLI configuration injection",
-        "description": "Create the CLI functionality to inject user configuration into the scramble script template.",
-        "details": "Implement the configuration injection logic in the CLI:\n\n```typescript\n// In the CLI codebase\nimport { readFileSync, writeFileSync } from 'fs';\n\ninterface ScrambleOptions {\n  scrambleSpeed?: number;\n  scrambleDebug?: boolean;\n  scrambleMode?: string;\n  scrambleCharset?: string;\n}\n\nasync function injectScrambleConfiguration(\n  templatePath: string,\n  outputPath: string,\n  options: ScrambleOptions\n): Promise<void> {\n  try {\n    // Read the template file\n    let template = readFileSync(templatePath, 'utf8');\n    \n    // Default configuration\n    const config = {\n      SCRAMBLE_INTERVAL: options.scrambleSpeed || 150,\n      SCRAMBLE_MODE: options.scrambleMode || 'all',\n      CHARSET: options.scrambleCharset || 'abcdefghijklmnopqrstuvwxyz0123456789',\n      DEBUG_MODE: options.scrambleDebug || false,\n      RETRY_ATTEMPTS: 3,\n      CLEANUP_INTERVAL: 30,\n      MAX_REGISTRY_SIZE: 1000,\n      PERFORMANCE_MONITORING: options.scrambleDebug || false\n    };\n    \n    // Validate configuration\n    if (config.SCRAMBLE_INTERVAL < 50) {\n      console.warn('⚠️ Scramble interval too low, setting to minimum of 50ms');\n      config.SCRAMBLE_INTERVAL = 50;\n    }\n    \n    if (config.SCRAMBLE_INTERVAL > 1000) {\n      console.warn('⚠️ Scramble interval too high, setting to maximum of 1000ms');\n      config.SCRAMBLE_INTERVAL = 1000;\n    }\n    \n    // Replace template placeholders\n    template = template\n      .replace('{{SCRAMBLE_INTERVAL}}', config.SCRAMBLE_INTERVAL.toString())\n      .replace('{{SCRAMBLE_MODE}}', config.SCRAMBLE_MODE)\n      .replace('{{CHARSET}}', config.CHARSET)\n      .replace('{{DEBUG_MODE}}', config.DEBUG_MODE.toString())\n      .replace('{{RETRY_ATTEMPTS}}', config.RETRY_ATTEMPTS.toString())\n      .replace('{{CLEANUP_INTERVAL}}', config.CLEANUP_INTERVAL.toString())\n      .replace('{{MAX_REGISTRY_SIZE}}', config.MAX_REGISTRY_SIZE.toString())\n      .replace('{{PERFORMANCE_MONITORING}}', config.PERFORMANCE_MONITORING.toString());\n    \n    // Write the configured file\n    writeFileSync(outputPath, template, 'utf8');\n    \n    console.log('✅ Scramble configuration injected successfully');\n  } catch (e) {\n    console.error('❌ Error injecting scramble configuration:', e);\n    throw e;\n  }\n}\n```",
-        "testStrategy": "Test the configuration injection with various combinations of CLI options. Verify that the template placeholders are correctly replaced with the provided values. Test validation by providing invalid values and checking that they're corrected.",
+        "title": "Implement Command Help and Documentation",
+        "description": "Implement comprehensive command help text and documentation to guide users on using the main enigma command.",
+        "details": "Enhance the command with detailed help text and examples:\n\n1. Update the command description and help text:\n```typescript\ncommand\n  .name('enigma')\n  .description('Optimize Tailwind CSS by consolidating repetitive class patterns')\n  .usage('[options]')\n  .addHelpText('after', `\nExamples:\n  $ enigma                                # Basic optimization with auto-discovery\n  $ enigma --build-dir dist              # Specify build directory\n  $ enigma --output-css styles/enigma.css # Specify output CSS location\n  $ enigma --dry-run --verbose           # Preview optimization without changes\n  $ enigma --scramble --scramble-speed 100 # Enable scrambling effect\n`)\n```\n\n2. Add detailed option descriptions:\n```typescript\ncommand\n  .option('--build-dir <dir>', 'Specify build output directory (auto-discovered if not provided)')\n  .option('--output-css <path>', 'Specify output CSS file location (defaults to enigma.css in build dir)')\n  .option('--pattern-threshold <number>', 'Minimum occurrences for pattern consolidation (default: 3)')\n  .option('--dry-run', 'Simulate optimization without modifying files')\n  .option('--verbose', 'Enable detailed logging of the optimization process')\n  .option('--scramble', 'Enable scramble integration (requires @tw-enigma/scramble)')\n  .option('--scramble-speed <speed>', 'Set scramble animation speed (default: 100)')\n  .option('--scramble-debug', 'Enable scramble debug mode')\n```\n\n3. Update the main README.md to include documentation for the new command:\n```markdown\n## Core Command\n\nThe main `enigma` command performs the complete CSS pattern optimization workflow:\n\n```bash\n# Basic optimization\nenigma\n\n# With configuration\nenigma --build-dir dist --output-css assets/enigma.css\n\n# With scrambling effect\nenigma --scramble --scramble-speed 100\n\n# Dry run mode\nenigma --dry-run --verbose\n```\n\nThis implementation provides clear guidance on how to use the command, making it accessible to new users.",
+        "testStrategy": "Test the help output by running `enigma --help` and verifying all options and examples are correctly displayed. Verify the README.md documentation is accurate and comprehensive.",
         "priority": "medium",
         "dependencies": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
           10
         ],
-        "status": "done",
+        "status": "pending",
         "subtasks": [
           {
             "id": 1,
-            "title": "Read Template File",
-            "description": "Open and read the template file from disk, ensuring the file exists and is accessible. Handle file I/O errors gracefully and confirm the template content is loaded into memory as a string.",
+            "title": "Update Command Help Text and Examples",
+            "description": "Revise the CLI help output to ensure it provides clear, concise help text and practical usage examples. Ensure help is accessible via standard flags (e.g., -h, --help) and includes links to further documentation where appropriate.",
             "dependencies": [],
-            "details": "The template file path must be provided as input. If the file does not exist or cannot be read, return a clear error message. Success is defined as having the template content available for further processing.",
-            "status": "done"
+            "details": "Follow best practices by leading with examples, keeping instructions brief, and making help accessible from all relevant entry points. Include click-to-copy examples and ensure the help text is easy to scan for key information.",
+            "status": "pending",
+            "testStrategy": ""
           },
           {
             "id": 2,
-            "title": "Validate and Prepare Configuration",
-            "description": "Load the configuration data, validate required keys and value types, and prepare a mapping of placeholders to values. Ensure all placeholders in the template have corresponding configuration entries.",
+            "title": "Enhance Option Descriptions",
+            "description": "Improve the descriptions for all command-line options and flags to ensure clarity and completeness. Make sure each option is documented with its purpose, usage, and any important details.",
             "dependencies": [
               1
             ],
-            "details": "Configuration can be loaded from a file or object. Validate that all required fields are present and of correct type. If validation fails, output a detailed error. Success is defined as a validated, ready-to-use configuration mapping.",
-            "status": "done"
+            "details": "Document all public flags, keep descriptions concise, and use formatting to highlight important information. Ensure that option descriptions support both new and experienced users by being easy to skim and understand.",
+            "status": "pending",
+            "testStrategy": ""
           },
           {
             "id": 3,
-            "title": "Replace Placeholders in Template",
-            "description": "Iterate through the template content and replace all placeholders with their corresponding values from the validated configuration. Handle missing or extra placeholders with explicit error or warning messages.",
+            "title": "Update README Documentation",
+            "description": "Revise the external README or documentation files to reflect the updated help text, examples, and option descriptions. Ensure the documentation is consistent with the CLI output and provides additional context as needed.",
             "dependencies": [
+              1,
               2
             ],
-            "details": "Use a consistent placeholder syntax (e.g., {{key}}). Ensure all placeholders are replaced and no unresolved placeholders remain. If a placeholder is missing in the configuration, halt and report the issue. Success is a fully rendered template string.",
-            "status": "done"
-          },
-          {
-            "id": 4,
-            "title": "Write Output File",
-            "description": "Write the rendered template string to the specified output file path. Ensure the output file is created or overwritten as needed, and handle any file system errors.",
-            "dependencies": [
-              3
-            ],
-            "details": "The output file path must be provided. Confirm that the file is written successfully and is readable. If writing fails, report the error with details. Success is a correctly written output file containing the rendered template.",
-            "status": "done"
+            "details": "Provide inline links to command references, include runnable code examples, and ensure the documentation is structured for both quick reference and deeper reading. Align README content with the latest CLI help and option details.",
+            "status": "pending",
+            "testStrategy": ""
           }
         ]
       },
       {
         "id": 12,
-        "title": "Implement HTML discovery and script injection",
-        "description": "Create the CLI functionality to discover HTML files in the build output and inject the scramble script.",
-        "details": "Implement HTML discovery and script injection in the CLI:\n\n```typescript\n// In the CLI codebase\nimport { readFileSync, writeFileSync } from 'fs';\nimport { glob } from 'glob';\nimport { join, relative } from 'path';\n\nasync function findHtmlFiles(buildDir: string): Promise<string[]> {\n  return new Promise((resolve, reject) => {\n    glob('**/*.html', { cwd: buildDir, absolute: true }, (err, files) => {\n      if (err) reject(err);\n      else resolve(files);\n    });\n  });\n}\n\nasync function injectScriptIntoHtml(\n  htmlFile: string,\n  scriptPath: string\n): Promise<boolean> {\n  try {\n    // Read the HTML file\n    let html = readFileSync(htmlFile, 'utf8');\n    \n    // Calculate relative path from HTML file to script\n    const htmlDir = htmlFile.substring(0, htmlFile.lastIndexOf('/'));\n    const relativeScriptPath = relative(htmlDir, scriptPath);\n    \n    // Check if script is already injected\n    if (html.includes(relativeScriptPath)) {\n      console.log(`⚠️ Script already injected in ${htmlFile}`);\n      return false;\n    }\n    \n    // Inject script before closing body tag\n    const scriptTag = `<script src=\"${relativeScriptPath}\"></script>`;\n    html = html.replace('</body>', `  ${scriptTag}\\n</body>`);\n    \n    // Write the modified HTML\n    writeFileSync(htmlFile, html, 'utf8');\n    \n    console.log(`✅ Injected script into ${htmlFile}`);\n    return true;\n  } catch (e) {\n    console.error(`❌ Error injecting script into ${htmlFile}:`, e);\n    return false;\n  }\n}\n\nasync function injectScrambleIntoHtmlFiles(\n  buildDir: string,\n  scriptPath: string\n): Promise<void> {\n  try {\n    // Find all HTML files\n    const htmlFiles = await findHtmlFiles(buildDir);\n    console.log(`Found ${htmlFiles.length} HTML files in ${buildDir}`);\n    \n    // Inject script into each HTML file\n    let successCount = 0;\n    for (const htmlFile of htmlFiles) {\n      const success = await injectScriptIntoHtml(htmlFile, scriptPath);\n      if (success) successCount++;\n    }\n    \n    console.log(`✅ Injected scramble script into ${successCount}/${htmlFiles.length} HTML files`);\n  } catch (e) {\n    console.error('❌ Error injecting scramble script into HTML files:', e);\n  }\n}\n```",
-        "testStrategy": "Test HTML discovery with a sample build directory containing HTML files in various subdirectories. Test script injection by verifying that the script tag is correctly inserted before the closing body tag. Test idempotence by running the injection multiple times and verifying that the script is only injected once.",
+        "title": "Implement End-to-End Integration Tests",
+        "description": "Implement comprehensive end-to-end integration tests for the main enigma command to ensure it works correctly in various scenarios.",
+        "details": "Create end-to-end integration tests for the main enigma command:\n\n1. Create test fixtures with sample Tailwind CSS projects:\n```typescript\n// In packages/cli/test/fixtures/sample-project/\n// - Create HTML files with Tailwind classes\n// - Create tailwind.config.js\n// - Create package.json with dependencies\n```\n\n2. Create integration test file (e.g., `packages/cli/test/integration/enigma-command.test.ts`):\n```typescript\nimport { execSync } from 'child_process';\nimport * as fs from 'fs-extra';\nimport * as path from 'path';\n\ndescribe('enigma command integration', () => {\n  const fixtureDir = path.resolve(__dirname, '../fixtures/sample-project');\n  const buildDir = path.join(fixtureDir, 'dist');\n  const cliPath = path.resolve(__dirname, '../../bin/enigma.js');\n  \n  beforeEach(async () => {\n    // Setup test fixture\n    await fs.ensureDir(buildDir);\n    await fs.copy(\n      path.join(fixtureDir, 'source'),\n      buildDir\n    );\n  });\n  \n  afterEach(async () => {\n    // Cleanup\n    await fs.remove(buildDir);\n  });\n  \n  test('basic optimization works', async () => {\n    // Run the command\n    const result = execSync(\n      `node ${cliPath} --build-dir ${buildDir}`,\n      { encoding: 'utf8' }\n    );\n    \n    // Verify output\n    expect(result).toContain('Optimization complete');\n    \n    // Verify files were modified\n    const outputCss = await fs.readFile(\n      path.join(buildDir, 'enigma.css'),\n      'utf8'\n    );\n    expect(outputCss).toContain('@apply');\n    \n    // Verify HTML was rewritten\n    const html = await fs.readFile(\n      path.join(buildDir, 'index.html'),\n      'utf8'\n    );\n    expect(html).not.toContain('top-0 z-50 w-full');\n    // Instead should contain a short identifier\n  });\n  \n  test('dry run mode does not modify files', async () => {\n    // Get file contents before\n    const htmlBefore = await fs.readFile(\n      path.join(buildDir, 'index.html'),\n      'utf8'\n    );\n    \n    // Run in dry run mode\n    const result = execSync(\n      `node ${cliPath} --build-dir ${buildDir} --dry-run`,\n      { encoding: 'utf8' }\n    );\n    \n    // Verify output indicates dry run\n    expect(result).toContain('DRY RUN MODE');\n    \n    // Verify files were not modified\n    const htmlAfter = await fs.readFile(\n      path.join(buildDir, 'index.html'),\n      'utf8'\n    );\n    expect(htmlAfter).toBe(htmlBefore);\n    \n    // Verify CSS was not created\n    const cssExists = await fs.pathExists(\n      path.join(buildDir, 'enigma.css')\n    );\n    expect(cssExists).toBe(false);\n  });\n  \n  // Add more tests for scramble integration, error scenarios, etc.\n});\n```\n\n3. Add tests for various scenarios:\n- Basic optimization\n- Custom output CSS location\n- Dry run mode\n- Verbose logging\n- Scramble integration\n- Error handling\n\nThese tests ensure the command works correctly in all scenarios and maintains compatibility with existing functionality.",
+        "testStrategy": "Run the integration tests in a CI environment to verify they pass consistently. Test with various Node.js versions to ensure compatibility. Verify all test scenarios cover the core functionality described in the PRD.",
         "priority": "medium",
         "dependencies": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
           11
         ],
-        "status": "done",
+        "status": "pending",
         "subtasks": [
           {
             "id": 1,
-            "title": "Discover All HTML Files Recursively",
-            "description": "Implement a function to recursively traverse the target directory and identify all files with an .html extension. Ensure the function handles nested directories and symbolic links safely.",
+            "title": "Create Test Fixtures",
+            "description": "Design and implement test fixtures to set up and tear down the required environment, data, and dependencies for integration testing.",
             "dependencies": [],
-            "details": "Success criteria: Returns a complete, deduplicated list of absolute file paths for all HTML files found within the directory tree.",
-            "status": "done"
+            "details": "This includes preparing mock data, configuring databases, and ensuring all necessary services are available for the tests.",
+            "status": "pending",
+            "testStrategy": ""
           },
           {
             "id": 2,
-            "title": "Calculate Correct Script Paths for Each HTML File",
-            "description": "For each discovered HTML file, determine the appropriate relative or absolute path for the script to be injected, accounting for the file's location and the desired script source.",
+            "title": "Write Integration Test Cases for Core Scenarios",
+            "description": "Develop integration test cases that cover the main workflows and interactions between core components of the system.",
             "dependencies": [
               1
             ],
-            "details": "Success criteria: For every HTML file, outputs a valid script path string that will resolve correctly when the HTML file is loaded in a browser.",
-            "status": "done"
+            "details": "Focus on positive and negative paths, ensuring that all critical interfaces and data flows are validated.",
+            "status": "pending",
+            "testStrategy": ""
           },
           {
             "id": 3,
-            "title": "Inject Script Tag into HTML Content",
-            "description": "Parse each HTML file, insert a <script> tag with the calculated path into the <head> or <body> as specified, and write the modified content back to disk.",
+            "title": "Test Dry Run and Verbose Modes",
+            "description": "Implement and execute tests specifically targeting the system's dry run and verbose operational modes.",
             "dependencies": [
               2
             ],
-            "details": "Success criteria: Each HTML file contains exactly one correctly-formed <script> tag at the intended location, and the file remains valid HTML.",
-            "status": "done"
+            "details": "Verify that dry run mode performs all actions except actual changes, and that verbose mode provides detailed logging as expected.",
+            "status": "pending",
+            "testStrategy": ""
           },
           {
             "id": 4,
-            "title": "Ensure Idempotent Script Injection",
-            "description": "Before injecting, check if the script tag already exists in the HTML file to prevent duplicate insertions. The process should be repeatable without introducing multiple script tags.",
+            "title": "Test Scramble and Error Scenarios",
+            "description": "Develop and run tests to validate system behavior under data scrambling and various error conditions.",
             "dependencies": [
-              3
+              2
             ],
-            "details": "Success criteria: Running the injection process multiple times does not result in more than one script tag per file.",
-            "status": "done"
+            "details": "Ensure the system handles unexpected inputs, failures, and edge cases gracefully, and that error reporting is accurate.",
+            "status": "pending",
+            "testStrategy": ""
           },
           {
             "id": 5,
-            "title": "Validate Script Injection and HTML Integrity",
-            "description": "After injection, verify that each HTML file contains the script tag exactly once and that the HTML structure is not corrupted. Optionally, run HTML validation tools to ensure correctness.",
+            "title": "Integrate Tests with CI Pipeline",
+            "description": "Configure and validate the execution of integration tests within the continuous integration (CI) pipeline.",
             "dependencies": [
-              4
-            ],
-            "details": "Success criteria: All processed HTML files pass validation checks, and the script tag is present exactly once in each file.",
-            "status": "done"
-          }
-        ]
-      },
-      {
-        "id": 13,
-        "title": "Implement end-to-end CLI integration",
-        "description": "Create the main CLI integration function that orchestrates the entire scramble integration process.",
-        "details": "Implement the main integration function in the CLI:\n\n```typescript\n// In the CLI codebase\nimport { copyFileSync, mkdirSync } from 'fs';\nimport { dirname, join } from 'path';\nimport { execSync } from 'child_process';\n\nasync function integrateScrambleEffect(\n  scramblePackagePath: string,\n  options: any\n): Promise<void> {\n  try {\n    const buildDir = options.outDir || 'dist';\n    const assetsDir = join(buildDir, 'assets');\n    const configuredScriptPath = join(assetsDir, 'enigma-scramble.js');\n    \n    // Ensure assets directory exists\n    mkdirSync(assetsDir, { recursive: true });\n    \n    // Build scramble package if needed\n    if (options.buildScramble) {\n      console.log('Building scramble package...');\n      execSync('pnpm --filter @tw-enigma/scramble build');\n    }\n    \n    // Inject configuration and copy to build output\n    await injectScrambleConfiguration(\n      scramblePackagePath,\n      configuredScriptPath,\n      {\n        scrambleSpeed: options.scrambleSpeed,\n        scrambleDebug: options.scrambleDebug,\n        scrambleMode: options.scrambleMode,\n        scrambleCharset: options.scrambleCharset\n      }\n    );\n    \n    // Inject script into HTML files\n    await injectScrambleIntoHtmlFiles(buildDir, configuredScriptPath);\n    \n    console.log('✅ Scramble effect integration complete');\n  } catch (e) {\n    console.error('❌ Error integrating scramble effect:', e);\n  }\n}\n\n// Add CLI command options\nfunction addScrambleOptions(program: any) {\n  return program\n    .option('--scramble', 'Enable scramble effect')\n    .option('--scramble-speed <ms>', 'Scramble speed in milliseconds (50-1000)', parseInt)\n    .option('--scramble-debug', 'Enable debug logging for scramble effect')\n    .option('--scramble-mode <mode>', 'Scramble mode (currently only \"all\" supported)')\n    .option('--scramble-charset <charset>', 'Character set for scramble effect');\n}\n```\n\nUpdate the CLI command handlers to use these functions:\n\n```typescript\n// Example command handler\nasync function handleCssConfigCommand(options: any) {\n  // Process scramble flags if present\n  if (options.scramble) {\n    const scramblePackagePath = await detectScramblePackage();\n    if (scramblePackagePath) {\n      await integrateScrambleEffect(scramblePackagePath, {\n        ...options,\n        buildScramble: true\n      });\n    } else {\n      console.warn('⚠️ Scramble effect requires @tw-enigma/scramble package, which was not found. Skipping scramble integration.');\n    }\n  }\n  \n  // Continue with normal CSS processing\n  // ...\n}\n```",
-        "testStrategy": "Test the end-to-end integration with a sample project. Verify that the scramble package is built, configuration is injected, and the script is injected into HTML files. Test with various CLI options to ensure they're correctly passed to the scramble script.",
-        "priority": "medium",
-        "dependencies": [
-          12
-        ],
-        "status": "done",
-        "subtasks": [
-          {
-            "id": 1,
-            "title": "Package Build Orchestration",
-            "description": "Design and implement the orchestration logic to build the software package, ensuring all dependencies are resolved and build steps are executed in the correct sequence.",
-            "dependencies": [],
-            "details": "Define the build pipeline, invoke build tools, and verify that the output artifacts are generated as expected. Success criteria: Build completes without errors, and all expected artifacts are present.",
-            "status": "done"
-          },
-          {
-            "id": 2,
-            "title": "Configuration Injection Mechanism",
-            "description": "Develop a robust mechanism to inject configuration values into the package during the build process, supporting both static and dynamic configuration sources.",
-            "dependencies": [
-              1
-            ],
-            "details": "Implement configuration file parsing, environment variable support, and validation logic. Success criteria: All required configuration values are correctly injected and validated in the final build output.",
-            "status": "done"
-          },
-          {
-            "id": 3,
-            "title": "Script Copying Logic",
-            "description": "Implement logic to copy necessary scripts (e.g., shell, batch, or Node scripts) into the build output, preserving file permissions and directory structure.",
-            "dependencies": [
-              1
-            ],
-            "details": "Identify required scripts, handle file system operations, and verify integrity post-copy. Success criteria: All scripts are present in the output with correct permissions and paths.",
-            "status": "done"
-          },
-          {
-            "id": 4,
-            "title": "HTML Injection Process",
-            "description": "Create a process to inject dynamic or static content into HTML files as part of the build, supporting template variables and content blocks.",
-            "dependencies": [
-              2,
-              3
-            ],
-            "details": "Parse HTML templates, replace placeholders with actual values, and validate resulting HTML for correctness. Success criteria: All HTML files contain the correct injected content and pass validation checks.",
-            "status": "done"
-          },
-          {
-            "id": 5,
-            "title": "CLI Flag Parsing and Handling",
-            "description": "Implement comprehensive parsing and handling of CLI flags, ensuring all supported options are validated, defaults are applied, and errors are reported for invalid input.",
-            "dependencies": [
-              1
-            ],
-            "details": "Define supported flags, implement parsing logic, and integrate with build/configuration steps. Success criteria: CLI flags are correctly parsed, and their effects are reflected in the build process.",
-            "status": "done"
-          },
-          {
-            "id": 6,
-            "title": "Centralized Error Reporting and Handling",
-            "description": "Develop a centralized error reporting and handling system that captures, logs, and reports errors from all subsystems, providing actionable feedback and halting the process on critical failures.",
-            "dependencies": [
-              2,
               3,
-              4,
-              5
-            ],
-            "details": "Implement error capture hooks, structured logging, and user-friendly error messages. Success criteria: All errors are consistently reported, logged, and surfaced to the user with clear remediation steps.",
-            "status": "done"
-          }
-        ]
-      },
-      {
-        "id": 14,
-        "title": "Create comprehensive test fixtures",
-        "description": "Create a set of test fixtures covering various scenarios to validate the scramble effect.",
-        "details": "Create test fixtures for the following scenarios:\n\n1. **Static HTML with external CSS**\n   - Create a simple HTML page with external CSS file\n   - Include various tw-enigma generated classes\n   - Test with both simple and complex selectors\n\n2. **React SPA with CSS-in-JS**\n   - Create a simple React app using styled-components\n   - Configure tw-enigma to process the CSS\n   - Test with dynamic content updates\n\n3. **Vue SPA with scoped CSS**\n   - Create a simple Vue app with scoped CSS\n   - Configure tw-enigma to process the CSS\n   - Test with component transitions\n\n4. **Next.js SSR with mixed CSS approaches**\n   - Create a simple Next.js app with various CSS approaches\n   - Configure tw-enigma to process the CSS\n   - Test with server-rendered and client-rendered content\n\n5. **Edge case: Large number of classes**\n   - Create a page with 1000+ CSS classes\n   - Test performance and memory usage\n\n6. **Edge case: Third-party CSS**\n   - Create a page with Bootstrap, Material-UI, or other third-party CSS\n   - Test handling of cross-origin stylesheets\n\nEach fixture should include:\n- Source code in `packages/cli/tests/fixtures/`\n- Build configuration for tw-enigma\n- Test script to build and validate the fixture\n- Documentation of expected behavior\n\nExample test script for a fixture:\n\n```bash\n#!/bin/bash\n\n# Build the fixture\ncd packages/cli/tests/fixtures/static-html\npnpm build\n\n# Validate the build output\nif [ ! -f \"dist/assets/enigma-scramble.js\" ]; then\n  echo \"❌ Scramble script not found in build output\"\n  exit 1\nfi\n\n# Check HTML injection\nif ! grep -q \"enigma-scramble.js\" \"dist/index.html\"; then\n  echo \"❌ Scramble script not injected into HTML\"\n  exit 1\nfi\n\necho \"✅ Fixture validation passed\"\n```",
-        "testStrategy": "Run each test fixture and manually verify the scramble effect in the browser. Check that the effect works correctly in all scenarios and gracefully handles edge cases. Verify that the effect respects accessibility preferences and doesn't impact page performance.",
-        "priority": "low",
-        "dependencies": [
-          13
-        ],
-        "status": "done",
-        "subtasks": [
-          {
-            "id": 1,
-            "title": "Define and Document Each Fixture Scenario",
-            "description": "Identify all required fixture scenarios based on test coverage needs. For each scenario, document the purpose, setup requirements, teardown steps, and any dependencies or special considerations. Ensure scenarios are small, focused, and isolated to minimize side effects and maximize maintainability.",
-            "dependencies": [],
-            "details": "List each scenario with a clear description, expected initial state, and rationale. Include diagrams or tables if needed to clarify complex setups. Success criteria: Each scenario is uniquely identified, unambiguous, and ready for implementation.",
-            "status": "done"
-          },
-          {
-            "id": 2,
-            "title": "Write Build Configurations for Each Fixture",
-            "description": "Create build configuration files or scripts for each documented fixture scenario. These should automate the setup and teardown of the test environment, ensuring consistency and repeatability.",
-            "dependencies": [
-              1
-            ],
-            "details": "Use appropriate tools (e.g., Docker Compose, Makefiles, CI pipeline configs) to define environment variables, dependencies, and resource allocation. Success criteria: Each build config can reliably provision and clean up the fixture environment without manual intervention.",
-            "status": "done"
-          },
-          {
-            "id": 3,
-            "title": "Implement Test Scripts Using Fixtures",
-            "description": "Develop automated test scripts that utilize the defined fixtures. Ensure scripts are modular, reusable, and leverage fixture features such as parametrization, dynamic setup, and teardown.",
-            "dependencies": [
-              2
-            ],
-            "details": "Write scripts in the chosen test framework (e.g., pytest, Playwright, Mocha) using best practices for fixture usage. Include assertions for expected outcomes and handle edge cases. Success criteria: Scripts execute reliably, use fixtures as intended, and provide clear pass/fail results.",
-            "status": "done"
-          },
-          {
-            "id": 4,
-            "title": "Document Expected Behavior and Test Coverage",
-            "description": "For each test script and fixture scenario, document the expected behavior, including input conditions, expected outputs, and any side effects. Map each test to the requirements or user stories it covers.",
-            "dependencies": [
-              3
-            ],
-            "details": "Create or update documentation (e.g., README, test plan, inline comments) to describe what each test validates and why. Success criteria: Documentation is clear, complete, and enables others to understand the intent and coverage of each test.",
-            "status": "done"
-          },
-          {
-            "id": 5,
-            "title": "Validate Results and Review for Implementation Errors",
-            "description": "Run all test scripts in a clean environment, verify results against documented expectations, and check for implementation errors or AI hallucinations. Review logs, outputs, and fixture teardown to ensure no resource leaks or state pollution.",
-            "dependencies": [
               4
             ],
-            "details": "Perform peer review or automated checks for correctness, completeness, and adherence to best practices. Success criteria: All tests pass as expected, fixture environments are cleanly managed, and documentation matches actual behavior.",
-            "status": "done"
-          }
-        ]
-      },
-      {
-        "id": 15,
-        "title": "Create technical documentation",
-        "description": "Create comprehensive technical documentation for the scramble package, including architecture decisions, development setup, and usage instructions.",
-        "details": "Create the following documentation:\n\n1. **Internal README.md**\n   - Development setup instructions\n   - Architecture overview\n   - Key design decisions and trade-offs\n   - Performance considerations\n   - Debugging techniques\n\n2. **Code Comments**\n   - Add detailed comments to all complex code sections\n   - Explain rationale behind implementation choices\n   - Document potential edge cases and how they're handled\n\n3. **CLI Integration Guide**\n   - Document how the CLI integrates with the scramble package\n   - Explain the configuration options and their effects\n   - Provide examples of common usage patterns\n\n4. **Troubleshooting Guide**\n   - Common issues and their solutions\n   - Debugging techniques for different environments\n   - Performance optimization tips\n\nExample README.md structure:\n\n```markdown\n# @tw-enigma/scramble\n\n> Internal package for creating a \"hacker\" visual effect with tw-enigma CSS classes.\n\n## Development Setup\n\n1. Clone the tw-enigma monorepo\n2. Create `packages-private` directory (locally only)\n3. Add `packages-private/*` to `pnpm-workspace.yaml` (DO NOT COMMIT)\n4. Install dependencies with `pnpm install`\n5. Build the package with `pnpm --filter @tw-enigma/scramble build`\n\n## Architecture Overview\n\nThe scramble effect works by:\n\n1. Scanning stylesheets for tw-enigma generated class selectors\n2. Building a registry mapping CSS rules to DOM elements\n3. Continuously scrambling class names using requestAnimationFrame\n4. Synchronizing updates to both CSS rules and DOM elements\n\n## Key Design Decisions\n\n- **requestAnimationFrame**: Used for optimal performance and battery efficiency\n- **Registry Structure**: Maps class names to both CSS rules and DOM elements for synchronized updates\n- **Error Handling**: Gracefully handles cross-origin stylesheets and other edge cases\n- **Accessibility**: Automatically respects prefers-reduced-motion preference\n\n## CLI Integration\n\nThe scramble package is integrated with the tw-enigma CLI via the following flags:\n\n- `--scramble`: Enable the scramble effect\n- `--scramble-speed=<ms>`: Set the scramble interval (50-1000ms)\n- `--scramble-debug`: Enable debug logging\n\nExample usage:\n\n```bash\nenigma css-config --preset production --scramble --scramble-speed=100\n```\n\n## Debugging\n\nEnable debug mode with the `--scramble-debug` flag to see detailed logging in the browser console.\n\nCommon issues:\n- No scrambling effect: Check if tw-enigma classes are present and accessible\n- Cross-origin stylesheet errors: These are expected and handled gracefully\n- Performance issues: Try increasing the scramble interval\n```",
-        "testStrategy": "Review the documentation for completeness, accuracy, and clarity. Verify that it covers all aspects of the scramble package and provides clear instructions for developers. Test the instructions by following them on a clean environment.",
-        "priority": "low",
-        "dependencies": [
-          14
-        ],
-        "status": "done",
-        "subtasks": [
-          {
-            "id": 1,
-            "title": "Draft Internal README Structure and Content",
-            "description": "Create a detailed outline and initial draft for the internal README, ensuring it covers project overview, architecture, setup instructions, usage examples, and contribution guidelines. Each section should be clearly defined and logically organized to minimize ambiguity.",
-            "dependencies": [],
-            "details": "The README must include: project purpose, system requirements, installation steps, configuration options, usage scenarios, and team contact information. Success is defined by a logically structured document with no missing critical sections.",
-            "status": "done"
-          },
-          {
-            "id": 2,
-            "title": "Add Comprehensive Code Comments",
-            "description": "Review the codebase and insert clear, context-rich comments for all complex functions, classes, and modules, especially those with high cyclomatic complexity or non-obvious logic. Ensure comments explain intent, parameters, return values, and edge cases.",
-            "dependencies": [],
-            "details": "Focus on areas identified as complex by cyclomatic or Halstead metrics. Each comment should clarify the 'why' behind the code, not just the 'what.' Success is measured by improved code readability and reduced ambiguity for future maintainers.",
-            "status": "done"
-          },
-          {
-            "id": 3,
-            "title": "Develop CLI Integration Guide",
-            "description": "Write a step-by-step guide for integrating and using the CLI, including installation, command syntax, configuration, and example workflows. Address common user scenarios and provide sample commands with expected outputs.",
-            "dependencies": [
-              1
-            ],
-            "details": "The guide must be granular, with each command and option explained. Include troubleshooting tips for CLI-specific errors. Success is defined by a user being able to set up and use the CLI without external assistance.",
-            "status": "done"
-          },
-          {
-            "id": 4,
-            "title": "Compile Troubleshooting Guide",
-            "description": "Aggregate known issues, error messages, and their resolutions into a structured troubleshooting guide. Categorize problems by component (installation, runtime, CLI, etc.) and provide actionable solutions and diagnostic steps.",
-            "dependencies": [
-              1,
-              3
-            ],
-            "details": "The guide should include a FAQ, error code explanations, and escalation paths for unresolved issues. Success is measured by users resolving common problems independently using the guide.",
-            "status": "done"
+            "details": "Automate test execution on code changes, ensure results are reported, and failures are flagged for developer attention.",
+            "status": "pending",
+            "testStrategy": ""
           }
         ]
       }
     ],
     "metadata": {
       "created": "2025-06-16T01:49:25.526Z",
-      "updated": "2025-06-21T03:40:28.538Z",
+      "updated": "2025-06-23T02:40:03.328Z",
       "description": "Tasks for master context"
     }
   }

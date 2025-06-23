@@ -61,6 +61,7 @@ module.exports = {
     },
   },
   plugins: [
+    require('@tw-enigma/core/tailwind'),
     require('@tailwindcss/forms'),
     require('@tailwindcss/typography'),
     require('@tailwindcss/aspect-ratio'),

@@ -75,4 +75,27 @@ export default defineConfig([
       'webpack',
     ],
   },
+  // Tailwind plugin entry point
+  {
+    entry: ['src/tailwindPlugin.js'],
+    format: ['cjs', 'esm'],
+    dts: {
+      compilerOptions: {
+        incremental: false,
+        composite: false,
+      },
+    },
+    splitting: false,
+    sourcemap: true,
+    target: 'es2020',
+    minify: false,
+    outDir: 'dist',
+    outExtension({ format }) {
+      return {
+        js: format === 'esm' ? '.mjs' : '.js',
+      };
+    },
+    clean: false,
+    external: ['tailwindcss/plugin', 'fs', 'path'],
+  },
 ]);
