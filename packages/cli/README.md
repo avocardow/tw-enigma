@@ -9,17 +9,17 @@
 
 ## 🎯 Overview
 
-`@tw-enigma/cli` provides a comprehensive command-line interface for the tw-enigma CSS optimization system. Use it to analyze your Tailwind CSS usage patterns, generate optimized stylesheets, and integrate CSS optimization into your build pipelines.
+`@tw-enigma/cli` provides a comprehensive command-line interface for the tw-enigma CSS optimization system. The main `enigma` command optimizes Tailwind CSS by consolidating repetitive class patterns, reducing file size, and offering optional scramble text effects integration.
 
 ### ✨ Features
 
-- **🔍 Project Analysis**: Deep analysis of Tailwind CSS usage patterns
-- **⚡ CSS Optimization**: Generate optimized atomic or chunked CSS
-- **🛠️ Configuration Management**: Easy setup and configuration management
-- **📊 Performance Metrics**: Detailed optimization reports and analytics
-- **🔧 Build Integration**: Seamless integration with build tools and CI/CD
-- **🎨 Multiple Strategies**: Atomic, chunked, and hybrid optimization strategies
-- **📈 Progress Monitoring**: Real-time progress indicators and verbose logging
+- **⚡ CSS Optimization**: Consolidate repetitive Tailwind CSS class patterns for smaller file sizes
+- **🔍 File Discovery**: Intelligent file discovery with glob patterns and type filtering
+- **🛠️ Configuration Management**: Flexible configuration with auto-discovery and CLI overrides
+- **🎯 Dry Run Mode**: Preview optimization changes without modifying files
+- **🎨 Scramble Effects**: Optional integration with @tw-enigma/scramble for animated text effects
+- **🔧 Build Integration**: Easy integration with existing build tools and workflows
+- **📈 Progress Monitoring**: Real-time progress indicators and comprehensive logging
 
 ## 📦 Installation
 
@@ -57,325 +57,170 @@ npx @tw-enigma/cli [command] [options]
 
 ## 🚀 Quick Start
 
-### 1. Initialize Configuration
+### 1. Basic Optimization
 
 ```bash
-# Create configuration file with defaults
-enigma init
+# Basic optimization with default settings
+enigma
 
-# Interactive setup with prompts
-enigma init --interactive
+# Optimize specific directory with output
+enigma --input src --output dist
 
-# Set project type and framework
-enigma init --framework react --strategy atomic
+# Preview changes without modifying files
+enigma --dry-run --verbose
 ```
 
-### 2. Analyze Your Project
+### 2. Configuration-based Optimization
 
 ```bash
-# Analyze Tailwind usage patterns
-enigma analyze
+# Use specific configuration file
+enigma --config enigma.config.js
 
-# Analyze with detailed reporting
-enigma analyze --report --output analysis.json
-
-# Analyze specific directories
-enigma analyze --paths "src/**/*.tsx" --paths "components/**/*.jsx"
+# Override configuration with CLI options
+enigma --config myconfig.js --minify --source-maps
 ```
 
-### 3. Generate Optimized CSS
+### 3. Advanced Features
 
 ```bash
-# Generate optimized CSS
-enigma generate
+# Enable scramble text effects (requires @tw-enigma/scramble)
+enigma --scramble --scramble-speed 100
 
-# Generate with specific strategy
-enigma generate --strategy chunked --output dist/optimized.css
+# High concurrency processing
+enigma --max-concurrency 8 --verbose
 
-# Generate with minification
-enigma generate --minify --sourcemap
+# Custom file filtering
+enigma --include-file-types HTML JAVASCRIPT --exclude-extensions .min.js
 ```
 
-### 4. Watch for Changes
+## 🔧 Command Options
 
-```bash
-# Watch mode for development
-enigma watch
+The `enigma` command supports these options for controlling optimization behavior:
 
-# Watch with hot reload
-enigma watch --hmr --verbose
-```
+### Input/Output Control
 
-## 🔧 Global Options
+- **`--input <path>`** - Input file or directory to process. Supports glob patterns.
+- **`--output <path>`** - Output file or directory for optimized results.
+- **`--config <path>`** - Path to configuration file (auto-discovered if not specified).
+- **`--dry-run`** - Preview mode - analyze without modifying files.
 
-All `enigma` commands support these global options that can be combined with any command:
+### Processing Options
 
-### Class Name Generation
+- **`--minify`** / **`--no-minify`** - Enable/disable CSS minification.
+- **`--remove-unused`** / **`--no-remove-unused`** - Remove/keep unused CSS classes.
+- **`--preserve-comments`** - Keep CSS comments in optimized output.
+- **`--source-maps`** - Generate source map files for debugging.
 
-- **`--length <number>`** - Set minimum class name length (1-26)
+### File Discovery
 
-  ```bash
-  # Generate longer class names for enhanced security
-  enigma --length 8 init --framework react
-  enigma --length 12 generate --strategy atomic
+- **`--include-file-types <types...>`** - File types: HTML, JAVASCRIPT, CSS, TEMPLATE.
+- **`--exclude-extensions <extensions...>`** - File extensions to skip (e.g., .min.js).
+- **`--exclude-patterns <patterns...>`** - Glob patterns to exclude.
+- **`--follow-symlinks`** - Follow symbolic links during discovery.
+- **`--max-files <number>`** - Safety limit for number of files to process.
 
-  # Use with analysis and reporting
-  enigma --length 6 analyze --report --verbose
-  ```
+### Performance & Logging
 
-### Output Control
+- **`--max-concurrency <number>`** - Concurrent file processing (1-10, default: 4).
+- **`--verbose`** - Enable detailed logging and debug information.
+- **`--very-verbose`** - Enable trace-level logging with detailed operations.
+- **`--quiet`** - Suppress all output except warnings and errors.
+- **`--debug`** - Enable debug mode with comprehensive diagnostics.
+- **`--log-level <level>`** - Set minimum log level (trace, debug, info, warn, error, fatal).
+- **`--log-file <path>`** - Write logs to file.
+- **`--log-format <format>`** - Log format: human, json, csv.
 
-- **`--verbose`** - Enable detailed logging and debug information
-- **`--debug`** - Enable debug mode with comprehensive diagnostics
-- **`--pretty`** - Format output for better readability
-- **`--quiet`** - Suppress all output except warnings and errors
+### Scramble Effects (Optional)
 
-### Configuration
-
-- **`--config <path>`** - Specify custom configuration file path
-- **`--input <path>`** - Override input directory
-- **`--output <path>`** - Override output directory
-
-### Performance & Processing
-
-- **`--max-concurrency <number>`** - Control parallel processing threads
-- **`--exclude-patterns <patterns...>`** - Exclude files from processing
-- **`--format <format>`** - Output format (json, console, markdown, html, all)
+- **`--scramble`** - Enable scramble text effects (requires @tw-enigma/scramble).
+- **`--scramble-speed <number>`** - Animation speed in milliseconds (50-1000, default: 150).
+- **`--scramble-debug`** - Enable debug logging for scramble effects.
+- **`--scramble-mode <mode>`** - Animation mode: "all", "recursive", or custom.
+- **`--scramble-charset <charset>`** - Character set for scrambling (default: a-z).
 
 ### Usage Examples
 
 ```bash
-# Enhanced security with longer class names
-enigma --length 10 --verbose generate --strategy chunked
+# Basic optimization with auto-discovery
+enigma
+
+# Specify input and output directories  
+enigma --input src --output dist
+
+# Preview optimization without changes
+enigma --dry-run --verbose
+
+# Enable scrambling effect with custom speed
+enigma --scramble --scramble-speed 100
+
+# Production build with minification and source maps
+enigma --minify --source-maps --quiet
 
 # Custom configuration with performance tuning
-enigma --config ./config/enigma.config.js --max-concurrency 8 analyze
+enigma --config ./config/enigma.config.js --max-concurrency 8
 
-# Development workflow with detailed output
-enigma --length 6 --pretty --debug init --interactive
+# High concurrency processing with detailed logging
+enigma --max-concurrency 8 --very-verbose
 
-# Production build with optimized settings
-enigma --length 12 --quiet generate --minify --sourcemap
+# Exclude specific file types and patterns
+enigma --exclude-extensions .min.js .min.css --exclude-patterns "node_modules/**"
 ```
 
-### Security & Obfuscation Benefits
+## 📋 Main Command
 
-The `--length` flag provides enhanced security through class name obfuscation:
+### `enigma`
 
-| Length | Possible Combinations | Security Level | Use Case                        |
-| ------ | --------------------- | -------------- | ------------------------------- |
-| 1-3    | 18-18,278             | Basic          | Development, small projects     |
-| 4-6    | 456K-476M             | Moderate       | Medium projects, basic security |
-| 7-10   | 12B-18.7T             | High           | Enterprise, security-focused    |
-| 11+    | 487T+                 | Maximum        | High-security, government       |
-
-**Performance Considerations:**
-
-- Longer names increase CSS file size but improve obfuscation
-- Length 6-8 provides excellent security/performance balance
-- Length 10+ recommended for maximum security requirements
-- Use warning system to monitor performance impact
-
-## 📋 Commands
-
-### `enigma init`
-
-Initialize a new tw-enigma configuration.
+Optimize Tailwind CSS by consolidating repetitive class patterns and reducing file size.
 
 ```bash
-enigma init [options]
+enigma [options]
 
 Options:
-  --framework <type>    Target framework (react, vue, angular, svelte)
-  --strategy <type>     Optimization strategy (atomic, chunked, hybrid)
-  --interactive         Interactive configuration setup
-  --force              Overwrite existing configuration
-  --template <name>     Use configuration template
-  --output <path>       Configuration file path (default: enigma.config.js)
+  # Input/Output
+  --input <path>                    Input file or directory (default: "./src")
+  --output <path>                   Output file or directory (default: "./dist")
+  --config <path>                   Configuration file path (auto-discovered)
+  --dry-run                         Preview changes without modifying files
+  
+  # Processing
+  --minify / --no-minify           Enable/disable CSS minification
+  --remove-unused / --no-remove-unused  Remove/keep unused CSS classes
+  --preserve-comments               Keep CSS comments in output
+  --source-maps                     Generate source map files
+  
+  # File Discovery
+  --include-file-types <types...>   File types: HTML, JAVASCRIPT, CSS, TEMPLATE
+  --exclude-extensions <exts...>    File extensions to exclude
+  --exclude-patterns <patterns...>  Glob patterns to exclude
+  --follow-symlinks                 Follow symbolic links
+  --max-files <number>              Maximum files to process
+  
+  # Performance
+  --max-concurrency <number>        Concurrent processing (1-10, default: 4)
+  
+  # Logging
+  --verbose                         Enable detailed logging
+  --very-verbose                    Enable trace-level logging
+  --quiet                           Only warnings and errors
+  --debug                           Debug mode
+  --log-level <level>               Minimum log level
+  --log-file <path>                 Write logs to file
+  --log-format <format>             Log format: human, json, csv
+  
+  # Scramble Effects (Optional)
+  --scramble                        Enable scramble text effects
+  --scramble-speed <number>         Animation speed (50-1000ms, default: 150)
+  --scramble-debug                  Debug scramble effects
+  --scramble-mode <mode>            Animation mode
+  --scramble-charset <charset>      Character set for scrambling
 
 Examples:
-  enigma init --framework react --strategy atomic
-  enigma init --interactive --output config/enigma.js
-  enigma init --template production --force
-```
-
-### `enigma analyze`
-
-Analyze Tailwind CSS usage patterns in your project.
-
-```bash
-enigma analyze [options]
-
-Options:
-  --paths <patterns>    File patterns to analyze (can be used multiple times)
-  --exclude <patterns>  Patterns to exclude (can be used multiple times)
-  --framework <type>    Target framework for analysis
-  --threshold <number>  Minimum pattern frequency (default: 2)
-  --report             Generate detailed analysis report
-  --output <path>      Report output path (default: enigma-analysis.json)
-  --format <type>      Report format (json, csv, html)
-  --verbose            Enable verbose logging
-
-Examples:
-  enigma analyze --paths "src/**/*.tsx" --threshold 3
-  enigma analyze --report --output reports/analysis.html --format html
-  enigma analyze --exclude "**/*.test.*" --verbose
-```
-
-### `enigma generate`
-
-Generate optimized CSS from analyzed patterns.
-
-```bash
-enigma generate [options]
-
-Options:
-  --strategy <type>     Optimization strategy (atomic, chunked, hybrid)
-  --output <path>      Output CSS file path (default: dist/enigma.css)
-  --minify             Minify generated CSS
-  --sourcemap          Generate source maps
-  --watch              Watch mode for continuous generation
-  --clean              Clean output directory before generation
-  --dry-run            Preview changes without writing files
-  --format <type>      Output format (css, scss, less)
-
-Examples:
-  enigma generate --strategy chunked --output assets/optimized.css
-  enigma generate --minify --sourcemap --clean
-  enigma generate --dry-run --verbose
-```
-
-### `enigma watch`
-
-Watch for file changes and automatically regenerate optimized CSS.
-
-```bash
-enigma watch [options]
-
-Options:
-  --hmr                Enable hot module replacement
-  --debounce <ms>      Debounce delay for file changes (default: 300)
-  --ignore <patterns>  Patterns to ignore (can be used multiple times)
-  --poll               Use polling instead of native file watching
-  --verbose            Enable verbose logging
-  --notify             Show desktop notifications for changes
-
-Examples:
-  enigma watch --hmr --debounce 500
-  enigma watch --ignore "**/*.test.*" --notify
-  enigma watch --poll --verbose
-```
-
-### `enigma optimize`
-
-One-command optimization for existing projects.
-
-```bash
-enigma optimize [paths] [options]
-
-Options:
-  --strategy <type>     Optimization strategy (atomic, chunked, hybrid)
-  --output <path>      Output directory for optimized files
-  --backup             Create backup of original files
-  --threshold <number>  Minimum pattern frequency
-  --aggressive         Enable aggressive optimizations
-  --dry-run            Preview changes without modifying files
-  --report             Generate optimization report
-
-Examples:
-  enigma optimize "dist/**/*.html" --strategy atomic --backup
-  enigma optimize "build/**/*.{js,css}" --aggressive --report
-  enigma optimize --dry-run --verbose
-```
-
-### `enigma config`
-
-Manage configuration settings.
-
-```bash
-enigma config [command] [options]
-
-Commands:
-  set <key> <value>    Set configuration value
-  get <key>           Get configuration value
-  list                List all configuration values
-  reset               Reset to default configuration
-  validate            Validate current configuration
-  migrate             Migrate configuration to latest version
-
-Examples:
-  enigma config set optimization.threshold 5
-  enigma config get output.strategy
-  enigma config list --format table
-  enigma config validate --verbose
-```
-
-### `enigma report`
-
-Generate detailed optimization and performance reports.
-
-```bash
-enigma report [type] [options]
-
-Types:
-  patterns             Pattern analysis report
-  performance          Performance metrics report
-  optimization         Optimization results report
-  bundle               Bundle size analysis report
-
-Options:
-  --output <path>      Report output path
-  --format <type>      Report format (json, html, csv, pdf)
-  --template <name>    Report template
-  --compare <path>     Compare with previous report
-  --metrics <types>    Specific metrics to include
-
-Examples:
-  enigma report patterns --format html --output reports/patterns.html
-  enigma report performance --compare previous-report.json
-  enigma report bundle --metrics size,compression,performance
-```
-
-### `enigma clean`
-
-Clean generated files and caches.
-
-```bash
-enigma clean [targets] [options]
-
-Targets:
-  cache               Clean optimization cache
-  output              Clean generated output files
-  reports             Clean generated reports
-  all                 Clean everything
-
-Options:
-  --force             Force cleanup without confirmation
-  --dry-run           Preview what would be cleaned
-  --verbose           Show detailed cleanup information
-
-Examples:
-  enigma clean cache --force
-  enigma clean output reports --dry-run
-  enigma clean all --verbose
-```
-
-### `enigma doctor`
-
-Diagnose and fix common issues.
-
-```bash
-enigma doctor [options]
-
-Options:
-  --fix               Automatically fix detected issues
-  --report            Generate diagnostic report
-  --output <path>     Diagnostic report output path
-  --verbose           Show detailed diagnostic information
-
-Examples:
-  enigma doctor --fix --verbose
-  enigma doctor --report --output diagnostics.json
+  enigma                                    # Basic optimization
+  enigma --input src --output dist         # Specify directories
+  enigma --dry-run --verbose               # Preview with details
+  enigma --scramble --scramble-speed 100   # Enable scrambling
+  enigma --minify --source-maps            # Production build
+  enigma --max-concurrency 8 --debug       # High performance
 ```
 
 ## ⚙️ Configuration
@@ -386,169 +231,71 @@ Create `enigma.config.js` in your project root:
 
 ```javascript
 export default {
-  // Input configuration
-  input: {
-    // File patterns to analyze
-    paths: ['src/**/*.{html,js,ts,jsx,tsx,vue,svelte}', 'components/**/*.{jsx,tsx,vue}'],
-
-    // Patterns to exclude
-    exclude: ['node_modules/**', '**/*.test.*', '**/*.spec.*', 'dist/**', 'build/**'],
-
-    // Target frameworks
-    frameworks: ['react', 'vue'],
-
-    // File encoding
-    encoding: 'utf8',
-  },
-
-  // Output configuration
-  output: {
-    // Optimization strategy
-    strategy: 'atomic', // 'atomic' | 'chunked' | 'hybrid'
-
-    // Output file path
-    path: 'dist/enigma.css',
-
-    // CSS format
-    format: 'css', // 'css' | 'scss' | 'less'
-
-    // Minification
-    minify: true,
-
-    // Source maps
-    sourceMaps: true,
-
-    // Public path for assets
-    publicPath: '/assets/',
-  },
-
-  // Optimization settings
-  optimization: {
-    // Minimum pattern frequency for inclusion
-    threshold: 2,
-
-    // Enable aggressive optimizations
-    aggressive: false,
-
-    // Preserve comments in output
-    preserveComments: false,
-
-    // Enable tree shaking
-    enableTreeShaking: true,
-
-    // Custom optimization rules
-    rules: {
-      // Combine adjacent utility classes
-      combineAdjacent: true,
-
-      // Remove duplicate classes
-      removeDuplicates: true,
-
-      // Optimize vendor prefixes
-      optimizeVendorPrefixes: true,
-    },
-  },
-
-  // Development settings
+  // Input/Output settings
+  input: "./src",
+  output: "./dist",
+  
+  // Processing options
+  minify: true,
+  removeUnused: true,
+  preserveComments: false,
+  sourceMaps: false,
+  
+  // File discovery
+  followSymlinks: false,
+  maxFiles: 1000,
+  includeFileTypes: ["HTML", "JAVASCRIPT"],
+  excludeExtensions: [".min.js", ".min.css"],
+  excludePatterns: ["node_modules/**", "*.test.*"],
+  
+  // Performance
+  maxConcurrency: 4,
+  
+  // Logging
+  verbose: false,
+  veryVerbose: false,
+  quiet: false,
+  debug: false,
+  logLevel: "info",
+  logFile: undefined,
+  logFormat: "human",
+  
+  // Advanced options
+  classPrefix: "",
+  
+  // Development mode (future)
   dev: {
-    // Enable hot module replacement
-    hmr: true,
-
-    // Enable debug logging
-    debug: process.env.NODE_ENV === 'development',
-
-    // Watch mode settings
-    watch: {
-      enabled: true,
-      debounce: 300,
-      ignored: ['node_modules/**', '.git/**'],
-    },
-  },
-
-  // Cache configuration
-  cache: {
-    // Enable caching
-    enabled: true,
-
-    // Cache strategy
-    strategy: 'memory', // 'memory' | 'disk' | 'hybrid'
-
-    // Cache directory
-    directory: '.enigma-cache',
-
-    // Cache TTL (in milliseconds)
-    ttl: 3600000, // 1 hour
-
-    // Maximum cache size
-    maxSize: '100MB',
-  },
-
-  // Plugin configuration
-  plugins: [
-    // Custom plugins
-  ],
-
-  // Reporting settings
-  reporting: {
-    // Enable analytics
-    analytics: true,
-
-    // Report formats to generate
-    formats: ['json', 'html'],
-
-    // Report output directory
-    outputDir: 'reports',
-
-    // Metrics to track
-    metrics: ['compression', 'performance', 'patterns', 'bundle-size'],
-  },
+    enabled: false,
+    watch: false,
+    server: {
+      enabled: false,
+      port: 3000,
+      host: "localhost"
+    }
+  }
 };
 ```
 
-### Environment Variables
+### Configuration Discovery
 
-Configure behavior using environment variables:
+The CLI automatically searches for configuration files in this order:
 
-```bash
-# Debug mode
-ENIGMA_DEBUG=true
+1. File specified with `--config` option
+2. `enigma.config.js`
+3. `enigma.config.mjs`
+4. `.enigmarc.json`
+5. `.enigmarc.js`
+6. `enigma` section in `package.json`
 
-# Log level
-ENIGMA_LOG_LEVEL=info  # debug, info, warn, error
+### Configuration Priority
 
-# Cache settings
-ENIGMA_CACHE_ENABLED=true
-ENIGMA_CACHE_DIR=.enigma-cache
+Settings are merged in this order (later values override earlier ones):
 
-# Performance settings
-ENIGMA_MAX_CONCURRENCY=8
-ENIGMA_MEMORY_LIMIT=512MB
+1. Default configuration
+2. Configuration file
+3. CLI arguments
 
-# Output settings
-ENIGMA_MINIFY=true
-ENIGMA_SOURCE_MAPS=true
-```
-
-### Configuration Templates
-
-Use built-in templates for quick setup:
-
-```bash
-# React project with TypeScript
-enigma init --template react-ts
-
-# Vue.js project
-enigma init --template vue
-
-# Production-optimized configuration
-enigma init --template production
-
-# Development configuration
-enigma init --template development
-
-# Monorepo configuration
-enigma init --template monorepo
-```
+This allows you to set base configuration in a file and override specific options via CLI.
 
 ## 🔧 Integration Examples
 
@@ -557,12 +304,12 @@ enigma init --template monorepo
 ```json
 {
   "scripts": {
-    "enigma:analyze": "enigma analyze --report",
-    "enigma:generate": "enigma generate --minify",
-    "enigma:watch": "enigma watch --hmr",
-    "enigma:optimize": "enigma optimize dist/**/*.html --backup",
-    "build": "vite build && enigma generate --minify --clean",
-    "dev": "concurrently \"vite dev\" \"enigma watch --hmr\""
+    "enigma": "enigma",
+    "enigma:dev": "enigma --dry-run --verbose",
+    "enigma:prod": "enigma --minify --source-maps",
+    "enigma:scramble": "enigma --scramble --scramble-speed 100",
+    "build": "vite build && enigma --minify --quiet",
+    "build:analyze": "vite build && enigma --dry-run --verbose"
   }
 }
 ```
@@ -597,17 +344,11 @@ jobs:
       - name: Build project
         run: npm run build
 
-      - name: Analyze CSS patterns
-        run: npx @tw-enigma/cli analyze --report --format html
+      - name: Optimize CSS
+        run: npx @tw-enigma/cli --minify --source-maps --quiet
 
-      - name: Generate optimized CSS
-        run: npx @tw-enigma/cli generate --minify --sourcemap
-
-      - name: Upload optimization report
-        uses: actions/upload-artifact@v3
-        with:
-          name: enigma-report
-          path: reports/
+      - name: Verify optimization
+        run: npx @tw-enigma/cli --dry-run --verbose
 ```
 
 ### Docker
@@ -628,88 +369,65 @@ COPY . .
 
 # Build and optimize
 RUN npm run build && \
-    enigma optimize dist/**/*.html --minify --report
+    enigma --minify --quiet
 
 CMD ["npm", "start"]
 ```
 
 ## 📊 Output Examples
 
-### Analysis Report
+### Console Output
 
 ```bash
-enigma analyze --report --format html
+enigma --verbose
 ```
 
-Generates a comprehensive HTML report showing:
+Shows detailed progress information:
 
-- Pattern frequency analysis
-- Optimization opportunities
-- Bundle size estimates
-- Performance recommendations
-- Visual pattern maps
+```
+🎯 Enigma optimization starting...
+✅ Configuration loaded successfully
+🔧 Testing core optimization engine...
+✅ Core optimization engine working - 3 classes processed
+🔍 Discovering files for processing...
+📁 Found 42 files to process
+🔍 Checking scramble package availability...
+ℹ️  Scramble package not available - using basic optimization
+🎉 Enigma optimization complete!
+```
 
-### JSON Output
+### Dry Run Output
 
 ```bash
-enigma analyze --output analysis.json
+enigma --dry-run --verbose
 ```
 
-```json
-{
-  "summary": {
-    "filesAnalyzed": 45,
-    "patternsFound": 127,
-    "optimizationOpportunities": 89,
-    "estimatedSavings": "68%"
-  },
-  "patterns": [
-    {
-      "id": "pattern-1",
-      "classes": ["flex", "items-center", "justify-center"],
-      "frequency": 23,
-      "locations": [
-        { "file": "src/components/Button.tsx", "line": 12 },
-        { "file": "src/components/Card.tsx", "line": 8 }
-      ],
-      "estimatedSavings": "45%"
-    }
-  ],
-  "recommendations": [
-    {
-      "type": "atomic-class",
-      "pattern": "flex items-center justify-center",
-      "frequency": 23,
-      "suggestedName": "tw-flex-center",
-      "savings": "234 bytes"
-    }
-  ]
-}
+Previews what would be optimized:
+
+```
+🔍 Running in dry-run mode - no files will be modified
+🎯 Enigma optimization starting...
+✅ Configuration loaded successfully
+📁 Found 42 files to process
+⚠️  No files found to process. Check your input patterns and file paths.
 ```
 
-### CSS Generation
+### With Scramble Effects
 
 ```bash
-enigma generate --strategy atomic --minify
+enigma --scramble --scramble-debug
 ```
 
-Generates optimized CSS:
+When @tw-enigma/scramble is installed:
 
-```css
-/* Generated by tw-enigma/cli */
-.tw-1 {
-  @apply flex items-center justify-center;
-}
-.tw-2 {
-  @apply px-4 py-2 bg-blue-500 text-white rounded;
-}
-.tw-3 {
-  @apply hover:bg-blue-600 transition-colors;
-}
-.tw-4 {
-  @apply bg-white rounded-lg shadow-md p-6 border;
-}
-/* ... more optimized classes ... */
+```
+🔄 Starting scramble integration pipeline...
+✅ Scramble module imported successfully
+🔧 Building scramble with configuration...
+💉 Injecting scramble into HTML files...
+✅ Scramble integration complete!
+📄 HTML files processed: 3
+✨ Scramble integration: Enabled
 ```
 
 ## 🔍 Debugging
@@ -719,63 +437,64 @@ Generates optimized CSS:
 Enable detailed logging to debug issues:
 
 ```bash
-enigma analyze --verbose
-enigma generate --verbose --debug
-enigma watch --verbose --debug
-```
-
-### Debug Information
-
-```bash
-# Show configuration
-enigma config list --verbose
-
-# Validate setup
-enigma doctor --verbose
-
-# Check cache status
-enigma clean cache --dry-run --verbose
+enigma --verbose                    # Detailed logging
+enigma --very-verbose               # Trace-level logging
+enigma --debug                      # Debug mode
+enigma --log-level debug           # Specific log level
 ```
 
 ### Common Issues
 
-#### No patterns found
+#### No files found
 
 ```bash
-# Check file paths
-enigma analyze --paths "src/**/*.tsx" --verbose
+# Check input patterns
+enigma --input "src/**/*.tsx" --verbose
 
-# Lower threshold
-enigma analyze --threshold 1 --verbose
+# Check file discovery
+enigma --include-file-types HTML JAVASCRIPT --verbose
 
 # Check exclusions
-enigma analyze --exclude "" --verbose
+enigma --exclude-patterns "" --verbose
 ```
 
-#### Build integration issues
+#### Configuration issues
 
 ```bash
-# Test configuration
-enigma config validate
+# Test configuration loading
+enigma --config enigma.config.js --verbose
 
-# Check build output
-enigma optimize "dist/**/*.html" --dry-run --verbose
+# Preview without changes
+enigma --dry-run --verbose
 
-# Verify file permissions
-ls -la dist/
+# Check file permissions
+ls -la src/ dist/
 ```
 
 #### Performance issues
 
 ```bash
-# Clean cache
-enigma clean cache --force
-
 # Reduce concurrency
-ENIGMA_MAX_CONCURRENCY=2 enigma generate
+enigma --max-concurrency 2 --verbose
 
-# Monitor memory usage
-enigma generate --verbose
+# Limit file processing
+enigma --max-files 100 --verbose
+
+# Monitor resource usage
+enigma --debug
+```
+
+#### Scramble integration issues
+
+```bash
+# Check package availability
+npm list @tw-enigma/scramble
+
+# Enable scramble debugging
+enigma --scramble --scramble-debug --verbose
+
+# Test without scramble
+enigma --verbose
 ```
 
 ## 🧪 Testing
@@ -783,30 +502,30 @@ enigma generate --verbose
 ### Test Commands
 
 ```bash
-# Test configuration
-enigma config validate
+# Test without making changes
+enigma --dry-run
 
-# Dry run analysis
-enigma analyze --dry-run
+# Test with specific configuration
+enigma --config test.config.js --dry-run
 
-# Dry run generation
-enigma generate --dry-run
+# Test file discovery
+enigma --include-file-types HTML --dry-run --verbose
 
-# Test optimization
-enigma optimize "test-files/**/*.html" --dry-run
+# Test with debug output
+enigma --debug --dry-run
 ```
 
 ### CI/CD Testing
 
 ```bash
-# Non-interactive mode
-CI=true enigma init --template production --force
+# Silent optimization for CI
+enigma --quiet
 
-# Fail on issues
-enigma doctor --fix --verbose || exit 1
+# Verification mode
+enigma --dry-run --verbose
 
-# Generate reports for CI
-enigma analyze --report --format json --output ci-report.json
+# Performance test
+enigma --max-concurrency 1 --max-files 10 --dry-run
 ```
 
 ## 📄 License

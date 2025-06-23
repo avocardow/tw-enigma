@@ -91,7 +91,7 @@ export default defineConfig({
     },
 
     // Setup files for enhanced testing
-    setupFiles: [],
+    setupFiles: ['./tests/test-config.ts'],
 
     // Bail configuration for CI efficiency
     bail: isCI ? 5 : 0, // Stop after 5 failures in CI

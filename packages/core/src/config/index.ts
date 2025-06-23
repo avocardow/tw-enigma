@@ -9,6 +9,7 @@
 export * from './config';
 export * from './configValidator';
 export * from './configDefaults';
+export type { CliArguments } from './config';
 
 // Configuration Lifecycle
 export * from './configMigration';

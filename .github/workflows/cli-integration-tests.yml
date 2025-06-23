@@ -1,0 +1,211 @@
+name: CLI Integration Tests
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'packages/cli/**'
+      - 'packages/core/**'
+      - '.github/workflows/cli-integration-tests.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'packages/cli/**'
+      - 'packages/core/**'
+      - '.github/workflows/cli-integration-tests.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  integration-tests:
+    name: CLI Integration Tests
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node-version: [18, 20, 22]
+        include:
+          # Additional test configurations
+          - os: ubuntu-latest
+            node-version: 18
+            test-mode: 'full'
+          - os: ubuntu-latest
+            node-version: 20
+            test-mode: 'coverage'
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+        working-directory: ./
+
+      - name: Build Core Package
+        run: npm run build
+        working-directory: ./packages/core
+
+      - name: Build CLI Package
+        run: npm run build
+        working-directory: ./packages/cli
+
+      - name: Type Check
+        run: npm run type-check
+        working-directory: ./packages/cli
+
+      - name: Lint
+        run: npm run lint
+        working-directory: ./packages/cli
+
+      - name: Run Unit Tests
+        run: npm run test:unit
+        working-directory: ./packages/cli
+        env:
+          CI: true
+          NODE_ENV: test
+
+      - name: Run Integration Tests
+        run: npm run test:integration
+        working-directory: ./packages/cli
+        env:
+          CI: true
+          NODE_ENV: test
+          CLI_TEST_MODE: true
+          DEBUG_CLI: true
+
+      - name: Run Dry Run Tests
+        run: npm run test:dry-run
+        working-directory: ./packages/cli
+        env:
+          CI: true
+          NODE_ENV: test
+          CLI_TEST_MODE: true
+
+      - name: Run Scramble & Error Tests
+        run: npm run test:scramble
+        working-directory: ./packages/cli
+        env:
+          CI: true
+          NODE_ENV: test
+          CLI_TEST_MODE: true
+
+      - name: Run All E2E Tests
+        run: npm run test:e2e
+        working-directory: ./packages/cli
+        env:
+          CI: true
+          NODE_ENV: test
+          CLI_TEST_MODE: true
+          DEBUG_CLI: true
+
+      - name: Run Coverage Tests (Ubuntu + Node 20 only)
+        if: matrix.os == 'ubuntu-latest' && matrix.node-version == 20
+        run: npm run test:coverage
+        working-directory: ./packages/cli
+        env:
+          CI: true
+          NODE_ENV: test
+          CLI_TEST_MODE: true
+
+      - name: Upload Coverage Reports
+        if: matrix.os == 'ubuntu-latest' && matrix.node-version == 20
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./packages/cli/coverage/lcov.info
+          flags: cli-integration
+          name: cli-integration-coverage
+          fail_ci_if_error: false
+
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-${{ matrix.os }}-node${{ matrix.node-version }}
+          path: |
+            packages/cli/test-results.json
+            packages/cli/coverage/
+            packages/cli/test-temp/
+          retention-days: 7
+
+      - name: Test CLI Binary Installation
+        run: |
+          npm pack
+          npm install -g tw-enigma-cli-*.tgz
+          enigma --version
+          enigma --help
+        working-directory: ./packages/cli
+        env:
+          CI: true
+
+      - name: Test CLI Binary Functionality
+        run: |
+          mkdir -p test-cli-binary
+          cd test-cli-binary
+          echo '<div class="flex items-center justify-center p-4">Test</div>' > test.html
+          enigma --input . --dry-run --verbose
+        working-directory: ./packages/cli
+        env:
+          CI: true
+
+  performance-tests:
+    name: Performance Tests
+    runs-on: ubuntu-latest
+    needs: integration-tests
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build Packages
+        run: |
+          npm run build --workspace=packages/core
+          npm run build --workspace=packages/cli
+
+      - name: Performance Benchmark
+        run: |
+          cd packages/cli
+          time npm run test:e2e
+          echo "::notice title=Performance Test::Integration tests completed successfully"
+        env:
+          CI: true
+          NODE_ENV: test
+
+  matrix-summary:
+    name: Integration Tests Summary
+    runs-on: ubuntu-latest
+    needs: integration-tests
+    if: always()
+    
+    steps:
+      - name: Check Results
+        run: |
+          if [[ "${{ needs.integration-tests.result }}" == "success" ]]; then
+            echo "✅ All integration tests passed!"
+            exit 0
+          else
+            echo "❌ Some integration tests failed"
+            exit 1
+          fi

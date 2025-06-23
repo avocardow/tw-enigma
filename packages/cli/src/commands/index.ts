@@ -6,6 +6,7 @@
 
 import { Command } from 'commander';
 import { createCssConfigCommand } from './css-config';
+import { createEnigmaCommand } from './enigma';
 import { createInitConfigCommand } from './init-config';
 import { createScrambleCommand } from './scramble';
 import { createTemplateCommand } from './template';
@@ -14,6 +15,12 @@ import { createTemplateCommand } from './template';
  * Register all commands with the main program
  */
 export function registerCommands(program: Command): void {
+  // Main enigma command
+  console.error('[CLI-DEBUG] Creating enigma command...');
+  const enigmaCommand = createEnigmaCommand();
+  console.error('[CLI-DEBUG] Adding enigma command to program...');
+  program.addCommand(enigmaCommand);
+
   // Configuration commands
   console.error('[CLI-DEBUG] Creating init-config command...');
   const initConfigCommand = createInitConfigCommand();
@@ -46,6 +53,7 @@ export function registerCommands(program: Command): void {
  */
 export {
   createCssConfigCommand,
+  createEnigmaCommand,
   createInitConfigCommand,
   createScrambleCommand,
   createTemplateCommand,

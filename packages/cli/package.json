@@ -15,11 +15,14 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "test": "vitest run",
-    "test:unit": "vitest run",
-    "test:integration": "vitest run --testNamePattern=\"Integration\"",
-    "test:e2e": "vitest run --testNamePattern=\"E2E\"",
+    "test:unit": "vitest run --testNamePattern=\"unit|Unit\"",
+    "test:integration": "vitest run tests/enigma-integration.test.ts",
+    "test:e2e": "vitest run tests/enigma-*.test.ts",
+    "test:dry-run": "vitest run tests/enigma-dry-run-verbose.test.ts",
+    "test:scramble": "vitest run tests/enigma-scramble-errors.test.ts",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "test:ci": "vitest run --reporter=verbose --reporter=json --reporter=junit",
     "lint": "eslint \"src/**/*.ts\" \"bin/**/*.ts\"",
     "lint:fix": "eslint \"src/**/*.ts\" \"bin/**/*.ts\" --fix",
     "format": "prettier --write \"src/**/*.{ts,js,json}\" \"bin/**/*.{ts,js,json}\"",
@@ -75,6 +78,9 @@
     "@types/glob": "^8.1.0",
     "@types/uuid": "^10.0.0",
     "@types/write-file-atomic": "^4.0.3",
-    "@types/ws": "^8.5.10"
+    "@types/ws": "^8.5.10",
+    "fs-extra": "^11.2.0",
+    "@types/fs-extra": "^11.0.4",
+    "ts-node": "^10.9.2"
   }
 }
