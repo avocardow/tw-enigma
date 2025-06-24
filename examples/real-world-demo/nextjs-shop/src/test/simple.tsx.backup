@@ -1,0 +1,23 @@
+// Simple test file with obvious repeating patterns for testing TW-Enigma
+export default function SimpleTest() {
+  return (
+    <div>
+      {/* These patterns should be detected as they appear multiple times */}
+      <div className="flex items-center justify-center">Pattern 1</div>
+      <div className="flex items-center justify-center">Pattern 1 repeated</div>
+      <div className="flex items-center justify-center">Pattern 1 again</div>
+      
+      <div className="text-lg font-bold text-primary">Pattern 2</div>
+      <div className="text-lg font-bold text-primary">Pattern 2 repeated</div>
+      <div className="text-lg font-bold text-primary">Pattern 2 again</div>
+      
+      <div className="w-4 h-4 bg-blue-500">Small pattern</div>
+      <div className="w-4 h-4 bg-blue-500">Small pattern repeated</div>
+      <div className="w-4 h-4 bg-blue-500">Small pattern again</div>
+      
+      <div className="p-4 rounded-lg shadow-md">Card pattern</div>
+      <div className="p-4 rounded-lg shadow-md">Card pattern repeated</div>
+      <div className="p-4 rounded-lg shadow-md">Card pattern again</div>
+    </div>
+  );
+}

@@ -1,0 +1,12 @@
+.a { @apply flex items-center; }
+.b { @apply flex justify-center; }
+.c { @apply items-center justify-center; }
+.d { @apply text-lg font-bold; }
+.e { @apply text-lg text-primary; }
+.f { @apply font-bold text-primary; }
+.g { @apply w-4 h-4; }
+.h { @apply w-4 bg-blue-500; }
+.i { @apply h-4 bg-blue-500; }
+.j { @apply p-4 rounded-lg; }
+.k { @apply p-4 shadow-md; }
+.l { @apply rounded-lg shadow-md; }
