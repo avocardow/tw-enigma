@@ -29,7 +29,13 @@
   "scripts": {
     "dev": "turbo dev",
     "dev:all": "turbo dev",
+    "dev:enigma": "pnpm --filter nextjs-shop-demo dev:enigma",
+    "dev:demo": "pnpm --filter nextjs-shop-demo dev",
     "build": "turbo build",
+    "build:enigma": "pnpm --filter nextjs-shop-demo build:enigma",
+    "build:demo": "pnpm --filter nextjs-shop-demo build",
+    "start": "pnpm --filter nextjs-shop-demo start",
+    "start:demo": "pnpm --filter nextjs-shop-demo start",
     "test": "turbo test",
     "test:core": "turbo test --filter=@tw-enigma/core",
     "test:cli": "turbo test --filter=@tw-enigma/cli",

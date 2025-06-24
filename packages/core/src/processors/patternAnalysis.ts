@@ -665,7 +665,10 @@ function generateCoOccurrencePatterns(
 /**
  * Extract class names from HTML attributes
  */
-function extractClassesFromAttributes(attributes: Record<string, string>): string[] {
+function extractClassesFromAttributes(attributes: Record<string, string> | undefined | null): string[] {
+  if (!attributes || typeof attributes !== 'object') {
+    return [];
+  }
   const classAttr = attributes.class || attributes.className || '';
   return classAttr.split(/\s+/).filter(Boolean);
 }
@@ -673,7 +676,11 @@ function extractClassesFromAttributes(attributes: Record<string, string>): strin
 /**
  * Extract class names from JSX pattern
  */
-function extractClassesFromJsxPattern(pattern: string): string[] {
+function extractClassesFromJsxPattern(pattern: string | undefined | null): string[] {
+  if (!pattern || typeof pattern !== 'string') {
+    return [];
+  }
+  
   // Simple extraction - look for quoted strings that might contain classes
   const matches = pattern.match(/["'`]([^"'`]*?)["'`]/g);
   if (!matches) return [];
@@ -842,6 +849,7 @@ export function generateCoOccurrenceAnalysis(
 
           // Add HTML contexts
           for (const htmlContext of classData.contexts.html) {
+            if (!htmlContext || !htmlContext.attributes) continue;
             const elementClasses = extractClassesFromAttributes(htmlContext.attributes);
             if (elementClasses.includes(coClass)) {
               contexts.push({
@@ -853,6 +861,7 @@ export function generateCoOccurrenceAnalysis(
 
           // Add JSX contexts
           for (const jsxContext of classData.contexts.jsx) {
+            if (!jsxContext || !jsxContext.pattern) continue;
             const patternClasses = extractClassesFromJsxPattern(jsxContext.pattern);
             if (patternClasses.includes(coClass)) {
               contexts.push({

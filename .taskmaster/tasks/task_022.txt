@@ -1,0 +1,68 @@
+# Task ID: 22
+# Title: Implement Support for Modern CSS Features
+# Status: pending
+# Dependencies: 4, 14
+# Priority: medium
+# Description: Extend optimization capabilities to handle modern CSS features like Grid, Flexbox gap, and logical properties.
+# Details:
+1. Implement support for CSS Grid utility optimization.
+2. Develop handling for Flexbox gap properties.
+3. Implement optimization for logical property utilities.
+4. Create support for modern selector patterns (e.g., :is(), :where()).
+5. Develop handling for CSS nesting when used with utilities.
+6. Implement support for layer-based utility organizations.
+7. Create documentation for modern CSS feature support.
+8. Ensure compatibility with various browser support requirements.
+
+# Test Strategy:
+Create test suites for each modern CSS feature. Verify correct optimization without breaking functionality. Test with real-world examples using modern CSS patterns. Ensure generated CSS maintains browser compatibility as specified.
+
+# Subtasks:
+## 1. Implement CSS Grid Feature Support [pending]
+### Dependencies: None
+### Description: Develop logic to parse, validate, and apply CSS Grid properties, including grid-template, grid-area, grid-gap, and grid-auto-flow. Ensure correct handling of implicit and explicit grid tracks, auto-placement, and subgrid support.
+### Details:
+Include error handling for invalid grid syntax, fallback strategies for unsupported browsers, and integration with existing layout engines. Write unit tests for grid parsing, rendering, and edge cases such as nested grids and auto-placement conflicts.
+
+## 2. Implement Flexbox Gap Property Support [pending]
+### Dependencies: None
+### Description: Add support for the Flexbox gap property, ensuring correct spacing between flex items. Handle both row and column gaps, and ensure compatibility with legacy browsers that do not support gap in flex layouts.
+### Details:
+Detect browser support for flex gap, provide polyfills or fallback spacing where necessary, and test with various flex directions and wrapping scenarios. Validate error handling for invalid gap values and ensure integration with existing flexbox logic.
+
+## 3. Implement Logical Properties Support [pending]
+### Dependencies: None
+### Description: Enable parsing and application of logical CSS properties (e.g., margin-inline, padding-block, inset-inline-start) for internationalization and writing-mode adaptability.
+### Details:
+Map logical properties to their physical equivalents based on writing mode and direction. Handle errors for unsupported logical properties and ensure fallback to physical properties where necessary. Test with different writing modes and directionality settings.
+
+## 4. Implement Modern CSS Selectors Support [pending]
+### Dependencies: None
+### Description: Support new CSS selectors such as :is(), :where(), :has(), and :not() with complex arguments. Ensure correct specificity calculation and selector matching.
+### Details:
+Update the selector engine to parse and evaluate modern selectors, handle errors for invalid selector syntax, and test with nested and combinator-heavy selectors. Ensure compatibility with existing selector logic and performance optimization for large stylesheets.
+
+## 5. Implement CSS Nesting Feature Support [pending]
+### Dependencies: None
+### Description: Add support for native CSS nesting syntax, allowing selectors to be nested within parent selectors according to the CSS Nesting Module specification.
+### Details:
+Parse nested rules, flatten them into valid CSS, and handle errors for invalid nesting (e.g., circular references, invalid parent selectors). Test with deeply nested rules, at-rules, and integration with preprocessors.
+
+## 6. Implement CSS Layers Feature Support [pending]
+### Dependencies: None
+### Description: Support the @layer rule for organizing and controlling the cascade order of CSS rules. Allow developers to define, import, and manage multiple style layers.
+### Details:
+Parse @layer rules, resolve layer order, and handle conflicts between layers. Implement error handling for duplicate or undefined layers and test with complex layering scenarios, including interaction with @import and specificity.
+
+## 7. Develop Comprehensive Documentation for Modern CSS Features [pending]
+### Dependencies: 22.1, 22.2, 22.3, 22.4, 22.5, 22.6
+### Description: Create detailed documentation for each modern CSS feature, including usage examples, browser compatibility tables, known limitations, and migration guides.
+### Details:
+Ensure documentation covers technical specifications, integration considerations, and error handling strategies. Include code samples, diagrams, and links to relevant specifications. Review for clarity and accuracy.
+
+## 8. Design and Execute Compatibility and Integration Testing [pending]
+### Dependencies: 22.1, 22.2, 22.3, 22.4, 22.5, 22.6
+### Description: Develop and run automated and manual tests to verify feature support across major browsers and environments. Test integration with existing CSS engines and frameworks.
+### Details:
+Create test suites for each feature, including edge cases, error scenarios, and cross-feature interactions. Use browser testing tools and CI pipelines to ensure consistent behavior. Document test results and address any compatibility issues found.
+

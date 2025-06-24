@@ -1,0 +1,61 @@
+# Task ID: 3
+# Title: Update CLI for Maximum Optimization Default
+# Status: pending
+# Dependencies: 2
+# Priority: high
+# Description: Modify the CLI interface to use complete consolidation as the default behavior and implement degradation flags.
+# Details:
+1. Update packages/cli/src/commands/enigma.ts
+2. Remove requirement for optimization flags, making maximum optimization the default.
+3. Implement degradation flags: --pretty, --partial, --readable
+4. Integrate CompleteConsolidator as the default optimization strategy.
+5. Implement basic optimization reporting (consolidation ratio, character savings).
+6. Update help documentation to reflect new default behavior and options.
+7. Ensure backward compatibility for existing use cases.
+
+# Test Strategy:
+Create CLI integration tests to verify default behavior and flag handling. Test backward compatibility with existing TW-Enigma projects. Verify metrics reporting accuracy.
+
+# Subtasks:
+## 1. Analyze and Document Current CLI Command Structure [pending]
+### Dependencies: None
+### Description: Review the existing CLI commands, subcommands, and flag structure. Document all current behaviors, defaults, flag types, and argument parsing logic. Identify areas where new flags or commands will be added or modified.
+### Details:
+Include a mapping of all commands, their flags, required/optional arguments, and current help output. Note any order dependencies or inconsistencies in flag handling. Ensure documentation covers both user-facing and internal command structures.
+
+## 2. Design and Specify New Flags and Command Updates [pending]
+### Dependencies: 3.1
+### Description: Define the technical specifications for new flags and command updates, including flag types (boolean, string, enum), default values, optional/required status, and error messages for invalid input. Ensure order-independence and support for stdin/stdout where applicable.
+### Details:
+Write detailed flag specifications, including edge cases (e.g., support for 'none' as a value, ambiguous argument handling). Specify how new flags interact with existing ones and document any changes to command behavior. Include examples for help output and usage.
+
+## 3. Implement CLI Command and Flag Changes [pending]
+### Dependencies: 3.2
+### Description: Update the CLI codebase to add or modify commands and flags as specified. Use a robust command-line parsing framework to ensure consistency and minimize parsing errors. Implement sensible defaults and prompt users for missing required options.
+### Details:
+Ensure all new flags are order-independent and compatible with piping (stdin/stdout). Add comprehensive error handling for invalid flag values, missing arguments, and conflicting options. Update help output and autocompletion scripts as needed.
+
+## 4. Integrate CLI with Consolidator Logic [pending]
+### Dependencies: 3.3
+### Description: Connect the updated CLI commands and flags to the consolidator's core logic. Ensure that all flag values and arguments are correctly passed and mapped to the consolidator's API or internal functions.
+### Details:
+Validate that integration covers all new and updated flags, including edge cases and error propagation. Ensure that the consolidator responds appropriately to CLI input, and that errors are surfaced clearly to the user.
+
+## 5. Implement and Enhance Reporting Functionality [pending]
+### Dependencies: 3.4
+### Description: Update or add reporting features to the CLI, ensuring that output is clear, structured, and supports piping to other commands or files. Implement support for multiple output formats if required (e.g., JSON, table, plain text).
+### Details:
+Include error reporting, progress indicators, and summary statistics as appropriate. Ensure reporting respects all relevant flags and integrates seamlessly with the consolidator's output. Test for large and edge-case outputs.
+
+## 6. Update and Expand CLI Documentation [pending]
+### Dependencies: 3.5
+### Description: Revise and expand user and developer documentation to reflect all CLI changes, new flags, integration points, and reporting features. Include detailed usage examples, flag descriptions, and troubleshooting tips.
+### Details:
+Ensure documentation covers both command reference and practical workflows. Update help output, README files, and any online docs. Include migration notes for users upgrading from previous versions.
+
+## 7. Conduct Backward Compatibility and Regression Testing [pending]
+### Dependencies: None
+### Description: Develop and execute a comprehensive test suite to verify backward compatibility of all CLI commands and flags. Test for regressions, deprecated flag handling, and ensure legacy scripts continue to function as expected.
+### Details:
+Include automated and manual tests for all commands, flags, and integration points. Test error handling, edge cases, and user prompts. Document all test cases and results, and address any compatibility issues found.
+

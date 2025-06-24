@@ -1,0 +1,67 @@
+# Task ID: 4
+# Title: Develop CSS Generation System
+# Status: pending
+# Dependencies: 2
+# Priority: high
+# Description: Create a system to generate CSS with @apply directives for all consolidated patterns.
+# Details:
+1. Implement CSS generation logic in a new file (e.g., packages/core/src/css/generator.ts).
+2. Create @apply directives for each consolidated pattern.
+3. Implement configurable output location for generated CSS.
+4. Handle edge cases: empty classes, malformed HTML, special characters.
+5. Implement CSS syntax validation to ensure generated CSS is valid.
+6. Add options for CSS formatting (indentation, line breaks).
+7. Integrate with CompleteConsolidator to access consolidated patterns.
+
+# Test Strategy:
+Unit test CSS generation with various pattern inputs. Validate generated CSS syntax. Test edge cases and special character handling. Integrate with end-to-end tests to verify correct CSS output from HTML input.
+
+# Subtasks:
+## 1. Define CSS Logic Processing Requirements [pending]
+### Dependencies: None
+### Description: Establish the core logic for parsing, interpreting, and generating CSS from dynamic patterns. Specify how input patterns are received, parsed, and mapped to CSS rules, including support for shorthand properties, logical properties, and modular CSS organization.
+### Details:
+Document the expected input formats, supported CSS features (e.g., Flexbox, Grid, logical properties), and output structure. Include error handling for unsupported or malformed patterns. Specify how to handle specificity, modularity, and maintainability as per best practices.
+
+## 2. Design and Implement @apply Directive Creation [pending]
+### Dependencies: 4.1
+### Description: Develop logic to generate and insert @apply directives for reusable CSS patterns, ensuring compatibility with preprocessors and modular CSS systems.
+### Details:
+Specify how @apply directives are detected, created, and merged. Handle edge cases such as conflicting or nested @apply usage. Ensure output is valid for target preprocessors (e.g., Tailwind, PostCSS). Include error messages for invalid or circular @apply references.
+
+## 3. Configure Output Generation and Formatting [pending]
+### Dependencies: 4.1
+### Description: Define and implement output configuration options, including file structure, formatting styles, minification, and modularization.
+### Details:
+Allow configuration of output file names, directory structure, and formatting options (e.g., indentation, line breaks, property ordering). Support minified and expanded output. Ensure output adheres to maintainability and scalability best practices.
+
+## 4. Enumerate and Handle Edge Cases [pending]
+### Dependencies: 4.1
+### Description: Identify and implement handling for edge cases such as conflicting selectors, invalid property values, duplicate rules, and browser compatibility issues.
+### Details:
+Create a comprehensive list of edge cases. Implement logic to detect and resolve conflicts, warn about deprecated or unsupported properties, and handle duplicate or overlapping rules. Include fallback mechanisms for browser compatibility.
+
+## 5. Implement Syntax Validation and Error Reporting [pending]
+### Dependencies: 4.1, 4.4
+### Description: Develop robust syntax validation for input patterns and generated CSS, with detailed error reporting and suggestions for correction.
+### Details:
+Use or build a CSS parser to validate syntax. Provide clear, actionable error messages for invalid syntax, unsupported features, or ambiguous patterns. Integrate validation into the processing pipeline to prevent invalid output.
+
+## 6. Develop Formatting and Style Options [pending]
+### Dependencies: 4.3, 4.5
+### Description: Implement configurable formatting options for generated CSS, supporting various code style guides and best practices.
+### Details:
+Allow users to select or define formatting rules (e.g., indentation, spacing, property order). Support popular conventions (e.g., BEM, SMACSS). Ensure formatting options do not interfere with CSS logic or output validity.
+
+## 7. Integrate with Build Tools and Workflows [pending]
+### Dependencies: 4.2, 4.3, 4.6
+### Description: Ensure seamless integration of the CSS logic and output with existing build tools, preprocessors, and deployment workflows.
+### Details:
+Document and implement integration points for tools like Webpack, PostCSS, and CI/CD pipelines. Provide configuration examples and troubleshooting guidance. Ensure compatibility with version control and code review processes.
+
+## 8. Design and Execute Comprehensive Testing [pending]
+### Dependencies: 4.4, 4.5, 4.6, 4.7
+### Description: Develop and run a thorough suite of tests covering all logic, edge cases, formatting options, and integration scenarios.
+### Details:
+Create unit, integration, and end-to-end tests for all features. Include tests for error handling, edge cases, and output correctness. Use automated tools to validate CSS output across browsers and devices. Document test coverage and results.
+

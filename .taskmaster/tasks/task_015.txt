@@ -1,0 +1,68 @@
+# Task ID: 15
+# Title: Implement CSS Order Dependency Handling
+# Status: pending
+# Dependencies: 4, 9
+# Priority: high
+# Description: Develop a system to preserve CSS cascade and specificity during optimization.
+# Details:
+1. Implement order preservation in @apply directives generation.
+2. Develop detection system for order-dependent classes (z-index, responsive).
+3. Create option to preserve original class order within consolidated patterns.
+4. Implement specificity analysis to ensure optimization doesn't break cascade.
+5. Develop intelligent reordering for non-dependent classes to maximize optimization.
+6. Create warning system for potentially conflicting optimizations.
+7. Implement configurable strictness levels for order preservation.
+8. Develop documentation explaining CSS order handling strategies.
+
+# Test Strategy:
+Create comprehensive test suite for CSS order scenarios. Verify cascade preservation with complex stylesheets. Test with real-world examples of order-dependent styles. Ensure optimization doesn't introduce specificity conflicts.
+
+# Subtasks:
+## 1. Order Preservation Analysis [pending]
+### Dependencies: None
+### Description: Analyze the original order of CSS rules to identify critical order dependencies that affect the cascade and ensure that reordering does not break intended styling.
+### Details:
+Parse the CSS file and record the sequence of all rules, including nested rules within media queries and at-rules. Identify rules that target the same selectors or overlapping elements. Mark rules whose order affects the cascade outcome, especially when specificity is equal. Implement logic to flag rules that must not be reordered. Handle edge cases such as @import, @media, and @supports blocks. Provide error handling for malformed CSS or ambiguous order scenarios.
+
+## 2. Dependency Detection Engine [pending]
+### Dependencies: 15.1
+### Description: Develop an engine to detect dependencies between CSS rules based on selector overlap, specificity, and property conflicts.
+### Details:
+For each rule, analyze selectors and properties to find overlaps with other rules. Detect when one rule's effect depends on another's presence or order (e.g., overrides, resets, or fallbacks). Build a dependency graph representing these relationships. Include logic to handle pseudo-classes, pseudo-elements, and combinators. Ensure the engine can process large stylesheets efficiently. Implement error handling for circular dependencies and ambiguous relationships.
+
+## 3. Specificity Calculation and Analysis [pending]
+### Dependencies: 15.2
+### Description: Implement a robust specificity calculator that computes the specificity of each selector and analyzes conflicts between rules.
+### Details:
+Parse each selector and compute its specificity using the standard algorithm (ID, class, type counts)[4][5]. Store specificity values alongside rules. Compare specificity values for rules targeting the same elements and properties. Identify cases where specificity ties occur and order becomes the tiebreaker. Handle edge cases such as inline styles, !important, and layered origins. Validate correctness with a comprehensive set of selector examples. Provide error handling for invalid selectors.
+
+## 4. Reordering Logic Implementation [pending]
+### Dependencies: 15.3
+### Description: Design and implement logic to safely reorder CSS rules for optimization while preserving cascade, specificity, and detected dependencies.
+### Details:
+Use the dependency graph and specificity analysis to determine safe reordering opportunities. Implement algorithms that move independent or non-conflicting rules for optimization (e.g., grouping, deduplication) without breaking the cascade. Ensure that rules with dependencies or equal specificity remain in correct order. Integrate rollback or fallback mechanisms if reordering introduces conflicts. Provide detailed error messages when reordering is not possible due to complex dependencies.
+
+## 5. Warning and Conflict Reporting System [pending]
+### Dependencies: 15.4
+### Description: Develop a system to generate warnings and detailed reports when potential order, specificity, or dependency conflicts are detected during optimization.
+### Details:
+For each detected conflict or risky reordering, generate a warning with a clear description, affected selectors, and suggested resolutions. Include severity levels (e.g., error, warning, info). Allow users to export or view reports in multiple formats (console, JSON, HTML). Ensure the system can handle large numbers of warnings efficiently. Provide configuration options to suppress or escalate specific warning types. Implement error handling for reporting failures.
+
+## 6. Strictness and Configurability Module [pending]
+### Dependencies: 15.5
+### Description: Implement a configuration module that allows users to adjust the strictness of order preservation, dependency detection, and warning thresholds.
+### Details:
+Expose configuration options for strictness levels (e.g., strict, balanced, permissive) affecting how aggressively rules are reordered and how conflicts are handled. Allow users to enable or disable specific checks (e.g., ignore certain dependencies, relax specificity enforcement). Integrate configuration with the warning system to adjust reporting behavior. Validate configuration inputs and provide clear error messages for invalid settings. Ensure changes are applied dynamically without requiring a restart.
+
+## 7. Comprehensive Documentation [pending]
+### Dependencies: None
+### Description: Produce detailed technical documentation covering all modules, algorithms, configuration options, error handling, and integration points.
+### Details:
+Document the architecture, data structures, and flow of the optimization process. Provide usage examples, configuration guides, and troubleshooting sections. Include explanations of specificity calculation, dependency detection, and reordering logic. Document all error messages and warning types. Ensure documentation is accessible, up-to-date, and reviewed for technical accuracy. Provide integration instructions for common build tools and workflows.
+
+## 8. Robust Testing Suite [pending]
+### Dependencies: None
+### Description: Develop a comprehensive suite of automated tests covering all modules, including edge cases, error handling, and integration scenarios.
+### Details:
+Write unit tests for order analysis, dependency detection, specificity calculation, and reordering logic. Include tests for various selector types, specificity conflicts, and complex dependency graphs. Implement integration tests simulating real-world CSS optimization workflows. Test configuration options and warning/reporting outputs. Ensure tests cover error and exception handling. Use code coverage tools to verify completeness. Provide test data and expected outputs for reproducibility.
+

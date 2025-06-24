@@ -240,6 +240,47 @@ pnpm test
 pnpm clean
 ```
 
+##### Working with the Demo
+
+The project includes a Next.js demo application with Enigma integration:
+
+**Development Mode:**
+
+```bash
+# Run the demo with Enigma optimization enabled
+pnpm dev:enigma
+
+# Run the demo in normal mode (without Enigma)
+pnpm dev:demo
+```
+
+**Production Mode:**
+
+```bash
+# Build the demo with Enigma optimization
+pnpm build:enigma
+
+# Build the demo in normal mode
+pnpm build:demo
+
+# Start the production server (after building)
+pnpm start
+```
+
+**Complete Workflow to See Enigma's Effects:**
+
+```bash
+# 1. Build with Enigma optimizations
+pnpm build:enigma
+
+# 2. Start the production server
+pnpm start
+
+# 3. Open http://localhost:3000 to see the optimized site
+```
+
+These scripts allow you to test Enigma functionality without having to navigate to the demo directory.
+
 ##### Using Turbo for Efficient Builds
 
 This project uses [Turborepo](https://turbo.build/) for intelligent task execution:

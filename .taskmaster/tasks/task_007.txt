@@ -1,0 +1,67 @@
+# Task ID: 7
+# Title: Implement Pattern Re-Analysis and Discovery
+# Status: pending
+# Dependencies: 6
+# Priority: high
+# Description: Develop system for re-scanning file content and detecting new patterns after each optimization pass.
+# Details:
+1. Extend MultiPassDiscovery with re-scanning capabilities.
+2. Implement incremental pattern frequency analysis.
+3. Develop new pattern detection logic for modified class combinations.
+4. Create optimization opportunity identification system.
+5. Implement efficient data structures for tracking file state changes.
+6. Optimize for performance in large codebases.
+7. Integrate with convergence detection to identify diminishing returns.
+
+# Test Strategy:
+Create unit tests for pattern re-analysis with various scenarios. Verify accurate detection of new patterns after consolidation. Test with complex, multi-pass scenarios to ensure correct optimization progression.
+
+# Subtasks:
+## 1. Extend Discovery Mechanisms [pending]
+### Dependencies: None
+### Description: Enhance the system's ability to identify new code, dependencies, and data sources across the codebase, including dynamic and static analysis for both source and binary artifacts.
+### Details:
+Implement recursive directory scanning with error handling for inaccessible files. Integrate language-specific parsers to extract function, class, and module definitions. Ensure support for incremental discovery to avoid redundant scans. Log all discovered entities with metadata (timestamps, file paths, checksums).
+
+## 2. Implement Incremental Analysis Framework [pending]
+### Dependencies: 7.1
+### Description: Develop a framework to analyze only changed or newly discovered code/data, minimizing redundant computation and supporting efficient state tracking.
+### Details:
+Track file and entity checksums to detect changes. Maintain a persistent state database mapping entities to their last analysis results and timestamps. On each run, compare current state to previous state and queue only changed entities for analysis. Include robust error handling for state corruption and rollback mechanisms.
+
+## 3. Develop New Pattern Detection Algorithms [pending]
+### Dependencies: 7.2
+### Description: Create algorithms to identify emerging code patterns, anti-patterns, and architectural motifs, leveraging both static and dynamic analysis.
+### Details:
+Define a library of known patterns and anti-patterns with formal specifications. Use AST (Abstract Syntax Tree) traversal and control/data flow analysis to match patterns. Implement anomaly detection for previously unseen patterns. Log all detections with confidence scores and supporting evidence. Handle ambiguous matches with user-configurable thresholds.
+
+## 4. Opportunity Identification Engine [pending]
+### Dependencies: 7.3
+### Description: Build an engine to surface actionable opportunities for refactoring, optimization, or risk mitigation based on detected patterns and complexity metrics.
+### Details:
+Integrate with complexity metrics (e.g., cyclomatic, Halstead) to prioritize opportunities. Generate detailed reports with code locations, rationale, and suggested actions. Include error handling for incomplete or conflicting analysis data. Allow user feedback to refine opportunity ranking.
+
+## 5. Optimize Data Structures for State and Analysis Results [pending]
+### Dependencies: 7.4
+### Description: Redesign internal data structures to efficiently store, retrieve, and update discovery, analysis, and pattern detection results, supporting large-scale codebases.
+### Details:
+Use indexed, persistent key-value stores for entity metadata and analysis results. Implement efficient diffing algorithms for incremental updates. Ensure thread-safe access and transactional updates. Include fallback mechanisms for data corruption and backup/restore procedures.
+
+## 6. Performance Tuning and Scalability Enhancements [pending]
+### Dependencies: 7.5
+### Description: Profile and optimize the system for speed and memory usage, especially for large and frequently changing codebases.
+### Details:
+Instrument all major components with timing and memory usage metrics. Identify and eliminate bottlenecks in discovery, analysis, and storage. Implement parallel processing where safe. Set up automated performance regression tests. Handle out-of-memory and timeout errors gracefully.
+
+## 7. Integration with Existing Toolchains and Workflows [pending]
+### Dependencies: None
+### Description: Ensure seamless integration with CI/CD pipelines, IDEs, and other developer tools, supporting both automated and manual workflows.
+### Details:
+Provide APIs and CLI interfaces for triggering discovery and analysis. Support output formats compatible with popular tools (e.g., SARIF, JSON, HTML). Implement authentication and access control for sensitive data. Include integration tests for all supported environments.
+
+## 8. Comprehensive Testing and Validation [pending]
+### Dependencies: None
+### Description: Design and execute a thorough testing plan covering unit, integration, regression, and performance tests for all components and workflows.
+### Details:
+Develop test suites for each module, including edge cases and error conditions. Use synthetic and real-world codebases for validation. Automate test execution and reporting. Include tests for state consistency after incremental updates and rollbacks. Document all test cases and expected outcomes.
+
