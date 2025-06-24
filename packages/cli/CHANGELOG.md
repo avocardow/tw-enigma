@@ -1,5 +1,24 @@
 # Changelog - @tw-enigma/cli
 
+## 1.0.4
+
+### Patch Changes
+
+- Fix file rewriting for React/JSX className attributes
+
+  Updated regex pattern to match both class and className attributes, fixing issue where 0 files were being processed in React projects. The file rewriter now correctly identifies and processes className attributes in React/JSX components.
+
+  **Changes:**
+
+  - Updated regex from `/class\s*=\s*["']([^"']+)["']/gi` to `/(?:class|className)\s*=\s*["']([^"']+)["']/gi`
+  - Added logic to preserve original attribute name (className vs class) in output
+  - Fixed file processing that was stuck at "Files processed: 0/N"
+
+  **Fixes:**
+
+  - React/JSX projects now properly process files containing className attributes
+  - Pattern detection and CSS generation already worked, this fixes the final file rewriting step
+
 All notable changes to the @tw-enigma/cli package will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
