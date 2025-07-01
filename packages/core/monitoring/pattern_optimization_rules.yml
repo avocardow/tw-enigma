@@ -1,0 +1,221 @@
+groups:
+  - name: pattern_selection_alerts
+    rules:
+      # High Processing Time Alert
+      - alert: PatternSelectionHighProcessingTime
+        expr: pattern_selection_processing_time_seconds > 30
+        for: 2m
+        labels:
+          severity: warning
+          component: pattern-selection
+        annotations:
+          summary: 'Pattern selection processing time is high'
+          description: 'Pattern selection is taking {{ $value }}s to complete, which is above the 30s threshold.'
+
+      # Pattern Selection Failure Rate
+      - alert: PatternSelectionHighFailureRate
+        expr: rate(pattern_selection_failures_total[5m]) > 0.1
+        for: 1m
+        labels:
+          severity: critical
+          component: pattern-selection
+        annotations:
+          summary: 'High pattern selection failure rate'
+          description: 'Pattern selection failure rate is {{ $value | humanizePercentage }} which is above 10%.'
+
+      # Low Cache Hit Rate
+      - alert: PatternSelectionLowCacheHitRate
+        expr: pattern_selection_cache_hit_rate < 0.6
+        for: 5m
+        labels:
+          severity: warning
+          component: pattern-selection
+        annotations:
+          summary: 'Low cache hit rate for pattern selection'
+          description: 'Cache hit rate is {{ $value | humanizePercentage }}, below the 60% threshold.'
+
+      # Memory Usage Alert
+      - alert: PatternSelectionHighMemoryUsage
+        expr: pattern_selection_memory_usage_bytes > 500 * 1024 * 1024
+        for: 3m
+        labels:
+          severity: warning
+          component: pattern-selection
+        annotations:
+          summary: 'High memory usage in pattern selection'
+          description: 'Pattern selection is using {{ $value | humanizeBytes }} of memory.'
+
+  - name: hierarchy_integration_alerts
+    rules:
+      # Circular Dependency Detection
+      - alert: HierarchyCircularDependencyDetected
+        expr: hierarchy_circular_dependencies_detected_total > 0
+        for: 0s
+        labels:
+          severity: critical
+          component: hierarchy-integration
+        annotations:
+          summary: 'Circular dependencies detected in hierarchy'
+          description: '{{ $value }} circular dependencies have been detected in the pattern hierarchy.'
+
+      # Hierarchy Integration Failures
+      - alert: HierarchyIntegrationFailures
+        expr: rate(hierarchy_integration_failures_total[5m]) > 0.05
+        for: 2m
+        labels:
+          severity: warning
+          component: hierarchy-integration
+        annotations:
+          summary: 'Hierarchy integration failures detected'
+          description: 'Hierarchy integration failure rate is {{ $value | humanizePercentage }}.'
+
+      # Inheritance Rule Application Failures
+      - alert: InheritanceRuleFailures
+        expr: rate(inheritance_rule_failures_total[5m]) > 0.1
+        for: 1m
+        labels:
+          severity: warning
+          component: hierarchy-integration
+        annotations:
+          summary: 'Inheritance rule application failures'
+          description: 'Inheritance rule failure rate is {{ $value | humanizePercentage }}.'
+
+  - name: conflict_resolution_alerts
+    rules:
+      # Unresolved Conflicts
+      - alert: ConflictResolutionUnresolvedConflicts
+        expr: conflict_resolution_unresolved_conflicts_total > 10
+        for: 5m
+        labels:
+          severity: warning
+          component: conflict-resolution
+        annotations:
+          summary: 'High number of unresolved conflicts'
+          description: '{{ $value }} conflicts remain unresolved for more than 5 minutes.'
+
+      # Critical Conflicts
+      - alert: ConflictResolutionCriticalConflicts
+        expr: conflict_resolution_critical_conflicts_total > 0
+        for: 0s
+        labels:
+          severity: critical
+          component: conflict-resolution
+        annotations:
+          summary: 'Critical conflicts detected'
+          description: '{{ $value }} critical conflicts have been detected and require immediate attention.'
+
+      # Resolution Strategy Failures
+      - alert: ConflictResolutionStrategyFailures
+        expr: rate(conflict_resolution_strategy_failures_total[5m]) > 0.2
+        for: 2m
+        labels:
+          severity: warning
+          component: conflict-resolution
+        annotations:
+          summary: 'Conflict resolution strategy failures'
+          description: 'Conflict resolution strategy failure rate is {{ $value | humanizePercentage }}.'
+
+  - name: system_performance_alerts
+    rules:
+      # High CPU Usage
+      - alert: PatternOptimizerHighCPU
+        expr: rate(process_cpu_seconds_total[5m]) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: 'High CPU usage in pattern optimizer'
+          description: 'CPU usage is {{ $value }}% for the pattern optimizer process.'
+
+      # High Memory Usage
+      - alert: PatternOptimizerHighMemory
+        expr: process_resident_memory_bytes > 1024 * 1024 * 1024
+        for: 5m
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: 'High memory usage in pattern optimizer'
+          description: 'Memory usage is {{ $value | humanizeBytes }} for the pattern optimizer process.'
+
+      # Service Down
+      - alert: PatternOptimizerDown
+        expr: up{job="pattern-optimizer-app"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: system
+        annotations:
+          summary: 'Pattern optimizer service is down'
+          description: 'The pattern optimizer service has been down for more than 1 minute.'
+
+  - name: quality_metrics_alerts
+    rules:
+      # Low Quality Score
+      - alert: PatternSelectionLowQuality
+        expr: pattern_selection_quality_score < 0.7
+        for: 10m
+        labels:
+          severity: warning
+          component: quality
+        annotations:
+          summary: 'Low pattern selection quality score'
+          description: 'Pattern selection quality score is {{ $value }}, below the 0.7 threshold.'
+
+      # Coverage Drop
+      - alert: PatternSelectionCoverageDrop
+        expr: pattern_selection_coverage_ratio < 0.8
+        for: 5m
+        labels:
+          severity: warning
+          component: quality
+        annotations:
+          summary: 'Pattern selection coverage has dropped'
+          description: 'Pattern selection coverage is {{ $value | humanizePercentage }}, below the 80% threshold.'
+
+      # Performance Degradation
+      - alert: PatternSelectionPerformanceDegradation
+        expr: increase(pattern_selection_processing_time_seconds[1h]) > increase(pattern_selection_processing_time_seconds[1h] offset 1h) * 1.5
+        for: 15m
+        labels:
+          severity: warning
+          component: performance
+        annotations:
+          summary: 'Pattern selection performance degradation'
+          description: 'Pattern selection processing time has increased by more than 50% compared to the previous hour.'
+
+  - name: business_logic_alerts
+    rules:
+      # Algorithm Convergence Failures
+      - alert: AlgorithmConvergenceFailure
+        expr: pattern_selection_convergence_failures_total > 0
+        for: 1m
+        labels:
+          severity: warning
+          component: algorithm
+        annotations:
+          summary: 'Pattern selection algorithm convergence failure'
+          description: '{{ $value }} algorithm convergence failures have occurred.'
+
+      # Fallback Algorithm Usage
+      - alert: FallbackAlgorithmUsage
+        expr: rate(pattern_selection_fallback_algorithm_usage_total[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: warning
+          component: algorithm
+        annotations:
+          summary: 'High fallback algorithm usage'
+          description: 'Fallback algorithm is being used {{ $value | humanizePercentage }} of the time.'
+
+      # Pattern Discovery Rate Drop
+      - alert: PatternDiscoveryRateDrop
+        expr: rate(pattern_discovery_patterns_found_total[1h]) < rate(pattern_discovery_patterns_found_total[1h] offset 1h) * 0.7
+        for: 30m
+        labels:
+          severity: warning
+          component: discovery
+        annotations:
+          summary: 'Pattern discovery rate has dropped significantly'
+          description: 'Pattern discovery rate has dropped by more than 30% compared to the previous hour.'
