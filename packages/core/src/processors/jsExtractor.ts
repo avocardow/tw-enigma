@@ -7,6 +7,10 @@
 
 import * as fs from 'fs/promises';
 import { z } from 'zod';
+import { FallbackHandler } from './fallbackHandler';
+import { TemplateLiteralDetector } from './templateLiteralDetector';
+import { ASTTemplateParser } from './astTemplateParser';
+import type { ProcessingContext, FallbackResult } from './types';
 
 /**
  * Configuration options for JavaScript/JSX class extraction
@@ -14,6 +18,8 @@ import { z } from 'zod';
 export const JsExtractionOptionsSchema = z.object({
   enableFrameworkDetection: z.boolean().default(true),
   includeDynamicClasses: z.boolean().default(true),
+  enableTemplateLiteralDetection: z.boolean().default(true),
+  enableFallbackHandling: z.boolean().default(true),
   caseSensitive: z.boolean().default(true),
   ignoreEmpty: z.boolean().default(true),
   maxFileSize: z
@@ -41,7 +47,9 @@ export interface JsClassData {
     pattern: string;
     lineNumber: number;
     framework?: SupportedFramework;
-    extractionType: 'static' | 'dynamic' | 'template' | 'utility';
+    extractionType: 'static' | 'dynamic' | 'template' | 'utility' | 'template-literal' | 'fallback';
+    confidence?: number;
+    fallbackStrategy?: string;
   }>;
 }
 
@@ -65,6 +73,8 @@ export interface JsClassExtractionResult {
       dynamicMatches: number;
       templateMatches: number;
       utilityMatches: number;
+      templateLiteralMatches: number;
+      fallbackMatches: number;
     };
   };
 }
@@ -136,9 +146,32 @@ class RegexPatterns {
  */
 export class JsExtractor {
   private options: JsExtractionOptions;
+  private templateLiteralDetector: TemplateLiteralDetector | null = null;
+  private astTemplateParser: ASTTemplateParser | null = null;
+  private fallbackHandler: FallbackHandler | null = null;
 
   constructor(options: Partial<JsExtractionOptions> = {}) {
     this.options = JsExtractionOptionsSchema.parse(options);
+    
+    // Initialize template literal processing components if enabled
+    if (this.options.enableTemplateLiteralDetection) {
+      this.templateLiteralDetector = new TemplateLiteralDetector({
+        includeTagged: true,
+        includeMultiline: true,
+        maxLength: 1000,
+      });
+      
+      this.astTemplateParser = new ASTTemplateParser({
+        typescript: true,
+        jsx: true,
+        plugins: ['decorators', 'classProperties'],
+      });
+    }
+    
+    // Initialize fallback handler if enabled
+    if (this.options.enableFallbackHandling) {
+      this.fallbackHandler = new FallbackHandler();
+    }
   }
 
   /**
@@ -156,6 +189,8 @@ export class JsExtractor {
         dynamicMatches: 0,
         templateMatches: 0,
         utilityMatches: 0,
+        templateLiteralMatches: 0,
+        fallbackMatches: 0,
       },
     };
 
@@ -205,6 +240,24 @@ export class JsExtractor {
         totalMatches += dynamicMatches.length;
         metadata.extractionStats.dynamicMatches = dynamicMatches.length;
       }
+
+      // Extract template literal classes with fallback handling
+      let templateLiteralMatches = 0;
+      let fallbackMatches = 0;
+      
+      if (this.options.enableTemplateLiteralDetection) {
+        try {
+          const { matches: tlMatches, fallbacks } = await this.extractTemplateLiteralClasses(code, source);
+          templateLiteralMatches = tlMatches;
+          fallbackMatches = fallbacks;
+          totalMatches += tlMatches + fallbacks;
+        } catch (error) {
+          metadata.errors.push(`Template literal detection failed: ${error instanceof Error ? error.message : String(error)}`);
+        }
+      }
+      
+      metadata.extractionStats.templateLiteralMatches = templateLiteralMatches;
+      metadata.extractionStats.fallbackMatches = fallbackMatches;
 
       // Count total classes
       classes.forEach((classData) => {
@@ -296,6 +349,8 @@ export class JsExtractor {
               dynamicMatches: 0,
               templateMatches: 0,
               utilityMatches: 0,
+              templateLiteralMatches: 0,
+              fallbackMatches: 0,
             },
           },
         });
@@ -665,6 +720,148 @@ export class JsExtractor {
     }
 
     return classes;
+  }
+
+  /**
+   * Extract template literal classes with fallback handling
+   */
+  private async extractTemplateLiteralClasses(
+    code: string,
+    source: string
+  ): Promise<{ matches: number; fallbacks: number }> {
+    let templateLiteralMatches = 0;
+    let fallbackMatches = 0;
+    
+    if (!this.templateLiteralDetector) {
+      return { matches: 0, fallbacks: 0 };
+    }
+
+    try {
+      // Detect template literals using regex-based detector
+      const detectionResult = this.templateLiteralDetector.detect(code);
+      
+      for (const template of detectionResult.templates) {
+        try {
+          // Try AST parsing for more precise analysis
+          if (this.astTemplateParser) {
+            const parseResult = this.astTemplateParser.parse(code, {
+              filePath: source,
+              framework: this.detectFramework(code),
+            });
+            
+            // Process AST templates with higher confidence
+            for (const astTemplate of parseResult.templates) {
+              const classes = this.extractClassesFromTemplateLiteral(astTemplate);
+              if (classes.length > 0) {
+                this.addTemplateLiteralClasses(classes, template, 'template-literal', astTemplate.confidence || 0.9);
+                templateLiteralMatches++;
+              }
+            }
+          } else {
+            // Fallback to basic template processing
+            const classes = this.extractClassesFromBasicTemplate(template);
+            if (classes.length > 0) {
+              this.addTemplateLiteralClasses(classes, template, 'template-literal', template.confidence);
+              templateLiteralMatches++;
+            }
+          }
+        } catch (templateError) {
+          // Use fallback handler for failed template processing
+          if (this.fallbackHandler) {
+            try {
+              const context: ProcessingContext = {
+                filePath: source,
+                framework: this.detectFramework(code),
+                variables: {},
+              };
+              
+              const fallbackResult = await this.fallbackHandler.processWithFallback(
+                template.content,
+                context,
+                templateError instanceof Error ? templateError : new Error(String(templateError))
+              );
+              
+              if (fallbackResult.success && fallbackResult.classes.length > 0) {
+                this.addTemplateLiteralClasses(
+                  fallbackResult.classes,
+                  template,
+                  'fallback',
+                  fallbackResult.confidence,
+                  fallbackResult.strategy
+                );
+                fallbackMatches++;
+              }
+            } catch (fallbackError) {
+              // Even fallback failed - log but continue processing
+              console.warn(`Template literal fallback failed for: ${template.content.substring(0, 50)}...`);
+            }
+          }
+        }
+      }
+    } catch (detectionError) {
+      // Detection itself failed - this is logged in the caller
+      throw detectionError;
+    }
+
+    return { matches: templateLiteralMatches, fallbacks: fallbackMatches };
+  }
+
+  /**
+   * Extract classes from AST template literal
+   */
+  private extractClassesFromTemplateLiteral(astTemplate: any): string[] {
+    const classes: string[] = [];
+    
+    // Extract static parts (quasis)
+    if (astTemplate.quasis) {
+      for (const quasi of astTemplate.quasis) {
+        if (typeof quasi === 'string') {
+          const staticClasses = this.parseClassAttribute(quasi);
+          classes.push(...staticClasses);
+        }
+      }
+    }
+    
+    return classes;
+  }
+
+  /**
+   * Extract classes from basic template match
+   */
+  private extractClassesFromBasicTemplate(template: any): string[] {
+    const classes: string[] = [];
+    
+    // Extract static parts from template
+    if (template.staticParts) {
+      for (const part of template.staticParts) {
+        const staticClasses = this.parseClassAttribute(part);
+        classes.push(...staticClasses);
+      }
+    } else if (template.content) {
+      // Fallback: try to extract from full content
+      const staticClasses = this.parseClassAttribute(template.content);
+      classes.push(...staticClasses);
+    }
+    
+    return classes;
+  }
+
+  /**
+   * Add template literal classes to the main classes map
+   */
+  private addTemplateLiteralClasses(
+    classes: string[],
+    template: any,
+    extractionType: 'template-literal' | 'fallback',
+    confidence: number,
+    fallbackStrategy?: string
+  ): void {
+    // This would need access to the classes map from extractFromString
+    // For now, we'll store this in a temporary structure and process it later
+    // In a real implementation, this would be refactored to pass the classes map
+    
+    // TODO: Integrate with main classes map - this requires refactoring
+    // the extraction methods to accept the classes map as a parameter
   }
 
   /**

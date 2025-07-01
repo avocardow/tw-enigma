@@ -443,10 +443,10 @@ export class EnigmaWebpackPlugin implements WebpackPluginInstance, BuildToolPlug
       (name) => name.endsWith('.css') || name.includes('.css')
     );
 
-    logger.info('Processing assets', { 
+    logger.info('Processing assets', {
       totalAssets: Object.keys(assets).length,
       cssAssets: cssAssets.length,
-      assetNames: cssAssets
+      assetNames: cssAssets,
     });
 
     for (const assetName of cssAssets) {
@@ -462,21 +462,18 @@ export class EnigmaWebpackPlugin implements WebpackPluginInstance, BuildToolPlug
           try {
             // Replace asset with optimized version
             const { RawSource } = compilation.compiler.webpack.sources;
-            compilation.updateAsset(
-              assetName,
-              new RawSource(optimizedResult.css)
-            );
-            
+            compilation.updateAsset(assetName, new RawSource(optimizedResult.css));
+
             logger.info('CSS asset replaced', {
               assetName,
               originalLength: originalCSS.length,
               optimizedLength: optimizedResult.css.length,
-              success: true
+              success: true,
             });
           } catch (replaceError) {
             logger.error('Failed to replace CSS asset', {
               assetName,
-              error: replaceError instanceof Error ? replaceError.message : String(replaceError)
+              error: replaceError instanceof Error ? replaceError.message : String(replaceError),
             });
             throw replaceError;
           }
@@ -521,7 +518,7 @@ export class EnigmaWebpackPlugin implements WebpackPluginInstance, BuildToolPlug
 
       // Import the real optimization function
       const { optimizeCSS } = await import('../../index');
-      
+
       // Call the real CSS optimization with scrambling
       const result = optimizeCSS(css, undefined, {
         scrambleClassNames: true,
@@ -529,12 +526,12 @@ export class EnigmaWebpackPlugin implements WebpackPluginInstance, BuildToolPlug
         preserveSourceMaps: false,
       });
 
-      logger.info('CSS optimization result', { 
-        fileName, 
+      logger.info('CSS optimization result', {
+        fileName,
         originalSize: result.stats.originalSize,
         optimizedSize: result.stats.optimizedSize,
         reduction: result.stats.reduction,
-        plugins: result.plugins
+        plugins: result.plugins,
       });
 
       const endTime = performance.now();

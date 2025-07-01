@@ -1,0 +1,367 @@
+# TW-Enigma CSS Optimization CI/CD Pipeline
+# Template for GitHub Actions integration
+# Save this file as .github/workflows/tw-enigma.yml in your project root
+
+name: TW-Enigma CSS Optimization
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'src/**/*.css'
+      - 'src/**/*.scss'
+      - 'src/**/*.less'
+      - 'styles/**'
+      - 'tw-enigma.config.js'
+      - 'tw-enigma.config.ts'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/**/*.css'
+      - 'src/**/*.scss'
+      - 'src/**/*.less'
+      - 'styles/**'
+      - 'tw-enigma.config.js'
+      - 'tw-enigma.config.ts'
+
+env:
+  NODE_VERSION: '18'
+  TW_ENIGMA_CONFIG: 'tw-enigma.config.js'
+
+jobs:
+  # CSS Validation and Optimization Analysis
+  css-validation:
+    name: CSS Validation & Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install TW-Enigma
+        run: npm install --save-dev tw-enigma
+
+      - name: Validate CSS Syntax
+        run: npx tw-enigma validate --config ${{ env.TW_ENIGMA_CONFIG }} --output-format json
+        continue-on-error: true
+
+      - name: Generate CSS Analysis Report
+        run: |
+          npx tw-enigma analyze \
+            --input "src/**/*.css" \
+            --config ${{ env.TW_ENIGMA_CONFIG }} \
+            --output-format json \
+            --output-file css-analysis.json
+
+      - name: Upload Analysis Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: css-analysis-report
+          path: css-analysis.json
+          retention-days: 30
+
+  # CSS Optimization and Build
+  css-optimization:
+    name: CSS Optimization
+    runs-on: ubuntu-latest
+    needs: css-validation
+
+    strategy:
+      matrix:
+        environment: [development, production]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install TW-Enigma
+        run: npm install --save-dev tw-enigma
+
+      - name: Configure TW-Enigma for ${{ matrix.environment }}
+        run: |
+          if [ "${{ matrix.environment }}" = "production" ]; then
+            export TW_ENIGMA_ENV=production
+            export TW_ENIGMA_MINIFY=true
+            export TW_ENIGMA_VALIDATE=false
+          else
+            export TW_ENIGMA_ENV=development
+            export TW_ENIGMA_MINIFY=false
+            export TW_ENIGMA_VALIDATE=true
+          fi
+
+      - name: Optimize CSS with TW-Enigma
+        run: |
+          npx tw-enigma optimize \
+            --input "src/**/*.css" \
+            --output "dist/css" \
+            --config ${{ env.TW_ENIGMA_CONFIG }} \
+            --environment ${{ matrix.environment }} \
+            --format pretty \
+            --stats \
+            --output-format json
+
+      - name: Generate Optimization Statistics
+        run: |
+          npx tw-enigma stats \
+            --input "dist/css" \
+            --output-format json \
+            --output-file optimization-stats-${{ matrix.environment }}.json
+
+      - name: Upload Optimized CSS
+        uses: actions/upload-artifact@v4
+        with:
+          name: optimized-css-${{ matrix.environment }}
+          path: dist/css/
+          retention-days: 30
+
+      - name: Upload Optimization Stats
+        uses: actions/upload-artifact@v4
+        with:
+          name: optimization-stats-${{ matrix.environment }}
+          path: optimization-stats-${{ matrix.environment }}.json
+          retention-days: 30
+
+  # Performance Analysis
+  performance-analysis:
+    name: CSS Performance Analysis
+    runs-on: ubuntu-latest
+    needs: css-optimization
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download optimization stats
+        uses: actions/download-artifact@v4
+        with:
+          name: optimization-stats-production
+          path: ./stats
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install TW-Enigma
+        run: npm install --save-dev tw-enigma
+
+      - name: Generate Performance Report
+        run: |
+          npx tw-enigma performance \
+            --stats-file "./stats/optimization-stats-production.json" \
+            --output-format markdown \
+            --output-file performance-report.md
+
+      - name: Comment Performance Report on PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const reportPath = 'performance-report.md';
+
+            if (fs.existsSync(reportPath)) {
+              const report = fs.readFileSync(reportPath, 'utf8');
+
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: `## 🎨 CSS Performance Report\n\n${report}`
+              });
+            }
+
+  # Quality Gates
+  quality-gates:
+    name: CSS Quality Gates
+    runs-on: ubuntu-latest
+    needs: [css-validation, css-optimization]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download analysis report
+        uses: actions/download-artifact@v4
+        with:
+          name: css-analysis-report
+          path: ./reports
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install TW-Enigma
+        run: npm install --save-dev tw-enigma
+
+      - name: Check Quality Gates
+        run: |
+          npx tw-enigma quality-gate \
+            --analysis-file "./reports/css-analysis.json" \
+            --max-errors 0 \
+            --max-warnings 10 \
+            --min-coverage 80 \
+            --max-duplication 15 \
+            --fail-on-threshold
+
+      - name: Generate Quality Badge
+        run: |
+          npx tw-enigma badge \
+            --analysis-file "./reports/css-analysis.json" \
+            --output-file quality-badge.svg
+
+      - name: Upload Quality Badge
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-badge
+          path: quality-badge.svg
+          retention-days: 90
+
+  # Security Scan
+  security-scan:
+    name: CSS Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install TW-Enigma
+        run: npm install --save-dev tw-enigma
+
+      - name: Run Security Scan
+        run: |
+          npx tw-enigma security \
+            --input "src/**/*.css" \
+            --config ${{ env.TW_ENIGMA_CONFIG }} \
+            --output-format sarif \
+            --output-file css-security.sarif
+
+      - name: Upload SARIF results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: css-security.sarif
+          category: css-security
+
+  # Deployment Ready Check
+  deployment-ready:
+    name: Deployment Ready Check
+    runs-on: ubuntu-latest
+    needs: [quality-gates, security-scan]
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download optimized CSS
+        uses: actions/download-artifact@v4
+        with:
+          name: optimized-css-production
+          path: ./dist/css
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install TW-Enigma
+        run: npm install --save-dev tw-enigma
+
+      - name: Final Validation
+        run: |
+          npx tw-enigma validate \
+            --input "./dist/css/**/*.css" \
+            --config ${{ env.TW_ENIGMA_CONFIG }} \
+            --strict \
+            --fail-on-error
+
+      - name: Create Deployment Package
+        run: |
+          tar -czf css-optimized-${{ github.sha }}.tar.gz -C dist/css .
+
+      - name: Upload Deployment Package
+        uses: actions/upload-artifact@v4
+        with:
+          name: deployment-package
+          path: css-optimized-${{ github.sha }}.tar.gz
+          retention-days: 90
+
+      - name: Tag Release
+        if: success()
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git tag -a "css-release-$(date +%Y%m%d-%H%M%S)" -m "Automated CSS release"
+          git push origin --tags
+
+# Workflow Configuration Notes:
+#
+# 1. Environment Variables:
+#    - TW_ENIGMA_CONFIG: Path to configuration file
+#    - TW_ENIGMA_ENV: Environment (development/production)
+#    - TW_ENIGMA_MINIFY: Enable/disable minification
+#    - TW_ENIGMA_VALIDATE: Enable/disable validation
+#
+# 2. Quality Gates:
+#    - Max errors: 0 (fail on any CSS errors)
+#    - Max warnings: 10 (allow minor warnings)
+#    - Min coverage: 80% (ensure good CSS coverage)
+#    - Max duplication: 15% (limit duplicate CSS)
+#
+# 3. Artifacts:
+#    - Analysis reports: 30 days retention
+#    - Optimized CSS: 30 days retention
+#    - Quality badges: 90 days retention
+#    - Deployment packages: 90 days retention
+#
+# 4. Security:
+#    - SARIF format for security findings
+#    - Automated upload to GitHub Security tab
+#    - CSS-specific security patterns
+#
+# 5. Performance:
+#    - Parallel jobs for faster execution
+#    - Caching for dependencies
+#    - Matrix builds for different environments

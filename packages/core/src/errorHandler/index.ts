@@ -14,8 +14,9 @@
  * - Error recovery strategies and fallbacks
  * - Real-time analytics and health monitoring
  * - Event-driven error notification system
+ * - Enhanced error handling and logging system (Task 19)
  *
- * @example Basic Usage
+ * @example Basic Usage (Legacy)
  * ```typescript
  * import { handleError, getErrorHandler } from './errorHandler';
  *
@@ -25,6 +26,24 @@
  * } catch (error) {
  *   const shouldContinue = await handleError(error);
  *   if (!shouldContinue) {
+ *     process.exit(1);
+ *   }
+ * }
+ * ```
+ *
+ * @example New Centralized Error Handling
+ * ```typescript
+ * import { handleCentralizedError, ErrorCategory } from './errorHandler';
+ *
+ * try {
+ *   await riskyOperation();
+ * } catch (error) {
+ *   const recovered = await handleCentralizedError(error, {
+ *     category: ErrorCategory.OPERATIONAL,
+ *     operation: 'risky-operation',
+ *     attemptRecovery: true
+ *   });
+ *   if (!recovered) {
  *     process.exit(1);
  *   }
  * }
@@ -182,3 +201,54 @@ export async function shutdownErrorHandling(): Promise<void> {
     console.error('Error during error handling shutdown:', error);
   }
 }
+
+// =============================================================================
+// ENHANCED ERROR HANDLING SYSTEM EXPORTS (Task 19)
+// =============================================================================
+
+// Re-export all new error handling components
+export * from './centralized';
+export * from './userMessageSystem';
+export * from './recoveryStrategies';
+export * from './errorAggregator';
+export * from './externalReporting';
+
+// Convenience initialization functions for the new system
+export {
+  initializeCentralizedErrorHandling,
+  handleCentralizedError,
+  getCentralizedErrorHandler,
+  shutdownCentralizedErrorHandling,
+} from './centralized';
+
+// Convenience logging functions
+export {
+  getGlobalStructuredLogger,
+  createStructuredLogger,
+} from '../utils/structuredLogger';
+
+// Convenience user message functions
+export {
+  generateUserMessage,
+  getUserMessageSystem,
+} from './userMessageSystem';
+
+// Convenience recovery functions
+export {
+  executeErrorRecovery,
+  getRecoveryStrategies,
+} from './recoveryStrategies';
+
+// Convenience aggregation functions
+export {
+  aggregateError,
+  getErrorAnalytics,
+  getErrorAggregator,
+} from './errorAggregator';
+
+// Convenience external reporting functions
+export {
+  reportToExternal,
+  addReportingBreadcrumb,
+  getExternalReportingManager,
+} from './externalReporting';
