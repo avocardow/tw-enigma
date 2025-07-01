@@ -122,7 +122,7 @@ jobs:
 
       - name: Upload Coverage Reports
         if: matrix.os == 'ubuntu-latest' && matrix.node-version == 20
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           file: ./packages/cli/coverage/lcov.info
           flags: cli-integration
