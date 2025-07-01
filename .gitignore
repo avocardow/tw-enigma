@@ -27,6 +27,7 @@ tsbuildinfo.json
 .test-results/
 # Temporary build directories
 temp_build/
+test-temp/
 .dedup*/
 .differential*/
 .incremental/
@@ -102,13 +103,8 @@ workspace.local.*
 # 🤖 AI Assistant & Development Workflow
 #==============================================================================
 # AI instructions (potentially sensitive)
-CLAUDE.md
-AGENTS.md
-.windsurfrules
-.roomodes
-.trae
-.windsurf
-.serena
+CLAUDE.local.md
+# Keep CLAUDE.md and AGENTS.md as they're now organized in docs/
 
 # AI working directories
 .roo/
@@ -117,6 +113,9 @@ AGENTS.md
 .clinerules/
 .anthropic/
 .cursorignore
+.serena/
+.trae/
+.windsurf/
 
 # AI conversation logs and context
 conversation-*.json
