@@ -15,6 +15,7 @@ import type {
   DetectionSource,
   FrameworkType,
 } from '../frameworkDetector';
+import { CSSInJSDetector } from './cssInJsDetector';
 
 export class ViteDetector implements IFrameworkDetector {
   readonly frameworkType: FrameworkType = 'vite';
@@ -121,6 +122,15 @@ export class ViteDetector implements IFrameworkDetector {
 
     // Detect entry points
     metadata.entryPoints = this.detectEntryPoints(context);
+
+    // Detect CSS-in-JS libraries
+    const cssResult = CSSInJSDetector.detect(context, metadata.targetFramework);
+    if (cssResult.hasCSSInJS) {
+      metadata.cssInfo = cssResult.cssInfo;
+      metadata.hasCSSInJS = cssResult.cssInfo.hasCSSInJS;
+      metadata.stylingLibraries = cssResult.cssInfo.libraries.map(lib => lib.name);
+      metadata.primaryStylingLibrary = cssResult.cssInfo.primaryLibrary;
+    }
 
     return {
       type: 'vite',
