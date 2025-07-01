@@ -1,914 +1,1217 @@
-# API Reference
+# TW-Enigma Framework Integration API Reference
 
-This document provides comprehensive API reference documentation for the Tailwind Enigma packages.
+## Overview
+
+This comprehensive API reference covers all classes, interfaces, methods, and configuration options available in TW-Enigma's framework integration system, including responsive and pseudo-class optimization.
 
 ## Table of Contents
 
-- [Package Overview](#package-overview)
-- [@tw-enigma/core API](#tw-enigmacore-api)
-  - [Core Engine](#core-engine)
-  - [CSS Generation](#css-generation)
-  - [Processors](#processors)
-  - [Configuration](#configuration)
-  - [Utilities](#utilities)
-  - [Types](#types)
-- [@tw-enigma/cli API](#tw-enigmacli-api)
-  - [Commands](#commands)
-  - [CLI Utilities](#cli-utilities)
-- [Integration Examples](#integration-examples)
-- [Error Handling](#error-handling)
-- [TypeScript Support](#typescript-support)
+1. [Core Framework API](#core-framework-api)
+2. [Framework Detection API](#framework-detection-api)
+3. [Configuration Presets API](#configuration-presets-api)
+4. [CSS-in-JS Integration API](#css-in-js-integration-api)
+5. [SSR/SSG API](#ssrssg-api)
+6. [Build System Integration API](#build-system-integration-api)
+7. [Responsive & Pseudo-Class API](#responsive--pseudo-class-api)
+8. [Configuration Schema](#configuration-schema)
+9. [Plugin Development API](#plugin-development-api)
+10. [Type Definitions](#type-definitions)
+11. [Error Reference](#error-reference)
 
----
+## Core Framework API
 
-## Package Overview
+### TWEnigmaEngine
 
-Tailwind Enigma consists of two main packages:
-
-- **@tw-enigma/core**: Core optimization engine with CSS generation, analysis, and processing capabilities
-- **@tw-enigma/cli**: Command-line interface for interacting with the optimization engine
-
-## @tw-enigma/core API
-
-### Core Engine
-
-#### `EnhancedCSSGenerator`
-
-The main CSS generation engine that provides intelligent optimization and code generation.
+Main optimization engine for framework integration.
 
 ```typescript
-import { EnhancedCSSGenerator } from '@tw-enigma/core';
-
-class EnhancedCSSGenerator {
-  constructor(config: EnigmaConfig, frequencyAnalyzer: FrequencyAnalyzer, enablePostCSS?: boolean);
-
-  async generateEnhancedCSS(
-    classFrequencies: Map<string, number>,
-    options?: Partial<CssGenerationOptions>
-  ): Promise<GeneratedCSS>;
-
-  getPostCSSMetrics(): any;
-
-  async updatePostCSSConfig(updates: {
-    optimizationLevel?: 'none' | 'basic' | 'standard' | 'aggressive';
-    enableTailwindOptimizer?: boolean;
-    enableCSSMinifier?: boolean;
-    enableSourceMapper?: boolean;
-    customPluginConfigs?: Record<string, any>;
-  }): Promise<void>;
+class TWEnigmaEngine {
+  constructor(config: TWEnigmaConfig);
+  
+  // Core optimization methods
+  optimizeClasses(classes: string[]): Promise<OptimizationResult>;
+  optimizeCSS(css: string): Promise<CSSOptimizationResult>;
+  optimizeComponent(component: ComponentInfo): Promise<ComponentOptimizationResult>;
+  
+  // Framework-specific methods
+  detectFramework(projectPath?: string): Promise<FrameworkInfo>;
+  applyFrameworkOptimizations(framework: FrameworkType): void;
+  
+  // Configuration methods
+  updateConfig(config: Partial<TWEnigmaConfig>): void;
+  getConfig(): TWEnigmaConfig;
+  validateConfig(): ValidationResult;
+  
+  // Cache management
+  clearCache(): void;
+  getCacheStats(): CacheStats;
+  
+  // Metrics and reporting
+  getMetrics(): PerformanceMetrics;
+  generateReport(): OptimizationReport;
 }
 ```
 
-**Usage Example:**
+#### Constructor Options
 
 ```typescript
-import { EnhancedCSSGenerator, loadConfig } from '@tw-enigma/core';
-
-const config = await loadConfig();
-const generator = new EnhancedCSSGenerator(config, frequencyAnalyzer);
-
-const result = await generator.generateEnhancedCSS(classFrequencies, {
-  strategy: 'mixed',
-  useApplyDirective: true,
-  sortingStrategy: 'frequency',
-});
-
-console.log(result.css);
-console.log(`Generated ${result.rules.length} CSS rules`);
-```
-
-### CSS Generation
-
-#### Core Functions
-
-##### `generateOptimizedCss()`
-
-Generate optimized CSS from class patterns or frequency data.
-
-```typescript
-// Overload 1: From patterns
-function generateOptimizedCss(
-  patterns: AggregatedClassData[],
-  options?: Partial<CssGenerationOptions>
-): CssGenerationResult;
-
-// Overload 2: From frequency map
-function generateOptimizedCss(
-  frequencyMap: PatternFrequencyMap,
-  nameOptions: any,
-  cssOptions: CssGenerationOptions
-): CssGenerationResult;
-```
-
-**Parameters:**
-
-- `patterns`: Array of aggregated class data from analysis
-- `frequencyMap`: Map of class patterns to their frequency
-- `options`: Configuration options for CSS generation
-
-**Returns:** `CssGenerationResult` containing generated CSS, rules, and metadata
-
-**Example:**
-
-```typescript
-import { generateOptimizedCss } from '@tw-enigma/core';
-
-const result = generateOptimizedCss(patterns, {
-  strategy: 'mixed',
-  useApplyDirective: true,
-  sortingStrategy: 'frequency',
-  commentLevel: 'detailed',
-});
-
-console.log('Generated CSS:', result.css);
-console.log('Compression ratio:', result.statistics.compressionRatio);
-```
-
-##### `generateCssRules()`
-
-Generate CSS rules from class patterns.
-
-```typescript
-function generateCssRules(
-  patterns: AggregatedClassData[] | { frequencyMap: Map<string, number>; [key: string]: any },
-  options?: CssGenerationOptions
-): CssRule[];
-```
-
-**Example:**
-
-```typescript
-const rules = generateCssRules(patterns, {
-  selectorNaming: 'pretty',
-  minimumFrequency: 3,
-});
-
-rules.forEach((rule) => {
-  console.log(`${rule.selector} (${rule.frequency} uses)`);
-});
-```
-
-#### Apply Directives
-
-##### `generateApplyDirective()`
-
-Generate Tailwind CSS `@apply` directives from class lists.
-
-```typescript
-function generateApplyDirective(classes: string[], options: CssGenerationOptions): ApplyDirective;
-```
-
-**Example:**
-
-```typescript
-const directive = generateApplyDirective(['text-lg', 'font-bold', 'text-blue-600'], options);
-
-console.log(directive.optimized); // "@apply text-lg font-bold text-blue-600"
-```
-
-##### `validateApplyDirective()`
-
-Validate apply directive syntax and compatibility.
-
-```typescript
-function validateApplyDirective(
-  directive: ApplyDirective | string
-): Array<{ type: 'error' | 'warning'; message: string }> | boolean;
-```
-
-#### Pattern Classification
-
-##### `classifyPattern()`
-
-Classify CSS patterns into atomic, utility, or component categories.
-
-```typescript
-function classifyPattern(
-  pattern: AggregatedClassData,
-  options: CssGenerationOptions
-): PatternClassification;
-```
-
-**Example:**
-
-```typescript
-const classification = classifyPattern(pattern, options);
-
-console.log(`Pattern type: ${classification.type}`);
-console.log(`Confidence: ${classification.confidence}`);
-console.log(`Recommended strategy: ${classification.recommendedStrategy}`);
-```
-
-#### Sorting and Organization
-
-##### `sortCssRules()`
-
-Sort CSS rules using various strategies.
-
-```typescript
-function sortCssRules(
-  rules: CssRule[],
-  strategy: CssGenerationOptions['sortingStrategy'] | CssGenerationOptions,
-  customSortFn?: (a: CssRule, b: CssRule) => number
-): CssRule[];
-```
-
-**Strategies:**
-
-- `"frequency"`: Sort by usage frequency
-- `"specificity"`: Sort by CSS specificity
-- `"alphabetical"`: Sort alphabetically
-- `"custom"`: Use custom sort function
-
-**Example:**
-
-```typescript
-const sortedRules = sortCssRules(rules, 'frequency');
-const customSorted = sortCssRules(rules, 'custom', (a, b) => {
-  return a.complexity - b.complexity;
-});
-```
-
-#### Comments and Documentation
-
-##### `generateCssComments()`
-
-Generate descriptive comments for CSS rules.
-
-```typescript
-function generateCssComments(
-  rules: CssRule[] | CssRule,
-  statistics: CssGenerationStatistics,
-  commentLevel?: CssGenerationOptions['commentLevel']
-): string;
-```
-
-**Comment Levels:**
-
-- `"none"`: No comments
-- `"minimal"`: Basic rule descriptions
-- `"detailed"`: Comprehensive information
-- `"verbose"`: Full analysis and recommendations
-
-#### Types and Interfaces
-
-##### `CssGenerationOptions`
-
-Configuration options for CSS generation.
-
-```typescript
-interface CssGenerationOptions {
-  strategy: 'atomic' | 'utility' | 'component' | 'mixed';
-  useApplyDirective: boolean;
-  sortingStrategy: 'specificity' | 'frequency' | 'alphabetical' | 'custom';
-  commentLevel: 'none' | 'minimal' | 'detailed' | 'verbose';
-  selectorNaming: 'sequential' | 'frequency-optimized' | 'pretty' | 'custom';
-  minimumFrequency: number;
-  includeSourceMaps: boolean;
-  formatOutput: boolean;
-  maxRulesPerFile: number;
-  enableOptimizations: boolean;
-  customSortFunction?: (a: CssRule, b: CssRule) => number;
-  customNamingFunction?: (pattern: AggregatedClassData) => string;
-  enableValidation: boolean;
-  skipInvalidClasses: boolean;
-  warnOnInvalidClasses: boolean;
-}
-```
-
-##### `CssGenerationResult`
-
-Result object from CSS generation operations.
-
-```typescript
-interface CssGenerationResult {
-  css: string;
-  rules: CssRule[];
-  sourceClasses: string[];
-  statistics: CssGenerationStatistics;
-  metadata: {
-    generatedAt: string;
-    strategy: string;
-    totalInputClasses: number;
-    compressionAchieved: boolean;
-    validationMetadata?: {
-      totalClassesValidated: number;
-      validClasses: number;
-      invalidClasses: number;
-      warningsGenerated: number;
-      skippedClasses: number;
-    };
-  };
-  warnings: string[];
-  errors: string[];
-  sourceMap?: string;
-}
-```
-
-##### `CssRule`
-
-Individual CSS rule representation.
-
-```typescript
-interface CssRule {
-  selector: string;
-  declarations: string[];
-  applyDirective?: string;
-  frequency: number;
-  patternType: 'atomic' | 'utility' | 'component';
-  sourceClasses: string[];
-  complexity: number;
-  coOccurrenceStrength: number;
-}
-```
-
-### Processors
-
-#### HTML Processing
-
-##### `htmlExtractor`
-
-Extract CSS classes from HTML files.
-
-```typescript
-import { htmlExtractor } from '@tw-enigma/core';
-
-// Extract classes from HTML content
-const classes = await htmlExtractor.extract(htmlContent, options);
-```
-
-##### `htmlRewriter`
-
-Rewrite HTML files with optimized CSS classes.
-
-```typescript
-import { htmlRewriter } from '@tw-enigma/core';
-
-// Rewrite HTML with optimized classes
-const rewrittenHtml = await htmlRewriter.rewrite(htmlContent, classMapping);
-```
-
-#### JavaScript Processing
-
-##### `jsExtractor`
-
-Extract CSS classes from JavaScript/TypeScript files.
-
-```typescript
-import { jsExtractor } from '@tw-enigma/core';
-
-// Extract classes from JS/TS content
-const classes = await jsExtractor.extract(jsContent, options);
-```
-
-##### `jsRewriter`
-
-Rewrite JavaScript files with optimized CSS classes.
-
-```typescript
-import { jsRewriter } from '@tw-enigma/core';
-
-// Rewrite JS with optimized classes
-const rewrittenJs = await jsRewriter.rewrite(jsContent, classMapping);
-```
-
-#### Pattern Analysis
-
-##### `patternAnalysis`
-
-Analyze CSS class usage patterns.
-
-```typescript
-import { patternAnalysis } from '@tw-enigma/core';
-
-// Analyze patterns in extracted data
-const analysis = await patternAnalysis.analyze(extractedData, options);
-```
-
-### Configuration
-
-#### `loadConfig()`
-
-Load and validate Enigma configuration.
-
-```typescript
-import { loadConfig } from '@tw-enigma/core';
-
-const config = await loadConfig(configPath);
-```
-
-#### Configuration Types
-
-##### `EnigmaConfig`
-
-Main configuration interface for the Enigma engine.
-
-```typescript
-interface EnigmaConfig {
-  // Core optimization settings
-  optimization: {
-    strategy: 'atomic' | 'utility' | 'component' | 'mixed';
-    enableMinification: boolean;
-    preserveComments: boolean;
-    generateSourceMaps: boolean;
-  };
-
-  // File processing settings
-  files: {
-    input: string[];
-    output: string;
-    ignore: string[];
-    extensions: string[];
-  };
-
-  // CSS generation settings
-  css: CssGenerationOptions;
-
-  // Name generation settings
-  nameGeneration?: NameGenerationOptions;
-
-  // Performance settings
-  performance: {
-    maxConcurrency: number;
-    memoryLimit: number;
-    timeout: number;
-  };
-}
-```
-
-##### `NameGenerationOptions`
-
-Configuration options for CSS class name generation and optimization.
-
-```typescript
-interface NameGenerationOptions {
-  // Length configuration
-  minimumLength?: number; // Minimum length for generated class names (1-26)
-
-  // Base configuration
-  alphabet?: string; // Character set for name generation
-  strategy?: 'sequential' | 'frequency-optimized' | 'hybrid' | 'pretty';
-  startIndex?: number; // Starting index for sequential generation
-
-  // Name formatting
-  prefix?: string; // Prefix for all generated names
-  suffix?: string; // Suffix for all generated names
-  numericSuffix?: boolean; // Allow 0-9 in names (but not at start)
-
-  // Pretty name generation
-  prettyNameMaxLength?: number; // Maximum length for pretty names (1-10)
-  prettyNamePreferShorter?: boolean; // Prefer shorter names when possible
-  prettyNameExhaustionStrategy?: 'fallback-sequential' | 'fallback-hybrid' | 'error';
-
+interface TWEnigmaConfig {
+  // Framework configuration
+  framework?: FrameworkConfig;
+  
   // Optimization settings
-  enableFrequencyOptimization?: boolean;
-  frequencyThreshold?: number; // Minimum frequency for optimization
-
-  // Collision avoidance
-  reservedNames?: string[]; // Names to avoid generating
-  avoidConflicts?: boolean; // Enable collision detection
-
-  // Performance options
-  enableCaching?: boolean;
-  batchSize?: number; // Names to generate per batch
-  maxCacheSize?: number; // Maximum cache entries
-
-  // CSS compliance
-  ensureCssValid?: boolean; // Ensure names are valid CSS identifiers
+  optimization?: OptimizationConfig;
+  
+  // CSS-in-JS configuration
+  cssInJs?: CSSInJSConfig;
+  
+  // SSR configuration
+  ssr?: SSRConfig;
+  
+  // Cache settings
+  cache?: CacheConfig;
+  
+  // Debug options
+  debug?: DebugConfig;
 }
 ```
 
-**Usage Examples:**
+#### Example Usage
 
 ```typescript
-// Basic length enforcement
-const config: NameGenerationOptions = {
-  minimumLength: 8, // Generate names at least 8 characters long
-  strategy: 'sequential',
-};
-
-// Enhanced security configuration
-const secureConfig: NameGenerationOptions = {
-  minimumLength: 12,
-  strategy: 'frequency-optimized',
-  alphabet: 'abcdefghijklmnopqrstuvwxyz', // Lowercase only
-  prefix: 'sec-',
-  ensureCssValid: true,
-};
-
-// Pretty names with length constraints
-const prettyConfig: NameGenerationOptions = {
-  minimumLength: 6,
-  strategy: 'pretty',
-  prettyNameMaxLength: 8,
-  prettyNamePreferShorter: false,
-  prettyNameExhaustionStrategy: 'fallback-hybrid',
-};
-```
-
-**Security Benefits of minimumLength:**
-
-The `minimumLength` field provides enhanced security through class name obfuscation:
-
-- **Length 1-3**: Basic obfuscation (18-18K combinations)
-- **Length 4-6**: Moderate security (456K-476M combinations)
-- **Length 7-10**: High security (12B-18.7T combinations)
-- **Length 11+**: Maximum security (487T+ combinations)
-
-**Environment Variable Support:**
-
-```bash
-# Configure via environment variables
-TW_ENIGMA_NAME_GENERATION_MINIMUM_LENGTH=8
-TW_ENIGMA_NAME_GENERATION_STRATEGY=sequential
-TW_ENIGMA_NAME_GENERATION_ALPHABET=abcdefghijklm
-TW_ENIGMA_NAME_GENERATION_PREFIX=tw-
-TW_ENIGMA_NAME_GENERATION_ENSURE_CSS_VALID=true
-```
-
-### Utilities
-
-#### `logger`
-
-Structured logging utility.
-
-```typescript
-import { logger } from '@tw-enigma/core';
-
-logger.info('Processing files...', { count: files.length });
-logger.error('Failed to process file', { file: path, error });
-logger.debug('Analysis complete', { duration: time });
-```
-
-#### `fileDiscovery`
-
-File discovery and filtering utilities.
-
-```typescript
-import { fileDiscovery } from '@tw-enigma/core';
-
-// Discover files matching patterns
-const files = await fileDiscovery.find(['src/**/*.{js,ts,jsx,tsx}'], {
-  ignore: ['node_modules/**', 'dist/**'],
-});
-```
-
-#### `pathUtils`
-
-Path manipulation utilities optimized for the Enigma workflow.
-
-```typescript
-import { pathUtils } from '@tw-enigma/core';
-
-// Normalize and resolve paths
-const normalized = pathUtils.normalize(inputPath);
-const relative = pathUtils.relative(from, to);
-```
-
-### Error Classes
-
-#### `CssGenerationError`
-
-Base error class for CSS generation issues.
-
-```typescript
-class CssGenerationError extends Error {
-  constructor(
-    message: string,
-    public code: string,
-    public context?: Record<string, unknown>
-  );
-}
-```
-
-#### `InvalidCssError`
-
-Error for invalid CSS syntax or structure.
-
-```typescript
-class InvalidCssError extends CssGenerationError {
-  constructor(
-    message: string,
-    public invalidCss: string,
-    public reason?: string
-  );
-}
-```
-
-#### `ApplyDirectiveError`
-
-Error for invalid @apply directive usage.
-
-```typescript
-class ApplyDirectiveError extends CssGenerationError {
-  constructor(
-    message: string,
-    public directive: string,
-    public classes?: string[]
-  );
-}
-```
-
----
-
-## @tw-enigma/cli API
-
-### Commands
-
-The CLI provides several commands for interacting with the Enigma engine:
-
-#### `init-config`
-
-Initialize Enigma configuration for a project.
-
-```bash
-npx @tw-enigma/cli init-config [options]
-```
-
-**Options:**
-
-- `--force`: Overwrite existing configuration
-- `--template <name>`: Use a specific template
-- `--output <path>`: Specify output directory
-
-#### `css-config`
-
-Configure CSS generation settings.
-
-```bash
-npx @tw-enigma/cli css-config [options]
-```
-
-**Options:**
-
-- `--strategy <strategy>`: Set optimization strategy
-- `--apply-directives`: Enable @apply directive generation
-- `--comments <level>`: Set comment verbosity level
-
-### CLI Utilities
-
-#### Version Information
-
-```typescript
-import { version, cliVersion, name } from '@tw-enigma/cli';
-
-console.log(`${name} v${version}`);
-```
-
-#### Command Registration
-
-```typescript
-import { registerCommands } from '@tw-enigma/cli';
-import { Command } from 'commander';
-
-const program = new Command();
-registerCommands(program);
-```
-
----
-
-## Integration Examples
-
-### Basic CSS Optimization
-
-```typescript
-import { EnhancedCSSGenerator, loadConfig, fileDiscovery, htmlExtractor } from '@tw-enigma/core';
-
-async function optimizeProject() {
-  // Load configuration
-  const config = await loadConfig();
-
-  // Discover files
-  const files = await fileDiscovery.find(config.files.input, {
-    ignore: config.files.ignore,
-  });
-
-  // Extract classes
-  const allClasses = new Map<string, number>();
-
-  for (const file of files) {
-    const content = await fs.readFile(file, 'utf8');
-    const classes = await htmlExtractor.extract(content);
-
-    classes.forEach((freq, className) => {
-      allClasses.set(className, (allClasses.get(className) || 0) + freq);
-    });
-  }
-
-  // Generate optimized CSS
-  const generator = new EnhancedCSSGenerator(config, frequencyAnalyzer);
-  const result = await generator.generateEnhancedCSS(allClasses, {
-    strategy: 'mixed',
-    useApplyDirective: true,
-    commentLevel: 'detailed',
-  });
-
-  // Write output
-  await fs.writeFile(config.files.output, result.css);
-
-  console.log(`Generated ${result.rules.length} CSS rules`);
-  console.log(`Compression ratio: ${result.statistics.compressionRatio}%`);
-}
-```
-
-### Custom Plugin Integration
-
-```typescript
-import { EnhancedCSSGenerator } from '@tw-enigma/core';
-
-const generator = new EnhancedCSSGenerator(config, frequencyAnalyzer);
-
-// Configure PostCSS plugins
-await generator.updatePostCSSConfig({
-  optimizationLevel: 'aggressive',
-  enableTailwindOptimizer: true,
-  enableCSSMinifier: true,
-  customPluginConfigs: {
-    autoprefixer: { grid: true },
-    cssnano: { preset: 'advanced' },
+import { TWEnigmaEngine } from '@tw-enigma/core';
+
+const engine = new TWEnigmaEngine({
+  framework: {
+    type: 'react',
+    preset: 'react-nextjs',
+  },
+  optimization: {
+    strategy: 'atomic',
+    threshold: 2,
+  },
+  cache: {
+    enabled: true,
+    maxSize: 1000,
   },
 });
 
-const result = await generator.generateEnhancedCSS(classFrequencies);
+// Optimize classes
+const result = await engine.optimizeClasses([
+  'bg-blue-500',
+  'text-white',
+  'hover:bg-blue-600',
+]);
+
+console.log('Optimized classes:', result.optimizedClasses);
 ```
 
-### Framework Integration
+## Framework Detection API
 
-#### React/Vite Integration
+### FrameworkDetector
+
+Automatic framework detection system.
 
 ```typescript
-// vite.config.ts
-import { defineConfig } from 'vite';
-import { EnigmaVitePlugin } from '@tw-enigma/vite-plugin';
+class FrameworkDetector {
+  constructor(options?: FrameworkDetectorOptions);
+  
+  // Detection methods
+  detect(projectPath: string): Promise<FrameworkInfo>;
+  detectFromPackageJson(packageJson: PackageJson): FrameworkInfo;
+  detectFromFiles(fileList: string[]): FrameworkInfo;
+  
+  // Configuration methods
+  addCustomDetector(detector: CustomDetector): void;
+  setConfidenceThreshold(threshold: number): void;
+  
+  // Utility methods
+  getAvailableDetectors(): DetectorInfo[];
+  clearCache(): void;
+}
+```
 
-export default defineConfig({
-  plugins: [
-    EnigmaVitePlugin({
-      strategy: 'mixed',
-      useApplyDirective: true,
-      outputPath: 'src/styles/optimized.css',
-    }),
-  ],
+#### FrameworkInfo Interface
+
+```typescript
+interface FrameworkInfo {
+  type: FrameworkType;
+  confidence: number;
+  metadata: {
+    version?: string;
+    buildSystem?: string;
+    hasSSR?: boolean;
+    hasTypeScript?: boolean;
+    packageManager?: string;
+    dependencies?: string[];
+  };
+  detectionSource: DetectionSource[];
+  detectedBy: string[];
+}
+```
+
+#### Example Usage
+
+```typescript
+import { FrameworkDetector } from '@tw-enigma/core';
+
+const detector = new FrameworkDetector({
+  confidenceThreshold: 0.8,
+  enableCaching: true,
 });
+
+const frameworkInfo = await detector.detect('./my-project');
+console.log(`Detected: ${frameworkInfo.type}`);
 ```
 
-#### Webpack Integration
+## Configuration Presets API
 
-```javascript
-// webpack.config.js
-const { EnigmaWebpackPlugin } = require('@tw-enigma/webpack-plugin');
+### ConfigPresetManager
 
-module.exports = {
-  plugins: [
-    new EnigmaWebpackPlugin({
-      input: ['src/**/*.{js,jsx,ts,tsx}'],
-      output: 'dist/optimized.css',
-      strategy: 'component',
-    }),
-  ],
-};
-```
-
----
-
-## Error Handling
-
-### Best Practices
+Management system for framework configuration presets.
 
 ```typescript
-import { CssGenerationError, InvalidCssError, ApplyDirectiveError } from '@tw-enigma/core';
-
-try {
-  const result = await generator.generateEnhancedCSS(classFrequencies);
-} catch (error) {
-  if (error instanceof InvalidCssError) {
-    console.error('Invalid CSS:', error.invalidCss);
-    console.error('Reason:', error.reason);
-  } else if (error instanceof ApplyDirectiveError) {
-    console.error('Invalid @apply directive:', error.directive);
-    console.error('Problematic classes:', error.classes);
-  } else if (error instanceof CssGenerationError) {
-    console.error('CSS Generation failed:', error.message);
-    console.error('Error code:', error.code);
-    console.error('Context:', error.context);
-  } else {
-    console.error('Unexpected error:', error);
-  }
+class ConfigPresetManager {
+  constructor(options?: PresetManagerOptions);
+  
+  // Preset retrieval
+  getAvailablePresets(): ConfigPreset[];
+  getFrameworkPresets(framework: FrameworkType): ConfigPreset[];
+  getPreset(id: string): ConfigPreset | undefined;
+  
+  // Preset management
+  registerPreset(preset: ConfigPreset): void;
+  unregisterPreset(id: string): boolean;
+  
+  // Configuration creation
+  createConfig(
+    presetId: string,
+    overrides?: ConfigOverride[],
+    customConfig?: CustomConfig
+  ): FrameworkConfig;
+  
+  // Recommendations
+  recommendPreset(frameworkInfo: FrameworkInfo): ConfigPreset | null;
+  
+  // Validation
+  validateConfig(config: FrameworkConfig): ValidationResult;
 }
 ```
 
-### Error Recovery
+#### ConfigPreset Interface
 
 ```typescript
-import { generateOptimizedCss } from '@tw-enigma/core';
-
-const options = {
-  strategy: 'mixed',
-  enableValidation: true,
-  skipInvalidClasses: true,
-  warnOnInvalidClasses: true,
-};
-
-const result = generateOptimizedCss(patterns, options);
-
-// Check for warnings
-if (result.warnings.length > 0) {
-  console.warn('Warnings during generation:');
-  result.warnings.forEach((warning) => console.warn(warning));
-}
-
-// Check for validation errors
-if (result.metadata.validationMetadata) {
-  const validation = result.metadata.validationMetadata;
-  console.log(`Validated ${validation.totalClassesValidated} classes`);
-  console.log(`Valid: ${validation.validClasses}, Invalid: ${validation.invalidClasses}`);
+interface ConfigPreset {
+  id: string;
+  name: string;
+  description: string;
+  config: FrameworkConfig;
+  framework: FrameworkType;
+  supportedBuildSystems: string[];
+  ssrCompatible: boolean;
+  prerequisites: string[];
+  recommendedCSSInJS: CSSInJSLibrary[];
+  compatibility: {
+    node: string[];
+    packageManagers: string[];
+    buildTools: string[];
+  };
 }
 ```
 
----
+## CSS-in-JS Integration API
 
-## TypeScript Support
+### CSSInJSProcessor
 
-### Type Definitions
-
-All packages include comprehensive TypeScript definitions. Import types directly:
+CSS-in-JS library integration and optimization.
 
 ```typescript
-import type {
-  CssGenerationOptions,
-  CssGenerationResult,
-  CssRule,
-  EnigmaConfig,
-  PatternClassification,
+class CSSInJSProcessor {
+  constructor(config: CSSInJSConfig);
+  
+  // Processing methods
+  processStyledComponents(code: string): Promise<ProcessingResult>;
+  processEmotion(code: string): Promise<ProcessingResult>;
+  processStitches(code: string): Promise<ProcessingResult>;
+  
+  // Extraction methods
+  extractStaticStyles(component: ComponentCode): Promise<StaticStylesResult>;
+  extractThemeTokens(styles: string): Promise<ThemeTokensResult>;
+  
+  // Runtime optimization
+  optimizeRuntimeStyles(styles: RuntimeStyles): OptimizedRuntimeStyles;
+}
+```
+
+#### CSSInJSConfig Interface
+
+```typescript
+interface CSSInJSConfig {
+  libraries: CSSInJSLibrary[];
+  staticExtraction?: {
+    enabled: boolean;
+    strategy: 'build-time' | 'runtime' | 'hybrid';
+    output: {
+      directory: string;
+      filename: string;
+      sourceMap: boolean;
+    };
+  };
+  runtime?: {
+    optimization: {
+      caching: boolean;
+      batching: boolean;
+      lazyLoading: boolean;
+    };
+  };
+  styledComponents?: StyledComponentsConfig;
+  emotion?: EmotionConfig;
+}
+```
+
+## SSR/SSG API
+
+### SSRProcessor
+
+Server-side rendering optimization system.
+
+```typescript
+class SSRProcessor {
+  constructor(config: SSRConfig);
+  
+  // Critical CSS extraction
+  extractCriticalCSS(html: string, context: SSRContext): Promise<CriticalCSSResult>;
+  
+  // CSS injection
+  injectCSS(html: string, css: string, options: InjectionOptions): string;
+  
+  // Streaming support
+  createStreamProcessor(options: StreamOptions): SSRStreamProcessor;
+  
+  // Cache management
+  getCachedCSS(key: string): string | null;
+  setCachedCSS(key: string, css: string, ttl?: number): void;
+}
+```
+
+#### SSRConfig Interface
+
+```typescript
+interface SSRConfig {
+  criticalCSS?: {
+    enabled: boolean;
+    detection: {
+      viewport: { width: number; height: number };
+      aboveFold: boolean;
+      components?: string[];
+      routes?: Record<string, string[]>;
+    };
+    extraction: {
+      removeUnused: boolean;
+      minify: boolean;
+      includeMediaQueries: boolean;
+    };
+  };
+  injection?: {
+    strategy: 'inline' | 'link' | 'hybrid';
+    inlineCritical?: {
+      enabled: boolean;
+      maxSize: string;
+      position: 'head' | 'body';
+    };
+  };
+}
+```
+
+## Build System Integration API
+
+### WebpackPlugin
+
+TW-Enigma Webpack plugin.
+
+```typescript
+class TWEnigmaWebpackPlugin {
+  constructor(options: WebpackPluginOptions);
+  apply(compiler: Compiler): void;
+}
+
+interface WebpackPluginOptions {
+  configFile?: string;
+  include?: RegExp;
+  exclude?: RegExp;
+  cache?: boolean;
+  parallel?: boolean;
+  debug?: boolean;
+}
+```
+
+### VitePlugin
+
+TW-Enigma Vite plugin.
+
+```typescript
+function twEnigmaPlugin(options: VitePluginOptions): Plugin;
+
+interface VitePluginOptions {
+  configFile?: string;
+  enforce?: 'pre' | 'post';
+  css?: {
+    preprocessorOptions?: {
+      postcss?: {
+        plugins: any[];
+      };
+    };
+  };
+}
+```
+
+## Responsive & Pseudo-Class API
+
+## Core Classes
+
+### ResponsiveOptimizationEngine
+
+Main entry point for responsive optimization operations.
+
+#### Constructor
+
+```typescript
+constructor(config: ResponsiveOptimizationConfig)
+```
+
+#### Methods
+
+##### `optimizeClasses(classes: string[]): Promise<OptimizationResult>`
+
+Optimizes an array of CSS classes using all configured optimization strategies.
+
+**Parameters:**
+
+- `classes`: Array of CSS class names to optimize
+
+**Returns:** Promise resolving to `OptimizationResult`
+
+**Example:**
+
+```typescript
+const engine = new ResponsiveOptimizationEngine({
+  enablePseudoClassOptimization: true,
+  enableBreakpointGrouping: true,
+});
+
+const result = await engine.optimizeClasses([
+  'sm:text-red-500',
+  'md:text-blue-500',
+  'lg:hover:text-green-500',
+]);
+```
+
+##### `analyzePatterns(patterns: string[]): Promise<PatternAnalysisResult>`
+
+Analyzes patterns without applying optimizations.
+
+**Parameters:**
+
+- `patterns`: Array of pattern strings to analyze
+
+**Returns:** Promise resolving to `PatternAnalysisResult`
+
+##### `validateConfiguration(): ValidationResult`
+
+Validates the current engine configuration.
+
+**Returns:** `ValidationResult` object with validation status and errors
+
+### PseudoClassHandler
+
+Handles pseudo-class specific optimization logic.
+
+#### Constructor
+
+```typescript
+constructor(config: PseudoClassConfig, performanceMonitor?: PerformanceMonitor)
+```
+
+#### Methods
+
+##### `optimizePseudoClasses(patterns: ParsedPattern[]): OptimizationResult`
+
+Optimizes pseudo-class patterns using LVHA+ ordering and conflict resolution.
+
+**Parameters:**
+
+- `patterns`: Array of parsed patterns containing pseudo-class information
+
+**Returns:** `OptimizationResult` with optimized patterns
+
+##### `validatePseudoClassOrder(pattern: ParsedPattern): ValidationResult`
+
+Validates pseudo-class order according to LVHA+ rules.
+
+**Parameters:**
+
+- `pattern`: Single parsed pattern to validate
+
+**Returns:** `ValidationResult` with validation status
+
+##### `reorderPseudoClasses(pattern: ParsedPattern): ParsedPattern`
+
+Reorders pseudo-classes in a pattern to follow optimal ordering.
+
+**Parameters:**
+
+- `pattern`: Pattern to reorder
+
+**Returns:** Reordered `ParsedPattern`
+
+### PatternGroupingEngine
+
+Manages pattern grouping with multiple strategies.
+
+#### Constructor
+
+```typescript
+constructor(config: GroupingConfig, performanceMonitor?: PerformanceMonitor)
+```
+
+#### Methods
+
+##### `groupPatterns(patterns: ParsedPattern[]): GroupingResult`
+
+Groups patterns using configured strategies.
+
+**Parameters:**
+
+- `patterns`: Array of patterns to group
+
+**Returns:** `GroupingResult` with grouped patterns
+
+##### `resolveConflicts(groups: PatternGroup[]): ConflictResolutionResult`
+
+Resolves conflicts between pattern groups.
+
+**Parameters:**
+
+- `groups`: Array of pattern groups to analyze for conflicts
+
+**Returns:** `ConflictResolutionResult` with resolution strategy
+
+##### `optimizeGroups(groups: PatternGroup[]): OptimizationResult`
+
+Applies optimizations to grouped patterns.
+
+**Parameters:**
+
+- `groups`: Array of pattern groups to optimize
+
+**Returns:** `OptimizationResult` with optimized groups
+
+### PatternMergingEngine
+
+Handles sophisticated pattern merging and conflict resolution.
+
+#### Constructor
+
+```typescript
+constructor(config: MergingConfig, performanceMonitor?: PerformanceMonitor)
+```
+
+#### Methods
+
+##### `mergePatterns(patterns: ParsedPattern[]): MergingResult`
+
+Merges compatible patterns using configured strategies.
+
+**Parameters:**
+
+- `patterns`: Array of patterns to merge
+
+**Returns:** `MergingResult` with merged patterns
+
+##### `analyzeConflicts(patterns: ParsedPattern[]): ConflictAnalysisResult`
+
+Analyzes conflicts between patterns without resolving them.
+
+**Parameters:**
+
+- `patterns`: Array of patterns to analyze
+
+**Returns:** `ConflictAnalysisResult` with detailed conflict information
+
+##### `resolveMergingConflicts(conflicts: MergingConflict[]): ConflictResolutionResult`
+
+Resolves specific merging conflicts.
+
+**Parameters:**
+
+- `conflicts`: Array of merging conflicts to resolve
+
+**Returns:** `ConflictResolutionResult` with resolution strategies
+
+### BreakpointCompatibilityEngine
+
+Manages breakpoint definitions and compatibility.
+
+#### Constructor
+
+```typescript
+constructor(config: BreakpointCompatibilityConfig)
+```
+
+#### Methods
+
+##### `validateBreakpoints(breakpoints: BreakpointDefinition[]): ValidationResult`
+
+Validates breakpoint definitions for consistency and order.
+
+**Parameters:**
+
+- `breakpoints`: Array of breakpoint definitions to validate
+
+**Returns:** `ValidationResult` with validation status
+
+##### `generateMediaQueries(breakpoints: BreakpointDefinition[]): MediaQueryResult`
+
+Generates CSS media queries for breakpoint definitions.
+
+**Parameters:**
+
+- `breakpoints`: Array of breakpoint definitions
+
+**Returns:** `MediaQueryResult` with generated media queries
+
+##### `addCustomBreakpoint(breakpoint: BreakpointDefinition): boolean`
+
+Adds a custom breakpoint definition.
+
+**Parameters:**
+
+- `breakpoint`: Breakpoint definition to add
+
+**Returns:** Boolean indicating success
+
+##### `removeBreakpoint(name: string): boolean`
+
+Removes a breakpoint definition by name.
+
+**Parameters:**
+
+- `name`: Name of the breakpoint to remove
+
+**Returns:** Boolean indicating success
+
+### ComplexPatternHandler
+
+Handles complex pattern combinations and advanced optimization.
+
+#### Constructor
+
+```typescript
+constructor(
+  responsiveConfig: ResponsiveOptimizationConfig,
+  breakpointEngine: BreakpointCompatibilityEngine,
+  config: ComplexPatternConfig
+)
+```
+
+#### Methods
+
+##### `parseComplexPattern(pattern: string): ParsedComplexPattern`
+
+Parses a complex pattern into its constituent components.
+
+**Parameters:**
+
+- `pattern`: Complex pattern string to parse
+
+**Returns:** `ParsedComplexPattern` with detailed analysis
+
+##### `analyzeComplexCombinations(patterns: string[]): ComplexCombinationResult`
+
+Analyzes a collection of complex patterns for optimization opportunities.
+
+**Parameters:**
+
+- `patterns`: Array of complex pattern strings
+
+**Returns:** `ComplexCombinationResult` with analysis results
+
+##### `optimizeComplexPatterns(patterns: ParsedComplexPattern[]): OptimizationResult`
+
+Applies optimizations to complex patterns.
+
+**Parameters:**
+
+- `patterns`: Array of parsed complex patterns
+
+**Returns:** `OptimizationResult` with optimized patterns
+
+##### `validateComplexPatterns(patterns: ParsedComplexPattern[]): ValidationResult`
+
+Validates complex patterns for correctness and conflicts.
+
+**Parameters:**
+
+- `patterns`: Array of parsed complex patterns to validate
+
+**Returns:** `ValidationResult` with validation results
+
+## Configuration Interfaces
+
+### ResponsiveOptimizationConfig
+
+Main configuration interface for the optimization engine.
+
+```typescript
+interface ResponsiveOptimizationConfig {
+  // Core features
+  enablePseudoClassOptimization: boolean;
+  enableBreakpointGrouping: boolean;
+  enableComplexPatternHandling: boolean;
+
+  // Performance
+  includeOptimizationMetrics: boolean;
+  enableCaching: boolean;
+  maxCacheSize: number;
+  enableParallelProcessing: boolean;
+  parallelThreshold: number;
+
+  // Breakpoints
+  customBreakpoints?: BreakpointDefinition[];
+  strictBreakpointOrder: boolean;
+  defaultBreakpointStrategy: 'mobile-first' | 'desktop-first';
+
+  // Pseudo-classes
+  supportedPseudoClasses: string[];
+  enforceLVHAOrder: boolean;
+  allowCustomPseudoClasses: boolean;
+
+  // Optimization strategies
+  mergeStrategy: 'mobile-first' | 'desktop-first' | 'specificity' | 'custom';
+  preserveSourceOrder: boolean;
+  aggressiveOptimization: boolean;
+  enableConflictResolution: boolean;
+
+  // Error handling
+  strictMode: boolean;
+  errorReporting: 'none' | 'console' | 'throw' | 'collect';
+  maxErrors: number;
+}
+```
+
+### PseudoClassConfig
+
+Configuration for pseudo-class handling.
+
+```typescript
+interface PseudoClassConfig {
+  // Core settings
+  supportedPseudoClasses: string[];
+  enforceLVHAOrder: boolean;
+  allowCustomPseudoClasses: boolean;
+
+  // Optimization
+  enableOptimization: boolean;
+  enableReordering: boolean;
+  enableGrouping: boolean;
+
+  // Performance
+  enableCaching: boolean;
+  maxCacheSize: number;
+  cacheStrategy: 'lru' | 'fifo' | 'custom';
+
+  // Validation
+  strictValidation: boolean;
+  warnOnInvalidOrder: boolean;
+  errorOnUnsupportedPseudoClass: boolean;
+}
+```
+
+### GroupingConfig
+
+Configuration for pattern grouping strategies.
+
+```typescript
+interface GroupingConfig {
+  // Strategies
+  strategies: GroupingStrategy[];
+  primaryStrategy: GroupingStrategy;
+  fallbackStrategy?: GroupingStrategy;
+
+  // Grouping rules
+  enableHierarchical: boolean;
+  maxGroupSize: number;
+  minGroupSize: number;
+  enableNestedGroups: boolean;
+
+  // Conflict resolution
+  enableConflictResolution: boolean;
+  conflictResolutionStrategy: ConflictResolutionStrategy;
+  preserveOriginalOrder: boolean;
+
+  // Performance
+  enableCaching: boolean;
+  maxCacheSize: number;
+  enableParallelProcessing: boolean;
+
+  // Custom rules
+  customGroupingRules?: CustomGroupingRule[];
+  enableCustomStrategies: boolean;
+}
+```
+
+### MergingConfig
+
+Configuration for pattern merging operations.
+
+```typescript
+interface MergingConfig {
+  // Core settings
+  enableMerging: boolean;
+  mergeStrategies: MergeStrategy[];
+  defaultMergeStrategy: MergeStrategy;
+
+  // Conflict resolution
+  enableConflictResolution: boolean;
+  conflictResolutionStrategy: ConflictResolutionStrategy;
+  preserveImportantDeclarations: boolean;
+
+  // Performance
+  enableCaching: boolean;
+  maxCacheSize: number;
+  enableParallelProcessing: boolean;
+  parallelThreshold: number;
+
+  // Validation
+  enablePreMergeValidation: boolean;
+  enablePostMergeValidation: boolean;
+  strictMode: boolean;
+
+  // Custom rules
+  customMergeRules?: CustomMergeRule[];
+  customConflictHandlers?: CustomConflictHandler[];
+}
+```
+
+### BreakpointCompatibilityConfig
+
+Configuration for breakpoint compatibility and management.
+
+```typescript
+interface BreakpointCompatibilityConfig {
+  // Breakpoint definitions
+  breakpoints: BreakpointDefinition[];
+  allowCustomBreakpoints: boolean;
+  enableRuntimeModification: boolean;
+
+  // Validation
+  enableValidation: boolean;
+  strictOrder: boolean;
+  allowOverlapping: boolean;
+
+  // Media query generation
+  mediaQueryStrategy: 'mobile-first' | 'desktop-first' | 'range';
+  includeMaxWidth: boolean;
+  customMediaQueryTemplate?: string;
+
+  // Performance
+  enableCaching: boolean;
+  maxCacheSize: number;
+
+  // Migration and compatibility
+  enableLegacySupport: boolean;
+  legacyBreakpointMapping?: Record<string, string>;
+  migrationWarnings: boolean;
+}
+```
+
+### ComplexPatternConfig
+
+Configuration for complex pattern handling.
+
+```typescript
+interface ComplexPatternConfig {
+  // Parsing configuration
+  parsing: {
+    enableDeepParsing: boolean;
+    maxNestingDepth: number;
+    supportArbitraryValues: boolean;
+    enablePatternCaching: boolean;
+  };
+
+  // Validation configuration
+  validation: {
+    strictBreakpointOrder: boolean;
+    strictPseudoClassOrder: boolean;
+    warnOnHighComplexity: boolean;
+    maxComplexityScore: number;
+  };
+
+  // Optimization configuration
+  optimization: {
+    aggressiveOptimization: boolean;
+    enableCombination: boolean;
+    enableSimplification: boolean;
+    enableReordering: boolean;
+    complexityThreshold: number;
+  };
+
+  // Performance configuration
+  performance: {
+    enableCaching: boolean;
+    maxCacheSize: number;
+    enableParallelProcessing: boolean;
+    parallelThreshold: number;
+    enablePerformanceMonitoring: boolean;
+  };
+
+  // Error handling configuration
+  errorHandling: {
+    strictMode: boolean;
+    errorReporting: 'none' | 'console' | 'throw' | 'collect';
+    maxErrors: number;
+    enableRecovery: boolean;
+  };
+}
+```
+
+## Result Types
+
+### OptimizationResult
+
+Result object returned by optimization operations.
+
+```typescript
+interface OptimizationResult {
+  // Optimized output
+  optimizedClasses: string[];
+  originalClasses: string[];
+
+  // Optimization details
+  appliedOptimizations: OptimizationMetadata[];
+  groupingChanges: GroupingChange[];
+  mergingChanges: MergingChange[];
+
+  // Performance metrics
+  metrics: PerformanceMetrics;
+  timings: OptimizationTimings;
+
+  // Validation results
+  validationResults: ValidationResult[];
+  warnings: OptimizationWarning[];
+  errors: OptimizationError[];
+
+  // Statistics
+  reductionPercentage: number;
+  conflictsResolved: number;
+  patternsProcessed: number;
+}
+```
+
+### ValidationResult
+
+Result object for validation operations.
+
+```typescript
+interface ValidationResult {
+  // Validation status
+  isValid: boolean;
+  hasWarnings: boolean;
+  hasErrors: boolean;
+
+  // Detailed results
+  errors: ValidationError[];
+  warnings: ValidationWarning[];
+  suggestions: ValidationSuggestion[];
+
+  // Context information
+  validatedPatterns: string[];
+  validationRulesApplied: string[];
+  timestamp: Date;
+}
+```
+
+### PatternAnalysisResult
+
+Result object for pattern analysis operations.
+
+```typescript
+interface PatternAnalysisResult {
+  // Pattern breakdown
+  patterns: ParsedPattern[];
+  complexPatterns: ParsedComplexPattern[];
+
+  // Analysis results
+  complexityScores: ComplexityScore[];
+  conflictAnalysis: ConflictAnalysis;
+  optimizationOpportunities: OptimizationOpportunity[];
+
+  // Statistics
+  totalPatterns: number;
+  uniqueBreakpoints: string[];
+  uniquePseudoClasses: string[];
+  averageComplexity: number;
+
+  // Recommendations
+  recommendations: AnalysisRecommendation[];
+  suggestedOptimizations: SuggestedOptimization[];
+}
+```
+
+## Utility Functions
+
+### createBreakpointCompatibilityEngine
+
+Factory function for creating a BreakpointCompatibilityEngine instance.
+
+```typescript
+function createBreakpointCompatibilityEngine(
+  config: BreakpointCompatibilityConfig
+): BreakpointCompatibilityEngine;
+```
+
+### createComplexPatternHandler
+
+Factory function for creating a ComplexPatternHandler instance.
+
+```typescript
+function createComplexPatternHandler(
+  responsiveConfig: ResponsiveOptimizationConfig,
+  breakpointEngine: BreakpointCompatibilityEngine,
+  config: ComplexPatternConfig
+): ComplexPatternHandler;
+```
+
+### parsePattern
+
+Utility function for parsing individual patterns.
+
+```typescript
+function parsePattern(pattern: string): ParsedPattern;
+```
+
+### validateBreakpointOrder
+
+Utility function for validating breakpoint order.
+
+```typescript
+function validateBreakpointOrder(breakpoints: BreakpointDefinition[]): ValidationResult;
+```
+
+### generateOptimizationReport
+
+Utility function for generating detailed optimization reports.
+
+```typescript
+function generateOptimizationReport(result: OptimizationResult): OptimizationReport;
+```
+
+## Error Types
+
+### OptimizationError
+
+Base error class for optimization-related errors.
+
+```typescript
+class OptimizationError extends Error {
+  code: string;
+  context: OptimizationErrorContext;
+  suggestions: string[];
+}
+```
+
+### ValidationError
+
+Error class for validation failures.
+
+```typescript
+class ValidationError extends OptimizationError {
+  validationRule: string;
+  invalidValue: any;
+  expectedValue?: any;
+}
+```
+
+### ConfigurationError
+
+Error class for configuration-related issues.
+
+```typescript
+class ConfigurationError extends OptimizationError {
+  configurationKey: string;
+  providedValue: any;
+  validValues?: any[];
+}
+```
+
+## Constants and Enums
+
+### GroupingStrategy
+
+Enumeration of available grouping strategies.
+
+```typescript
+enum GroupingStrategy {
+  BY_BREAKPOINT = 'by-breakpoint',
+  BY_PSEUDO_CLASS = 'by-pseudo-class',
+  BY_PROPERTY = 'by-property',
+  BY_VALUE = 'by-value',
+  BY_SELECTOR = 'by-selector',
+  BY_UTILITY_TYPE = 'by-utility-type',
+  BY_COMPLEXITY = 'by-complexity',
+  HIERARCHICAL = 'hierarchical',
+}
+```
+
+### MergeStrategy
+
+Enumeration of available merge strategies.
+
+```typescript
+enum MergeStrategy {
+  MOBILE_FIRST = 'mobile-first',
+  DESKTOP_FIRST = 'desktop-first',
+  SPECIFICITY_BASED = 'specificity-based',
+  PROPERTY_BASED = 'property-based',
+  SELECTOR_BASED = 'selector-based',
+  CUSTOM = 'custom',
+}
+```
+
+### ComplexPatternType
+
+Enumeration of complex pattern types.
+
+```typescript
+enum ComplexPatternType {
+  SIMPLE_UTILITY = 'simple-utility',
+  RESPONSIVE_UTILITY = 'responsive-utility',
+  PSEUDO_UTILITY = 'pseudo-utility',
+  RESPONSIVE_PSEUDO = 'responsive-pseudo',
+  MULTI_BREAKPOINT = 'multi-breakpoint',
+  MULTI_PSEUDO = 'multi-pseudo',
+  NESTED_PSEUDO = 'nested-pseudo',
+  COMBINED_COMPLEX = 'combined-complex',
+  GROUPED_PATTERN = 'grouped-pattern',
+  ARBITRARY_COMPLEX = 'arbitrary-complex',
+}
+```
+
+### ConflictType
+
+Enumeration of conflict types.
+
+```typescript
+enum ConflictType {
+  SPECIFICITY_CONFLICT = 'specificity-conflict',
+  CASCADE_CONFLICT = 'cascade-conflict',
+  INHERITANCE_CONFLICT = 'inheritance-conflict',
+  BREAKPOINT_ORDER_CONFLICT = 'breakpoint-order-conflict',
+  PSEUDO_ORDER_CONFLICT = 'pseudo-order-conflict',
+  GROUP_MEMBERSHIP_CONFLICT = 'group-membership-conflict',
+}
+```
+
+## Examples
+
+### Complete Integration Example
+
+```typescript
+import {
+  ResponsiveOptimizationEngine,
+  createBreakpointCompatibilityEngine,
+  createComplexPatternHandler,
+  GroupingStrategy,
+  MergeStrategy,
 } from '@tw-enigma/core';
-```
 
-### Generic Types
+// Create custom breakpoint engine
+const breakpointEngine = createBreakpointCompatibilityEngine({
+  breakpoints: [
+    { name: 'xs', minWidth: 475, order: 0 },
+    { name: 'sm', minWidth: 640, order: 1 },
+    { name: 'md', minWidth: 768, order: 2 },
+    { name: 'lg', minWidth: 1024, order: 3 },
+    { name: 'xl', minWidth: 1280, order: 4 },
+    { name: '2xl', minWidth: 1536, order: 5 },
+  ],
+  allowCustomBreakpoints: true,
+  enableValidation: true,
+});
 
-```typescript
-import type { AggregatedClassData } from '@tw-enigma/core';
+// Create complex pattern handler
+const complexHandler = createComplexPatternHandler(
+  {
+    enablePseudoClassOptimization: true,
+    enableBreakpointGrouping: true,
+    enableComplexPatternHandling: true,
+    mergeStrategy: 'mobile-first',
+    aggressiveOptimization: true,
+  },
+  breakpointEngine,
+  {
+    parsing: {
+      enableDeepParsing: true,
+      maxNestingDepth: 10,
+      supportArbitraryValues: true,
+    },
+    optimization: {
+      aggressiveOptimization: true,
+      enableCombination: true,
+      enableSimplification: true,
+    },
+    validation: {
+      strictBreakpointOrder: true,
+      strictPseudoClassOrder: true,
+      warnOnHighComplexity: true,
+    },
+  }
+);
 
-function processPatterns<T extends AggregatedClassData>(
-  patterns: T[],
-  processor: (pattern: T) => void
-): void {
-  patterns.forEach(processor);
-}
-```
+// Create main optimization engine
+const engine = new ResponsiveOptimizationEngine({
+  enablePseudoClassOptimization: true,
+  enableBreakpointGrouping: true,
+  enableComplexPatternHandling: true,
+  includeOptimizationMetrics: true,
+  enableCaching: true,
+  maxCacheSize: 1000,
+  mergeStrategy: 'mobile-first',
+  aggressiveOptimization: true,
+});
 
-### Module Augmentation
+// Optimize a complex set of classes
+async function optimizeComplexClasses() {
+  const classes = [
+    'sm:text-red-500',
+    'md:text-blue-500',
+    'lg:hover:text-green-500',
+    'xl:focus:active:text-purple-500',
+    'sm:group-hover:focus:disabled:bg-gray-100',
+    'md:peer-focus:hover:bg-yellow-200',
+    'lg:first:last:odd:text-orange-500',
+  ];
 
-Extend types for custom implementations:
+  const result = await engine.optimizeClasses(classes);
 
-```typescript
-declare module '@tw-enigma/core' {
-  interface CssGenerationOptions {
-    customOption?: boolean;
+  console.log('Original classes:', result.originalClasses);
+  console.log('Optimized classes:', result.optimizedClasses);
+  console.log('Reduction percentage:', result.reductionPercentage);
+  console.log('Performance metrics:', result.metrics);
+
+  if (result.warnings.length > 0) {
+    console.warn('Warnings:', result.warnings);
   }
 
-  interface EnigmaConfig {
-    customSettings?: Record<string, any>;
+  if (result.errors.length > 0) {
+    console.error('Errors:', result.errors);
   }
+
+  return result;
 }
+
+// Run the optimization
+optimizeComplexClasses().catch(console.error);
 ```
 
----
-
-## Performance Considerations
-
-### Memory Management
-
-```typescript
-// Process files in batches to manage memory
-const batchSize = 100;
-for (let i = 0; i < files.length; i += batchSize) {
-  const batch = files.slice(i, i + batchSize);
-  await processBatch(batch);
-}
-```
-
-### Optimization Settings
-
-```typescript
-const performanceOptions = {
-  maxRulesPerFile: 1000,
-  enableOptimizations: true,
-  minimumFrequency: 2, // Only include classes used 2+ times
-  strategy: 'mixed' as const, // Most efficient strategy
-};
-```
-
-### Monitoring
-
-```typescript
-const result = await generator.generateEnhancedCSS(classFrequencies);
-
-console.log('Performance Metrics:');
-console.log(`Generation time: ${result.statistics.generationTime}ms`);
-console.log(`Memory usage: ${result.statistics.memoryUsage}MB`);
-console.log(`Compression ratio: ${result.statistics.compressionRatio}%`);
-```
-
----
-
-For more examples and advanced usage patterns, see the [Examples](../examples/) directory and [Architecture Documentation](./ARCHITECTURE.md).
+This API reference provides comprehensive documentation for all classes, interfaces, and utilities in the responsive and pseudo-class optimization system. For more examples and advanced usage patterns, see the main documentation and examples directory.

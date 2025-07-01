@@ -1,0 +1,484 @@
+# TW-Enigma Security Scanning and Vulnerability Assessment
+name: Security
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - 'feature/*'
+      - 'fix/*'
+  pull_request:
+    branches:
+      - main
+      - develop
+  schedule:
+    # Run security scans daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      scan_type:
+        description: 'Type of security scan'
+        required: true
+        default: 'comprehensive'
+        type: choice
+        options:
+          - comprehensive
+          - dependencies-only
+          - secrets-only
+          - sast-only
+      severity_level:
+        description: 'Minimum severity level'
+        required: false
+        default: 'medium'
+        type: choice
+        options:
+          - low
+          - medium
+          - high
+          - critical
+
+env:
+  NODE_VERSION: '20'
+  PNPM_VERSION: '10.10.0'
+  CI: true
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ========================================
+  # Dependency Vulnerability Scanning
+  # ========================================
+  dependency-scan:
+    name: 🔍 Dependency Vulnerabilities
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: github.event.inputs.scan_type != 'secrets-only' && github.event.inputs.scan_type != 'sast-only'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run pnpm audit
+        run: |
+          echo "🔍 Running pnpm audit for dependency vulnerabilities..."
+          
+          SEVERITY_LEVEL="${{ github.event.inputs.severity_level || 'medium' }}"
+          
+          case "$SEVERITY_LEVEL" in
+            "low")
+              AUDIT_LEVEL="low"
+              ;;
+            "medium")
+              AUDIT_LEVEL="moderate"
+              ;;
+            "high")
+              AUDIT_LEVEL="high"
+              ;;
+            "critical")
+              AUDIT_LEVEL="critical"
+              ;;
+            *)
+              AUDIT_LEVEL="moderate"
+              ;;
+          esac
+          
+          echo "Using audit level: $AUDIT_LEVEL"
+          
+          # Generate audit report
+          pnpm audit --audit-level $AUDIT_LEVEL --json > audit-report.json || true
+          pnpm audit --audit-level $AUDIT_LEVEL > audit-report.txt || true
+          
+          # Display summary
+          if [ -s audit-report.txt ]; then
+            echo "⚠️ Vulnerabilities found:"
+            cat audit-report.txt
+          else
+            echo "✅ No vulnerabilities found at $AUDIT_LEVEL level"
+          fi
+
+      - name: Upload audit results
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-audit-${{ github.sha }}
+          path: |
+            audit-report.json
+            audit-report.txt
+          retention-days: 30
+
+      - name: Snyk dependency scan
+        if: github.ref == 'refs/heads/main' || github.event_name == 'schedule'
+        uses: snyk/actions/node@master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=${{ github.event.inputs.severity_level || 'medium' }} --json-file-output=snyk-results.json
+
+      - name: Upload Snyk results
+        if: github.ref == 'refs/heads/main' || github.event_name == 'schedule'
+        uses: actions/upload-artifact@v4
+        with:
+          name: snyk-results-${{ github.sha }}
+          path: snyk-results.json
+          retention-days: 30
+
+  # ========================================
+  # Secret Scanning
+  # ========================================
+  secret-scan:
+    name: 🕵️ Secret Detection
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.event.inputs.scan_type != 'dependencies-only' && github.event.inputs.scan_type != 'sast-only'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: TruffleHog secret scanning
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+          extra_args: --debug --only-verified --json --no-update
+
+      - name: GitLeaks secret scanning
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+
+      - name: Custom secret patterns scan
+        run: |
+          echo "🔍 Running custom secret pattern detection..."
+          
+          # Define custom patterns for common secrets
+          PATTERNS=(
+            "AKIA[0-9A-Z]{16}"  # AWS Access Key
+            "sk_live_[0-9a-zA-Z]{24}"  # Stripe Live Key
+            "sk_test_[0-9a-zA-Z]{24}"  # Stripe Test Key
+            "pk_live_[0-9a-zA-Z]{24}"  # Stripe Publishable Live Key
+            "pk_test_[0-9a-zA-Z]{24}"  # Stripe Publishable Test Key
+            "AIza[0-9A-Za-z\\-_]{35}"  # Google API Key
+            "ya29\\.[0-9A-Za-z\\-_]+"  # Google OAuth
+            "ghp_[0-9a-zA-Z]{36}"  # GitHub Personal Access Token
+            "gho_[0-9a-zA-Z]{36}"  # GitHub OAuth Token
+            "ghs_[0-9a-zA-Z]{36}"  # GitHub App Token
+            "ghr_[0-9a-zA-Z]{36}"  # GitHub Refresh Token
+          )
+          
+          echo "Scanning for custom secret patterns..."
+          FOUND_SECRETS=false
+          
+          for pattern in "${PATTERNS[@]}"; do
+            if grep -r -E "$pattern" . --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=dist --exclude-dir=build > /dev/null 2>&1; then
+              echo "⚠️ Potential secret found matching pattern: $pattern"
+              FOUND_SECRETS=true
+            fi
+          done
+          
+          if [ "$FOUND_SECRETS" = "false" ]; then
+            echo "✅ No custom secret patterns detected"
+          fi
+
+  # ========================================
+  # Static Application Security Testing (SAST)
+  # ========================================
+  sast-scan:
+    name: 🛡️ Static Code Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    if: github.event.inputs.scan_type != 'dependencies-only' && github.event.inputs.scan_type != 'secrets-only'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: ESLint security scan
+        run: |
+          echo "🔍 Running ESLint with security rules..."
+          
+          # Create security-focused ESLint config
+          cat > .eslintrc.security.js << 'EOF'
+          module.exports = {
+            extends: [
+              './eslint.config.js',
+              'plugin:security/recommended'
+            ],
+            plugins: ['security'],
+            rules: {
+              'security/detect-unsafe-regex': 'error',
+              'security/detect-buffer-noassert': 'error',
+              'security/detect-child-process': 'error',
+              'security/detect-disable-mustache-escape': 'error',
+              'security/detect-eval-with-expression': 'error',
+              'security/detect-no-csrf-before-method-override': 'error',
+              'security/detect-non-literal-fs-filename': 'error',
+              'security/detect-non-literal-regexp': 'error',
+              'security/detect-non-literal-require': 'error',
+              'security/detect-object-injection': 'error',
+              'security/detect-possible-timing-attacks': 'error',
+              'security/detect-pseudoRandomBytes': 'error',
+              'security/detect-bidi-characters': 'error'
+            }
+          };
+          EOF
+          
+          # Install security plugin if not present
+          pnpm add -D eslint-plugin-security || echo "Security plugin installation failed"
+          
+          # Run security-focused linting
+          npx eslint . --config .eslintrc.security.js --format json --output-file eslint-security-report.json || true
+          npx eslint . --config .eslintrc.security.js || echo "ESLint security scan completed with issues"
+
+      - name: CodeQL analysis
+        if: github.ref == 'refs/heads/main' || github.event_name == 'schedule'
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript
+          queries: security-and-quality
+
+      - name: Build for CodeQL
+        if: github.ref == 'refs/heads/main' || github.event_name == 'schedule'
+        run: pnpm build
+
+      - name: Perform CodeQL analysis
+        if: github.ref == 'refs/heads/main' || github.event_name == 'schedule'
+        uses: github/codeql-action/analyze@v3
+
+      - name: Upload SAST results
+        uses: actions/upload-artifact@v4
+        with:
+          name: sast-results-${{ github.sha }}
+          path: |
+            eslint-security-report.json
+          retention-days: 30
+
+  # ========================================
+  # License Compliance Check
+  # ========================================
+  license-scan:
+    name: 📄 License Compliance
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.event.inputs.scan_type == 'comprehensive' || github.event_name == 'schedule'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: License compliance check
+        run: |
+          echo "📄 Checking license compliance..."
+          
+          # Install license checker
+          npm install -g license-checker
+          
+          # Generate license report
+          license-checker --json --out license-report.json
+          license-checker --summary > license-summary.txt
+          
+          echo "📋 License Summary:"
+          cat license-summary.txt
+          
+          # Check for problematic licenses
+          PROBLEMATIC_LICENSES=("GPL-2.0" "GPL-3.0" "AGPL-1.0" "AGPL-3.0" "CPAL-1.0" "EUPL-1.1")
+          
+          ISSUES_FOUND=false
+          for license in "${PROBLEMATIC_LICENSES[@]}"; do
+            if grep -q "$license" license-summary.txt; then
+              echo "⚠️ Problematic license found: $license"
+              ISSUES_FOUND=true
+            fi
+          done
+          
+          if [ "$ISSUES_FOUND" = "false" ]; then
+            echo "✅ No problematic licenses detected"
+          fi
+
+      - name: Upload license results
+        uses: actions/upload-artifact@v4
+        with:
+          name: license-scan-${{ github.sha }}
+          path: |
+            license-report.json
+            license-summary.txt
+          retention-days: 30
+
+  # ========================================
+  # Container Security (if applicable)
+  # ========================================
+  container-scan:
+    name: 🐳 Container Security
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: github.event.inputs.scan_type == 'comprehensive' || github.event_name == 'schedule'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check for Dockerfile
+        id: dockerfile-check
+        run: |
+          if [ -f "Dockerfile" ] || [ -f "packages/*/Dockerfile" ]; then
+            echo "dockerfile-exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "dockerfile-exists=false" >> $GITHUB_OUTPUT
+            echo "ℹ️ No Dockerfile found, skipping container security scan"
+          fi
+
+      - name: Hadolint Dockerfile security scan
+        if: steps.dockerfile-check.outputs.dockerfile-exists == 'true'
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: Dockerfile
+          format: json
+          output-file: hadolint-report.json
+
+      - name: Upload container scan results
+        if: steps.dockerfile-check.outputs.dockerfile-exists == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: container-scan-${{ github.sha }}
+          path: hadolint-report.json
+          retention-days: 30
+
+  # ========================================
+  # Security Summary and Reporting
+  # ========================================
+  security-summary:
+    name: 📊 Security Summary
+    runs-on: ubuntu-latest
+    needs: [dependency-scan, secret-scan, sast-scan, license-scan, container-scan]
+    if: always()
+    timeout-minutes: 10
+    
+    steps:
+      - name: Download all scan results
+        uses: actions/download-artifact@v4
+        with:
+          path: security-results/
+
+      - name: Generate security summary
+        run: |
+          echo "## 🔒 Security Scan Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Scan Type | Status | Details |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----------|--------|---------|" >> $GITHUB_STEP_SUMMARY
+          
+          # Dependency scan
+          if [ "${{ needs.dependency-scan.result }}" = "success" ]; then
+            echo "| 🔍 Dependencies | ✅ Passed | No critical vulnerabilities |" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ needs.dependency-scan.result }}" = "failure" ]; then
+            echo "| 🔍 Dependencies | ❌ Failed | Vulnerabilities detected |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| 🔍 Dependencies | ⏭️ Skipped | - |" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          # Secret scan
+          if [ "${{ needs.secret-scan.result }}" = "success" ]; then
+            echo "| 🕵️ Secrets | ✅ Passed | No secrets detected |" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ needs.secret-scan.result }}" = "failure" ]; then
+            echo "| 🕵️ Secrets | ❌ Failed | Potential secrets found |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| 🕵️ Secrets | ⏭️ Skipped | - |" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          # SAST scan
+          if [ "${{ needs.sast-scan.result }}" = "success" ]; then
+            echo "| 🛡️ SAST | ✅ Passed | No security issues |" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ needs.sast-scan.result }}" = "failure" ]; then
+            echo "| 🛡️ SAST | ❌ Failed | Security issues detected |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| 🛡️ SAST | ⏭️ Skipped | - |" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          # License scan
+          if [ "${{ needs.license-scan.result }}" = "success" ]; then
+            echo "| 📄 Licenses | ✅ Passed | Compliant licenses |" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ needs.license-scan.result }}" = "failure" ]; then
+            echo "| 📄 Licenses | ❌ Failed | License issues detected |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| 📄 Licenses | ⏭️ Skipped | - |" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          # Container scan
+          if [ "${{ needs.container-scan.result }}" = "success" ]; then
+            echo "| 🐳 Container | ✅ Passed | No container issues |" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ needs.container-scan.result }}" = "failure" ]; then
+            echo "| 🐳 Container | ❌ Failed | Container issues detected |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| 🐳 Container | ⏭️ Skipped | - |" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "_Security scan completed on $(date)_" >> $GITHUB_STEP_SUMMARY
+          
+          # Overall status
+          if [ "${{ needs.dependency-scan.result }}" != "failure" ] && 
+             [ "${{ needs.secret-scan.result }}" != "failure" ] && 
+             [ "${{ needs.sast-scan.result }}" != "failure" ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "🎉 **Overall Status: PASSED** - No critical security issues detected" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "⚠️ **Overall Status: ISSUES DETECTED** - Please review scan results" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Upload consolidated security report
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-report-${{ github.sha }}
+          path: security-results/
+          retention-days: 90

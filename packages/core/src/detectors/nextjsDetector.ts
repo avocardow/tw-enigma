@@ -15,6 +15,8 @@ import type {
   DetectionSource,
   FrameworkType,
 } from '../frameworkDetector';
+import { SSRDetector } from './ssrDetector';
+import { CSSInJSDetector } from './cssInJsDetector';
 
 export class NextjsDetector implements IFrameworkDetector {
   readonly frameworkType: FrameworkType = 'nextjs';
@@ -115,6 +117,25 @@ export class NextjsDetector implements IFrameworkDetector {
 
     // Detect entry points
     metadata.entryPoints = this.detectEntryPoints(context);
+
+    // Detect SSR/SSG capabilities (Next.js has comprehensive SSR/SSG support)
+    const ssrResult = SSRDetector.detect(context, 'nextjs');
+    if (ssrResult.isSSRCapable) {
+      metadata.ssrInfo = ssrResult.ssrInfo;
+      metadata.hasSSR = ssrResult.ssrInfo.hasSSR;
+      metadata.hasSSG = ssrResult.ssrInfo.hasSSG;
+      metadata.hasISR = ssrResult.ssrInfo.hasISR;
+      metadata.renderingModes = ssrResult.ssrInfo.renderingModes;
+    }
+
+    // Detect CSS-in-JS libraries
+    const cssResult = CSSInJSDetector.detect(context, 'react');
+    if (cssResult.hasCSSInJS) {
+      metadata.cssInfo = cssResult.cssInfo;
+      metadata.hasCSSInJS = cssResult.cssInfo.hasCSSInJS;
+      metadata.stylingLibraries = cssResult.cssInfo.libraries.map(lib => lib.name);
+      metadata.primaryStylingLibrary = cssResult.cssInfo.primaryLibrary;
+    }
 
     return {
       type: 'nextjs',

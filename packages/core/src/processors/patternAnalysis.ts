@@ -6,6 +6,8 @@
  */
 
 import { z } from 'zod';
+import { createPerformanceMonitor } from '../optimization/performanceMonitor';
+import { createParallelProcessor, handleMemoryErrors } from '../optimization/parallelProcessor';
 import type { ValidationResult } from '../patternValidator';
 import type { HtmlClassExtractionResult } from './htmlExtractor';
 import type { JsClassExtractionResult, SupportedFramework } from './jsExtractor';
@@ -25,6 +27,8 @@ export const PatternAnalysisOptionsSchema = z.object({
   outputFormat: z.enum(['map', 'array', 'json']).default('map'),
   enableValidation: z.boolean().default(false),
   validationOptions: z.object({}).passthrough().optional(),
+  enableParallelProcessing: z.boolean().default(true),
+  parallelThreshold: z.number().min(1).default(1000), // Enable parallel processing for datasets larger than this
 });
 
 export type PatternAnalysisOptions = z.infer<typeof PatternAnalysisOptionsSchema>;
@@ -62,6 +66,11 @@ export interface AggregatedClassData {
       extractionType: 'static' | 'dynamic' | 'template' | 'utility';
       filePath: string;
     }>;
+  };
+  patterns: {
+    prefixes: string[];
+    modifiers: string[];
+    variants: string[];
   };
   coOccurrences: Map<string, number>; // Classes that appear with this one
   validation?: ValidationResult; // Optional validation metadata
@@ -279,46 +288,179 @@ export type TailwindPatternType = keyof typeof COMMON_TAILWIND_PATTERNS;
 /**
  * Combine multiple HTML and JSX extraction results into aggregated class data
  */
-export function aggregateExtractionResults(
+export async function aggregateExtractionResults(
   input: PatternAnalysisInput,
   options: Partial<PatternAnalysisOptions> = {}
-): Map<string, AggregatedClassData> {
-  const defaultOptions: PatternAnalysisOptions = {
-    caseSensitive: false,
-    outputFormat: 'map',
-    enableValidation: false,
-    minimumFrequency: 1,
-    enablePatternGrouping: false,
-    enableCoOccurrenceAnalysis: false,
-    maxCoOccurrenceDistance: 5,
-    includeFrameworkAnalysis: false,
-    sortBy: 'frequency',
-    sortDirection: 'desc',
-  };
-  const validatedOptions = PatternAnalysisOptionsSchema.parse({
-    ...defaultOptions,
-    ...options,
+): Promise<Map<string, AggregatedClassData>> {
+  const performanceMonitor = createPerformanceMonitor({
+    enabled: true,
+    enableGC: true,
+    enableEventLoop: true,
   });
-  const aggregatedData = new Map<string, AggregatedClassData>();
+
+  const sessionId = performanceMonitor.startSession('pattern-analysis-aggregation');
+  const measurementId = performanceMonitor.startMeasurement('aggregateExtractionResults', {
+    htmlResultsCount: input.htmlResults.length,
+    jsxResultsCount: input.jsxResults.length,
+  });
 
   try {
-    // Process HTML results
-    for (const htmlResult of input.htmlResults) {
-      processHtmlResult(htmlResult, aggregatedData, validatedOptions);
+    const defaultOptions: PatternAnalysisOptions = {
+      caseSensitive: false,
+      outputFormat: 'map',
+      enableValidation: false,
+      minimumFrequency: 1,
+      enablePatternGrouping: false,
+      enableCoOccurrenceAnalysis: false,
+      maxCoOccurrenceDistance: 5,
+      includeFrameworkAnalysis: false,
+      sortBy: 'frequency',
+      sortDirection: 'desc',
+    };
+    const validatedOptions = PatternAnalysisOptionsSchema.parse({
+      ...defaultOptions,
+      ...options,
+    });
+    const aggregatedData = new Map<string, AggregatedClassData>();
+    const totalResults = input.htmlResults.length + input.jsxResults.length;
+
+    // Determine if we should use parallel processing
+    const useParallelProcessing = validatedOptions.enableParallelProcessing && 
+                                  totalResults >= validatedOptions.parallelThreshold;
+
+    if (useParallelProcessing) {
+      // Use parallel processing for large datasets
+      const parallelId = performanceMonitor.startMeasurement('parallelProcessing', {
+        totalResults,
+        htmlResults: input.htmlResults.length,
+        jsxResults: input.jsxResults.length,
+      });
+
+      try {
+        await handleMemoryErrors(async () => {
+          // Create parallel processor for HTML results
+          if (input.htmlResults.length > 0) {
+            const htmlProcessor = createParallelProcessor(
+              (htmlResult: HtmlClassExtractionResult) => {
+                const localData = new Map<string, AggregatedClassData>();
+                processHtmlResult(htmlResult, localData, validatedOptions);
+                return localData;
+              },
+              { maxConcurrency: Math.min(4, input.htmlResults.length) }
+            );
+
+            const htmlTasks = input.htmlResults.map((result, index) => ({
+              id: `html-${index}`,
+              data: result,
+              operation: 'processHtml',
+            }));
+
+            const htmlResults = await htmlProcessor.processInParallel(htmlTasks);
+            
+            // Merge HTML results
+            for (const result of htmlResults) {
+              if (result.success && result.result) {
+                mergeAggregatedData(aggregatedData, result.result);
+              }
+            }
+
+            await htmlProcessor.shutdown();
+          }
+
+          // Create parallel processor for JSX results  
+          if (input.jsxResults.length > 0) {
+            const jsxProcessor = createParallelProcessor(
+              (jsxResult: JsClassExtractionResult) => {
+                const localData = new Map<string, AggregatedClassData>();
+                processJsxResult(jsxResult, localData, validatedOptions);
+                return localData;
+              },
+              { maxConcurrency: Math.min(4, input.jsxResults.length) }
+            );
+
+            const jsxTasks = input.jsxResults.map((result, index) => ({
+              id: `jsx-${index}`,
+              data: result,
+              operation: 'processJsx',
+            }));
+
+            const jsxResults = await jsxProcessor.processInParallel(jsxTasks);
+            
+            // Merge JSX results
+            for (const result of jsxResults) {
+              if (result.success && result.result) {
+                mergeAggregatedData(aggregatedData, result.result);
+              }
+            }
+
+            await jsxProcessor.shutdown();
+          }
+        });
+      } catch (error) {
+        console.warn('Parallel processing failed, falling back to sequential:', error);
+        // Fall back to sequential processing
+        for (const htmlResult of input.htmlResults) {
+          processHtmlResult(htmlResult, aggregatedData, validatedOptions);
+        }
+        for (const jsxResult of input.jsxResults) {
+          processJsxResult(jsxResult, aggregatedData, validatedOptions);
+        }
+      }
+
+      performanceMonitor.endMeasurement(parallelId, {
+        finalClassCount: aggregatedData.size,
+        processingMode: 'parallel',
+      });
+    } else {
+      // Use sequential processing for smaller datasets
+      const htmlProcessingId = performanceMonitor.startMeasurement('processHtmlResults', {
+        count: input.htmlResults.length,
+      });
+      
+      for (const htmlResult of input.htmlResults) {
+        processHtmlResult(htmlResult, aggregatedData, validatedOptions);
+      }
+      
+      performanceMonitor.endMeasurement(htmlProcessingId);
+
+      const jsxProcessingId = performanceMonitor.startMeasurement('processJsxResults', {
+        count: input.jsxResults.length,
+      });
+      
+      for (const jsxResult of input.jsxResults) {
+        processJsxResult(jsxResult, aggregatedData, validatedOptions);
+      }
+      
+      performanceMonitor.endMeasurement(jsxProcessingId);
     }
 
-    // Process JSX results
-    for (const jsxResult of input.jsxResults) {
-      processJsxResult(jsxResult, aggregatedData, validatedOptions);
-    }
-
-    // Apply minimum frequency filtering
+    // Apply minimum frequency filtering with performance monitoring
     if (validatedOptions.minimumFrequency > 1) {
+      const filteringId = performanceMonitor.startMeasurement('frequencyFiltering', {
+        threshold: validatedOptions.minimumFrequency,
+        totalClasses: aggregatedData.size,
+      });
+      
       for (const [className, data] of aggregatedData) {
         if (data.totalFrequency < validatedOptions.minimumFrequency) {
           aggregatedData.delete(className);
         }
       }
+      
+      performanceMonitor.endMeasurement(filteringId, {
+        remainingClasses: aggregatedData.size,
+      });
+    }
+
+    performanceMonitor.endMeasurement(measurementId, {
+      finalClassCount: aggregatedData.size,
+      success: true,
+    });
+
+    const analysis = performanceMonitor.stopSession();
+    if (analysis && analysis.bottlenecks.length > 0) {
+      console.warn('Performance bottlenecks detected in pattern analysis:', 
+        analysis.bottlenecks.map(b => `${b.operation}: ${b.averageDuration.toFixed(2)}ms avg`));
     }
 
     return aggregatedData;
@@ -381,6 +523,11 @@ function processHtmlResult(
               filePath: htmlResult.metadata.source,
             })),
             jsx: [],
+          },
+          patterns: {
+            prefixes: [],
+            modifiers: [],
+            variants: [],
           },
           coOccurrences: new Map(),
         };
@@ -467,6 +614,11 @@ function processJsxResult(
               extractionType: pattern.extractionType,
               filePath: jsxResult.metadata.source,
             })),
+          },
+          patterns: {
+            prefixes: [],
+            modifiers: [],
+            variants: [],
           },
           coOccurrences: new Map(),
         };
@@ -663,9 +815,82 @@ function generateCoOccurrencePatterns(
 }
 
 /**
+ * Merge two aggregated data maps for parallel processing
+ */
+function mergeAggregatedData(
+  target: Map<string, AggregatedClassData>,
+  source: Map<string, AggregatedClassData>
+): void {
+  for (const [className, sourceData] of source) {
+    if (target.has(className)) {
+      const targetData = target.get(className)!;
+      
+      // Merge frequencies
+      targetData.totalFrequency += sourceData.totalFrequency;
+      targetData.htmlFrequency += sourceData.htmlFrequency;
+      targetData.jsxFrequency += sourceData.jsxFrequency;
+      
+      // Merge sources
+      targetData.sources.filePaths.push(...sourceData.sources.filePaths);
+      for (const framework of sourceData.sources.frameworks) {
+        targetData.sources.frameworks.add(framework);
+      }
+      for (const extractionType of sourceData.sources.extractionTypes) {
+        targetData.sources.extractionTypes.add(extractionType);
+      }
+      
+      // Update source type
+      if (targetData.sources.sourceType !== sourceData.sources.sourceType) {
+        targetData.sources.sourceType = 'mixed';
+      }
+      
+      // Merge contexts
+      targetData.contexts.html.push(...sourceData.contexts.html);
+      targetData.contexts.jsx.push(...sourceData.contexts.jsx);
+      
+      // Merge patterns
+      targetData.patterns.prefixes.push(...sourceData.patterns.prefixes);
+      targetData.patterns.modifiers.push(...sourceData.patterns.modifiers);
+      targetData.patterns.variants.push(...sourceData.patterns.variants);
+      
+      // Merge co-occurrences
+      for (const [coClassName, count] of sourceData.coOccurrences) {
+        targetData.coOccurrences.set(
+          coClassName,
+          (targetData.coOccurrences.get(coClassName) || 0) + count
+        );
+      }
+    } else {
+      // Deep clone the source data to avoid reference issues
+      target.set(className, {
+        ...sourceData,
+        sources: {
+          ...sourceData.sources,
+          frameworks: new Set(sourceData.sources.frameworks),
+          extractionTypes: new Set(sourceData.sources.extractionTypes),
+          filePaths: [...sourceData.sources.filePaths],
+        },
+        contexts: {
+          html: [...sourceData.contexts.html],
+          jsx: [...sourceData.contexts.jsx],
+        },
+        patterns: {
+          prefixes: [...sourceData.patterns.prefixes],
+          modifiers: [...sourceData.patterns.modifiers],
+          variants: [...sourceData.patterns.variants],
+        },
+        coOccurrences: new Map(sourceData.coOccurrences),
+      });
+    }
+  }
+}
+
+/**
  * Extract class names from HTML attributes
  */
-function extractClassesFromAttributes(attributes: Record<string, string> | undefined | null): string[] {
+function extractClassesFromAttributes(
+  attributes: Record<string, string> | undefined | null
+): string[] {
   if (!attributes || typeof attributes !== 'object') {
     return [];
   }
@@ -680,7 +905,7 @@ function extractClassesFromJsxPattern(pattern: string | undefined | null): strin
   if (!pattern || typeof pattern !== 'string') {
     return [];
   }
-  
+
   // Simple extraction - look for quoted strings that might contain classes
   const matches = pattern.match(/["'`]([^"'`]*?)["'`]/g);
   if (!matches) return [];

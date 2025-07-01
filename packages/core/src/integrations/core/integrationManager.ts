@@ -11,21 +11,21 @@
  */
 
 import { EventEmitter } from 'events';
+import fs from 'fs/promises';
 import { createLogger } from '../../utils/logger';
-import { ConfigDetector } from './configDetector';
-import { createHMRHandler } from './hmrHandler';
 import type {
+  BuildPhase,
+  BuildToolContext,
   BuildToolPlugin,
   BuildToolPluginConfig,
-  BuildToolContext,
-  BuildToolType,
   BuildToolResult,
-  BuildPhase,
+  BuildToolType,
   HMRUpdate,
 } from './buildToolPlugin.ts';
+import { ConfigDetector } from './configDetector';
 import type { AutoConfigResult } from './configDetector.ts';
 import type { HMRHandler } from './hmrHandler';
-import fs from 'fs/promises';
+import { createHMRHandler } from './hmrHandler';
 
 const logger = createLogger('integration-manager');
 
@@ -107,7 +107,7 @@ export class IntegrationManager extends EventEmitter {
         parcel: 6,
         custom: 10,
       },
-      enabledTools: ['webpack', 'vite', 'nextjs', 'esbuild', 'rollup'],
+      enabledTools: ['webpack', 'vite', 'nextjs', 'esbuild', 'rollup', 'parcel'],
       pluginConfigs: {},
       ...config,
     };
@@ -305,20 +305,37 @@ export class IntegrationManager extends EventEmitter {
         }
 
         case 'nextjs': {
-          // Next.js plugin would be implemented similarly
-          logger.warn('Next.js plugin not yet implemented');
-          return null;
+          const { EnigmaNextJSPlugin } = await import('../nextjs/nextjsPlugin.js');
+          const nextjsConfig = {
+            ...config,
+            buildTool: { ...config.buildTool, type: 'nextjs' as const },
+          };
+          return new EnigmaNextJSPlugin(nextjsConfig as any);
         }
 
         case 'esbuild': {
-          // ESBuild plugin would be implemented similarly
-          logger.warn('ESBuild plugin not yet implemented');
-          return null;
+          const { EnigmaESBuildPlugin } = await import('../esbuild/esbuildPlugin.js');
+          const esbuildConfig = {
+            ...config,
+            buildTool: { ...config.buildTool, type: 'esbuild' as const },
+          };
+          return new EnigmaESBuildPlugin(esbuildConfig as any);
+        }
+
+        case 'parcel': {
+          const { EnigmaParcelTransformer } = await import('../parcel/parcelPlugin.js');
+          const parcelConfig = {
+            ...config,
+            buildTool: { ...config.buildTool, type: 'parcel' as const },
+          };
+          return new EnigmaParcelTransformer(parcelConfig as any);
         }
 
         case 'rollup': {
-          // Rollup plugin would be implemented similarly
-          logger.warn('Rollup plugin not yet implemented');
+          // Rollup plugin uses native Rollup plugin interface, not BuildToolPlugin
+          logger.warn(
+            'Rollup plugin uses native interface - use rollupEnigma() directly in rollup.config.js'
+          );
           return null;
         }
 

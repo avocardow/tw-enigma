@@ -25,6 +25,13 @@ tsbuildinfo.json
 .nyc_output/
 .coverage/
 .test-results/
+# Temporary build directories
+temp_build/
+test-temp/
+.dedup*/
+.differential*/
+.incremental/
+.enigma/
 
 #==============================================================================
 # Monorepo (Turborepo)
@@ -34,6 +41,13 @@ packages/*/dist
 packages/*/node_modules
 packages/*/.next
 packages/*/coverage
+
+#==============================================================================
+# Next.js specific
+#==============================================================================
+.next/
+*.next/
+examples/**/.next/
 
 #==============================================================================
 # Logs
@@ -89,13 +103,8 @@ workspace.local.*
 # 🤖 AI Assistant & Development Workflow
 #==============================================================================
 # AI instructions (potentially sensitive)
-CLAUDE.md
-AGENTS.md
-.windsurfrules
-.roomodes
-.trae
-.windsurf
-.serena
+CLAUDE.local.md
+# Keep CLAUDE.md and AGENTS.md as they're now organized in docs/
 
 # AI working directories
 .roo/
@@ -104,6 +113,9 @@ AGENTS.md
 .clinerules/
 .anthropic/
 .cursorignore
+.serena/
+.trae/
+.windsurf/
 
 # AI conversation logs and context
 conversation-*.json

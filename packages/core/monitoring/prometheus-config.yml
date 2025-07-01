@@ -1,0 +1,57 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  - 'pattern_optimization_rules.yml'
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - alertmanager:9093
+
+scrape_configs:
+  # Pattern Selection Engine Metrics
+  - job_name: 'pattern-selection-engine'
+    static_configs:
+      - targets: ['localhost:3001']
+    scrape_interval: 10s
+    metrics_path: /metrics
+    params:
+      format: ['prometheus']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: pattern-optimizer:3001
+
+  # Hierarchy Integration Metrics
+  - job_name: 'hierarchy-integration'
+    static_configs:
+      - targets: ['localhost:3002']
+    scrape_interval: 15s
+    metrics_path: /hierarchy/metrics
+
+  # Conflict Resolution Metrics
+  - job_name: 'conflict-resolution'
+    static_configs:
+      - targets: ['localhost:3003']
+    scrape_interval: 30s
+    metrics_path: /conflicts/metrics
+
+  # System Resource Metrics
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['localhost:9100']
+    scrape_interval: 30s
+
+  # Application Performance Metrics
+  - job_name: 'pattern-optimizer-app'
+    static_configs:
+      - targets: ['pattern-optimizer:3000']
+    scrape_interval: 5s
+    metrics_path: /api/metrics
+    scrape_timeout: 5s
