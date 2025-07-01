@@ -1,51 +1,55 @@
+# TW-Enigma Release Automation
 name: Release
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   workflow_dispatch:
     inputs:
       release_type:
         description: 'Release type'
         required: true
-        default: 'auto'
+        default: 'patch'
         type: choice
         options:
-          - auto
           - patch
           - minor
           - major
-      skip_tests:
-        description: 'Skip tests (emergency release only)'
+          - prerelease
+      prerelease_identifier:
+        description: 'Prerelease identifier (alpha, beta, rc)'
         required: false
-        default: false
-        type: boolean
-
-# Grant required permissions for the workflow
-permissions:
-  contents: write # Required for creating releases and pushing tags
-  packages: write # Required for publishing packages
-  pull-requests: write # Required for updating PRs with changesets
+        default: 'alpha'
+        type: choice
+        options:
+          - alpha
+          - beta
+          - rc
 
 env:
-  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-  TURBO_TEAM: ${{ vars.TURBO_TEAM }}
-  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  NODE_VERSION: '20'
+  PNPM_VERSION: '10.10.0'
+  CI: true
 
 concurrency:
-  group: release-${{ github.ref }}
-  cancel-in-progress: false
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false # Don't cancel releases
 
 jobs:
-  # Job 1: Validate release preconditions
-  validate:
-    name: Validate Release
+  # ========================================
+  # Version Calculation & Preparation
+  # ========================================
+  prepare-release:
+    name: 🔢 Prepare Release
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     outputs:
       should-release: ${{ steps.check-changes.outputs.should-release }}
-      version-bump: ${{ steps.check-changes.outputs.version-bump }}
-      packages-to-release: ${{ steps.check-changes.outputs.packages }}
+      new-version: ${{ steps.version.outputs.new-version }}
+      release-notes: ${{ steps.release-notes.outputs.notes }}
+      release-type: ${{ steps.detect-type.outputs.release-type }}
+    
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -53,464 +57,266 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20.x'
-
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 10.10.0
+          version: ${{ env.PNPM_VERSION }}
 
-      - name: Restore node_modules cache
-        uses: actions/cache@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          path: |
-            node_modules
-            packages/*/node_modules
-          key: ${{ runner.os }}-node-modules-8-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-node-modules-8-
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Check for changeset files
+      - name: Check for changesets
         id: check-changes
         run: |
-          # Check if there are any changeset files
-          changeset_files=$(find .changeset -name "*.md" -not -name "README.md" | wc -l)
-          echo "changeset_files=${changeset_files}" >> $GITHUB_OUTPUT
-
-          # Check changeset status
-          if [ "$changeset_files" -gt 0 ] || [ "${{ github.event.inputs.release_type }}" != "auto" ]; then
+          echo "🔍 Checking for pending changesets..."
+          
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "should-release=true" >> $GITHUB_OUTPUT
-
-            # Get version information
-            if [ "${{ github.event.inputs.release_type }}" != "auto" ]; then
-              echo "version-bump=${{ github.event.inputs.release_type }}" >> $GITHUB_OUTPUT
-            else
-              # Determine version bump from changesets
-              changeset status --output=json > changeset-status.json
-              version_bump=$(cat changeset-status.json | jq -r '.releases[0].type // "patch"')
-              echo "version-bump=${version_bump}" >> $GITHUB_OUTPUT
-            fi
-
-            # Get packages that will be released
-            packages=$(changeset status --output=json | jq -r '.releases | map(.name) | join(",")')
-            echo "packages=${packages}" >> $GITHUB_OUTPUT
+            echo "Manual release triggered"
           else
-            echo "should-release=false" >> $GITHUB_OUTPUT
-            echo "No changesets found and no manual release requested"
+            # Check if there are changesets to release
+            pnpm changeset status --output=status.json
+            
+            if jq -e '.releases | length > 0' status.json > /dev/null; then
+              echo "should-release=true" >> $GITHUB_OUTPUT
+              echo "✅ Changes detected for release"
+            else
+              echo "should-release=false" >> $GITHUB_OUTPUT
+              echo "ℹ️ No changes to release"
+            fi
           fi
 
-      - name: Validate package integrity
+      - name: Detect release type
+        id: detect-type
         if: steps.check-changes.outputs.should-release == 'true'
         run: |
-          echo "Validating package.json files..."
-          pnpm turbo lint:packages || exit 0  # Non-blocking for now
-
-          echo "Checking for missing dependencies..."
-          pnpm exec dependency-check || exit 0  # Non-blocking for now
-
-  # Job 2: Run tests (conditional)
-  test:
-    name: Pre-Release Tests
-    runs-on: ubuntu-latest
-    needs: validate
-    if: needs.validate.outputs.should-release == 'true' && github.event.inputs.skip_tests != 'true'
-    strategy:
-      matrix:
-        node-version: ['18.x', '20.x']
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10.10.0
-
-      - name: Restore node_modules cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            node_modules
-            packages/*/node_modules
-          key: ${{ runner.os }}-node-modules-8-${{ hashFiles('**/pnpm-lock.yaml') }}
-          fail-on-cache-miss: true
-
-      - name: Restore build artifacts
-        uses: actions/cache@v4
-        with:
-          path: |
-            packages/*/dist
-            packages/*/build
-          key: ${{ runner.os }}-build-${{ github.sha }}-${{ matrix.node-version }}
-          restore-keys: |
-            ${{ runner.os }}-build-main-${{ matrix.node-version }}-
-
-      - name: Build packages (if needed)
-        run: pnpm turbo build
-
-      - name: Run tests
-        run: pnpm turbo test
-
-      - name: Run integration tests
-        run: pnpm test:integration
-
-  # Job 3: Build release artifacts
-  build:
-    name: Build Release
-    runs-on: ubuntu-latest
-    needs: [validate, test]
-    if: |
-      always() &&
-      needs.validate.outputs.should-release == 'true' &&
-      (needs.test.result == 'success' || needs.test.result == 'skipped')
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20.x'
-          registry-url: 'https://registry.npmjs.org'
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10.10.0
-
-      - name: Restore node_modules cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            node_modules
-            packages/*/node_modules
-          key: ${{ runner.os }}-node-modules-8-${{ hashFiles('**/pnpm-lock.yaml') }}
-          fail-on-cache-miss: true
-
-      - name: Setup Turborepo cache
-        uses: actions/cache@v4
-        with:
-          path: .turbo
-          key: ${{ runner.os }}-turbo-${{ github.sha }}-20.x
-          restore-keys: |
-            ${{ runner.os }}-turbo-main-20.x-
-            ${{ runner.os }}-turbo-20.x-
-
-      - name: Build packages
-        run: pnpm turbo build
-
-      - name: Generate package archives
-        run: |
-          mkdir -p release-artifacts
-          for package in packages/*; do
-            if [ -d "$package" ]; then
-              package_name=$(basename "$package")
-              echo "Creating archive for $package_name..."
-              cd "$package"
-              pnpm pack --pack-destination="../../release-artifacts/"
-              cd ../..
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            RELEASE_TYPE="${{ github.event.inputs.release_type }}"
+            PRERELEASE_ID="${{ github.event.inputs.prerelease_identifier }}"
+            
+            if [ "$RELEASE_TYPE" = "prerelease" ]; then
+              echo "release-type=prerelease-${PRERELEASE_ID}" >> $GITHUB_OUTPUT
+            else
+              echo "release-type=${RELEASE_TYPE}" >> $GITHUB_OUTPUT
             fi
-          done
-
-      - name: Upload release artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-artifacts
-          path: release-artifacts/
-          retention-days: 30
-
-  # Job 4: Version and publish
-  release:
-    name: Version & Publish
-    runs-on: ubuntu-latest
-    needs: [validate, test, build]
-    if: |
-      always() &&
-      needs.validate.outputs.should-release == 'true' &&
-      (needs.test.result == 'success' || needs.test.result == 'skipped') &&
-      needs.build.result == 'success'
-    outputs:
-      published: ${{ steps.publish.outputs.published }}
-      version: ${{ steps.version.outputs.version }}
-      changelog: ${{ steps.version.outputs.changelog }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20.x'
-          registry-url: 'https://registry.npmjs.org'
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10.10.0
-
-      - name: Restore node_modules cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            node_modules
-            packages/*/node_modules
-          key: ${{ runner.os }}-node-modules-8-${{ hashFiles('**/pnpm-lock.yaml') }}
-          fail-on-cache-miss: true
-
-      - name: Restore build artifacts
-        uses: actions/cache@v4
-        with:
-          path: |
-            packages/*/dist
-            packages/*/build
-          key: ${{ runner.os }}-build-${{ github.sha }}-20.x
-          fail-on-cache-miss: true
-
-      - name: Configure Git
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-      - name: Version packages
-        id: version
-        run: |
-          if [ "${{ github.event.inputs.release_type }}" != "auto" ]; then
-            # Manual version bump
-            echo "Performing manual ${{ github.event.inputs.release_type }} release..."
-            pnpm changeset add --empty
-            echo "Manual ${{ github.event.inputs.release_type }} release" > .changeset/manual-release.md
-            echo "---" >> .changeset/manual-release.md
-            echo "\"@tw-enigma/core\": ${{ github.event.inputs.release_type }}" >> .changeset/manual-release.md
-            echo "\"@tw-enigma/cli\": ${{ github.event.inputs.release_type }}" >> .changeset/manual-release.md
-            echo "---" >> .changeset/manual-release.md
-            echo "" >> .changeset/manual-release.md
-            echo "Manual release triggered via workflow dispatch" >> .changeset/manual-release.md
+          else
+            # Auto-detect from changesets
+            echo "release-type=auto" >> $GITHUB_OUTPUT
           fi
 
-          # Apply version changes
-          pnpm changeset version
-
-          # Get new version for tagging
-          new_version=$(node -p "require('./package.json').version")
-          echo "version=${new_version}" >> $GITHUB_OUTPUT
-
-          # Generate changelog for release notes
-          if [ -f "CHANGELOG.md" ]; then
-            # Extract latest changelog entry
-            changelog=$(sed -n '/^## \[/,/^## \[/p' CHANGELOG.md | head -n -1)
-            echo "changelog<<EOF" >> $GITHUB_OUTPUT
-            echo "$changelog" >> $GITHUB_OUTPUT
-            echo "EOF" >> $GITHUB_OUTPUT
+      - name: Calculate new version
+        id: version
+        if: steps.check-changes.outputs.should-release == 'true'
+        run: |
+          echo "📊 Calculating new version..."
+          
+          if [ "${{ steps.detect-type.outputs.release-type }}" = "auto" ]; then
+            # Use changeset to determine version
+            pnpm changeset version --snapshot
+            NEW_VERSION=$(jq -r '.version' package.json)
           else
-            echo "changelog=Release v${new_version}" >> $GITHUB_OUTPUT
+            # Manual version bump
+            CURRENT_VERSION=$(jq -r '.version' package.json)
+            RELEASE_TYPE="${{ steps.detect-type.outputs.release-type }}"
+            
+            # Use npm semver for version bumping
+            case "$RELEASE_TYPE" in
+              "patch")
+                NEW_VERSION=$(npm version patch --no-git-tag-version | sed 's/v//')
+                ;;
+              "minor")
+                NEW_VERSION=$(npm version minor --no-git-tag-version | sed 's/v//')
+                ;;
+              "major")
+                NEW_VERSION=$(npm version major --no-git-tag-version | sed 's/v//')
+                ;;
+              prerelease-*)
+                PRERELEASE_ID=$(echo "$RELEASE_TYPE" | cut -d'-' -f2)
+                NEW_VERSION=$(npm version prerelease --preid=$PRERELEASE_ID --no-git-tag-version | sed 's/v//')
+                ;;
+              *)
+                NEW_VERSION="$CURRENT_VERSION"
+                ;;
+            esac
+          fi
+          
+          echo "new-version=${NEW_VERSION}" >> $GITHUB_OUTPUT
+          echo "🎯 New version will be: ${NEW_VERSION}"
+
+      - name: Generate release notes
+        id: release-notes
+        if: steps.check-changes.outputs.should-release == 'true'
+        run: |
+          echo "📝 Generating release notes..."
+          
+          # Generate changelog since last release
+          LAST_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "HEAD~20")
+          
+          echo "## 🚀 What's Changed" > release-notes.md
+          echo "" >> release-notes.md
+          
+          # Get commits since last tag
+          git log --pretty=format:"- %s" ${LAST_TAG}..HEAD --no-merges >> release-notes.md
+          
+          # Set output (handle multiline)
+          echo "notes<<EOF" >> $GITHUB_OUTPUT
+          cat release-notes.md >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+  # ========================================
+  # Quality Gates for Release
+  # ========================================
+  quality-gate:
+    name: 🚦 Quality Gate
+    runs-on: ubuntu-latest
+    needs: prepare-release
+    if: needs.prepare-release.outputs.should-release == 'true'
+    timeout-minutes: 20
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run full test suite
+        run: |
+          echo "🧪 Running comprehensive test suite..."
+          pnpm test:ci
+          echo "✅ All tests passed"
+
+      - name: Run benchmarks for release validation
+        run: |
+          echo "⚡ Running performance validation..."
+          pnpm benchmark:ci --threshold 5 --output ./release-benchmarks
+          echo "✅ Performance validation passed"
+
+      - name: Security audit
+        run: |
+          echo "🔒 Running security audit..."
+          pnpm audit --audit-level moderate
+          echo "✅ Security audit passed"
+
+      - name: Build packages
+        run: |
+          echo "🏗️ Building packages for release..."
+          pnpm build
+          echo "✅ Build completed successfully"
+
+  # ========================================
+  # Release Execution
+  # ========================================
+  release:
+    name: 🚀 Release
+    runs-on: ubuntu-latest
+    needs: [prepare-release, quality-gate]
+    if: needs.prepare-release.outputs.should-release == 'true'
+    timeout-minutes: 15
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build packages
+        run: pnpm build
+
+      - name: Version packages
+        run: |
+          echo "🔢 Updating package versions..."
+          
+          if [ "${{ needs.prepare-release.outputs.release-type }}" = "auto" ]; then
+            # Use changesets for versioning
+            pnpm changeset version
+          else
+            # Manual version update
+            NEW_VERSION="${{ needs.prepare-release.outputs.new-version }}"
+            
+            # Update workspace packages
+            jq ".version = \"$NEW_VERSION\"" packages/core/package.json > packages/core/package.json.tmp && mv packages/core/package.json.tmp packages/core/package.json
+            jq ".version = \"$NEW_VERSION\"" packages/cli/package.json > packages/cli/package.json.tmp && mv packages/cli/package.json.tmp packages/cli/package.json
           fi
 
       - name: Commit version changes
         run: |
-          if git diff --quiet; then
-            echo "No version changes to commit"
-          else
-            git add .
-            git commit -m "chore: release v${{ steps.version.outputs.version }}"
-            git push origin main
-          fi
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          
+          git add -A
+          git commit -m "chore: release v${{ needs.prepare-release.outputs.new-version }}" || echo "No changes to commit"
 
       - name: Create Git tag
         run: |
-          version="v${{ steps.version.outputs.version }}"
-          if git rev-parse "$version" >/dev/null 2>&1; then
-            echo "Tag $version already exists, skipping tag creation"
-          else
-            echo "Creating new tag $version"
-            git tag "$version"
-            git push origin "$version"
-          fi
+          NEW_VERSION="${{ needs.prepare-release.outputs.new-version }}"
+          git tag -a "v${NEW_VERSION}" -m "Release v${NEW_VERSION}"
 
-      - name: Check NPM Authentication
-        id: npm-auth
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Publish to NPM
         run: |
-          echo "Checking NPM authentication..."
-
-          # Check if token exists
-          if [ -z "$NODE_AUTH_TOKEN" ]; then
-            echo "❌ NPM_TOKEN secret is not configured"
-            echo "🚧 SKIPPING NPM PUBLISH - Configure NPM_TOKEN secret to enable publishing"
-            echo "auth_available=false" >> $GITHUB_OUTPUT
-            exit 0
-          fi
-
-          echo "NODE_AUTH_TOKEN length: ${#NODE_AUTH_TOKEN}"
-
-          # Configure npm registry with token
-          echo "Configuring npm registry..."
-          echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > ~/.npmrc
-          echo "registry=https://registry.npmjs.org/" >> ~/.npmrc
-          echo "access=public" >> ~/.npmrc
-
-          # Test npm authentication
-          echo "Testing npm authentication..."
-          if npm whoami; then
-            echo "✅ NPM authentication successful"
-            echo "auth_available=true" >> $GITHUB_OUTPUT
-          else
-            echo "❌ NPM authentication failed - token may be invalid or expired"
-            echo "auth_available=false" >> $GITHUB_OUTPUT
-            exit 1
-          fi
-
-      - name: Publish to npm
-        id: publish
-        if: steps.npm-auth.outputs.auth_available == 'true'
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: |
-          echo "Publishing packages to npm..."
-
-          # Debug: Show current directory and package structure
-          echo "Current directory: $(pwd)"
-          echo "Packages found:"
-          ls -la packages/
-
+          echo "📦 Publishing to NPM..."
+          
+          # Set registry authentication
+          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+          
           # Publish packages
-          published_packages=""
-          for package in packages/*; do
-            echo "Processing package: $package"
-            if [ -d "$package" ] && [ -f "$package/package.json" ]; then
-              echo "Package directory and package.json found for: $package"
+          pnpm publish -r --access public --no-git-checks
+          
+          echo "✅ Packages published successfully"
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-              # Use absolute path for require
-              package_json_path="$(pwd)/$package/package.json"
-              echo "Reading package.json from: $package_json_path"
+      - name: Push changes and tags
+        run: |
+          git push origin main
+          git push origin --tags
 
-              package_name=$(node -p "require('$package_json_path').name")
-              package_version=$(node -p "require('$package_json_path').version")
-
-              echo "Publishing $package_name@$package_version..."
-              cd "$package"
-
-              # Check if version already exists
-              if npm view "$package_name@$package_version" > /dev/null 2>&1; then
-                echo "Version $package_version already exists for $package_name, skipping..."
-              else
-                pnpm publish --access public --no-git-checks
-                published_packages="$published_packages$package_name@$package_version "
-              fi
-
-              cd ../..
-            else
-              echo "Skipping $package: not a directory or missing package.json"
-            fi
-          done
-
-          if [ -n "$published_packages" ]; then
-            echo "published=true" >> $GITHUB_OUTPUT
-            echo "Published packages: $published_packages"
-          else
-            echo "published=false" >> $GITHUB_OUTPUT
-            echo "No new packages were published"
-          fi
-
-  # Job 5: Create GitHub release
-  github-release:
-    name: GitHub Release
-    runs-on: ubuntu-latest
-    needs: [validate, release]
-    if: needs.release.outputs.published == 'true'
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Create GitHub release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          fetch-depth: 0
-
-      - name: Download release artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: release-artifacts
-          path: release-artifacts/
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: 'v${{ needs.release.outputs.version }}'
-          name: 'Release v${{ needs.release.outputs.version }}'
-          body: |
-            ## 🎉 Release v${{ needs.release.outputs.version }}
-
-            ### 📦 Published Packages
-            - `@tw-enigma/core@${{ needs.release.outputs.version }}`
-            - `@tw-enigma/cli@${{ needs.release.outputs.version }}`
-
-            ### 📝 Changes
-            ${{ needs.release.outputs.changelog }}
-
-            ### 🛠️ Installation
-            ```bash
-            # Install CLI globally
-            npm install -g @tw-enigma/cli@${{ needs.release.outputs.version }}
-
-            # Or use in project
-            npm install @tw-enigma/core@${{ needs.release.outputs.version }}
-            ```
-
-            ### 🔗 Links
-            - [NPM: @tw-enigma/core](https://www.npmjs.com/package/@tw-enigma/core)
-            - [NPM: @tw-enigma/cli](https://www.npmjs.com/package/@tw-enigma/cli)
-            - [Documentation](https://github.com/avocardow/tw-enigma#readme)
+          tag_name: v${{ needs.prepare-release.outputs.new-version }}
+          release_name: Release v${{ needs.prepare-release.outputs.new-version }}
+          body: ${{ needs.prepare-release.outputs.release-notes }}
           draft: false
-          prerelease: false
-          files: release-artifacts/*
-          generate_release_notes: true
+          prerelease: ${{ contains(needs.prepare-release.outputs.release-type, 'prerelease') }}
 
-  # Job 6: Post-release notifications and cleanup
-  post-release:
-    name: Post-Release Tasks
-    runs-on: ubuntu-latest
-    needs: [validate, release, github-release]
-    if: always() && needs.release.outputs.published == 'true'
-    steps:
-      - name: Post-release summary
+      - name: Notify success
         run: |
-          echo "## 🎉 Release Summary" >> $GITHUB_STEP_SUMMARY
-          echo "| Component | Status | Version |" >> $GITHUB_STEP_SUMMARY
-          echo "|-----------|--------|---------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Release | ✅ Success | v${{ needs.release.outputs.version }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| NPM Publish | ✅ Published | ${{ needs.release.outputs.version }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| GitHub Release | ✅ Created | v${{ needs.release.outputs.version }} |" >> $GITHUB_STEP_SUMMARY
-
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 📦 Published Packages" >> $GITHUB_STEP_SUMMARY
-          echo "- [@tw-enigma/core@${{ needs.release.outputs.version }}](https://www.npmjs.com/package/@tw-enigma/core)" >> $GITHUB_STEP_SUMMARY
-          echo "- [@tw-enigma/cli@${{ needs.release.outputs.version }}](https://www.npmjs.com/package/@tw-enigma/cli)" >> $GITHUB_STEP_SUMMARY
-
-      - name: Cleanup changesets
-        if: github.event.inputs.release_type == 'auto'
-        run: |
-          echo "Changeset-based release completed successfully"
-          echo "Changesets were automatically consumed during versioning"
-
-      - name: Notify on failure
-        if: failure()
-        run: |
-          echo "## ❌ Release Failed" >> $GITHUB_STEP_SUMMARY
-          echo "The release process encountered an error. Please check the logs and try again." >> $GITHUB_STEP_SUMMARY
+          echo "🎉 Release v${{ needs.prepare-release.outputs.new-version }} completed successfully!"
+          echo "📦 Packages published to NPM"
+          echo "🏷️ GitHub release created"
