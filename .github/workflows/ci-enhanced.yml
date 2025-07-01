@@ -1,0 +1,735 @@
+# TW-Enigma Enhanced CI/CD Pipeline
+name: TW-Enigma CI/CD
+
+on:
+  push:
+    branches: 
+      - main
+      - develop
+      - 'feature/*'
+      - 'fix/*'
+      - 'hotfix/*'
+  pull_request:
+    branches: 
+      - main
+      - develop
+  workflow_dispatch:
+    inputs:
+      run_benchmarks:
+        description: 'Run performance benchmarks'
+        required: false
+        default: 'false'
+        type: boolean
+      run_security_scan:
+        description: 'Run extended security scan'
+        required: false
+        default: 'false'
+        type: boolean
+
+env:
+  NODE_VERSION: '20'
+  PNPM_VERSION: '10.10.0'
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+  CI: true
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  # ========================================
+  # Setup and Validation Phase
+  # ========================================
+  setup:
+    name: 🚀 Setup & Cache
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      cache-key: ${{ steps.cache-key.outputs.key }}
+      node-modules-cache-hit: ${{ steps.cache-deps.outputs.cache-hit }}
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Generate cache key
+        id: cache-key
+        run: |
+          echo "key=${{ runner.os }}-${{ env.NODE_VERSION }}-${{ hashFiles('**/pnpm-lock.yaml') }}" >> $GITHUB_OUTPUT
+
+      - name: Cache dependencies
+        id: cache-deps
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            packages/*/node_modules
+            ~/.pnpm-store
+          key: ${{ steps.cache-key.outputs.key }}
+          restore-keys: |
+            ${{ runner.os }}-${{ env.NODE_VERSION }}-
+
+      - name: Install dependencies
+        if: steps.cache-deps.outputs.cache-hit != 'true'
+        run: pnpm install --frozen-lockfile
+
+      - name: Validate project structure
+        run: |
+          echo "🔍 Validating project structure..."
+          test -f "package.json" || (echo "❌ Missing package.json" && exit 1)
+          test -f "pnpm-lock.yaml" || (echo "❌ Missing pnpm-lock.yaml" && exit 1)
+          test -d "packages" || (echo "❌ Missing packages directory" && exit 1)
+          echo "✅ Project structure valid"
+
+  validate:
+    name: 🔍 Code Quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: setup
+    strategy:
+      matrix:
+        check: ['lint', 'type-check', 'format']
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Restore dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            packages/*/node_modules
+            ~/.pnpm-store
+          key: ${{ needs.setup.outputs.cache-key }}
+
+      - name: Install dependencies
+        if: needs.setup.outputs.node-modules-cache-hit != 'true'
+        run: pnpm install --frozen-lockfile
+
+      - name: Run lint checks
+        if: matrix.check == 'lint'
+        run: |
+          echo "🧹 Running ESLint..."
+          pnpm lint
+          echo "✅ Lint checks passed"
+
+      - name: Run type checking
+        if: matrix.check == 'type-check'
+        run: |
+          echo "🔍 Running TypeScript type checks..."
+          pnpm type-check
+          echo "✅ Type checks passed"
+
+      - name: Check code formatting
+        if: matrix.check == 'format'
+        run: |
+          echo "💅 Checking code formatting..."
+          pnpm format:check
+          echo "✅ Code formatting valid"
+
+  # ========================================
+  # Build Phase
+  # ========================================
+  build:
+    name: 🏗️ Build Packages
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [setup, validate]
+    outputs:
+      build-cache-key: ${{ steps.build-cache.outputs.key }}
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Restore dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            packages/*/node_modules
+            ~/.pnpm-store
+          key: ${{ needs.setup.outputs.cache-key }}
+
+      - name: Install dependencies
+        if: needs.setup.outputs.node-modules-cache-hit != 'true'
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate build cache key
+        id: build-cache
+        run: |
+          echo "key=${{ runner.os }}-build-${{ github.sha }}-${{ hashFiles('packages/*/src/**/*', 'packages/*/tsconfig.json') }}" >> $GITHUB_OUTPUT
+
+      - name: Cache build artifacts
+        uses: actions/cache@v4
+        with:
+          path: |
+            packages/*/dist
+            packages/*/build
+            .turbo
+          key: ${{ steps.build-cache.outputs.key }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ github.sha }}-
+            ${{ runner.os }}-build-
+
+      - name: Build packages
+        run: |
+          echo "🏗️ Building all packages..."
+          pnpm build
+          echo "✅ Build completed successfully"
+
+      - name: Validate build outputs
+        run: |
+          echo "🔍 Validating build outputs..."
+          test -d "packages/core/dist" || (echo "❌ Core package build failed" && exit 1)
+          test -d "packages/cli/dist" || (echo "❌ CLI package build failed" && exit 1)
+          echo "✅ Build outputs validated"
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts-${{ github.sha }}
+          path: |
+            packages/*/dist/
+            packages/*/build/
+          retention-days: 7
+          compression-level: 6
+
+  # ========================================
+  # Testing Phase
+  # ========================================
+  test:
+    name: 🧪 Test Suite
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    needs: [setup, build]
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node: ['18', '20', '22']
+        test-type: ['unit', 'integration']
+        exclude:
+          # Reduce matrix size for cost optimization
+          - os: windows-latest
+            node: '18'
+          - os: macos-latest
+            node: '18'
+          - os: windows-latest
+            test-type: 'integration'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: 'pnpm'
+
+      - name: Restore dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            packages/*/node_modules
+            ~/.pnpm-store
+          key: ${{ needs.setup.outputs.cache-key }}
+
+      - name: Install dependencies
+        if: needs.setup.outputs.node-modules-cache-hit != 'true'
+        run: pnpm install --frozen-lockfile
+
+      - name: Restore build artifacts
+        uses: actions/cache@v4
+        with:
+          path: |
+            packages/*/dist
+            packages/*/build
+            .turbo
+          key: ${{ needs.build.outputs.build-cache-key }}
+
+      - name: Run unit tests
+        if: matrix.test-type == 'unit'
+        run: |
+          echo "🧪 Running unit tests..."
+          pnpm test:unit --coverage
+          echo "✅ Unit tests completed"
+        env:
+          NODE_ENV: test
+
+      - name: Run integration tests
+        if: matrix.test-type == 'integration'
+        run: |
+          echo "🔧 Running integration tests..."
+          pnpm test:integration
+          echo "✅ Integration tests completed"
+        env:
+          NODE_ENV: test
+
+      - name: Upload test results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.os }}-${{ matrix.node }}-${{ matrix.test-type }}
+          path: |
+            packages/*/coverage/
+            packages/*/test-results.xml
+            packages/*/test-results.json
+          retention-days: 7
+
+      - name: Upload coverage to Codecov
+        if: matrix.os == 'ubuntu-latest' && matrix.node == '20' && matrix.test-type == 'unit'
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./packages/core/coverage/lcov.info,./packages/cli/coverage/lcov.info
+          flags: unittests
+          name: tw-enigma-coverage
+          fail_ci_if_error: false
+
+  # ========================================
+  # Security Phase
+  # ========================================
+  security:
+    name: 🔒 Security Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [setup, validate]
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Restore dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            packages/*/node_modules
+            ~/.pnpm-store
+          key: ${{ needs.setup.outputs.cache-key }}
+
+      - name: Install dependencies
+        if: needs.setup.outputs.node-modules-cache-hit != 'true'
+        run: pnpm install --frozen-lockfile
+
+      - name: Run dependency audit
+        run: |
+          echo "🔍 Running dependency vulnerability audit..."
+          pnpm audit --audit-level moderate --json > security-audit.json || echo "⚠️ Audit found issues"
+          
+          # Parse and display summary
+          if [ -s security-audit.json ]; then
+            echo "📊 Audit Summary:"
+            cat security-audit.json | jq -r '.metadata.vulnerabilities | to_entries[] | "\(.key): \(.value)"' || echo "Issues found but failed to parse details"
+          fi
+
+      - name: Run comprehensive security scanner
+        run: |
+          echo "🛡️ Running comprehensive security scan..."
+          node scripts/security-check.cjs all --verbose --severity medium --output ./security-reports
+
+      - name: Upload security scan results
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-scan-results-${{ github.sha }}
+          path: |
+            security-reports/
+            security-audit.json
+          retention-days: 30
+
+      - name: Run Snyk security scan
+        if: github.event.inputs.run_security_scan == 'true' || github.ref == 'refs/heads/main'
+        uses: snyk/actions/node@master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high --project-name=tw-enigma --json-file-output=snyk-security-report.json
+
+      - name: Upload Snyk results
+        if: github.event.inputs.run_security_scan == 'true' || github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: snyk-security-results-${{ github.sha }}
+          path: snyk-security-report.json
+          retention-days: 30
+
+      - name: Scan for hardcoded secrets
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+          extra_args: --debug --only-verified --json --no-update
+
+      - name: Security scan summary
+        if: always()
+        run: |
+          echo "## 🔒 Security Scan Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Check if security reports exist and summarize
+          if [ -f "security-reports/security-report.json" ]; then
+            TOTAL_ISSUES=$(cat security-reports/security-report.json | jq -r '.summary.totalIssues // 0')
+            CRITICAL_ISSUES=$(cat security-reports/security-report.json | jq -r '.summary.criticalIssues // 0')
+            HIGH_ISSUES=$(cat security-reports/security-report.json | jq -r '.summary.highIssues // 0')
+            
+            echo "| Metric | Count |" >> $GITHUB_STEP_SUMMARY
+            echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+            echo "| Total Issues | $TOTAL_ISSUES |" >> $GITHUB_STEP_SUMMARY
+            echo "| Critical Issues | $CRITICAL_ISSUES |" >> $GITHUB_STEP_SUMMARY
+            echo "| High Issues | $HIGH_ISSUES |" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            
+            if [ "$CRITICAL_ISSUES" -gt 0 ]; then
+              echo "❌ **Critical security issues detected!** Review security reports immediately." >> $GITHUB_STEP_SUMMARY
+            elif [ "$HIGH_ISSUES" -gt 0 ]; then
+              echo "⚠️ **High severity issues detected.** Please review security reports." >> $GITHUB_STEP_SUMMARY
+            else
+              echo "✅ **No critical or high severity security issues detected.**" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "ℹ️ Security scan reports not available for summary." >> $GITHUB_STEP_SUMMARY
+          fi
+
+  # ========================================
+  # Performance Benchmarks
+  # ========================================
+  benchmark:
+    name: 🚀 Performance Benchmarks
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: [build]
+    if: github.ref == 'refs/heads/main' || github.event.inputs.run_benchmarks == 'true' || github.event_name == 'pull_request'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Restore dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            packages/*/node_modules
+            ~/.pnpm-store
+          key: ${{ needs.setup.outputs.cache-key }}
+
+      - name: Restore build artifacts
+        uses: actions/cache@v4
+        with:
+          path: |
+            packages/*/dist
+            packages/*/build
+            .turbo
+          key: ${{ needs.build.outputs.build-cache-key }}
+
+      - name: Download baseline results
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        run: |
+          echo "📊 Downloading baseline benchmark results..."
+          gh run download \
+            --repo ${{ github.repository }} \
+            --branch main \
+            --name "benchmark-baseline" \
+            --dir baseline-results || echo "ℹ️ No baseline found"
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Run performance benchmarks
+        run: |
+          echo "🏃‍♂️ Running performance benchmarks..."
+          pnpm benchmark:ci
+          echo "✅ Benchmarks completed"
+        env:
+          GITHUB_PR_NUMBER: ${{ github.event.pull_request.number }}
+          GITHUB_REF_NAME: ${{ github.ref_name }}
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_RUN_NUMBER: ${{ github.run_number }}
+
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results-${{ github.sha }}
+          path: ci-benchmark-results/
+          retention-days: 90
+
+      - name: Upload baseline (main branch only)
+        if: github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-baseline
+          path: ci-benchmark-results/
+          retention-days: 30
+
+      - name: Comment PR with benchmark results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            try {
+              const summary = fs.readFileSync('ci-benchmark-results/summary.md', 'utf8');
+              
+              // Find existing benchmark comment
+              const comments = await github.rest.issues.listComments({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+              });
+              
+              const existingComment = comments.data.find(comment => 
+                comment.body.includes('📊 Performance Benchmark Results')
+              );
+              
+              if (existingComment) {
+                // Update existing comment
+                await github.rest.issues.updateComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: existingComment.id,
+                  body: summary
+                });
+              } else {
+                // Create new comment
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number,
+                  body: summary
+                });
+              }
+            } catch (error) {
+              console.log('Could not post benchmark results:', error.message);
+            }
+
+  # ========================================
+  # Release Phase
+  # ========================================
+  release:
+    name: 📦 Release & Publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [test, build, security, benchmark]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push' && !contains(github.event.head_commit.message, '[skip release]')
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Restore dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            packages/*/node_modules
+            ~/.pnpm-store
+          key: ${{ needs.setup.outputs.cache-key }}
+
+      - name: Restore build artifacts
+        uses: actions/cache@v4
+        with:
+          path: |
+            packages/*/dist
+            packages/*/build
+            .turbo
+          key: ${{ needs.build.outputs.build-cache-key }}
+
+      - name: Check for changes
+        id: changes
+        run: |
+          if npx changeset status --since=HEAD~1 | grep -q "packages with no changesets"; then
+            echo "has-changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "has-changes=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create release PR or publish
+        if: steps.changes.outputs.has-changes == 'true'
+        run: |
+          echo "📦 Creating release..."
+          npx changeset publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ========================================
+  # Documentation Deployment
+  # ========================================
+  docs:
+    name: 📚 Deploy Documentation
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [build]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Restore dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            packages/*/node_modules
+            ~/.pnpm-store
+          key: ${{ needs.setup.outputs.cache-key }}
+
+      - name: Restore build artifacts
+        uses: actions/cache@v4
+        with:
+          path: |
+            packages/*/dist
+            packages/*/build
+            .turbo
+          key: ${{ needs.build.outputs.build-cache-key }}
+
+      - name: Generate documentation
+        run: |
+          echo "📖 Generating API documentation..."
+          pnpm docs:generate || echo "⚠️ Documentation generation failed (non-blocking)"
+
+      - name: Deploy to GitHub Pages
+        if: success()
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs/dist
+          cname: tw-enigma.dev
+
+  # ========================================
+  # Final Status Check
+  # ========================================
+  status:
+    name: 📊 Final Status
+    runs-on: ubuntu-latest
+    needs: [setup, validate, build, test, security]
+    if: always()
+    
+    steps:
+      - name: Check overall status
+        run: |
+          echo "## 🎯 CI/CD Pipeline Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Phase | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Setup | ${{ needs.setup.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Validation | ${{ needs.validate.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Build | ${{ needs.build.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Tests | ${{ needs.test.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Security | ${{ needs.security.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Determine overall status
+          if [[ "${{ needs.setup.result }}" == "success" && \
+                "${{ needs.validate.result }}" == "success" && \
+                "${{ needs.build.result }}" == "success" && \
+                "${{ needs.test.result }}" == "success" && \
+                "${{ needs.security.result }}" == "success" ]]; then
+            echo "✅ **All checks passed!**" >> $GITHUB_STEP_SUMMARY
+            echo "✅ All CI/CD checks passed successfully!"
+            echo "Branch: ${{ github.ref_name }}"
+            echo "Commit: ${{ github.sha }}"
+          else
+            echo "❌ **Some checks failed**" >> $GITHUB_STEP_SUMMARY
+            echo "❌ CI/CD pipeline failed!"
+            echo "Check the individual job results above for details."
+            exit 1
+          fi

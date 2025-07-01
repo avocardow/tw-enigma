@@ -1,0 +1,438 @@
+# TW-Enigma Documentation Generation and Publishing
+name: Documentation
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'packages/*/src/**'
+      - 'docs/**'
+      - '*.md'
+      - 'package.json'
+  pull_request:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'packages/*/src/**'
+      - 'docs/**'
+      - '*.md'
+  workflow_dispatch:
+    inputs:
+      deploy_to_pages:
+        description: 'Deploy to GitHub Pages'
+        required: false
+        default: 'true'
+        type: boolean
+
+env:
+  NODE_VERSION: '20'
+  PNPM_VERSION: '10.10.0'
+  CI: true
+
+# Allow GitHub Pages deployment
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ========================================
+  # Documentation Generation
+  # ========================================
+  generate-docs:
+    name: 📚 Generate Documentation
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      docs-changed: ${{ steps.changes.outputs.docs-changed }}
+      
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build packages (required for documentation)
+        run: |
+          echo "🏗️ Building packages for documentation generation..."
+          pnpm build
+          echo "✅ Packages built successfully"
+
+      - name: Generate TypeDoc documentation
+        run: |
+          echo "📖 Generating TypeDoc documentation..."
+          pnpm docs:generate
+          echo "✅ TypeDoc documentation generated"
+
+      - name: Generate API reference documentation
+        run: |
+          echo "📑 Generating API reference documentation..."
+          
+          # Create API docs directory
+          mkdir -p docs/dist/api
+          
+          # Generate comprehensive API documentation
+          cat > docs/dist/api/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>TW-Enigma API Reference</title>
+              <style>
+                  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 40px; line-height: 1.6; }
+                  .container { max-width: 1200px; margin: 0 auto; }
+                  .header { text-align: center; margin-bottom: 50px; }
+                  .nav { background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
+                  .nav ul { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 20px; }
+                  .nav a { text-decoration: none; color: #0366d6; font-weight: 500; }
+                  .section { margin-bottom: 40px; }
+                  .section h2 { color: #24292e; border-bottom: 2px solid #e1e4e8; padding-bottom: 10px; }
+                  .package { background: #f6f8fa; padding: 20px; border-radius: 6px; margin-bottom: 20px; }
+                  .package h3 { margin-top: 0; color: #0366d6; }
+              </style>
+          </head>
+          <body>
+              <div class="container">
+                  <div class="header">
+                      <h1>🔬 TW-Enigma API Reference</h1>
+                      <p>Comprehensive API documentation for TW-Enigma packages</p>
+                  </div>
+                  
+                  <nav class="nav">
+                      <ul>
+                          <li><a href="#core">Core Package</a></li>
+                          <li><a href="#cli">CLI Package</a></li>
+                          <li><a href="#examples">Examples</a></li>
+                          <li><a href="../">TypeDoc</a></li>
+                      </ul>
+                  </nav>
+                  
+                  <section id="core" class="section">
+                      <h2>📦 Core Package (@tw-enigma/core)</h2>
+                      <div class="package">
+                          <h3>Main Exports</h3>
+                          <p>The core optimization engine for TW-Enigma</p>
+                          <ul>
+                              <li><code>optimize(options)</code> - Main optimization function</li>
+                              <li><code>FrameworkDetector</code> - Framework detection utilities</li>
+                              <li><code>ConfigManager</code> - Configuration management</li>
+                              <li><code>PatternAnalyzer</code> - CSS pattern analysis</li>
+                          </ul>
+                      </div>
+                  </section>
+                  
+                  <section id="cli" class="section">
+                      <h2>⚡ CLI Package (@tw-enigma/cli)</h2>
+                      <div class="package">
+                          <h3>Command Line Interface</h3>
+                          <p>Command-line tools for TW-Enigma optimization</p>
+                          <ul>
+                              <li><code>enigma optimize</code> - Run optimization</li>
+                              <li><code>enigma init</code> - Initialize configuration</li>
+                              <li><code>enigma analyze</code> - Analyze CSS patterns</li>
+                          </ul>
+                      </div>
+                  </section>
+                  
+                  <section id="examples" class="section">
+                      <h2>📋 Examples</h2>
+                      <div class="package">
+                          <h3>Quick Start</h3>
+                          <pre><code>import { optimize } from '@tw-enigma/core';
+
+          const result = await optimize({
+            input: './src',
+            output: './dist',
+            framework: 'react'
+          });
+          
+          console.log('Optimization complete:', result);</code></pre>
+                      </div>
+                  </section>
+              </div>
+          </body>
+          </html>
+          EOF
+          
+          echo "✅ API reference documentation generated"
+
+      - name: Copy additional documentation files
+        run: |
+          echo "📄 Copying additional documentation files..."
+          
+          # Copy root documentation
+          cp README.md docs/dist/ 2>/dev/null || echo "No README.md found"
+          cp CONTRIBUTING.md docs/dist/ 2>/dev/null || echo "No CONTRIBUTING.md found"
+          cp CHANGELOG.md docs/dist/ 2>/dev/null || echo "No CHANGELOG.md found"
+          
+          # Copy package READMEs
+          mkdir -p docs/dist/packages
+          cp packages/core/README.md docs/dist/packages/core.md 2>/dev/null || echo "No core README.md found"
+          cp packages/cli/README.md docs/dist/packages/cli.md 2>/dev/null || echo "No CLI README.md found"
+          
+          # Create documentation index
+          cat > docs/dist/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>TW-Enigma Documentation</title>
+              <style>
+                  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 0; background: #f6f8fa; }
+                  .hero { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 80px 40px; text-align: center; }
+                  .hero h1 { font-size: 3rem; margin: 0 0 20px; font-weight: 700; }
+                  .hero p { font-size: 1.2rem; margin: 0 0 40px; opacity: 0.9; }
+                  .container { max-width: 1200px; margin: -40px auto 0; padding: 40px; }
+                  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
+                  .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.2s; }
+                  .card:hover { transform: translateY(-2px); }
+                  .card h3 { margin-top: 0; color: #24292e; font-size: 1.3rem; }
+                  .card a { color: #0366d6; text-decoration: none; font-weight: 500; }
+                  .card a:hover { text-decoration: underline; }
+                  .footer { text-align: center; padding: 40px; color: #586069; }
+              </style>
+          </head>
+          <body>
+              <div class="hero">
+                  <h1>🔬 TW-Enigma</h1>
+                  <p>Advanced Tailwind CSS Optimization & Obfuscation</p>
+              </div>
+              
+              <div class="container">
+                  <div class="grid">
+                      <div class="card">
+                          <h3>📖 API Documentation</h3>
+                          <p>Complete TypeScript API documentation generated from source code.</p>
+                          <a href="./modules.html">Browse API Docs →</a>
+                      </div>
+                      
+                      <div class="card">
+                          <h3>📑 API Reference</h3>
+                          <p>Quick reference guide for all exported functions and classes.</p>
+                          <a href="./api/">View API Reference →</a>
+                      </div>
+                      
+                      <div class="card">
+                          <h3>📚 Getting Started</h3>
+                          <p>Learn how to integrate TW-Enigma into your project.</p>
+                          <a href="./README.html">Read Guide →</a>
+                      </div>
+                      
+                      <div class="card">
+                          <h3>🔧 Contributing</h3>
+                          <p>Guidelines for contributing to the TW-Enigma project.</p>
+                          <a href="./CONTRIBUTING.html">Contribute →</a>
+                      </div>
+                      
+                      <div class="card">
+                          <h3>📦 Core Package</h3>
+                          <p>Documentation for the core optimization engine.</p>
+                          <a href="./packages/core.html">Core Docs →</a>
+                      </div>
+                      
+                      <div class="card">
+                          <h3>⚡ CLI Package</h3>
+                          <p>Command-line interface documentation and usage.</p>
+                          <a href="./packages/cli.html">CLI Docs →</a>
+                      </div>
+                  </div>
+              </div>
+              
+              <div class="footer">
+                  <p>Generated on $(date +%Y-%m-%d) | <a href="https://github.com/avocardow/tw-enigma">GitHub Repository</a></p>
+              </div>
+          </body>
+          </html>
+          EOF
+          
+          echo "✅ Additional documentation files copied"
+
+      - name: Check documentation changes
+        id: changes
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            # Check if docs have changed
+            if git diff --name-only origin/main...HEAD | grep -E "(docs/|\.md$|packages/.*/src/)" > /dev/null; then
+              echo "docs-changed=true" >> $GITHUB_OUTPUT
+            else
+              echo "docs-changed=false" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "docs-changed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Upload documentation artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: documentation-${{ github.sha }}
+          path: docs/dist/
+          retention-days: 30
+
+      - name: Setup Pages
+        if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event.inputs.deploy_to_pages == 'true')
+        uses: actions/configure-pages@v4
+
+      - name: Upload to GitHub Pages
+        if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event.inputs.deploy_to_pages == 'true')
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/dist/
+
+  # ========================================
+  # Documentation Quality Check
+  # ========================================
+  docs-quality:
+    name: 🔍 Documentation Quality
+    runs-on: ubuntu-latest
+    needs: generate-docs
+    if: needs.generate-docs.outputs.docs-changed == 'true'
+    timeout-minutes: 10
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download documentation artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: documentation-${{ github.sha }}
+          path: docs/dist/
+
+      - name: Check documentation completeness
+        run: |
+          echo "🔍 Checking documentation completeness..."
+          
+          # Check required files exist
+          REQUIRED_FILES=(
+            "docs/dist/index.html"
+            "docs/dist/modules.html"
+            "docs/dist/api/index.html"
+          )
+          
+          for file in "${REQUIRED_FILES[@]}"; do
+            if [ ! -f "$file" ]; then
+              echo "❌ Missing required file: $file"
+              exit 1
+            else
+              echo "✅ Found: $file"
+            fi
+          done
+
+      - name: Validate HTML documentation
+        run: |
+          echo "🔍 Validating HTML documentation..."
+          
+          # Check for common HTML issues
+          find docs/dist -name "*.html" -type f | while read file; do
+            echo "Checking $file..."
+            
+            # Check for basic HTML structure
+            if ! grep -q "<html" "$file"; then
+              echo "⚠️ Warning: $file missing <html> tag"
+            fi
+            
+            if ! grep -q "<title>" "$file"; then
+              echo "⚠️ Warning: $file missing <title> tag"
+            fi
+            
+            # Check for broken internal links (basic check)
+            if grep -q 'href="[^h][^t][^t][^p]' "$file"; then
+              echo "ℹ️ Found internal links in $file"
+            fi
+          done
+          
+          echo "✅ HTML validation completed"
+
+      - name: Check documentation size
+        run: |
+          echo "📊 Checking documentation size..."
+          
+          DOCS_SIZE=$(du -sh docs/dist | cut -f1)
+          DOCS_SIZE_KB=$(du -sk docs/dist | cut -f1)
+          
+          echo "📦 Documentation size: $DOCS_SIZE"
+          
+          # Set reasonable size limit (50MB)
+          MAX_SIZE_KB=51200
+          
+          if [ $DOCS_SIZE_KB -gt $MAX_SIZE_KB ]; then
+            echo "⚠️ Warning: Documentation size exceeds limit (${DOCS_SIZE_KB}KB > ${MAX_SIZE_KB}KB)"
+            echo "Consider optimizing images or splitting documentation"
+          else
+            echo "✅ Documentation size within limits"
+          fi
+
+  # ========================================
+  # GitHub Pages Deployment
+  # ========================================
+  deploy-pages:
+    name: 🚀 Deploy to GitHub Pages
+    runs-on: ubuntu-latest
+    needs: [generate-docs, docs-quality]
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event.inputs.deploy_to_pages == 'true')
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Notify deployment success
+        run: |
+          echo "🎉 Documentation deployed successfully!"
+          echo "📖 URL: ${{ steps.deployment.outputs.page_url }}"
+          echo "🔗 Documentation is now available at the GitHub Pages URL"
+
+  # ========================================
+  # Documentation Status Check
+  # ========================================
+  docs-status:
+    name: 📋 Documentation Status
+    runs-on: ubuntu-latest
+    needs: [generate-docs, docs-quality, deploy-pages]
+    if: always()
+    timeout-minutes: 5
+    
+    steps:
+      - name: Documentation status summary
+        run: |
+          echo "## 📚 Documentation Status" >> $GITHUB_STEP_SUMMARY
+          echo "| Task | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Generation | ${{ needs.generate-docs.result == 'success' && '✅ Success' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Quality Check | ${{ needs.docs-quality.result == 'success' && '✅ Success' || (needs.docs-quality.result == 'skipped' && '⏭️ Skipped' || '❌ Failed') }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Pages Deploy | ${{ needs.deploy-pages.result == 'success' && '✅ Success' || (needs.deploy-pages.result == 'skipped' && '⏭️ Skipped' || '❌ Failed') }} |" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ needs.deploy-pages.result }}" = "success" ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "🔗 **Documentation URL**: https://avocardow.github.io/tw-enigma/" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "_Generated on $(date)_" >> $GITHUB_STEP_SUMMARY

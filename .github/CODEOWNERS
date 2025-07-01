@@ -1,0 +1,28 @@
+# Global code owners
+* @avocardow
+
+# Core package
+/packages/core/ @avocardow
+
+# CLI package  
+/packages/cli/ @avocardow
+
+# Configuration files
+*.config.js @avocardow
+*.config.ts @avocardow
+package.json @avocardow
+pnpm-*.yaml @avocardow
+turbo.json @avocardow
+
+# CI/CD workflows
+/.github/ @avocardow
+
+# Documentation
+/docs/ @avocardow
+*.md @avocardow
+
+# Examples and demos
+/examples/ @avocardow
+
+# Scripts
+/scripts/ @avocardow

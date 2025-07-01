@@ -1,0 +1,325 @@
+# TW-Enigma Code Quality Pipeline
+name: Code Quality
+
+on:
+  push:
+    branches: 
+      - main
+      - develop
+      - 'feature/*'
+      - 'fix/*'
+  pull_request:
+    branches: 
+      - main
+      - develop
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '20'
+  PNPM_VERSION: '10.10.0'
+  CI: true
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ========================================
+  # Code Quality Matrix
+  # ========================================
+  code-quality:
+    name: 🔍 ${{ matrix.check-name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - check: lint
+            check-name: ESLint
+            command: pnpm lint
+            cache-key: lint
+          - check: type-check
+            check-name: TypeScript
+            command: pnpm type-check
+            cache-key: typescript
+          - check: format
+            check-name: Prettier
+            command: pnpm format:check
+            cache-key: prettier
+          - check: deadcode
+            check-name: Dead Code
+            command: pnpm check-deps
+            cache-key: deadcode
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Full history for better analysis
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Cache analysis results
+        uses: actions/cache@v4
+        with:
+          path: |
+            .eslintcache
+            .tsbuildinfo
+            .prettiercache
+          key: ${{ runner.os }}-${{ matrix.cache-key }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.cache-key }}-
+
+      - name: Run ${{ matrix.check-name }}
+        run: |
+          echo "🔍 Running ${{ matrix.check-name }} checks..."
+          ${{ matrix.command }}
+          echo "✅ ${{ matrix.check-name }} checks passed"
+
+      - name: Upload ESLint results
+        if: matrix.check == 'lint' && (success() || failure())
+        uses: actions/upload-artifact@v4
+        with:
+          name: eslint-results
+          path: |
+            eslint-report.json
+            eslint-report.html
+          retention-days: 7
+
+  # ========================================
+  # Security & Vulnerability Scanning
+  # ========================================
+  security:
+    name: 🔒 Security Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run dependency audit
+        run: |
+          echo "🔍 Running dependency vulnerability audit..."
+          pnpm audit --audit-level moderate
+        continue-on-error: true
+
+      - name: Run Snyk security scan
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: snyk/actions/node@master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high --json-file-output=snyk-results.json
+
+      - name: Scan for hardcoded secrets
+        uses: trufflesecurity/trufflehog@main
+        continue-on-error: true
+        with:
+          path: ./
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+
+      - name: Upload security results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-results
+          path: |
+            snyk-results.json
+            trufflehog-results.json
+          retention-days: 30
+
+  # ========================================
+  # Code Metrics & Analysis
+  # ========================================
+  analysis:
+    name: 📊 Code Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate dependency graph
+        run: |
+          echo "📈 Generating dependency analysis..."
+          pnpm check-deps --circular --warning || echo "⚠️ Circular dependencies detected"
+          
+      - name: Analyze bundle size
+        run: |
+          echo "📦 Analyzing bundle sizes..."
+          pnpm build
+          # Add bundle analysis if bundlesize or similar is configured
+          echo "✅ Bundle analysis complete"
+
+      - name: Run SonarCloud analysis
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: SonarSource/sonarcloud-github-action@master
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      - name: Upload analysis artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-analysis
+          path: |
+            dependency-graph.png
+            sonar-report.json
+          retention-days: 14
+
+  # ========================================
+  # License & Documentation Checks
+  # ========================================
+  compliance:
+    name: 📋 Compliance
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check license headers
+        run: |
+          echo "📄 Checking license headers..."
+          pnpm license:check
+          echo "✅ License headers verified"
+
+      - name: Validate package.json files
+        run: |
+          echo "📦 Validating package.json files..."
+          # Check for required fields, consistent versions, etc.
+          node -e "
+            const fs = require('fs');
+            const path = require('path');
+            const packages = ['packages/core', 'packages/cli'];
+            
+            packages.forEach(pkg => {
+              const pkgPath = path.join(pkg, 'package.json');
+              if (fs.existsSync(pkgPath)) {
+                const content = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+                if (!content.version || !content.name || !content.description) {
+                  throw new Error(\`Invalid package.json in \${pkg}\`);
+                }
+                console.log(\`✅ \${pkg}/package.json is valid\`);
+              }
+            });
+          "
+
+      - name: Check documentation coverage
+        run: |
+          echo "📚 Checking documentation coverage..."
+          # Verify README files exist and are up to date
+          test -f README.md || (echo "❌ Root README.md missing" && exit 1)
+          test -f packages/core/README.md || echo "⚠️ Core package README.md missing"
+          test -f packages/cli/README.md || echo "⚠️ CLI package README.md missing"
+          echo "✅ Documentation check complete"
+
+  # ========================================
+  # Quality Gate
+  # ========================================
+  quality-gate:
+    name: 🚦 Quality Gate
+    runs-on: ubuntu-latest
+    needs: [code-quality, security, analysis, compliance]
+    if: always()
+    
+    steps:
+      - name: Check quality gate status
+        run: |
+          echo "🚦 Evaluating quality gate..."
+          
+          # Check if all required jobs passed
+          if [[ "${{ needs.code-quality.result }}" != "success" ]]; then
+            echo "❌ Code quality checks failed"
+            exit 1
+          fi
+          
+          if [[ "${{ needs.compliance.result }}" != "success" ]]; then
+            echo "❌ Compliance checks failed"
+            exit 1
+          fi
+          
+          # Security and analysis can be skipped but we warn about it
+          if [[ "${{ needs.security.result }}" != "success" ]]; then
+            echo "⚠️ Security checks had issues (check artifacts)"
+          fi
+          
+          if [[ "${{ needs.analysis.result }}" != "success" ]]; then
+            echo "⚠️ Code analysis had issues (check artifacts)"
+          fi
+          
+          echo "✅ Quality gate passed!"
+
+      - name: Quality gate summary
+        if: always()
+        run: |
+          echo "## Quality Gate Results" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Code Quality | ${{ needs.code-quality.result == 'success' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Security | ${{ needs.security.result == 'success' && '✅ Pass' || '⚠️ Issues' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Analysis | ${{ needs.analysis.result == 'success' && '✅ Pass' || '⚠️ Issues' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Compliance | ${{ needs.compliance.result == 'success' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY

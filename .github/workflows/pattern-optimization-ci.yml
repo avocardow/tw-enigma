@@ -1,0 +1,282 @@
+name: Pattern Selection Optimization CI/CD
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'packages/core/src/optimization/**'
+      - 'packages/core/src/processors/**'
+      - 'packages/core/package*.json'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'packages/core/src/optimization/**'
+      - 'packages/core/src/processors/**'
+
+env:
+  NODE_VERSION: '18'
+  CACHE_KEY: node-modules
+
+jobs:
+  test:
+    name: Test Pattern Selection System
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [16, 18, 20]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          npm run bootstrap
+
+      - name: Lint code
+        run: |
+          npm run lint:core
+          npm run lint:optimization
+
+      - name: Type check
+        run: npm run type-check:core
+
+      - name: Run unit tests
+        run: npm run test:core:unit
+
+      - name: Run integration tests
+        run: npm run test:core:integration
+
+      - name: Generate test coverage
+        run: npm run test:coverage:core
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./packages/core/coverage/lcov.info
+          flags: core,optimization
+          name: pattern-optimization-coverage
+
+  build:
+    name: Build and Package
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          npm run bootstrap
+
+      - name: Build core package
+        run: npm run build:core
+
+      - name: Build optimization module
+        run: npm run build:optimization
+
+      - name: Package for distribution
+        run: npm run package:core
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: core-build-${{ github.sha }}
+          path: |
+            packages/core/dist/
+            packages/core/package.json
+          retention-days: 7
+
+  benchmark:
+    name: Performance Benchmarks
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          npm run bootstrap
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: core-build-${{ github.sha }}
+          path: packages/core/
+
+      - name: Run performance benchmarks
+        run: npm run benchmark:optimization
+
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v3
+        with:
+          name: benchmark-results-${{ github.sha }}
+          path: benchmarks/results/
+          retention-days: 30
+
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run security audit
+        run: npm audit --audit-level=moderate
+
+      - name: Run dependency check
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high
+
+  docker:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    needs: [test, build]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}/pattern-optimizer
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: packages/core/deploy/docker/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [docker, security]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    environment:
+      name: staging
+      url: https://staging.tw-enigma.example.com
+
+    steps:
+      - name: Checkout deployment scripts
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: deploy/
+
+      - name: Deploy to staging
+        run: |
+          echo "Deploying to staging environment..."
+          # Add actual deployment commands here
+
+      - name: Run smoke tests
+        run: |
+          echo "Running smoke tests..."
+          # Add smoke test commands here
+
+      - name: Notify deployment
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          channel: '#deployments'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [docker, security]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment:
+      name: production
+      url: https://tw-enigma.example.com
+
+    steps:
+      - name: Checkout deployment scripts
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: deploy/
+
+      - name: Deploy to production
+        run: |
+          echo "Deploying to production environment..."
+          # Add actual deployment commands here
+
+      - name: Run health checks
+        run: |
+          echo "Running health checks..."
+          # Add health check commands here
+
+      - name: Notify deployment
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          channel: '#deployments'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+
+  cleanup:
+    name: Cleanup Old Artifacts
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [deploy-staging, deploy-production]
+
+    steps:
+      - name: Delete old artifacts
+        uses: geekyeggo/delete-artifact@v2
+        with:
+          name: core-build-*
+          skipIfNotFound: true
+
+      - name: Cleanup old Docker images
+        run: |
+          echo "Cleaning up old Docker images..."
+          # Add cleanup commands here
