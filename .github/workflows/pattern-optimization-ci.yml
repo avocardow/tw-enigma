@@ -94,7 +94,7 @@ jobs:
         run: npm run package:core
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v5
         with:
           name: core-build-${{ github.sha }}
           path: |
@@ -133,7 +133,7 @@ jobs:
         run: npm run benchmark:optimization
 
       - name: Upload benchmark results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v5
         with:
           name: benchmark-results-${{ github.sha }}
           path: benchmarks/results/

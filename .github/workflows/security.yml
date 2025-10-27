@@ -114,7 +114,7 @@ jobs:
           fi
 
       - name: Upload audit results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: dependency-audit-${{ github.sha }}
           path: |
@@ -133,7 +133,7 @@ jobs:
 
       - name: Upload Snyk results
         if: github.ref == 'refs/heads/main' || github.event_name == 'schedule'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: snyk-results-${{ github.sha }}
           path: snyk-results.json
@@ -283,7 +283,7 @@ jobs:
         uses: github/codeql-action/analyze@v3
 
       - name: Upload SAST results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: sast-results-${{ github.sha }}
           path: |
@@ -347,7 +347,7 @@ jobs:
           fi
 
       - name: Upload license results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: license-scan-${{ github.sha }}
           path: |
@@ -388,7 +388,7 @@ jobs:
 
       - name: Upload container scan results
         if: steps.dockerfile-check.outputs.dockerfile-exists == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: container-scan-${{ github.sha }}
           path: hadolint-report.json
@@ -477,7 +477,7 @@ jobs:
           fi
 
       - name: Upload consolidated security report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: security-report-${{ github.sha }}
           path: security-results/

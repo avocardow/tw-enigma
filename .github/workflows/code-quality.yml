@@ -91,7 +91,7 @@ jobs:
 
       - name: Upload ESLint results
         if: matrix.check == 'lint' && (success() || failure())
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: eslint-results
           path: |
@@ -150,7 +150,7 @@ jobs:
 
       - name: Upload security results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: security-results
           path: |
@@ -207,7 +207,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       - name: Upload analysis artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: code-analysis
           path: |
