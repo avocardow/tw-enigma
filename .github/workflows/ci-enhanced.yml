@@ -223,7 +223,7 @@ jobs:
           echo "✅ Build outputs validated"
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: build-artifacts-${{ github.sha }}
           path: |
@@ -312,7 +312,7 @@ jobs:
 
       - name: Upload test results
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: test-results-${{ matrix.os }}-${{ matrix.node }}-${{ matrix.test-type }}
           path: |
@@ -385,7 +385,7 @@ jobs:
           node scripts/security-check.cjs all --verbose --severity medium --output ./security-reports
 
       - name: Upload security scan results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: security-scan-results-${{ github.sha }}
           path: |
@@ -404,7 +404,7 @@ jobs:
 
       - name: Upload Snyk results
         if: github.event.inputs.run_security_scan == 'true' || github.ref == 'refs/heads/main'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: snyk-security-results-${{ github.sha }}
           path: snyk-security-report.json
@@ -518,7 +518,7 @@ jobs:
           GITHUB_RUN_NUMBER: ${{ github.run_number }}
 
       - name: Upload benchmark results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: benchmark-results-${{ github.sha }}
           path: ci-benchmark-results/
@@ -526,7 +526,7 @@ jobs:
 
       - name: Upload baseline (main branch only)
         if: github.ref == 'refs/heads/main'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: benchmark-baseline
           path: ci-benchmark-results/
